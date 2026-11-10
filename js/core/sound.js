@@ -25,9 +25,88 @@ function noise(dur = 0.2, vol = 0.08, when = 0) {
     } catch { }
 }
 
+// ---------------------------------------------------------------- BGM loops
+// Step sequencer (16th notes) scheduled slightly ahead of the audio clock.
+const midi = n => 440 * Math.pow(2, (n - 69) / 12);
+let bgm = null; // { timer, gain, step, next, song }
+function bgmVoice(a, out, t, { freq, type = "sawtooth", dur = 0.2, vol = 0.1, cut = 1800, cutEnd = 400, detune = 0, attack = 0.01 }) {
+    const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter();
+    o.type = type; o.frequency.setValueAtTime(freq, t); o.detune.value = detune;
+    f.type = "lowpass"; f.frequency.setValueAtTime(cut, t); f.frequency.exponentialRampToValueAtTime(Math.max(60, cutEnd), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(f).connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
+}
+function bgmNoise(a, out, t, { dur = 0.05, vol = 0.1, hp = 6000 }) {
+    const b = a.createBuffer(1, Math.ceil(a.sampleRate * dur), a.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = b; f.type = "highpass"; f.frequency.value = hp; g.gain.value = vol;
+    s.connect(f).connect(g).connect(out); s.start(t);
+}
+function kick(a, out, t, vol = 0.5) {
+    const o = a.createOscillator(), g = a.createGain();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(g).connect(out); o.start(t); o.stop(t + 0.25);
+}
+const SONGS = {
+    // Monkey Drop: brass-funk groove, E minor, 118 BPM, 2-bar loop + coin sparkles
+    monkey_funk: {
+        bpm: 118, steps: 32,
+        play(a, out, s, t, len) {
+            const bar = s >> 4;
+            if ([0, 7, 10, 16, 23, 26, 29].includes(s)) kick(a, out, t, 0.45);
+            if (s % 8 === 4) { bgmNoise(a, out, t, { dur: 0.16, vol: 0.22, hp: 1500 }); bgmVoice(a, out, t, { freq: 190, type: "triangle", dur: 0.08, vol: 0.12, cut: 900, cutEnd: 300 }); }
+            if (s === 15 || s === 30) bgmNoise(a, out, t, { dur: 0.06, vol: 0.06, hp: 1800 }); // ghost snare
+            bgmNoise(a, out, t, { dur: s % 2 ? 0.03 : 0.05, vol: s % 4 === 2 ? 0.07 : 0.035, hp: 7000 }); // hats
+            const BASS = { 0: 40, 3: 40, 6: 52, 7: 50, 8: 40, 10: 43, 11: 45, 14: 47, 16: 40, 19: 40, 22: 52, 23: 50, 24: 47, 26: 45, 27: 43, 30: 38 };
+            if (BASS[s] != null) bgmVoice(a, out, t, { freq: midi(BASS[s]), dur: len * 1.6, vol: 0.2, cut: 1100, cutEnd: 180 });
+            // brass stabs: Em9 on bar 1 off-beats, A9 push on bar 2
+            const STAB = { 2: [64, 67, 71, 74, 78], 6: [64, 67, 71, 74, 78], 13: [64, 67, 71, 74], 18: [69, 73, 76, 79, 83], 22: [69, 73, 76, 79], 24: [71, 74, 78, 81], 25: [71, 74, 78, 81] };
+            if (STAB[s]) for (const n of STAB[s]) for (const dt of [-9, 9]) bgmVoice(a, out, t, { freq: midi(n - 12), dur: s === 25 ? len * 3 : len * 1.4, vol: 0.022, cut: 3200, cutEnd: 700, detune: dt, attack: 0.02 });
+            // horn riff answer at the end of bar 2
+            const RIFF = { 28: 74, 29: 76, 30: 79, 31: 78 };
+            if (RIFF[s]) bgmVoice(a, out, t, { freq: midi(RIFF[s] - 12), type: "square", dur: len * 0.9, vol: 0.03, cut: 2600, cutEnd: 900 });
+            // coin sparkles
+            if (s === 31 || (bar === 0 && s === 11)) { bgmVoice(a, out, t, { freq: 1318, type: "square", dur: 0.06, vol: 0.03, cut: 9000, cutEnd: 6000 }); bgmVoice(a, out, t + 0.05, { freq: 1760, type: "square", dur: 0.12, vol: 0.03, cut: 9000, cutEnd: 6000 }); }
+        }
+    }
+};
+function bgmStop() {
+    if (!bgm) return;
+    clearInterval(bgm.timer);
+    try { bgm.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.08); const g = bgm.gain; setTimeout(() => g.disconnect(), 600); } catch { }
+    bgm = null;
+}
+function bgmStart(name) {
+    bgmStop();
+    const song = SONGS[name];
+    if (!song) return;
+    try {
+        const a = ac(), gain = a.createGain();
+        gain.gain.value = muted ? 0 : 0.5; gain.connect(a.destination);
+        const len = 60 / song.bpm / 4;
+        const b = bgm = { gain, step: 0, next: a.currentTime + 0.1, song, name };
+        b.timer = setInterval(() => {
+            if (bgm !== b) return;
+            if (b.next < a.currentTime) b.next = a.currentTime + 0.05; // tab was throttled: skip, don't burst
+            while (b.next < a.currentTime + 0.25) {
+                if (!muted) song.play(a, gain, b.step, b.next, len);
+                b.step = (b.step + 1) % song.steps; b.next += len;
+            }
+        }, 60);
+    } catch { }
+}
+
 export const Sound = {
     get muted() { return muted; },
-    toggle() { muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { } return muted; },
+    toggle() {
+        muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { }
+        if (bgm) try { bgm.gain.gain.setTargetAtTime(muted ? 0 : 0.5, ctx.currentTime, 0.05); } catch { }
+        return muted;
+    },
+    bgm: bgmStart, bgmStop,
+    get bgmPlaying() { return bgm?.name || null; },
     tick() { tone(880 + Math.random() * 200, 0.03, "square", 0.025); },
     click() { tone(520, 0.05, "triangle", 0.05); },
     stop() { tone(180, 0.08, "square", 0.06); noise(0.05, 0.03); },

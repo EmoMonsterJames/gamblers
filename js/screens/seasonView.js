@@ -440,7 +440,7 @@ function loanView(pid, onChange) {
                     h("button.btn.ghost", { onclick: () => { input.value = Math.min(can, ps.loan.owed); } }, "최대"))));
         return wrap;
     }
-    wrap.append(h("p.notice", st.ok ? "골드가 바닥났군요… 대출을 받아 다시 도전하세요! 대출된 골드는 슬롯·카지노에만 쓸 수 있고, 거기서 딴 골드는 상점에서도 쓸 수 있습니다." : "🚫 " + st.why));
+    wrap.append(h("p.notice", st.ok ? "골드가 거의 바닥났군요 (10,000G 이하)… 대출을 받아 다시 도전하세요! 대출된 골드는 슬롯·카지노에만 쓸 수 있고, 거기서 딴 골드는 상점에서도 쓸 수 있습니다." : "🚫 " + st.why));
     for (const L of Object.values(LOANS)) {
         wrap.append(h("div.loan-card." + L.id,
             h("div.loan-title", L.emoji, " ", L.name),

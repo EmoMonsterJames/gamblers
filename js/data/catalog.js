@@ -10,7 +10,7 @@
 //   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
-export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, MAJOR: 4, GRAND: 5 };
+export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5 };
 
 export const MISSIONS = [
     // 최하
@@ -226,7 +226,7 @@ export const SHOPS = {
 // country (nationals only; others need the matching pass item).
 export const LOCATIONS = [
     { id: "lucky",    name: "Lucky Casino",       emoji: "🍀", x: 46, y: 46, color: "#3ddc84", shops: ["general", "pet", "decor"],
-      slots: ["clover_luck"], casino: ["lucky_wheel", "clover_scratch"] },
+      slots: ["clover_luck", "monkey_drop"], casino: ["lucky_wheel", "clover_scratch"] },
     { id: "seaside",  name: "Seaside Casino",     emoji: "🏖️", x: 80, y: 74, color: "#38bdf8", shops: ["general", "weapon", "point"], beg: true,
       slots: ["pearl_tide"], casino: ["shell_cups", "sea_dice"] },
     { id: "twins",    name: "Twins Wins",         emoji: "👯", x: 56, y: 22, color: "#f472b6", shops: ["general", "pet", "weapon", "point"], req: { points: 100 },

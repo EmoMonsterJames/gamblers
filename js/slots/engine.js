@@ -32,6 +32,11 @@ export function jackpotValue(cfg, tier, bet, pool) {
 // Big progressive tiers become likelier with a bigger bet.
 function betScale(cfg, bet) { return bet / cfg.bets[cfg.bets.length - 1]; }
 function gateTier(cfg, tier, bet) {
+    if (cfg.linearGate) { // chance ∝ bet → the jackpot share of RTP is the same at every bet
+        if (tier === "GRAND" && rand() > betScale(cfg, bet)) tier = "MAJOR";
+        if (tier === "MAJOR" && rand() > betScale(cfg, bet)) tier = "MAXI";
+        return tier;
+    }
     if (tier === "GRAND" && rand() > betScale(cfg, bet) * (cfg.grandGate ?? 0.25)) return "MAJOR";
     if (tier === "MAJOR" && rand() > 0.35 + 0.65 * betScale(cfg, bet)) return cfg.jp.MAXI ? "MAXI" : "MINOR";
     return tier;
@@ -223,6 +228,7 @@ function freeBonus(cfg, bet, spins, opts = {}) {
 // ctx: { bet, state, luck:{win,bonus}, pool:{MAJOR,GRAND} }
 export function spin(cfg, ctx) {
     if (cfg.engine === "classic") return classicSpin(cfg, ctx);
+    if (cfg.engine === "monkey") return monkeySpin(cfg, ctx);
     const { bet } = ctx;
     const state = structuredClone(ctx.state || {});
     const F = cfg.features || {};
@@ -232,8 +238,8 @@ export function spin(cfg, ctx) {
     const meterEvents = [];
     let wildReels = [];
 
-    // ---- feature decisions
-    const hit = k => F[k] && rand() < F[k].p * boost;
+    // ---- feature decisions (ctx.force = practice-room bonus test)
+    const hit = k => F[k] && (ctx.force ? ctx.force === k : rand() < F[k].p * boost);
     const doFree = hit("free"), doHold = !doFree && hit("hold"), doWheel = !doFree && !doHold && hit("wheel"), doPick = !doFree && !doHold && !doWheel && hit("pick");
 
     // ---- free spins: scatters
@@ -369,6 +375,212 @@ function teaseReels(cfg, grid) {
     const coins = countSym(grid, "C");
     if (cfg.features?.hold && coins >= (cfg.features.hold.trigger || 6) - 2) for (let c = 3; c < grid.length; c++) if (!out.includes(c)) out.push(c);
     return out.sort((a, b) => a - b);
+}
+
+// ------------------------------------------------------------ Monkey Drop (money tree)
+// Reel coins (C) carry values and are thrown into a persistent money tree
+// (state.tree). Hold & Spin starts with 6 coins dropped from the tree.
+// Coin kinds: {x} bet multiple · {wheel} monkey wheel x2~x10 on the coin
+// total · {monkey} boosts value coins every respin · {jp} jackpot coin.
+// The monkey hanging from the tree falls more often the heavier the tree
+// gets (state.tree.heap) → special 7-circle hold, full = MONKEY jackpot.
+// Bonus column: monkey face (B) on reel 1 + prize coins on the following
+// consecutive reels → collect them all.
+export const MONKEY_WHEEL = { seg: ["2", "3", "5", "2", "4", "10", "3", "2", "6", "3", "8", "4"], w: [22, 16, 7, 22, 10, 1.2, 16, 22, 4, 16, 2, 10] };
+function mCoin(cfg, bet, table, gate = true) {
+    const v = pickW(table.v.map((x, i) => [x, table.w[i]]));
+    if (v === "WHEEL") return { wheel: true };
+    if (v === "MONKEY") return { monkey: true };
+    if (isNaN(+v)) return { jp: gate ? gateTier(cfg, v, bet) : v };
+    return { x: +v };
+}
+const boardCoin = (cn, bet) => cn.x != null ? { v: Math.round(cn.x * bet) } : cn.wheel ? { wheel: true } : cn.monkey ? { monkey: true } : { jp: cn.jp };
+// a tree coin may only drop when its jackpot tier is allowed at this bet
+function dropAllowed(cfg, cn, bet) {
+    if (cn.jp === "GRAND") return rand() < betScale(cfg, bet) * (cfg.linearGate ? 1 : 2 * (cfg.grandGate ?? 0.25));
+    if (cn.jp === "MAJOR") return rand() < (cfg.linearGate ? betScale(cfg, bet) : 0.35 + 0.65 * betScale(cfg, bet));
+    return true;
+}
+function pickDrops(cfg, bet, tree, n) {
+    const out = [];
+    const pool = shuffle([...tree.coins]);
+    for (const cn of pool) { if (out.length >= n) break; if (dropAllowed(cfg, cn, bet)) out.push(cn); }
+    const ids = new Set(out.map(c => c.id));
+    tree.coins = tree.coins.filter(c => !ids.has(c.id));
+    while (out.length < n) out.push({ ...mCoin(cfg, bet, cfg.tree.coin), id: ++tree.n, fresh: true });
+    return out;
+}
+// 5x3 Hold & Spin with wheel / monkey / jackpot coins
+function monkeyHold(cfg, bet, drops, opts = {}) {
+    const h = cfg.features.hold;
+    const R = 5, ROWS = 3, total = R * ROWS;
+    const board = new Map();
+    const empties = () => { const e = []; for (let c = 0; c < R; c++) for (let r = 0; r < ROWS; r++) if (!board.has(c + "," + r)) e.push([c, r]); return e; };
+    const steps = [];
+    const first = [];
+    shuffle(empties()).slice(0, drops.length).forEach(([c, r], i) => { const cn = boardCoin(drops[i], bet); board.set(c + "," + r, cn); first.push({ c, r, id: drops[i].id, ...cn }); });
+    steps.push({ added: first, boosts: [], lives: h.lives });
+    let lives = h.lives, guard = 0;
+    while (lives > 0 && board.size < total && guard++ < 80) {
+        const added = [];
+        for (const [c, r] of empties()) if (rand() < (opts.land ?? h.land)) { const cn = boardCoin(mCoin(cfg, bet, h.coin), bet); board.set(c + "," + r, cn); added.push({ c, r, ...cn }); }
+        // every monkey coin on the board boosts 1~2 value coins each respin
+        const boosts = [];
+        for (const [k, cn] of board) {
+            if (!cn.monkey) continue;
+            const [mc, mr] = k.split(",").map(Number);
+            const vals = [...board.entries()].filter(([, x]) => x.v != null);
+            for (const [vk, vc] of shuffle(vals).slice(0, 1 + (rand() < 0.35 ? 1 : 0))) {
+                const add = Math.round(pickW(h.boost) * bet);
+                vc.v += add;
+                const [c, r] = vk.split(",").map(Number);
+                boosts.push({ from: [mc, mr], c, r, add, v: vc.v });
+            }
+        }
+        if (added.length) lives = h.lives; else lives--;
+        steps.push({ added, boosts, lives });
+    }
+    const full = board.size >= total;
+    const jackpots = [...board.values()].filter(x => x.jp).map(x => x.jp);
+    if (full) jackpots.push(gateTier(cfg, "GRAND", bet)); // linear gate: GRAND → MAJOR → MAXI by bet
+    const coinSum = [...board.values()].reduce((s, x) => s + (x.v || 0), 0);
+    const wheels = [...board.entries()].filter(([, x]) => x.wheel).map(([k]) => {
+        const [c, r] = k.split(",").map(Number);
+        const idx = pickW(MONKEY_WHEEL.seg.map((s, i) => [i, MONKEY_WHEEL.w[i]]));
+        return { c, r, idx, m: +MONKEY_WHEEL.seg[idx] };
+    });
+    const wheelMult = wheels.length ? wheels.reduce((s, w) => s + w.m, 0) : 1;
+    return {
+        type: "mhold", steps, full, coinSum, wheels, wheelMult, coinTotal: Math.round(coinSum * wheelMult), jackpots, rows: ROWS, reels: R,
+        final: [...board.entries()].map(([k, v]) => { const [c, r] = k.split(",").map(Number); return { c, r, ...v }; })
+    };
+}
+// the monkey falls: centre collector + 7 big-value circles; full = MONKEY
+function monkeyFall(cfg, bet, opts = {}) {
+    const f = cfg.features.fall;
+    const N = 7;
+    const board = new Map();
+    const empties = () => [...Array(N).keys()].filter(i => !board.has(i));
+    const coin = () => { const cn = mCoin(cfg, bet, f.coin); return cn.x != null ? { v: Math.round(cn.x * bet) } : { jp: cn.jp }; };
+    const steps = [];
+    const first = shuffle(empties()).slice(0, f.start).map(i => { const cn = coin(); board.set(i, cn); return { i, ...cn }; });
+    steps.push({ added: first, lives: f.lives });
+    let lives = f.lives, guard = 0;
+    while (lives > 0 && board.size < N && guard++ < 80) {
+        const added = [];
+        for (const i of empties()) if (rand() < (opts.land ?? f.land)) { const cn = coin(); board.set(i, cn); added.push({ i, ...cn }); }
+        if (added.length) lives = f.lives; else lives--;
+        steps.push({ added, lives });
+    }
+    const full = board.size >= N;
+    const jackpots = [...board.values()].filter(x => x.jp).map(x => x.jp);
+    if (full) jackpots.push("MONKEY");
+    const coinSum = [...board.values()].reduce((s, x) => s + (x.v || 0), 0);
+    return { type: "mfall", steps, full, coinSum, coinTotal: coinSum, jackpots, slots: N };
+}
+
+function monkeySpin(cfg, ctx) {
+    const { bet } = ctx;
+    const state = structuredClone(ctx.state || {});
+    const F = cfg.features, T = cfg.tree;
+    const boost = 1 + (ctx.luck?.bonus || 0);
+    const tree = state.tree ||= { coins: [], heap: 0, n: 0 };
+    const grid = drawGrid(cfg, "base");
+    const force = ctx.force || "";
+    const fill = Math.min(1, tree.heap / T.heapMax);
+    const roll = (k, p) => force ? force.split(":")[0] === k : rand() < p * boost;
+    const doFree = roll("free", F.free.p);
+    const doHold = !doFree && roll("hold", F.hold.p);
+    const doFall = !doFree && !doHold && roll("fall", F.fall.p * (F.fall.min + (1 - F.fall.min) * 2 * fill));
+    const doCol = !doFree && !doHold && !doFall && roll("column", F.column.p);
+    const pending = [];
+    const coinVals = {}; // "c,r" -> coin shown on the reel coin
+
+    // ---- free-spin scatters
+    if (doFree) { inject(grid, "F", 3); pending.push({ pending: "free" }); }
+    else if (rand() < 0.08) inject(grid, "F", 2, { avoid: c => c >= 3 });
+    else if (rand() < 0.15) inject(grid, "F", 1);
+    // ---- bonus column: monkey face on reel 1, prize coins on following reels
+    let colReels = 0;
+    if (doCol) {
+        grid[0][ri(3)] = "B";
+        colReels = force === "column:max" ? 4 : pickW(F.column.len);
+        for (let c = 1; c <= colReels; c++) {
+            const n = pickW([[1, 70], [2, 25], [3, 5]]);
+            for (const r of shuffle([0, 1, 2]).slice(0, n)) { grid[c][r] = "C"; coinVals[c + "," + r] = mCoin(cfg, bet, F.column.coin); }
+        }
+    } else if (!doFall && !doHold && rand() < 0.05) grid[0][ri(3)] = "B"; // monkey face with no coin next to it
+    // ---- reel coins (thrown into the tree)
+    const noCol = (c) => c === 1 && grid[0].includes("B");
+    if (!doCol) {
+        let n = 0;
+        if (doHold) n = 6 + pickW([[0, 70], [1, 22], [2, 8]]);
+        else if (rand() < 0.07) n = 4 + ri(2);       // so close…
+        else if (rand() < T.throwP) n = pickW([[1, 60], [2, 28], [3, 12]]);
+        for (const [c, r] of inject(grid, "C", n, { distinctReels: false, avoid: doHold ? null : noCol })) coinVals[c + "," + r] = mCoin(cfg, bet, T.coin, false);
+    }
+    // throw every non-column coin into the tree
+    const throws = [];
+    if (!doCol) for (const [k, cn] of Object.entries(coinVals)) {
+        const [c, r] = k.split(",").map(Number);
+        const coin = { ...cn, id: ++tree.n };
+        tree.coins.push(coin);
+        throws.push({ c, r, coin });
+        tree.heap = Math.min(T.heapMax, tree.heap + 1);
+    }
+    while (tree.coins.length > T.max) tree.coins.splice(ri(tree.coins.length - throws.length || 1), 1);
+    const treeMid = structuredClone(tree);
+    // practice-room test seeds: make sure the special coin is in the drop
+    let drops = null;
+    if (doHold) {
+        drops = pickDrops(cfg, bet, tree, 6);
+        const seed = { wheel: { wheel: true }, monkey: { monkey: true }, jp: { jp: "MINOR" }, mix: null }[force.split(":")[1]];
+        if (seed) drops[0] = { ...seed, id: drops[0].id };
+        if (force === "hold:mix") { drops[0] = { wheel: true, id: drops[0].id }; drops[1] = { monkey: true, id: drops[1].id }; drops[2] = { jp: "MINI", id: drops[2].id }; }
+        pending.push({ pending: "mhold" });
+    }
+    if (doFall) { pending.push({ pending: "mfall" }); tree.heap = 0; }
+
+    const points = addPoints(grid, cfg);
+    const base = evalWays(cfg, grid, bet, 1, []);
+
+    // ---- resolve features
+    const done = [];
+    for (const p of pending) {
+        if (p.pending === "free") done.push(freeBonus(cfg, bet, F.free.spins, {}));
+        if (p.pending === "mhold") { const b = monkeyHold(cfg, bet, drops, force === "hold:full" ? { land: 0.6 } : {}); b.drops = drops.map(d => d.id); done.push(b); }
+        if (p.pending === "mfall") done.push(monkeyFall(cfg, bet, force === "fall:full" ? { land: 0.7 } : {}));
+    }
+    if (doCol) {
+        const coins = Object.entries(coinVals).map(([k, cn]) => { const [c, r] = k.split(",").map(Number); return { c, r, ...boardCoin(cn, bet) }; });
+        const jps = coins.filter(x => x.jp).map(x => x.jp);
+        const coinSum = coins.reduce((s, x) => s + (x.v || 0), 0);
+        done.push({ type: "column", reels: colReels, coins, coinSum, coinTotal: coinSum, jackpots: jps });
+    }
+    const jackpots = [];
+    let featureWin = 0, jpProg = 0;
+    for (const d of done) {
+        if (d.jackpots) {
+            d.jpWins = d.jackpots.map(t => ({ tier: t, amount: jackpotValue(cfg, t, bet, ctx.pool) }));
+            d.total = d.coinTotal + d.jpWins.reduce((s, x) => s + x.amount, 0);
+            jpProg += d.jpWins.filter(x => !cfg.jp[x.tier]?.x).reduce((s, x) => s + x.amount, 0);
+            jackpots.push(...d.jackpots);
+        }
+        featureWin += d.total || 0;
+    }
+    let total = base.win + featureWin;
+    const maxWin = (cfg.maxX || 5000) * bet;
+    if (total - jpProg > maxWin) total = maxWin + jpProg;
+    const bonus = done.length > 0;
+    const omen = (bonus && rand() < 0.6) || (!bonus && rand() < 0.03) ? 1 + ri(5) : 0;
+    const anticipation = teaseReels(cfg, grid);
+    if (countSym(grid, "C") >= 4) for (const c of [3, 4]) if (!anticipation.includes(c)) anticipation.push(c);
+    if (grid[0].includes("B") && !anticipation.includes(1)) anticipation.push(1);
+    return {
+        monkey: true, grid, base, wildReels: [], features: done, jackpots, points: points + done.reduce((s, d) => s + (d.points || 0), 0),
+        total: Math.round(total), bonus, state, meterEvents: [], anticipation: anticipation.sort((a, b) => a - b),
+        coinVals, throws, treeMid, omen, fall: doFall
+    };
 }
 
 // Pet luck wrapper: optional re-roll for a missing bonus / a dead spin.

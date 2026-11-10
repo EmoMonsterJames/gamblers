@@ -91,7 +91,7 @@ export function loanStatus(pid) {
     const s = S(), ps = s.ps[pid];
     if (ps.loan) return { ok: false, why: "이미 대출이 있습니다. 먼저 상환하세요." };
     if (alive().length < CONFIG.LOAN_MIN_ALIVE) return { ok: false, why: `생존자가 ${CONFIG.LOAN_MIN_ALIVE - 1}명 이하라 대출이 불가능합니다.` };
-    if (ps.money > 0 || (ps.loanGold || 0) > 0) return { ok: false, why: "골드가 0인 플레이어만 대출할 수 있습니다." };
+    if (ps.money + (ps.loanGold || 0) > CONFIG.LOAN_MAX_GOLD) return { ok: false, why: `보유 골드가 ${CONFIG.LOAN_MAX_GOLD.toLocaleString()}G 이하인 플레이어만 대출할 수 있습니다.` };
     return { ok: true };
 }
 export function takeLoan(pid, type, amount) {

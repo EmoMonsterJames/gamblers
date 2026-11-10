@@ -97,7 +97,7 @@ export function practicePage() {
     let money = 200000;
     const layer = h("div.practice-layer");
     const ctx = kind => ({
-        pid: null, luck: { win: 0, bonus: 0 },
+        pid: null, test: true, luck: { win: 0, bonus: 0 },
         money: () => money,
         canPlay: () => ({ ok: true }),
         record(bet, win, points, extra = {}) { if (extra.pending) money -= bet; if (extra.settle) money += win; },
@@ -126,7 +126,7 @@ export function guidePage() {
             h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 지도 룰렛으로 플레이할 카지노가 정해집니다.`),
             h("li", "미션에 실패한 플레이어들이 탈락 후보가 되고, 탈락 릴로 한 명이 탈락합니다 (모두 성공 시 손익 하위 3명이 후보)."),
             h("li", `라운드마다 플레이어당 슬롯 ${CONFIG.ROUND_SLOT_SPINS}회 · 카지노게임 ${CONFIG.ROUND_CASINO_PLAYS}회까지 (일반 상점의 추가권으로 늘릴 수 있음). 무료 스핀은 횟수에 포함되지 않습니다.`),
-            h("li", "골드가 0이 되면 대출(럭키대부 10%/라운드·5라운드, 크레이지대부 20%/라운드·3라운드)을 받을 수 있습니다. 대출금은 게임에만 쓸 수 있고, 기한 안에 못 갚으면 다음 라운드에 사망! 생존자 5명 이하에서는 대출 불가."),
+            h("li", "보유 골드가 10,000G 이하가 되면 대출(럭키대부 10%/라운드·5라운드, 크레이지대부 20%/라운드·3라운드)을 받을 수 있습니다. 대출금은 게임에만 쓸 수 있고, 기한 안에 못 갚으면 다음 라운드에 사망! 생존자 5명 이하에서는 대출 불가."),
             h("li", "최종 2인은 무기 배틀! 보유금액이 많은 쪽이 선공 (같으면 포인트). 승자는 명예의 전당에 등극합니다."))),
         h("div.guide-sec", h("h3", "미션"), h("div.tiers", tierBlocks)),
         h("div.guide-sec", h("h3", "펫 & 펫효과 (승률 / 보너스 확률 증가)"),

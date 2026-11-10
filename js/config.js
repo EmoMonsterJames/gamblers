@@ -19,5 +19,6 @@ export const CONFIG = {
     CASINO_POINT_CHANCE: 0.12, // chance a casino play also drops 1~10 points
     ROUND_CASINO_PLAYS: 5,    // casino games per player per round
     ROUND_SLOT_SPINS: 100,    // paid slot spins per player per round (free spins do not count)
-    LOAN_MIN_ALIVE: 6         // loans are closed once 5 or fewer players are alive
+    LOAN_MIN_ALIVE: 6,        // loans are closed once 5 or fewer players are alive
+    LOAN_MAX_GOLD: 10000      // only players holding this much gold or less may borrow
 };

@@ -250,7 +250,7 @@ export const Store = {
         if (!serverLogged) this.write(sb => sb.from("jackpot_hits").insert({ game, tier, player_id: pid, amount, season_number: season }));
     },
     jackpotWinners(game) {
-        const R = { MAXI: 3, MAJOR: 4, GRAND: 5, JACKPOT: 3 };
+        const R = { MAXI: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5, JACKPOT: 3 };
         return this.jpLog.filter(r => r.game === game && r.playerId != null && (R[r.tier] || 0) >= 3).sort((a, b) => String(b.at).localeCompare(String(a.at)));
     },
 

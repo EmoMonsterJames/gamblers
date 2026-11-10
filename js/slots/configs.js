@@ -217,13 +217,40 @@ export const SLOTS = [
             hold: { p: 0.007, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 },
             pick: { p: 0.0035, sym: true, title: "🐉 DRAGON'S EYE 🐉", tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 0.3 } }
         }
+    }),
+    // ------------------------------------------------ Monkey Drop (money tree progressive)
+    video({
+        id: "monkey_drop", name: "Monkey Drop", brand: "IPEX", engine: "monkey", progressive: true, bets: [300, 500, 1000, 2000, 5000], maxX: 5000, linearGate: true,
+        desc: "릴의 동전이 숲속 돈나무로 던져진다! 동전 6개 = 나무에서 동전 6개가 떨어지며 HOLD & SPIN (휠 코인 x2~x10 · 원숭이 코인 · 잭팟 코인). 나무가 무거워질수록 원숭이가 떨어질 듯… 떨어지면 몽키 보너스(7칸 모두 채우면 MONKEY 잭팟)! 1릴 원숭이 얼굴 + 연속 동전 = 모두 수집, FREE 3개 = 8 무료스핀.",
+        theme: { bg: "linear-gradient(180deg,#14532d 0%,#0b3d1f 45%,#052e16 100%)", accent: "#84cc16", glow: "#fde047", font: "'Lilita One', sans-serif" },
+        highs: [{ e: "🦍", name: "Gorilla" }, { e: "🍌", name: "Banana" }, { e: "🥥", name: "Coconut" }], lows: [{ e: "🍃" }, { e: "🌺" }],
+        wild: { e: "🌴", name: "PALM WILD", w: [0, 4, 4, 4, 0], wFree: [0, 6, 6, 6, 0] },
+        look: { F: { img: "images/slots/free-games.svg" }, C: { e: "🪙", name: "Tree Coin" }, B: { e: "🐵", name: "Monkey Face", cls: "sym-monkey" } },
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAXI: { x: 80 }, MONKEY: { x: 150 }, MAJOR: { seed: 800000, rate: 0.01 }, GRAND: { seed: 2500000, rate: 0.02, cap: 5000000 } },
+        bgm: "monkey_funk",
+        omens: ["🍀 Lucky has arrived 🍀", "릴 흔들림", "원숭이 코인 뿌리기", "나무 동전비", "동전 섞인 나뭇잎 바람"],
+        tree: {
+            max: 24, heapMax: 120, throwP: 0.2,
+            coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "15", "WHEEL", "MONKEY", "MINI", "MINOR", "MAXI", "MAJOR", "GRAND"], w: [24, 24, 18, 12, 8, 4, 2.5, 1, 1.6, 1.8, 1.2, 0.4, 0.12, 0.03, 0.01] }
+        },
+        features: {
+            free: { p: 0.006, spins: 8, mult: 1 },
+            hold: {
+                p: 0.0075, trigger: 6, land: 0.07, lives: 3, boost: [[0.5, 45], [1, 32], [2, 16], [3, 7]],
+                coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "WHEEL", "MONKEY", "MINI", "MINOR", "MAXI", "MAJOR"], w: [25, 25, 18, 12, 8, 4, 2.5, 1.4, 1.6, 1.2, 0.3, 0.06, 0.012] }
+            },
+            fall: { p: 0.0025, min: 0.4, start: 3, land: 0.11, lives: 3, coin: { v: ["2", "3", "5", "8", "10", "15", "25", "MINI", "MINOR", "MAXI"], w: [22, 22, 18, 12, 9, 5, 2, 6, 2.5, 0.6] } },
+            column: { p: 0.012, len: [[1, 52], [2, 30], [3, 13], [4, 5]], coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR"], w: [22, 24, 20, 14, 9, 5, 3, 2, 0.4] } }
+        },
+        tests: [["free", "8 무료스핀"], ["hold", "Hold & Spin"], ["hold:wheel", "H&S + 휠 코인"], ["hold:monkey", "H&S + 원숭이 코인"], ["hold:jp", "H&S + 잭팟 코인"], ["hold:mix", "H&S + 휠·원숭이·잭팟"], ["hold:full", "H&S 풀보드"], ["fall", "원숭이 떨어짐"], ["fall:full", "원숭이 풀보드 (MONKEY)"], ["column", "연속 보너스"], ["column:max", "연속 보너스 (5릴)"]]
     })
 ];
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.
 const PX = {
     money_mesh: 1.517, coin_pigglet: 1.69, fufu: 2.015, samurai_cash: 1.78, bonanza: 2.05, clover_luck: 2.48,
-    pearl_tide: 2.2, golden_dung: 2.41, rabbit_rush: 2.25, tiki_volcano: 2.2, ant_hill: 2.13, ghost_vault: 2.8, dragon_hoard: 2.37
+    pearl_tide: 2.2, golden_dung: 2.41, rabbit_rush: 2.25, tiki_volcano: 2.2, ant_hill: 2.13, ghost_vault: 2.8, dragon_hoard: 2.37,
+    monkey_drop: 1.35 // 1M-spin sim (200k × 5 bets): 86.7% = 80.0% non-progressive + 6.7% MAJOR/GRAND at seed (+ pool growth 3%)
 };
 for (const s of SLOTS) s.px = PX[s.id] ?? s.px;
 export const SLOT_BY_ID = Object.fromEntries(SLOTS.map(s => [s.id, s]));
