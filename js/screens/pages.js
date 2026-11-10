@@ -85,8 +85,8 @@ export function mapPage() {
         info.replaceChildren(
             h("h3", l.emoji, " ", l.name),
             h("p", l.req ? (l.req.points ? `🔒 ${l.req.points} 포인트 이상 보유 시 입장` : `🔒 ${l.req.country} 국적 전용 (출입권으로 입장 가능)`) : "누구나 입장 가능"),
-            h("h4", "슬롯"), h("ul", l.slots.map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
-            h("h4", "카지노 게임"), h("ul", l.casino.map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
+            h("h4", "슬롯"), h("ul", l.slots.filter(id => !SLOT_BY_ID[id].off).map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
+            h("h4", "카지노 게임"), h("ul", l.casino.filter(id => !CASINO_BY_ID[id].off).map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
             h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))));
     } });
     return h("div.page", h("h2.page-title", "🗺️ 월드 맵"), h("div.map-page", map.el, info));
@@ -108,10 +108,10 @@ export function practicePage() {
         h("p.muted", "시즌과 무관한 연습용 지갑(200,000G)으로 모든 게임을 테스트합니다. 프로그레시브 잭팟은 실제로 쌓입니다."),
         h("h3", "🎰 슬롯"),
         h("div.game-list", SLOTS.map(c => h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => open("slot", c.id) },
-            h("div.gc-kind", `${c.progressive === false ? "CLASSIC" : "PROGRESSIVE"} · ${LOCATIONS.find(l => l.slots.includes(c.id))?.name || ""}`), h("div.gc-name", c.name), h("div.gc-brand", c.brand)))),
+            h("div.gc-kind", `${c.off ? "🚫 숨김 · " : ""}${c.progressive === false ? "CLASSIC" : "PROGRESSIVE"} · ${LOCATIONS.find(l => l.slots.includes(c.id))?.name || ""}`), h("div.gc-name", c.name), h("div.gc-brand", c.brand)))),
         h("h3", "🃏 카지노 게임"),
         h("div.game-list", CASINO_GAMES.map(g => h("button.gcard.casino", { onclick: () => open("casino", g.id) },
-            h("div.gc-kind", `RTP ${(gameRtp(g) * 100).toFixed(1)}% · ${LOCATIONS.find(l => l.casino.includes(g.id))?.name || ""}`), h("div.gc-ico", g.icon), h("div.gc-name", g.name)))));
+            h("div.gc-kind", `${g.off ? "🚫 숨김 · " : ""}RTP ${(gameRtp(g) * 100).toFixed(1)}% · ${LOCATIONS.find(l => l.casino.includes(g.id))?.name || ""}`), h("div.gc-ico", g.icon), h("div.gc-name", g.name)))));
     return h("div.page", h("h2.page-title", "🎮 게임 연습실"), list, layer);
 }
 
@@ -149,6 +149,7 @@ export function adminPage() {
             Store.user ? h("button.btn.ghost", { onclick: async () => { await Store.logout(); location.reload(); } }, "로그아웃") : null),
         h("div.admin-card", h("h3", "🧑‍🤝‍🧑 플레이어 관리"), h("p.muted", `플레이어 정보 수정, 새 플레이어 생성, 활성/비활성 전환 (현재 ${Store.players.length}명 활성).`), h("a.btn.gold", { href: "#/admin-players" }, "관리하기")),
         h("div.admin-card", h("h3", "🛒 상품·상점 관리"), h("p.muted", "무기·아이템·펫·펫효과·프레임·프레임효과의 능력치, 판매 상점, 가격, 판매 카지노를 조정하고 새 상품을 추가합니다."), h("a.btn.gold", { href: "#/admin-catalog" }, "관리하기")),
+        h("div.admin-card", h("h3", "🎰 슬롯·카지노게임 관리"), h("p.muted", "슬롯머신의 RTP(배당 배율)·보너스 확률 조정, 보너스 삭제, RTP 시뮬레이션, 카지노게임 RTP·노출 여부·최대 당첨금을 관리합니다."), h("a.btn.gold", { href: "#/admin-games" }, "관리하기")),
         h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),
         h("div.admin-card", h("h3", "턴 시간"),
             h("p.muted", "기본 10분(600초). 리허설용으로 줄일 수 있습니다 (이 브라우저에만 적용)."),

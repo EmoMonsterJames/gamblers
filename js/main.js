@@ -4,6 +4,8 @@ import { Store } from "./core/store.js";
 import { Sound } from "./core/sound.js";
 import { CONFIG } from "./config.js";
 import { applyCatalog } from "./data/catalogAdmin.js";
+import { applyGames } from "./data/gameAdmin.js";
+import { adminGamesPage } from "./screens/adminGames.js";
 import { seasonScreen } from "./screens/seasonView.js";
 import { homePage, playersPage, hallPage, mapPage, practicePage, guidePage, adminPage } from "./screens/pages.js";
 import { adminCatalogPage } from "./screens/adminCatalog.js";
@@ -13,7 +15,7 @@ import { adminPlayersPage } from "./screens/adminPlayers.js";
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
-    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage
+    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage
 };
 
 function nav(active) {
@@ -40,6 +42,7 @@ function route() {
     if (saved >= 30) CONFIG.TURN_SECONDS = saved;
     await Store.init();
     applyCatalog();
+    applyGames();
     document.getElementById("boot")?.remove();
     window.addEventListener("hashchange", route);
     document.addEventListener("auth", () => route());

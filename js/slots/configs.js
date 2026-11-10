@@ -58,12 +58,14 @@ export const SLOTS = [
     // ------------------------------------------------ Coin-Pigglet's Coin
     video({
         id: "coin_pigglet", name: "Coin-Pigglet's Coin", brand: "Scrooge-Slots", progressive: true,
-        desc: "코인피글렛이 동전을 삼키며 커지다가 펑! 피기 잭팟(MINI~GRAND), 동전 6개 이상 = Hold & Spin, FREE 3개 = 8 무료게임(x2).",
+        desc: "코인피글렛이 동전을 삼키며 커지다가 펑! PIGGY BREAK = 코인 3개 매칭(MINI x2 · MINOR x2 포함, MINI~GRAND), 동전 6개 이상 = Hold & Spin, FREE 3개 = 8 무료게임(x2).",
         theme: { bg: "linear-gradient(180deg,#ffb3c7,#7a1840)", accent: "#ff5c8a", glow: "#ffd34d", font: "'Lilita One', sans-serif" },
         highs: [{ e: "🐷", name: "Pigglet" }, { e: "💰", name: "Money Sack" }, { e: "🏦", name: "Bank" }], lows: [{ e: "🌽" }, { e: "🥕" }],
         wild: { e: "🐽", name: "WILD", w: [0, 4, 4, 4, 0], wFree: [0, 7, 7, 7, 0] },
         look: { F: { img: "images/slots/free-games.svg" }, C: { e: "🪙", name: "Coin" }, M: { img: "images/slots/piggy-full.svg", name: "Coin-Pigglet" } },
-        meter: { kind: "piggy", max: 12, p: 0.075, onFull: "pick", title: "💥 PIGGY BREAK! 💥", pickTw: { MINI: 50, MINOR: 30, MAJOR: 14, GRAND: 0.5 } },
+        meter: { kind: "piggy", max: 12, p: 0.075, onFull: "pick", title: "💥 PIGGY BREAK! 💥", pickTw: { MINI: 42, MINOR: 24, MAJOR: 12, GRAND: 0.5, MINI_X2: 14, MINOR_X2: 8 } },
+        omens: [{ fx: "text", text: "🐷 꿀꿀… 배가 터질 것 같아! 🐷" }, { fx: "rain", chars: ["🪙", "🪙", "💰"] }, { fx: "burst", icon: "🐷", chars: ["🪙"] }],
+        tests: [["free", "8 무료게임"], ["hold", "Hold & Spin"], ["meter", "PIGGY BREAK (3개 매칭)"]],
         features: {
             free: { p: 0.0075, spins: 8, mult: 2, retrigger: 0.03, retriggerSpins: 5 },
             hold: { p: 0.008, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 }
@@ -72,30 +74,36 @@ export const SLOTS = [
     // ------------------------------------------------ FuFu Firecracker (high limit)
     video({
         id: "fufu", name: "FuFu Firecracker", brand: "DAEBAK", progressive: true, bets: [500, 1000, 2000, 5000], maxX: 10000,
-        desc: "福가 행운을 부른다! 폭죽 퓨즈가 가득 차면 GROW REELS(6 무료스핀, 릴이 커짐) 또는 HOLD & SPIN. 복주머니 3/4/5개 = 8/10/12 무료스핀.",
+        desc: "福가 행운을 부른다! 폭죽 퓨즈가 가득 차 터지면 FIRECRACKER MATCH(3개 매칭 잭팟 픽) · GROW REELS(6 무료스핀, 릴이 커짐) · HOLD & SPIN 중 하나. 복주머니 3/4/5개 = 8/10/12 무료스핀.",
         theme: { bg: "linear-gradient(180deg,#b3001b,#3a0008)", accent: "#ffcc00", glow: "#ff3b3b", font: "'Lilita One', sans-serif" },
         highs: [{ e: "🐉", name: "Dragon" }, { e: "🏮", name: "Lantern" }, { e: "🧧", name: "Red Envelope" }], lows: [{ e: "🍊" }, { e: "🥟" }],
         wild: { img: "images/slots/fu-wild.svg", name: "福 WILD", w: [0, 4, 4, 4, 0], wFree: [0, 7, 7, 7, 0] },
         look: { F: { img: "images/slots/lucky-pouch.svg", name: "Lucky Pouch" }, C: { img: "images/slots/fu.svg", name: "福 Coin" }, M: { img: "images/slots/firecracker.svg", name: "Firecracker" } },
         jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { seed: 100000, rate: 0.015 }, GRAND: { seed: 500000, rate: 0.025, cap: 1000000 } },
-        meter: { kind: "fuse", max: 20, p: 0.11, addPerSym: true, onFull: "grow_or_hold", title: "🧨 FUSE LIT! 🧨" },
+        meter: { kind: "fuse", max: 20, p: 0.11, addPerSym: true, onFull: "pick", onFullW: { pick: 34, grow: 33, hold: 33 }, title: "🧨 FUSE LIT! 🧨", pickTitle: "🎆 FIRECRACKER MATCH 🎆" },
+        omens: [{ fx: "text", text: "🧧 福이 들어온다… 🧧" }, { fx: "rain", chars: ["🧨", "🎆", "🎇"] }, { fx: "burst", icon: "🐉", chars: ["🧧", "🪙"] }],
+        tests: [["free", "무료스핀"], ["meter:pick", "폭죽 → 3개 매칭 픽"], ["meter:grow", "폭죽 → GROW REELS"], ["meter:hold", "폭죽 → Hold & Spin"]],
         features: {
             free: { p: 0.007, byCount: [8, 10, 12], mult: 1, retrigger: 0.02, retriggerSpins: 4 },
             hold: { p: 0.0, trigger: 6, start: 4, coin: COIN, land: 0.08, lives: 3 },
-            grow: { spins: 6, pGrow: 0.55, max: 6 }
+            grow: { spins: 6, pGrow: 0.55, max: 6 },
+            pick: { p: 0, title: "🎆 FIRECRACKER MATCH 🎆", tw: { MINI: 56, MINOR: 30, MAJOR: 9, GRAND: 0.3 } }
         }
     }),
     // ------------------------------------------------ Samurai Cash
     video({
         id: "samurai_cash", name: "Samurai Cash", brand: "YG GAMING", progressive: true, bets: [100, 200, 300, 400, 500],
-        desc: "센세이가 지키는 금 주머니. 센세이가 나올 때마다 동전이 쌓이다가 터지면 잭팟 픽(MINI x2, MINOR x2 포함)! 센세이 3개 = 코인 픽, 휠 3개 = 사무라이 휠.",
+        desc: "센세이가 지키는 금 주머니. 센세이가 나올 때마다 동전이 쌓이다가 BAG BURST! → HOLD & SPIN (잭팟 코인 등장, 잭팟금 수령). 센세이 3개 = 코인 픽, 휠 3개 = 사무라이 휠.",
         theme: { bg: "linear-gradient(180deg,#1b1b3a,#05050f)", accent: "#e11d48", glow: "#fbbf24", font: "'Rye', serif" },
         highs: [{ e: "🥷", name: "Ninja" }, { e: "🏯", name: "Castle" }, { e: "🎎", name: "Dolls" }], lows: [{ e: "🍡" }, { e: "🍵" }],
         wild: { img: "images/slots/katana-wild.svg", name: "Katana WILD", w: [0, 5, 5, 5, 0] },
-        look: { M: { e: "🧘", name: "Sensei" }, X: { e: "🧘", name: "Sensei" }, R: { img: "images/slots/wheel.svg", name: "Samurai Wheel" } },
+        look: { M: { e: "🧘", name: "Sensei" }, X: { e: "🧘", name: "Sensei" }, R: { img: "images/slots/wheel.svg", name: "Samurai Wheel" }, C: { e: "🪙", name: "Koban Coin" } },
         jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { seed: 8000, rate: 0.012 }, GRAND: { seed: 500000, rate: 0.02, cap: 1000000 } },
-        meter: { kind: "bag", max: 20, p: 0.10, addPerSym: true, onFull: "pick", title: "💰 THE BAG BURST! 💰", pickTw: { MINI: 38, MINOR: 22, MAJOR: 8, GRAND: 0.3, MINI_X2: 18, MINOR_X2: 11 } },
+        meter: { kind: "bag", max: 20, p: 0.10, addPerSym: true, onFull: "hold", title: "💰 THE BAG BURST! 💰" },
+        omens: [{ fx: "text", text: "⚔️ 센세이의 기운이 느껴진다… ⚔️" }, { fx: "wind", chars: ["🌸", "🌸", "🪙"] }, { fx: "burst", icon: "🧘", chars: ["🪙", "💰"] }],
+        tests: [["meter", "BAG BURST → Hold & Spin"], ["pick", "센세이 코인 픽"], ["wheel", "사무라이 휠"]],
         features: {
+            hold: { p: 0, trigger: 6, start: 6, coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "20", "MINI", "MINOR", "MAJOR", "GRAND"], w: [24, 24, 18, 12, 9, 5, 3, 1.5, 2.2, 0.7, 0.12, 0.01] }, land: 0.075, lives: 3 },
             pick: { p: 0.004, sym: true, title: "🧘 SENSEI COIN PICK 🧘", tw: { MINI: 60, MINOR: 28, MAJOR: 6, GRAND: 0.2 } },
             wheel: { p: 0.008, sym: true, seg: ["MINI", "5", "10", "8", "MINOR", "15", "5", "25", "10", "50", "8", "20"], w: [10, 16, 11, 13, 4, 8, 16, 4, 11, 1.5, 13, 5] }
         }
@@ -103,16 +111,18 @@ export const SLOTS = [
     // ------------------------------------------------ Bonanza Meter
     video({
         id: "bonanza", name: "Bonanza Meter", brand: "Scrooge-Slots", progressive: true,
-        desc: "눈 속의 온도계 3개를 채워라! So Hot(모두 수집) · So Extra(1.5배) · So Cold(x2~x5) Hold & Spin. 펭귄 휠, 8 무료스핀, 잭팟 5종(MAXI 포함).",
+        desc: "눈 속의 온도계 3개를 채워라! 1~3개가 동시에 터지는 Hold & Spin — So Hot(모든 코인 한번에 수집) · So Extra(주변 코인 상금 부스트) · So Cold(주변 코인 x2~x5). 얼음에 갇힌 줄은 🔨 망치가 나올 때마다 한 줄씩 깨진다! 펭귄 휠, 8 무료스핀, 잭팟 5종(MAXI 포함).",
         theme: { bg: "linear-gradient(180deg,#bde7ff,#1e3a8a)", accent: "#38bdf8", glow: "#ffffff", font: "'Lilita One', sans-serif" },
         highs: [{ e: "⛄", name: "Snowman" }, { e: "🐧", name: "Penguin" }, { e: "🦭", name: "Seal" }], lows: [{ e: "🧊" }, { e: "🧣" }],
         wild: { img: "images/slots/snow-wild.svg", name: "Snow WILD", w: [0, 4, 4, 4, 0], wFree: [0, 6, 6, 6, 0] },
-        look: { F: { img: "images/slots/free-games.svg" }, M1: { img: "images/slots/thermo-red.svg", name: "So Hot" }, M2: { img: "images/slots/thermo-yellow.svg", name: "So Extra" }, M3: { img: "images/slots/thermo-blue.svg", name: "So Cold" }, R: { img: "images/slots/penguin.svg", name: "Penguin Wheel" }, C: { img: "images/slots/snow-coin.svg", name: "Snow Coin" } },
+        look: { F: { img: "images/slots/free-games.svg" }, M1: { img: "images/slots/thermo-red.svg", name: "So Hot" }, M2: { img: "images/slots/thermo-yellow.svg", name: "So Extra" }, M3: { img: "images/slots/thermo-blue.svg", name: "So Cold" }, R: { img: "images/slots/penguin.svg", name: "Penguin Wheel" }, C: { img: "images/slots/snow-coin.svg", name: "Snow Coin" }, HAMMER: { img: "images/slots/hammer.svg", name: "Ice Hammer" } },
         jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAXI: { x: 100 }, MAJOR: { seed: 15000, rate: 0.012 }, GRAND: { seed: 500000, rate: 0.025, cap: 1000000 } },
-        meter: { kind: "thermo", max: 15, p: 0.06 },
+        meter: { kind: "thermo", max: 15, p: 0.06, chain: 0.6 },
+        omens: [{ fx: "text", text: "❄️ 눈보라가 몰려온다… ❄️" }, { fx: "wind", chars: ["❄️", "❄️", "🧊"] }, { fx: "burst", icon: "🐧", chars: ["🧊", "🪙"] }],
+        tests: [["free", "8 무료스핀"], ["wheel", "펭귄 휠"], ["thermo:hot", "SO HOT Hold & Spin"], ["thermo:extra", "SO EXTRA Hold & Spin"], ["thermo:cold", "SO COLD Hold & Spin"], ["thermo:hot+cold", "2개 동시 (HOT + COLD)"], ["thermo:all", "3개 동시"], ["thermo:all:hammer", "3개 동시 + 망치 많이"]],
         features: {
             free: { p: 0.007, spins: 8, mult: 1, retrigger: 0.03, retriggerSpins: 4 },
-            hold: { p: 0, trigger: 6, start: 6, coin: { v: ["0.2", "0.4", "0.6", "1", "1.5", "2.5", "5", "MINI", "MINOR", "MAXI", "MAJOR"], w: [25, 25, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }, land: 0.08, lives: 3 },
+            hold: { p: 0, trigger: 6, start: 6, coin: { v: ["0.2", "0.4", "0.6", "1", "1.5", "2.5", "5", "MINI", "MINOR", "MAXI", "MAJOR"], w: [25, 25, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }, land: 0.08, lives: 3, ice: { rows: 3, hammer: 0.14 } },
             wheel: { p: 0.006, sym: true, seg: ["5", "HOTx", "10", "3", "EXTRAx", "MINI", "8", "20", "COLDx", "5", "MINOR", "15"].map(s => s.endsWith("x") ? "12" : s), w: [10, 6, 8, 10, 6, 4, 8, 5, 6, 9, 2, 6] }
         }
     }),
@@ -169,7 +179,7 @@ export const SLOTS = [
         }
     }),
     video({
-        id: "tiki_volcano", name: "Tiki Volcano", brand: "HYHY GAMING", progressive: true,
+        id: "tiki_volcano", name: "Tiki Volcano", brand: "HYHG GAMING", progressive: true,
         desc: "티키 화산의 용암 게이지가 가득 차면 분화! Hold & Spin. FREE 3개 = 8 무료스핀(x2).",
         theme: { bg: "linear-gradient(180deg,#ea580c,#2a0a02)", accent: "#fb923c", glow: "#fde047", font: "'Lilita One', sans-serif" },
         highs: [{ e: "🗿", name: "Tiki" }, { e: "🌋", name: "Volcano" }, { e: "🍍", name: "Pineapple" }], lows: [{ e: "🥥" }, { e: "🌺" }],
@@ -206,7 +216,7 @@ export const SLOTS = [
         }
     }),
     video({
-        id: "dragon_hoard", name: "Dragon Hoard", brand: "HYHY GAMING", progressive: true,
+        id: "dragon_hoard", name: "Dragon Hoard", brand: "HYHG GAMING", progressive: true,
         desc: "용의 보물창고! 여의주 6개 = Hold & Spin, FREE 3개 = 8 무료스핀(x2), 용의 눈 3개 = 잭팟 픽.",
         theme: { bg: "linear-gradient(180deg,#7f1d1d,#1c0505)", accent: "#f59e0b", glow: "#fef3c7", font: "'Rye', serif" },
         highs: [{ e: "🐲", name: "Dragon" }, { e: "💎", name: "Gem" }, { e: "👑", name: "Crown" }], lows: [{ e: "🏺" }, { e: "📜" }],
@@ -248,7 +258,7 @@ export const SLOTS = [
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.
 const PX = {
-    money_mesh: 1.517, coin_pigglet: 1.69, fufu: 2.015, samurai_cash: 1.78, bonanza: 2.05, clover_luck: 2.48,
+    money_mesh: 1.517, coin_pigglet: 1.76, fufu: 2.09, samurai_cash: 1.57, bonanza: 2.05, // these four re-simulated (300k spins) after the bonus rework ≈ 88% clover_luck: 2.48,
     pearl_tide: 2.2, golden_dung: 2.41, rabbit_rush: 2.25, tiki_volcano: 2.2, ant_hill: 2.13, ghost_vault: 2.8, dragon_hoard: 2.37,
     monkey_drop: 1.35 // 1M-spin sim (200k × 5 bets): 86.7% = 80.0% non-progressive + 6.7% MAJOR/GRAND at seed (+ pool growth 3%)
 };
@@ -257,5 +267,5 @@ export const SLOT_BY_ID = Object.fromEntries(SLOTS.map(s => [s.id, s]));
 export const BRAND_LOGO = {
     "BLK": "images/slots/brands/blk.svg", "CLOUD GAMING": "images/slots/brands/cloud-gaming.svg", "CLOVER-TECH": "images/slots/brands/clover-tech.svg",
     "DAEBAK": "images/slots/brands/daebak.svg", "IPEX": "images/slots/brands/ipex.svg", "Rabbit-Gaming": "images/slots/brands/rabbit-gaming.svg",
-    "Scrooge-Slots": "images/slots/brands/scrooge-slots.svg", "YG GAMING": "images/slots/brands/yg-gaming.svg"
+    "HYHG GAMING": "images/slots/brands/hyhg-gaming.svg", "Scrooge-Slots": "images/slots/brands/scrooge-slots.svg", "YG GAMING": "images/slots/brands/yg-gaming.svg"
 };

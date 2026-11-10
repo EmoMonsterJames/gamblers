@@ -299,7 +299,7 @@ export function openSlot(cfg, ctx) {
         // meter tease
         if (cfg.meter && res.meterEvents.some(e => e.full)) cabinet.classList.add("meter-hot");
         if (treeEl && res.fall) treeEl.classList.add("about-to-fall");
-        const omenP = res.omen && cfg.omens ? monkeyOmen(res.omen) : null;
+        const omenP = res.omen && cfg.omens ? (mk ? monkeyOmen(res.omen) : slotOmen(cfg.omens[res.omen - 1])) : null;
         await animateReels(res.grid, { anticipation: res.anticipation, nearMiss: mk && !res.bonus && res.grid[0].includes("B") ? "C" : nearMiss && res.grid.some(c => c.includes("F")) ? "F" : (res.grid.some(c => c.includes("X")) ? "X" : res.grid.some(c => c.includes("R")) ? "R" : null) });
         if (omenP) await omenP;
         cabinet.classList.remove("meter-hot");
@@ -311,9 +311,8 @@ export function openSlot(cfg, ctx) {
             await sleep(500);
         }
         // meter events
-        for (const e of res.meterEvents) {
-            if (e.full) { await banner(cfg.meter.title || "METER FULL!", 1300, "meter"); }
-        }
+        const fulls = res.meterEvents.filter(e => e.full);
+        if (fulls.length) await banner(cfg.meter.kind === "thermo" ? `🌡️ ${fulls.map(e => "SO " + e.key.toUpperCase()).join(" + ")} FULL!` : (cfg.meter.title || "METER FULL!"), 1300, "meter");
         renderMeter();
         // base wins
         if (res.base.win > 0) {
@@ -360,7 +359,7 @@ export function openSlot(cfg, ctx) {
     const setLives = (el, n, L = 3) => el.replaceChildren(...Array.from({ length: L }, (_, i) => h("i" + (i < n ? ".on" : ""))));
     // ---------------- Hold & Spin pacing + teasing (all slots)
     const pace = ms => turbo ? ms * 0.4 : ms;
-    const isHot = cn => !!(cn.jp || cn.wheel || cn.monkey || cn.mod);
+    const isHot = cn => !!(cn.jp || cn.wheel || cn.monkey || cn.mod || cn.hammer);
     function fakeCoin() { // a decoy that peeks in and slips away
         const r = Math.random();
         if (r < 0.28) {
@@ -561,6 +560,27 @@ export function openSlot(cfg, ctx) {
         return f.total;
     }
 
+    // 전조 for the regular video slots: cfg.omens = [{ fx: text | rain | burst | wind | shake, … }]
+    async function slotOmen(o) {
+        if (!o) return;
+        await sleep(200);
+        const rnd = Math.random;
+        if (o.fx === "text") { const t = h("div.omen-text", o.text); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
+        if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); await sleep(1100); frame.classList.remove("omen-shake"); }
+        if (o.fx === "rain") {
+            const l = h("div.omen-coins.full", Array.from({ length: 28 }, (_, i) => h("i", { style: { left: 4 + rnd() * 92 + "%", "--d": rnd() * 0.9 + "s" } }, o.chars[i % o.chars.length])));
+            cabinet.append(l); Sound.cash(); await sleep(1700); l.remove();
+        }
+        if (o.fx === "burst") {
+            const l = h("div.omen-monkey", h("span.om-m", o.icon), Array.from({ length: 18 }, (_, i) => h("i", { style: { "--dx": (rnd() * 2 - 1) * 220 + "px", "--dy": -(60 + rnd() * 180) + "px", "--d": rnd() * 0.3 + 0.5 + "s" } }, o.chars[i % o.chars.length])));
+            cabinet.append(l); Sound.cash(); await sleep(1700); l.remove();
+        }
+        if (o.fx === "wind") {
+            const l = h("div.omen-wind", Array.from({ length: 26 }, (_, i) => h("i", { style: { top: rnd() * 90 + "%", "--d": rnd() * 0.9 + "s", "--r": (rnd() * 720 - 360) + "deg" } }, o.chars[i % o.chars.length])));
+            cabinet.append(l); Sound.whoosh(); await sleep(1800); l.remove();
+        }
+    }
+
     async function monkeyOmen(kind) {
         await sleep(200);
         if (kind === 1) { const t = h("div.omen-text", cfg.omens[0]); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
@@ -614,45 +634,86 @@ export function openSlot(cfg, ctx) {
 
     async function playHold(f) {
         Sound.bonus();
-        await banner(f.modifier ? `🔥 ${f.modifier.toUpperCase()} HOLD & SPIN 🔥` : "💰 HOLD & SPIN 💰", 1600, "bonus");
-        const board = h("div.hs-board", { style: { "--cols": f.reels, "--rows": f.rows } });
+        const MODN = { hot: "🔥 SO HOT", extra: "✨ SO EXTRA", cold: "❄️ SO COLD" };
+        const modsOn = f.modifiers || [];
+        if (modsOn.length > 1) await banner(`${modsOn.length}개 동시 발동!!`, 1100, "jackpot");
+        await banner(modsOn.length ? `${modsOn.map(m => MODN[m]).join(" + ")} · HOLD & SPIN` : "💰 HOLD & SPIN 💰", 1600, "bonus");
+        const board = h("div.hs-board" + (f.rows > 4 ? ".tall" : ""), { style: { "--cols": f.reels, "--rows": f.rows } });
         const cells = {};
-        for (let r = 0; r < f.rows; r++) for (let c = 0; c < f.reels; c++) { const el = h("div.hs-cell"); cells[c + "," + r] = el; board.append(el); }
+        for (let r = 0; r < f.rows; r++) for (let c = 0; c < f.reels; c++) { const el = h("div.hs-cell" + (r < (f.ice || 0) ? ".iced" : "")); cells[c + "," + r] = el; board.append(el); }
         const lives = h("div.hs-lives");
         const sumEl = h("b", "0");
-        overlay.append(h("div.hs-wrap", h("div.hs-hud", h("span", "RESPINS "), lives, h("span.hs-sum", "TOTAL ", sumEl)), board));
+        overlay.append(h("div.hs-wrap", h("div.hs-hud", h("span", "RESPINS "), lives, h("span.hs-sum", "TOTAL ", sumEl), f.ice ? h("small.hs-note", "🔨 망치 = 얼음 한 줄 깨기") : null), board));
         const coinIcon = cfg.look?.C?.img ? h("img", { src: cfg.look.C.img }) : h("span", cfg.look?.C?.e || "🪙");
-        const coinEl = cn => cn.mod ? h("div.hs-coin.mod.mod-" + cn.mod, h("span", { hot: "🔥", extra: "✨", cold: "❄️" }[cn.mod]), h("small", cn.mod.toUpperCase()))
-            : cn.jp ? h("div.hs-coin.jpc.jp-" + cn.jp.toLowerCase(), coinIcon.cloneNode(true), h("b", cn.jp))
-                : h("div.hs-coin", coinIcon.cloneNode(true), h("b", fmt(cn.v)));
+        const coinEl = cn => cn.mod ? h("div.hs-coin.mod.mod-" + cn.mod, h("span", { hot: "🔥", extra: "✨", cold: "❄️" }[cn.mod]), h("small", "SO " + cn.mod.toUpperCase()))
+            : cn.hammer ? h("div.hs-coin.hammerc", h("img", { src: cfg.look?.HAMMER?.img || "images/slots/hammer.svg" }), h("b", fmt(cn.v)))
+                : cn.jp ? h("div.hs-coin.jpc.jp-" + cn.jp.toLowerCase(), coinIcon.cloneNode(true), h("b", cn.jp))
+                    : h("div.hs-coin", coinIcon.cloneNode(true), h("b", fmt(cn.v)));
         let sum = 0;
         const place = cn => {
             const el = cells[cn.c + "," + cn.r];
             el.replaceChildren(coinEl(cn)); el.classList.add("locked", "pop");
+            if (cn.mod) el.classList.add("is-mod", "is-" + cn.mod);
             sum += cn.v || 0; sumEl.textContent = fmt(sum);
+        };
+        const bump = (el, v, note) => {
+            const b = el.querySelector("b"); if (b) b.textContent = fmt(v);
+            el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop", "boosted");
+            if (note) floatText(el, note, "pts");
         };
         for (let i = 0; i < f.steps.length; i++) {
             const st = f.steps[i];
             if (i === 0) {
                 setLives(lives, st.lives);
-                for (const cn of st.added) { place(cn); Sound.coin(); await sleep(pace(300)); }
+                for (const cn of st.added) { place(cn); Sound.coin(); await sleep(pace(cn.mod ? 650 : 300)); }
                 await sleep(pace(600));
                 continue;
             }
             setLives(lives, livesDuring(f.steps, i));
             await respinRound({
                 spinEl: board, added: st.added, cellOf: cn => cells[cn.c + "," + cn.r], faceOf: coinEl, place,
-                empties: Object.values(cells).filter(c => !c.classList.contains("locked")), lastChance: f.steps[i - 1].lives === 1
+                empties: Object.values(cells).filter(c => !c.classList.contains("locked") && !c.classList.contains("iced")), lastChance: f.steps[i - 1].lives === 1
             });
             setLives(lives, st.lives);
+            // every hammer smashes one frozen row open
+            const hammers = st.added.filter(cn => cn.hammer);
+            for (let k = 0; k < (st.broke || []).length; k++) {
+                const row = st.broke[k], hc = hammers[k] && cells[hammers[k].c + "," + hammers[k].r];
+                hc?.classList.add("hammering"); Sound.whoosh();
+                await sleep(pace(450));
+                Sound.boom(); shake(board);
+                for (let c = 0; c < f.reels; c++) { const el = cells[c + "," + row]; el.classList.remove("iced"); el.classList.add("crack"); }
+                floatText(cells[Math.floor(f.reels / 2) + "," + row], "🧊 ROW UNLOCKED!", "lucky");
+                await sleep(pace(700));
+                hc?.classList.remove("hammering");
+            }
             if (!st.added.length) Sound.lose();
             await sleep(pace(700));
         }
-        // modifiers
+        // modifiers: EXTRA boosts → COLD multiplies → HOT collects everything
         for (const m of f.mods || []) {
             const el = cells[m.c + "," + m.r]; el.classList.add("modfire");
-            await banner(m.mod === "hot" ? "SO HOT! 모든 코인 수집" : m.mod === "cold" ? `SO COLD! 이웃 코인 x${m.m}` : "SO EXTRA! 이웃 코인 1.5배", 1200, "meter");
+            await banner(m.mod === "hot" ? "🔥 SO HOT! 모든 코인 한번에 COLLECT" : m.mod === "cold" ? `❄️ SO COLD! 주변 코인 x${m.m}` : "✨ SO EXTRA! 주변 코인 상금 부스트", 1200, "meter");
+            for (const hit of m.hits || []) {
+                const t = cells[hit.c + "," + hit.r];
+                await fly(el, t, m.mod === "cold" ? "❄️" : "✨", { arc: -30, dur: 380 });
+                bump(t, hit.v, m.mod === "cold" ? `x${m.m}` : `+${fmt(hit.add)}`); Sound.cash();
+                await sleep(pace(260));
+            }
+            if (m.mod === "hot") {
+                for (const t of Object.values(cells)) {
+                    if (t === el || !t.classList.contains("locked") || t.classList.contains("is-mod") || t.querySelector(".jpc")) continue;
+                    t.classList.add("collect"); await fly(t, el, "🪙", { arc: -20, dur: 240 }); Sound.coin();
+                }
+                el.replaceChildren(h("div.hs-coin.mod.mod-hot", h("span", "🔥"), h("b", fmt(m.v))));
+                el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+                floatText(el, `+${fmt(m.v)}`, "pts");
+            }
+            if (!(m.hits || []).length && m.mod !== "hot") floatText(el, "주변에 코인이 없다…", "lucky");
+            await sleep(pace(500));
+            el.classList.remove("modfire");
         }
+        sumEl.textContent = fmt(f.coinSum);
         if (f.full) { await banner("FULL BOARD!!!", 1500, "jackpot"); confetti(120, ["💰", "🪙"]); }
         // jackpots in the hold
         for (const j of f.jpWins || []) await bigWin(j.amount, bet, { jackpot: j.tier });
@@ -664,11 +725,16 @@ export function openSlot(cfg, ctx) {
     async function playPick(f) {
         Sound.bonus();
         await banner(f.title || "JACKPOT PICK", 1500, "jackpot");
-        const tiers = f.classic ? cfg.features.pick.prizes : TIER_ORDER.filter(t => cfg.jp?.[t]);
-        const label = t => f.classic ? (t === "WHEEL" ? "🎡 WHEEL" : `x${t}`) : t;
+        // MINI_X2 / MINOR_X2 are matching items of their own (pay double)
+        const baseOf = t => String(t).replace("_X2", "");
+        const isX2 = t => String(t).endsWith("_X2");
+        const rankOf = t => TIER_ORDER.indexOf(baseOf(t)) * 2 + (isX2(t) ? 0 : 1);
+        const tiers = f.classic ? cfg.features.pick.prizes : f.items ? [...f.items].sort((a, b) => rankOf(a) - rankOf(b)) : TIER_ORDER.filter(t => cfg.jp?.[t]);
+        const label = t => f.classic ? (t === "WHEEL" ? "🎡 WHEEL" : `x${t}`) : String(t).replace("_X2", " x2");
+        const cls = t => ["pt-" + baseOf(t).toLowerCase(), ...(isX2(t) ? ["x2"] : [])];
         const grid = h("div.pick-grid");
         const found = {};
-        const tally = h("div.pick-tally", tiers.map(t => h("div.pt.pt-" + String(t).toLowerCase(), h("b", label(t)), h("span", { "data-t": t }, "○○○"))));
+        const tally = h("div.pick-tally", tiers.map(t => h("div.pt." + cls(t).join("."), { "data-k": t }, h("b", label(t)), h("span", { "data-t": t }, "○○○"))));
         overlay.append(h("div.pick-wrap", h("div.pick-head", "같은 그림 3개를 맞혀라!"), tally, grid));
         let idx = 0;
         await new Promise(done => {
@@ -677,12 +743,12 @@ export function openSlot(cfg, ctx) {
                 tile.onclick = async () => {
                     if (tile.classList.contains("open") || idx >= f.seq.length) return;
                     const t = f.seq[idx++];
-                    tile.classList.add("open", "pt-" + String(t).toLowerCase());
+                    tile.classList.add("open", ...cls(t));
                     tile.replaceChildren(h("b", label(t)));
                     Sound.coin();
                     found[t] = (found[t] || 0) + 1;
                     const sp = tally.querySelector(`[data-t="${t}"]`); if (sp) sp.textContent = "●".repeat(found[t]) + "○".repeat(Math.max(0, 3 - found[t]));
-                    if (found[t] === 2) { tally.querySelector(".pt-" + String(t).toLowerCase())?.classList.add("near"); Sound.heartbeat(); }
+                    if (found[t] === 2) { tally.querySelector(`[data-k="${t}"]`)?.classList.add("near"); Sound.heartbeat(); }
                     if (idx >= f.seq.length) { await sleep(500); done(); }
                 };
                 grid.append(tile);

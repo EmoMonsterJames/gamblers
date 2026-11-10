@@ -39,7 +39,7 @@ export function pickBgm(theme) {
 }
 
 export function slotGenPage() {
-    const brands = [...new Set([...Object.keys(BRAND_LOGO), ...SLOTS.map(s => s.brand), "HYHY GAMING", "Classic Gaming"])].sort();
+    const brands = [...new Set([...Object.keys(BRAND_LOGO), ...SLOTS.map(s => s.brand), "HYHG GAMING", "Classic Gaming"])].sort();
     const st = {
         name: "", progressive: true, bets: "100, 200, 300, 500, 800, 1000",
         jp: Object.fromEntries([...JP_TIERS, "SPECIAL"].map(t => [t, true])), specialJp: "",

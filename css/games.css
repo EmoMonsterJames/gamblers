@@ -445,3 +445,29 @@
 .omen-wind { position: absolute; inset: 0; pointer-events: none; z-index: 20; overflow: hidden; }
 .omen-wind i { position: absolute; left: -60px; font-style: normal; font-size: 30px; animation: omWind 1.3s cubic-bezier(.3, .1, .5, 1) var(--d) both; }
 @keyframes omWind { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: 1; } 50% { transform: translate(55vw, -30px) rotate(var(--r)); } 100% { transform: translate(110vw, 20px) rotate(calc(var(--r) * 2)); opacity: .8; } }
+
+/* ---------- Hold & Spin: frozen rows + hammer (Bonanza Meter), modifiers */
+.hs-note { margin-left: 10px; color: #bfe8ff; font-weight: 800; font-size: 11px; }
+.hs-board.tall { gap: 4px; }
+.hs-board.tall .hs-coin img { height: 26px; } .hs-board.tall .hs-coin span { font-size: 22px; line-height: 1; }
+.hs-board.tall .hs-coin b { font-size: 12px; } .hs-board.tall .hs-coin { gap: 0; }
+.hs-cell.iced { background: linear-gradient(135deg, #dff6ff, #7cc8f5 45%, #e8fbff 55%, #5fb3ea); border-color: #e8fbff; box-shadow: inset 0 0 12px #fff, inset 0 -6px 10px #2b7fc0aa; animation: none !important; }
+.hs-cell.iced::after { content: "🧊"; font-size: 20px; opacity: .85; }
+.hs-cell.crack { animation: iceCrack .6s ease-out; }
+@keyframes iceCrack { 0% { background: #fff; box-shadow: 0 0 26px #bfe8ff; transform: scale(1.12) rotate(-3deg); } 40% { transform: scale(.9) rotate(3deg); } 100% { transform: none; } }
+.hs-coin.hammerc b { color: #bfe8ff; }
+.hs-cell.hammering { z-index: 3; overflow: visible; box-shadow: 0 0 22px #bfe8ff; }
+.hs-cell.hammering img { animation: hammerHit .45s ease-in 1; transform-origin: 70% 80%; }
+@keyframes hammerHit { 0% { transform: rotate(0); } 55% { transform: rotate(60deg) scale(1.5); } 100% { transform: rotate(-50deg) scale(1.7); } }
+.hs-cell.is-hot { border-color: #ef4444; background: radial-gradient(circle, #7f1d1d, #1d0505); }
+.hs-cell.is-extra { border-color: #facc15; background: radial-gradient(circle, #713f12, #1d1300); }
+.hs-cell.is-cold { border-color: #38bdf8; background: radial-gradient(circle, #0c4a6e, #03141f); }
+.hs-coin.mod small { color: #fff; } .hs-coin.mod-hot b { color: #fde047; }
+.hs-cell.collect { opacity: .75; }
+/* match-3 pick: MINI x2 / MINOR x2 items */
+.pt.x2, .ptile.x2 { border-style: dashed; box-shadow: inset 0 0 12px #facc1555; }
+.ptile.x2.open b { font-size: 16px; }
+/* 전조 rain across the whole cabinet */
+.omen-coins.full i { top: -8%; animation-name: omRainFull; }
+@keyframes omRainFull { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(520px) rotate(300deg); opacity: 0; } }
+.brand-logo[alt="HYHG GAMING"] { height: 38px; filter: drop-shadow(0 0 6px #ff7ac8aa); }

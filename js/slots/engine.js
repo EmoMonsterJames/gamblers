@@ -128,67 +128,82 @@ function addPoints(grid, cfg) {
 }
 
 // ------------------------------------------------------------ bonus pieces
-function holdBonus(cfg, bet, startCoins, modifier = null) {
+// Hold & Spin. `modifiers` (Bonanza thermometers: hot / extra / cold) each
+// add a modifier icon to the starting board. With h.ice the board gets
+// extra frozen rows on top; every hammer coin breaks one more row open.
+function holdBonus(cfg, bet, startCoins, modifiers = [], opts = {}) {
     const h = cfg.features.hold;
-    const R = cfg.reels || 5, ROWS = h.rows || cfg.rows || 3;
+    const R = cfg.reels || 5, BASE = h.rows || cfg.rows || 3;
+    const ICE = h.ice ? h.ice.rows : 0;
+    const ROWS = BASE + ICE;
     const total = R * ROWS;
+    let iced = ICE; // rows 0 … iced-1 are still frozen
     const board = new Map(); // key "c,r" -> coin
     const coin = () => {
         const v = pickW(h.coin.v.map((x, i) => [x, h.coin.w[i]]));
         if (isNaN(+v)) { const tier = gateTier(cfg, v, bet); return { jp: tier }; }
         return { v: Math.round(+v * bet) };
     };
-    const empties = () => { const e = []; for (let c = 0; c < R; c++) for (let r = 0; r < ROWS; r++) if (!board.has(c + "," + r)) e.push([c, r]); return e; };
+    const valueCoin = () => { for (let i = 0; i < 20; i++) { const c = coin(); if (c.v) return c; } return { v: bet }; };
+    const empties = () => { const e = []; for (let c = 0; c < R; c++) for (let r = iced; r < ROWS; r++) if (!board.has(c + "," + r)) e.push([c, r]); return e; };
     const steps = [];
-    // starting coins
     const first = [];
-    for (const [c, r] of shuffle(empties()).slice(0, startCoins)) { const k = c + "," + r; const cn = coin(); board.set(k, cn); first.push({ c, r, ...cn }); }
-    if (modifier) { // Bonanza thermometer modifier coin
-        const e = empties(); if (e.length) { const [c, r] = e[ri(e.length)]; board.set(c + "," + r, { mod: modifier, v: 0 }); first.push({ c, r, mod: modifier, v: 0 }); }
+    for (const [c, r] of shuffle(empties()).slice(0, startCoins)) { const cn = coin(); board.set(c + "," + r, cn); first.push({ c, r, ...cn }); }
+    for (const mod of modifiers) {
+        const e = empties(); if (!e.length) break;
+        const [c, r] = e[ri(e.length)]; board.set(c + "," + r, { mod, v: 0 }); first.push({ c, r, mod, v: 0 });
     }
-    steps.push({ added: first, lives: h.lives || 3 });
-    let lives = h.lives || 3;
-    const land = h.land ?? 0.07;
-    while (lives > 0 && board.size < total) {
-        const added = [];
+    steps.push({ added: first, lives: h.lives || 3, broke: [] });
+    let lives = h.lives || 3, guard = 0;
+    const land = opts.land ?? h.land ?? 0.07, hammerP = opts.hammer ?? h.ice?.hammer ?? 0;
+    while (lives > 0 && empties().length && guard++ < 200) {
+        const added = [], broke = [];
         for (const [c, r] of empties()) {
-            if (rand() < land) { const cn = coin(); board.set(c + "," + r, cn); added.push({ c, r, ...cn }); }
+            if (rand() >= land) continue;
+            let cn = coin();
+            if (iced - broke.length > 0 && rand() < hammerP) { cn = { ...valueCoin(), hammer: true }; broke.push(iced - 1 - broke.length); }
+            board.set(c + "," + r, cn); added.push({ c, r, ...cn });
         }
+        iced -= broke.length;
         if (added.length) lives = h.lives || 3; else lives--;
-        steps.push({ added, lives });
+        steps.push({ added, lives, broke });
     }
-    // modifiers resolve at the end
+    // modifiers resolve at the end: EXTRA boosts, COLD multiplies, HOT collects everything
+    const ORDER = ["extra", "cold", "hot"];
     const mods = [];
-    for (const [k, cn] of board) {
-        if (!cn.mod) continue;
+    const modCells = [...board.entries()].filter(([, cn]) => cn.mod).sort((a, b) => ORDER.indexOf(a[1].mod) - ORDER.indexOf(b[1].mod));
+    for (const [k, cn] of modCells) {
         const [c, r] = k.split(",").map(Number);
-        const near = [[c - 1, r], [c + 1, r], [c, r - 1], [c, r + 1]].map(([a, b]) => board.get(a + "," + b)).filter(x => x && x.v && !x.mod);
+        const near = [];
+        for (let dc = -1; dc <= 1; dc++) for (let dr = -1; dr <= 1; dr++) {
+            const x = board.get((c + dc) + "," + (r + dr));
+            if ((dc || dr) && x && x.v && !x.mod) near.push({ c: c + dc, r: r + dr, x });
+        }
+        if (cn.mod === "extra") mods.push({ c, r, mod: "extra", hits: near.map(n => { const add = Math.round(pickW(h.extra || [[1, 45], [2, 30], [3, 17], [5, 8]]) * bet); n.x.v += add; return { c: n.c, r: n.r, add, v: n.x.v }; }) });
+        if (cn.mod === "cold") { const m = pickW([[2, 45], [3, 30], [4, 15], [5, 10]]); mods.push({ c, r, mod: "cold", m, hits: near.map(n => { n.x.v *= m; return { c: n.c, r: n.r, v: n.x.v }; }) }); }
         if (cn.mod === "hot") { cn.v = [...board.values()].filter(x => x.v && !x.mod).reduce((s, x) => s + x.v, 0); mods.push({ c, r, mod: "hot", v: cn.v }); }
-        if (cn.mod === "cold") { const m = pickW([[2, 45], [3, 30], [4, 15], [5, 10]]); near.forEach(x => x.v *= m); mods.push({ c, r, mod: "cold", m }); }
-        if (cn.mod === "extra") { near.forEach(x => x.v = Math.round(x.v * 1.5)); mods.push({ c, r, mod: "extra" }); }
     }
     const full = board.size >= total;
     const jackpots = [...board.values()].filter(x => x.jp).map(x => x.jp);
     if (full) jackpots.push(gateTier(cfg, "GRAND", bet) === "GRAND" ? "GRAND" : "MAJOR");
     const coinSum = [...board.values()].reduce((s, x) => s + (x.v || 0), 0);
-    return { type: "hold", steps, mods, full, coinSum, jackpots, rows: ROWS, reels: R, final: [...board.entries()].map(([k, v]) => { const [c, r] = k.split(",").map(Number); return { c, r, ...v }; }) };
+    return { type: "hold", steps, mods, full, coinSum, jackpots, rows: ROWS, ice: ICE, reels: R, modifiers, final: [...board.entries()].map(([k, v]) => { const [c, r] = k.split(",").map(Number); return { c, r, ...v }; }) };
 }
 
+// Match-3 pick. Keys ending in _X2 (MINI_X2 / MINOR_X2) are matching items
+// of their own and pay double.
 function pickBonus(cfg, bet, tierWeights, title) {
-    const tiers = Object.keys(tierWeights);
-    let tier = pickW(tiers.map(t => [t, tierWeights[t]]));
-    const baseTier = tier.replace("_X2", "");
-    let g = gateTier(cfg, baseTier, bet);
-    if (g !== baseTier) tier = g;
-    // reveal sequence: winner x3 (last one ends it), decoys at most 2 each
+    const keys = Object.keys(tierWeights);
+    let key = pickW(keys.map(t => [t, tierWeights[t]]));
+    const base = key.replace("_X2", "");
+    const g = gateTier(cfg, base, bet);
+    if (g !== base) key = g;
+    const items = keys.includes(key) ? keys : [...keys, key];
+    // reveal sequence: winner x3 (the last one ends it), decoys at most 2 each
     const decoys = [];
-    for (const t of tiers.map(t => t.replace("_X2", "")).filter((t, i, a) => a.indexOf(t) === i && t !== tier.replace("_X2", ""))) {
-        const k = ri(3); for (let i = 0; i < k; i++) decoys.push(t);
-    }
-    const pre = shuffle([tier.replace("_X2", ""), tier.replace("_X2", ""), ...decoys.slice(0, 7)]);
-    const seq = [...pre, tier.replace("_X2", "")];
-    const x2 = tier.endsWith("_X2");
-    return { type: "pick", title, tier: tier.replace("_X2", ""), x2, seq, tiles: 12 };
+    for (const t of items.filter(t => t !== key)) { const k = ri(3); for (let i = 0; i < k; i++) decoys.push(t); }
+    const seq = [...shuffle([key, key, ...shuffle(decoys).slice(0, 7)]), key];
+    return { type: "pick", title, tier: key.replace("_X2", ""), x2: key.endsWith("_X2"), items, seq, tiles: 12 };
 }
 
 function wheelBonus(cfg, bet, wh) {
@@ -233,17 +248,19 @@ export function spin(cfg, ctx) {
     const state = structuredClone(ctx.state || {});
     const F = cfg.features || {};
     const boost = 1 + (ctx.luck?.bonus || 0);
+    const force = ctx.force || "";
+    const on = k => !!F[k] && !F[k].off; // admin can switch a bonus off
     const grid = drawGrid(cfg, "base");
     const features = [];
     const meterEvents = [];
     let wildReels = [];
 
     // ---- feature decisions (ctx.force = practice-room bonus test)
-    const hit = k => F[k] && (ctx.force ? ctx.force === k : rand() < F[k].p * boost);
+    const hit = k => on(k) && (force ? force === k : rand() < F[k].p * boost);
     const doFree = hit("free"), doHold = !doFree && hit("hold"), doWheel = !doFree && !doHold && hit("wheel"), doPick = !doFree && !doHold && !doWheel && hit("pick");
 
     // ---- free spins: scatters
-    if (F.free) {
+    if (on("free")) {
         if (doFree) {
             const n = pickW([[3, 80], [4, 16], [5, 4]]);
             inject(grid, "F", n);
@@ -253,36 +270,51 @@ export function spin(cfg, ctx) {
         else if (rand() < 0.15) inject(grid, "F", 1);
     }
     // ---- hold & spin: coins
-    if (F.hold && F.hold.sym) {
+    if (on("hold") && F.hold.sym) {
         const need = F.hold.trigger || 6;
         if (doHold) { inject(grid, "C", need + pickW([[0, 70], [1, 22], [2, 8]]), { distinctReels: false }); features.push({ pending: "hold" }); }
         else if (rand() < 0.10) inject(grid, "C", need - 1 - ri(2), { distinctReels: false }); // so close…
         else if (rand() < 0.3) inject(grid, "C", 1 + ri(2), { distinctReels: false });
     }
     // ---- wheel symbols
-    if (F.wheel && F.wheel.sym) {
+    if (on("wheel") && F.wheel.sym) {
         if (doWheel) { inject(grid, "R", 3); features.push({ pending: "wheel" }); }
         else if (rand() < 0.07) inject(grid, "R", 2, { avoid: c => c >= 3 });
     }
     // ---- pick (jackpot) symbols
-    if (F.pick && F.pick.sym) {
+    if (on("pick") && F.pick.sym) {
         if (doPick) { inject(grid, "X", 3); features.push({ pending: "pick" }); }
         else if (rand() < 0.06) inject(grid, "X", 2, { avoid: c => c >= 3 });
     }
 
     // ---- persistent machine meters
-    const M = cfg.meter;
+    const M = cfg.meter && !cfg.meter.off ? cfg.meter : null;
     if (M) {
         if (M.kind === "thermo") {
             state.thermo = state.thermo || { hot: 0, extra: 0, cold: 0 };
-            for (const [key, sym] of [["hot", "M1"], ["extra", "M2"], ["cold", "M3"]]) {
-                if (rand() < M.p * boost) {
+            // practice test: "thermo:hot" / "thermo:hot+cold" / "thermo:all"
+            const ft = force.startsWith("thermo") ? force.split(":")[1] : null;
+            const full = [];
+            const KEYS = [["hot", "M1"], ["extra", "M2"], ["cold", "M3"]];
+            for (const [key, sym] of KEYS) {
+                const forced = ft && (ft === "all" || ft.split("+").includes(key));
+                if (forced || rand() < M.p * boost) {
                     const n = 1 + (rand() < 0.2 ? 1 : 0);
                     inject(grid, sym, n);
-                    state.thermo[key] = Math.min(M.max, state.thermo[key] + n);
+                    state.thermo[key] = forced ? M.max : Math.min(M.max, state.thermo[key] + n);
                     meterEvents.push({ key, add: n, value: state.thermo[key] });
-                    if (state.thermo[key] >= M.max) { features.push({ pending: "hold", modifier: key, start: 6 }); state.thermo[key] = 0; meterEvents.push({ key, full: true }); }
+                    if (state.thermo[key] >= M.max) full.push(key);
                 }
+            }
+            // a bursting thermometer can set off the others (the fuller, the likelier)
+            if (full.length && !ft) for (const [key, sym] of KEYS) {
+                if (full.includes(key) || rand() >= (state.thermo[key] / M.max) * (M.chain ?? 0.6)) continue;
+                if (!countSym(grid, sym)) inject(grid, sym, 1);
+                full.push(key); meterEvents.push({ key, add: 0, value: M.max, chain: true });
+            }
+            if (full.length) {
+                for (const key of full) { state.thermo[key] = 0; meterEvents.push({ key, full: true }); }
+                if (on("hold")) features.push({ pending: "hold", modifiers: KEYS.map(k => k[0]).filter(k => full.includes(k)), start: F.hold.start || 6 });
             }
         } else if (M.kind === "reelcoins") {
             state.cols = state.cols || Array(grid.length).fill(0);
@@ -296,17 +328,22 @@ export function spin(cfg, ctx) {
             }
         } else {
             state.meter = state.meter || 0;
-            if (rand() < M.p * boost) {
+            const fm = force.startsWith("meter"); // practice test: "meter" / "meter:pick" …
+            if (fm || rand() < M.p * boost) {
                 const n = 1 + (rand() < 0.25 ? 1 : 0);
                 inject(grid, "M", n, { distinctReels: true });
                 const add = M.addPerSym ? n : 1;
-                state.meter = Math.min(M.max, state.meter + add);
+                state.meter = fm ? M.max : Math.min(M.max, state.meter + add);
                 meterEvents.push({ add, value: state.meter });
                 if (state.meter >= M.max) {
                     state.meter = 0; meterEvents.push({ full: true });
+                    const alive = k => !F[k]?.off;
                     let what = M.onFull;
-                    if (what === "grow_or_hold") what = rand() < 0.5 ? "grow" : "hold";
-                    features.push({ pending: what, fromMeter: true });
+                    if (M.onFullW) { // several possible bonuses (FuFu): weighted, minus the ones the admin removed
+                        const opts = Object.entries(M.onFullW).filter(([k]) => alive(k));
+                        what = fm && force.includes(":") ? force.split(":")[1] : opts.length ? pickW(opts) : null;
+                    } else if (!alive(what)) what = null;
+                    if (what) features.push({ pending: what, fromMeter: true });
                 }
             }
         }
@@ -322,13 +359,11 @@ export function spin(cfg, ctx) {
         if (f.pending === "free") done.push(freeBonus(cfg, bet, f.spins, {}));
         else if (f.pending === "grow") done.push(freeBonus(cfg, bet, cfg.features.grow.spins, { grow: true, mult: 1 }));
         else if (f.pending === "hold") {
-            const b = holdBonus(cfg, bet, f.start || cfg.features.hold.start || 6, f.modifier || null);
-            b.modifier = f.modifier || null;
-            done.push(b);
+            done.push(holdBonus(cfg, bet, f.start || cfg.features.hold.start || 6, f.modifiers || [], force.endsWith(":hammer") ? { land: 0.16, hammer: 0.4 } : {}));
         } else if (f.pending === "wheel") done.push(wheelBonus(cfg, bet, F.wheel));
         else if (f.pending === "pick") {
             const tw = f.fromMeter && M?.pickTw ? M.pickTw : F.pick.tw;
-            done.push(pickBonus(cfg, bet, tw, f.fromMeter ? M.title : F.pick.title));
+            done.push(pickBonus(cfg, bet, tw, f.fromMeter ? (M.pickTitle || M.title) : F.pick.title));
         }
     }
     // jackpot values + feature totals
@@ -356,9 +391,12 @@ export function spin(cfg, ctx) {
 
     // ---- teasing: which reels get the long "anticipation" spin
     const anticipation = teaseReels(cfg, grid);
+    // ---- omens (전조): usually announce a bonus, now and then a bluff
+    const bonus = done.length > 0;
+    const omen = cfg.omens?.length && ((bonus && rand() < 0.6) || (!bonus && rand() < 0.03)) ? 1 + ri(cfg.omens.length) : 0;
     return {
         grid, base, wildReels, features: done, jackpots, points: points + featurePoints,
-        total: Math.round(total), bonus: done.length > 0, state, meterEvents, anticipation
+        total: Math.round(total), bonus, state, meterEvents, anticipation, omen
     };
 }
 
@@ -488,7 +526,7 @@ function monkeySpin(cfg, ctx) {
     const grid = drawGrid(cfg, "base");
     const force = ctx.force || "";
     const fill = Math.min(1, tree.heap / T.heapMax);
-    const roll = (k, p) => force ? force.split(":")[0] === k : rand() < p * boost;
+    const roll = (k, p) => !F[k].off && (force ? force.split(":")[0] === k : rand() < p * boost);
     const doFree = roll("free", F.free.p);
     const doHold = !doFree && roll("hold", F.hold.p);
     const doFall = !doFree && !doHold && roll("fall", F.fall.p * (F.fall.min + (1 - F.fall.min) * 2 * fill));

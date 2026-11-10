@@ -27,6 +27,7 @@ export const Store = {
     machines: {},    // game -> state
     jpLog: [],       // [{ game, tier, playerId, amount, season, at }] MAXI+ jackpots
     catalog: {},     // admin overrides for shop items: see data/catalogAdmin.js
+    games: {},       // admin overrides for slots / casino games: see data/gameAdmin.js
     season: null,    // current season object (see game/season.js)
     seasonCount: 0,
     _saveTimer: null,
@@ -44,6 +45,7 @@ export const Store = {
         this.machines = L.machines || {};
         this.jpLog = L.jpLog || [];
         this.catalog = L.catalog || {};
+        this.games = L.games || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -85,6 +87,8 @@ export const Store = {
         this.jpLog = hits.map(r => ({ game: r.game, tier: r.tier, playerId: r.player_id, amount: +r.amount, season: r.season_number, at: r.hit_at }));
         const cat = settings.find(r => r.key === "catalog");
         if (cat) this.catalog = cat.value || {};
+        const gm = settings.find(r => r.key === "games");
+        if (gm) this.games = gm.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -94,7 +98,7 @@ export const Store = {
 
     saveLocal() {
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, playerEdits: this.playerEdits }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, playerEdits: this.playerEdits }));
         } catch (e) { console.warn(e); }
     },
 
@@ -259,6 +263,12 @@ export const Store = {
         this.catalog = catalog;
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "catalog", value: catalog, updated_at: new Date().toISOString() }));
+    },
+
+    async saveGames(games) {
+        this.games = games;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "games", value: games, updated_at: new Date().toISOString() }));
     },
 
     // ------------------------------------------------------------ machine meters
