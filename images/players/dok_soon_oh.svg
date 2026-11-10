@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Dok Soon Oh · Human (female, Asian) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#ece6dc"/>
+  <!-- messy long black curly hair (behind) -->
+  <path d="M58 100 C40 60 80 22 128 24 C180 22 218 62 198 104 C222 130 210 160 220 190 C206 200 214 220 196 226 L60 226 C42 220 50 200 36 190 C46 160 34 130 58 100 Z" fill="#141414" stroke="#000" stroke-width="3"/>
+  <g fill="none" stroke="#3a3a3a" stroke-width="3" stroke-linecap="round">
+    <path d="M44 150 c-8 -6 4 -14 -4 -20 M50 186 c-8 -6 4 -14 -4 -20 M210 150 c8 -6 -4 -14 4 -20 M206 190 c8 -6 -4 -14 4 -20 M60 70 c-6 -8 6 -12 0 -20 M196 70 c6 -8 -6 -12 0 -20"/>
+  </g>
+  <!-- shabby stretched t-shirt with stain, cardigan slipping -->
+  <path d="M36 256 C40 202 80 184 128 184 C176 184 216 202 220 256 Z" fill="#b8b0a0" stroke="#5a5244" stroke-width="4"/>
+  <path d="M96 186 Q128 214 160 186" fill="#f0e0cc" stroke="#5a5244" stroke-width="3"/>
+  <ellipse cx="150" cy="230" rx="12" ry="8" fill="#8a7a50" opacity=".7"/>
+  <path d="M36 256 C40 210 60 196 84 190 L92 256 Z" fill="#7a6a8a" stroke="#3e3450" stroke-width="4"/>
+  <path d="M60 224 l8 4 M56 238 l10 2" stroke="#3e3450" stroke-width="2" stroke-dasharray="3 2"/>
+  <!-- neck + face -->
+  <rect x="112" y="152" width="32" height="34" rx="10" fill="#f0d0aa" stroke="#7a5a3a" stroke-width="3"/>
+  <ellipse cx="128" cy="112" rx="50" ry="56" fill="#f4d8b4" stroke="#7a5a3a" stroke-width="4"/>
+  <!-- messy curly bangs falling on the face -->
+  <path d="M76 100 C70 60 100 44 130 46 C164 46 186 66 180 104 C172 90 168 76 160 72 C156 86 146 84 142 72 C136 86 122 88 120 74 C112 88 100 84 98 74 C90 84 84 90 76 100 Z" fill="#141414" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M84 96 c-6 10 4 18 -2 28 M174 96 c6 10 -4 18 2 28" fill="none" stroke="#141414" stroke-width="6" stroke-linecap="round"/>
+  <!-- tired eyes -->
+  <path d="M96 116 Q106 110 116 116 M140 116 Q150 110 160 116" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+  <ellipse cx="106" cy="120" rx="6" ry="6" fill="#1a1a1a"/><ellipse cx="150" cy="120" rx="6" ry="6" fill="#1a1a1a"/>
+  <circle cx="108" cy="118" r="2" fill="#fff"/><circle cx="152" cy="118" r="2" fill="#fff"/>
+  <path d="M98 128 Q106 132 114 128 M142 128 Q150 132 158 128" fill="none" stroke="#b08a70" stroke-width="2"/>
+  <!-- flat mouth -->
+  <path d="M116 148 Q128 152 140 146" fill="none" stroke="#7a3a2a" stroke-width="4" stroke-linecap="round"/>
+</svg>

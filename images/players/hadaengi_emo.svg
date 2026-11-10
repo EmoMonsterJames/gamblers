@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Hadaengi Emo · Emo (female, white) · Middle-Aged — blonde, vicious face, very glammed up -->
+  <circle cx="128" cy="128" r="124" fill="#fbeef0"/>
+  <path d="M62 112 C54 50 94 30 128 30 C164 30 204 50 194 112 C202 150 206 186 194 210 L62 210 C50 186 54 150 62 112 Z" fill="#f2d060" stroke="#a8862a" stroke-width="4"/>
+  <!-- red gown + white fur -->
+  <path d="M36 256 C40 202 82 184 128 184 C174 184 216 202 220 256 Z" fill="#b8102a" stroke="#5a0010" stroke-width="4"/>
+  <path d="M40 222 C58 192 92 186 108 196 C98 214 70 228 40 222 Z M216 222 C198 192 164 186 148 196 C158 214 186 228 216 222 Z" fill="#fff" stroke="#c8b8b8" stroke-width="3"/>
+  <rect x="112" y="150" width="32" height="36" rx="10" fill="#fbdcc8" stroke="#9a6a50" stroke-width="3"/>
+  <path d="M106 186 Q128 206 150 186" fill="none" stroke="#ffd23a" stroke-width="5"/>
+  <g fill="#7ad8ff" stroke="#c8a040" stroke-width="2"><circle cx="128" cy="200" r="6"/><circle cx="114" cy="196" r="4"/><circle cx="142" cy="196" r="4"/></g>
+  <ellipse cx="128" cy="110" rx="50" ry="56" fill="#fde2d0" stroke="#9a6a50" stroke-width="4"/>
+  <path d="M74 98 C76 54 108 42 134 46 C164 48 184 66 182 98 C170 80 150 72 132 76 C116 64 94 72 74 98 Z" fill="#f8d870" stroke="#a8862a" stroke-width="4" stroke-linejoin="round"/>
+  <!-- sharp angled brows, narrow eyes -->
+  <path d="M90 98 L120 108 M166 98 L136 108" stroke="#7a5a10" stroke-width="5" stroke-linecap="round"/>
+  <path d="M92 116 Q106 108 120 116 Q106 122 92 116 Z M136 116 Q150 108 164 116 Q150 122 136 116 Z" fill="#1a1a1a"/>
+  <ellipse cx="106" cy="110" rx="15" ry="7" fill="#5a2a8a" opacity=".45"/><ellipse cx="150" cy="110" rx="15" ry="7" fill="#5a2a8a" opacity=".45"/>
+  <path d="M90 114 l-8 -4 M166 114 l8 -4" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <!-- smirking red lips -->
+  <path d="M110 146 Q124 140 146 138 Q140 150 124 152 Q114 152 110 146 Z" fill="#d8001a" stroke="#6a0010" stroke-width="2"/>
+  <!-- big drop earrings -->
+  <circle cx="78" cy="126" r="5" fill="#ffd23a"/><path d="M78 131 L72 152 L84 152 Z" fill="#e8304a" stroke="#ffd23a" stroke-width="2"/>
+  <circle cx="178" cy="126" r="5" fill="#ffd23a"/><path d="M178 131 L172 152 L184 152 Z" fill="#e8304a" stroke="#ffd23a" stroke-width="2"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Gonggi Smile · Smile (male) · Young Adult
+       Smile = a perfect shiny circle with round white-gloved hands (Donglee = a soft blob with stubby limbs) -->
+  <defs><radialGradient id="sm" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#ffd08a"/><stop offset=".6" stop-color="#ff9a2a"/><stop offset="1" stop-color="#e8701a"/></radialGradient></defs>
+  <circle cx="128" cy="128" r="124" fill="#eaf4ff"/>
+  <!-- little legs (cut by the frame) -->
+  <rect x="96" y="226" width="20" height="40" rx="9" fill="#e8701a" stroke="#7a3a00" stroke-width="4"/>
+  <rect x="140" y="226" width="20" height="40" rx="9" fill="#e8701a" stroke="#7a3a00" stroke-width="4"/>
+  <!-- arms + gloves (one scratching its head) -->
+  <path d="M48 160 C30 168 24 184 30 196" fill="none" stroke="#7a3a00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="30" cy="198" r="14" fill="#fff" stroke="#7a3a00" stroke-width="4"/>
+  <path d="M206 120 C226 104 228 78 214 64" fill="none" stroke="#7a3a00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="212" cy="62" r="14" fill="#fff" stroke="#7a3a00" stroke-width="4"/>
+  <!-- perfect circle body -->
+  <circle cx="128" cy="134" r="92" fill="url(#sm)" stroke="#7a3a00" stroke-width="5"/>
+  <ellipse cx="92" cy="80" rx="26" ry="12" fill="#fff" opacity=".55" transform="rotate(-25 92 80)"/>
+  <!-- puzzled face -->
+  <path d="M84 98 L112 106 M144 96 Q158 84 172 92" fill="none" stroke="#5a2a00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="102" cy="124" r="10" fill="#2a1200"/><ellipse cx="158" cy="122" rx="14" ry="16" fill="#fff" stroke="#2a1200" stroke-width="3"/>
+  <circle cx="160" cy="124" r="6" fill="#2a1200"/><circle cx="104" cy="121" r="3" fill="#fff"/>
+  <path d="M100 172 C110 162 118 176 128 168 C138 160 146 174 156 166" fill="none" stroke="#2a1200" stroke-width="5" stroke-linecap="round"/>
+  <!-- ? -->
+  <text x="178" y="58" font-size="40" font-weight="900" font-family="Arial Black,Arial" fill="#3a7ae0" stroke="#fff" stroke-width="2">?</text>
+</svg>

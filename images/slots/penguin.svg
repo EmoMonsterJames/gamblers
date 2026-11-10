@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bonanza Meter decor: a little penguin -->
+  <ellipse cx="32" cy="38" rx="17" ry="22" fill="#1a2030"/>
+  <ellipse cx="32" cy="42" rx="11" ry="16" fill="#fff"/>
+  <circle cx="27" cy="26" r="2.2" fill="#fff"/><circle cx="37" cy="26" r="2.2" fill="#fff"/>
+  <circle cx="27.5" cy="26.5" r="1.1" fill="#000"/><circle cx="36.5" cy="26.5" r="1.1" fill="#000"/>
+  <path d="M29 31 L35 31 L32 35 Z" fill="#ff9a1a"/>
+  <path d="M15 36 C8 42 10 48 14 50 M49 36 C56 42 54 48 50 50" stroke="#1a2030" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M24 59 h6 M34 59 h6" stroke="#ff9a1a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 18 Q32 10 42 18" stroke="#e8202a" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

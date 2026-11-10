@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Happy Emo · Emo (female) · Middle-Aged -->
+  <circle cx="128" cy="128" r="124" fill="#ffe8e0"/>
+  <!-- long red hair behind -->
+  <path d="M60 110 C54 50 92 30 128 30 C168 30 204 52 196 112 C204 150 210 190 196 214 L60 214 C46 190 52 150 60 110 Z" fill="#d8321e" stroke="#7a1608" stroke-width="4"/>
+  <!-- cardigan + top -->
+  <path d="M36 256 C40 200 80 180 128 180 C176 180 216 200 220 256 Z" fill="#f2b84a" stroke="#7a4a10" stroke-width="4"/>
+  <path d="M100 182 L128 236 L156 182 Z" fill="#fff" stroke="#7a4a10" stroke-width="3"/>
+  <circle cx="128" cy="246" r="4" fill="#7a4a10"/>
+  <!-- neck + head -->
+  <rect x="112" y="150" width="32" height="34" rx="10" fill="#f8d4bc" stroke="#8a5a40" stroke-width="3"/>
+  <ellipse cx="128" cy="108" rx="54" ry="60" fill="#fbdcc6" stroke="#8a5a40" stroke-width="4"/>
+  <ellipse cx="74" cy="112" rx="8" ry="12" fill="#fbdcc6" stroke="#8a5a40" stroke-width="3"/><ellipse cx="182" cy="112" rx="8" ry="12" fill="#fbdcc6" stroke="#8a5a40" stroke-width="3"/>
+  <circle cx="74" cy="126" r="4" fill="#ffd23a"/><circle cx="182" cy="126" r="4" fill="#ffd23a"/>
+  <!-- bangs -->
+  <path d="M72 96 C74 54 108 40 136 44 C168 46 186 66 184 96 C170 78 150 70 132 74 C118 64 96 70 72 96 Z" fill="#e8402a" stroke="#7a1608" stroke-width="4" stroke-linejoin="round"/>
+  <!-- big eyes -->
+  <ellipse cx="106" cy="112" rx="15" ry="18" fill="#fff" stroke="#3a2010" stroke-width="3"/><ellipse cx="150" cy="112" rx="15" ry="18" fill="#fff" stroke="#3a2010" stroke-width="3"/>
+  <circle cx="108" cy="114" r="10" fill="#3a8a4a"/><circle cx="152" cy="114" r="10" fill="#3a8a4a"/>
+  <circle cx="108" cy="114" r="5" fill="#1a1a1a"/><circle cx="152" cy="114" r="5" fill="#1a1a1a"/>
+  <circle cx="111" cy="109" r="3.5" fill="#fff"/><circle cx="155" cy="109" r="3.5" fill="#fff"/>
+  <path d="M90 92 Q106 84 120 92 M136 92 Q150 84 166 92" fill="none" stroke="#9a2a18" stroke-width="4" stroke-linecap="round"/>
+  <!-- laugh lines (middle-aged) -->
+  <path d="M84 112 l-6 -3 M84 118 l-6 2 M172 112 l6 -3 M172 118 l6 2" stroke="#b07a60" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="92" cy="138" rx="10" ry="6" fill="#ff8a8a" opacity=".5"/><ellipse cx="164" cy="138" rx="10" ry="6" fill="#ff8a8a" opacity=".5"/>
+  <!-- big happy mouth -->
+  <path d="M108 140 Q128 166 148 140 Z" fill="#a8202a" stroke="#5a1010" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M114 142 Q128 148 142 142" fill="none" stroke="#fff" stroke-width="4"/>
+</svg>

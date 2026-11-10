@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bonanza Meter Hold & Spin: ice hammer that breaks a locked row -->
+  <g transform="rotate(-35 32 32)">
+    <rect x="29" y="22" width="6" height="38" rx="3" fill="#a8743a" stroke="#5a3a10" stroke-width="2"/>
+    <rect x="14" y="8" width="36" height="16" rx="4" fill="#9aa8b8" stroke="#3a4a5a" stroke-width="2.5"/>
+    <rect x="14" y="8" width="8" height="16" rx="2" fill="#c8d4e0"/>
+    <path d="M44 12 L50 12" stroke="#fff" stroke-width="2" opacity=".7"/>
+  </g>
+  <g fill="#bfe8ff"><path d="M8 50 l4 -6 l3 5 z"/><path d="M50 52 l5 -4 l1 6 z"/><path d="M14 58 l6 -2 l-2 5 z"/></g>
+</svg>

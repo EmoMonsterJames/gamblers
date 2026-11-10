@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Pineapple Ghost · Ghost (male) · Young Adult -->
+  <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#d8f08a"/></linearGradient></defs>
+  <circle cx="128" cy="128" r="124" fill="#2e3a52"/>
+  <!-- ghost body (wavy bottom) -->
+  <path d="M62 132 C62 78 92 56 128 56 C164 56 194 78 194 132 L194 236 L176 252 L160 236 L144 252 L128 236 L112 252 L96 236 L80 252 L62 236 Z" fill="url(#pg)" stroke="#7a8a20" stroke-width="4" stroke-linejoin="round" opacity=".95"/>
+  <!-- hands -->
+  <path d="M62 170 C40 168 30 154 36 144 C44 150 52 152 62 150" fill="url(#pg)" stroke="#7a8a20" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M194 170 C216 168 226 154 220 144 C212 150 204 152 194 150" fill="url(#pg)" stroke="#7a8a20" stroke-width="4" stroke-linejoin="round"/>
+  <!-- pineapple hat -->
+  <path d="M128 60 L110 18 L124 34 L128 6 L134 34 L148 18 Z" fill="#3aa83a" stroke="#1a5a1a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M100 52 C100 30 156 30 156 52 L156 64 C156 74 100 74 100 64 Z" fill="#f0b020" stroke="#8a5a00" stroke-width="4"/>
+  <path d="M106 40 L150 66 M118 36 L156 58 M100 52 L134 72 M150 40 L106 66 M138 36 L100 58 M156 52 L122 72" stroke="#8a5a00" stroke-width="2.5"/>
+  <!-- eyes + mouth -->
+  <ellipse cx="108" cy="120" rx="10" ry="15" fill="#1a1a2a"/><ellipse cx="148" cy="120" rx="10" ry="15" fill="#1a1a2a"/>
+  <circle cx="111" cy="114" r="4" fill="#fff"/><circle cx="151" cy="114" r="4" fill="#fff"/>
+  <ellipse cx="128" cy="152" rx="11" ry="9" fill="#1a1a2a"/>
+  <ellipse cx="90" cy="140" rx="9" ry="5" fill="#ffaa66" opacity=".5"/><ellipse cx="166" cy="140" rx="9" ry="5" fill="#ffaa66" opacity=".5"/>
+  <g fill="#fff59a" opacity=".6"><circle cx="40" cy="70" r="4"/><circle cx="218" cy="90" r="3"/><circle cx="210" cy="210" r="4"/></g>
+</svg>

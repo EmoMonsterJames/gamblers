@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- X Donglee · Donglee (male) · Young Adult — purple circle scratching its head: "글쎄…" -->
+  <circle cx="128" cy="128" r="124" fill="#f4f0fa"/>
+  <path d="M104 206 L96 248 M152 206 L160 248" stroke="#4a2a7a" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="94" cy="248" rx="14" ry="6" fill="#4a2a7a"/><ellipse cx="162" cy="248" rx="14" ry="6" fill="#4a2a7a"/>
+  <circle cx="128" cy="138" r="76" fill="#a87ad8" stroke="#4a2a7a" stroke-width="5"/>
+  <!-- left arm down, right arm up scratching -->
+  <path d="M56 160 Q34 176 38 200" stroke="#4a2a7a" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M196 120 Q222 90 196 62" stroke="#4a2a7a" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <circle cx="194" cy="62" r="11" fill="#a87ad8" stroke="#4a2a7a" stroke-width="4"/>
+  <path d="M182 50 l-6 -6 M190 44 l-2 -8 M200 46 l2 -8" stroke="#4a2a7a" stroke-width="3" stroke-linecap="round"/>
+  <!-- unsure face: one brow up, wavy mouth -->
+  <path d="M90 108 L114 112 M140 104 L164 96" stroke="#2a1a4a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="104" cy="128" rx="7" ry="9" fill="#2a1a4a"/><ellipse cx="152" cy="126" rx="7" ry="9" fill="#2a1a4a"/>
+  <circle cx="106" cy="124" r="2.5" fill="#fff"/><circle cx="154" cy="122" r="2.5" fill="#fff"/>
+  <path d="M106 166 Q114 158 122 166 Q130 174 138 166 Q146 158 152 166" fill="none" stroke="#2a1a4a" stroke-width="4" stroke-linecap="round"/>
+  <text x="40" y="70" font-family="sans-serif" font-size="34" font-weight="900" fill="#a87ad8" stroke="#4a2a7a" stroke-width="1.5">?</text>
+</svg>

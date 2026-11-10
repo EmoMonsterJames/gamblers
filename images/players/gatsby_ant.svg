@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Gatsby Ant · Ant (male) · Young Adult — tuxedo, slick hair, raising a glass -->
+  <circle cx="128" cy="128" r="124" fill="#f8f2e0"/>
+  <!-- antennae -->
+  <path d="M106 64 C96 40 82 30 70 32 M150 64 C160 40 174 30 186 32" fill="none" stroke="#2a1a10" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="68" cy="32" r="7" fill="#2a1a10"/><circle cx="188" cy="32" r="7" fill="#2a1a10"/>
+  <!-- tuxedo -->
+  <path d="M36 256 C40 204 82 186 128 186 C174 186 216 204 220 256 Z" fill="#1a1a1a" stroke="#000" stroke-width="4"/>
+  <path d="M106 188 L128 240 L150 188 Z" fill="#fff"/>
+  <path d="M114 196 L128 202 L142 196 L142 210 L128 204 L114 210 Z" fill="#1a1a1a"/>
+  <path d="M106 188 L90 230 M150 188 L166 230" stroke="#3a3a3a" stroke-width="3"/>
+  <!-- ant head -->
+  <ellipse cx="128" cy="118" rx="54" ry="56" fill="#8a3a1a" stroke="#3a1a0a" stroke-width="4"/>
+  <ellipse cx="108" cy="88" rx="16" ry="7" fill="#c86a3a" opacity=".6"/>
+  <!-- slick side-parted hair -->
+  <path d="M76 100 C74 66 100 56 130 58 C160 58 182 72 180 100 C164 84 140 78 112 80 Z" fill="#1a1a1a"/>
+  <path d="M112 80 L150 70" stroke="#5a5a5a" stroke-width="2"/>
+  <ellipse cx="108" cy="120" rx="9" ry="11" fill="#fff"/><ellipse cx="148" cy="120" rx="9" ry="11" fill="#fff"/>
+  <circle cx="110" cy="122" r="5" fill="#111"/><circle cx="150" cy="122" r="5" fill="#111"/>
+  <path d="M108 148 Q128 162 148 148" fill="none" stroke="#1a0a0a" stroke-width="4" stroke-linecap="round"/>
+  <!-- champagne glass -->
+  <path d="M196 132 L222 132 L212 162 L206 162 Z" fill="#fff4c0" fill-opacity=".8" stroke="#8a7a4a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M209 162 L209 186 M198 188 L220 188" stroke="#8a7a4a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M184 196 Q194 188 200 176" stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round"/>
+</svg>

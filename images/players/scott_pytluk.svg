@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Scott Pytluk · Human (male) · Middle-Aged (looks younger, smooth botox skin) — short curly light-brown/blond hair,
+       glasses, intelligent look; white shirt and suit trousers. Therapist. -->
+  <defs><linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2c27a"/><stop offset="1" stop-color="#a8824a"/></linearGradient></defs>
+  <circle cx="128" cy="128" r="124" fill="#e8ecf0"/>
+  <!-- white dress shirt -->
+  <path d="M34 256 C38 204 80 184 128 184 C176 184 218 204 222 256 Z" fill="#fbfbfb" stroke="#8a9098" stroke-width="4"/>
+  <path d="M106 186 L128 214 L150 186" fill="#fff" stroke="#8a9098" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M106 186 L96 206 L120 206 Z M150 186 L160 206 L136 206 Z" fill="#f2f2f2" stroke="#8a9098" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M128 214 L128 256" stroke="#c8ccd2" stroke-width="2"/>
+  <circle cx="128" cy="226" r="2.5" fill="#a0a6ae"/><circle cx="128" cy="244" r="2.5" fill="#a0a6ae"/>
+  <!-- suit trousers + belt at the bottom edge -->
+  <path d="M70 246 L186 246 L188 256 L68 256 Z" fill="#3a4250" stroke="#1e242c" stroke-width="3"/>
+  <rect x="120" y="246" width="16" height="8" rx="2" fill="none" stroke="#c8a040" stroke-width="2.5"/>
+  <!-- pen in the shirt pocket -->
+  <path d="M154 212 h26 v16 h-26 Z" fill="none" stroke="#a0a6ae" stroke-width="2"/><path d="M160 204 v14" stroke="#1e3a8a" stroke-width="4" stroke-linecap="round"/>
+  <!-- neck + face (smooth, youthful skin) -->
+  <rect x="112" y="152" width="32" height="36" rx="10" fill="#f4d4b8" stroke="#8a6a50" stroke-width="3"/>
+  <path d="M84 104 C82 152 104 172 128 172 C152 172 174 152 172 104 Z" fill="#f8dcc2" stroke="#8a6a50" stroke-width="4"/>
+  <ellipse cx="128" cy="108" rx="44" ry="44" fill="#f8dcc2"/>
+  <ellipse cx="128" cy="86" rx="28" ry="10" fill="#fff" opacity=".25"/>
+  <ellipse cx="84" cy="122" rx="7" ry="11" fill="#f4d0b2" stroke="#8a6a50" stroke-width="3"/><ellipse cx="172" cy="122" rx="7" ry="11" fill="#f4d0b2" stroke="#8a6a50" stroke-width="3"/>
+  <!-- short curly light-brown + blond hair -->
+  <g fill="url(#hair)" stroke="#7a5a2a" stroke-width="2.5">
+    <circle cx="92" cy="86" r="14"/><circle cx="104" cy="70" r="15"/><circle cx="124" cy="62" r="16"/><circle cx="146" cy="64" r="15"/>
+    <circle cx="164" cy="76" r="14"/><circle cx="168" cy="94" r="11"/><circle cx="86" cy="102" r="9"/><circle cx="114" cy="80" r="11"/><circle cx="138" cy="80" r="11"/>
+  </g>
+  <g fill="none" stroke="#7a5a2a" stroke-width="2" stroke-linecap="round" opacity=".7">
+    <path d="M98 66 c4 4 8 2 8 -2 M120 58 c4 4 8 2 8 -2 M142 60 c4 4 8 2 8 -2 M160 74 c4 4 8 2 8 -2"/>
+  </g>
+  <!-- glasses (thin, smart) -->
+  <circle cx="108" cy="118" r="15" fill="#fff" fill-opacity=".3" stroke="#3a3a46" stroke-width="3.5"/>
+  <circle cx="148" cy="118" r="15" fill="#fff" fill-opacity=".3" stroke="#3a3a46" stroke-width="3.5"/>
+  <path d="M123 116 Q128 112 133 116 M93 116 L84 114 M163 116 L172 114" fill="none" stroke="#3a3a46" stroke-width="3"/>
+  <!-- calm, intelligent eyes and straight brows -->
+  <path d="M96 98 L118 96 M138 96 L160 98" stroke="#8a6a3a" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="108" cy="120" rx="5" ry="5.5" fill="#2a3a5a"/><ellipse cx="148" cy="120" rx="5" ry="5.5" fill="#2a3a5a"/>
+  <circle cx="110" cy="118" r="1.8" fill="#fff"/><circle cx="150" cy="118" r="1.8" fill="#fff"/>
+  <!-- gentle confident smile, no wrinkles -->
+  <path d="M114 150 Q128 160 142 150" fill="none" stroke="#9a4a3a" stroke-width="4" stroke-linecap="round"/>
+  <!-- a little shine on the smooth cheeks -->
+  <circle cx="96" cy="140" r="3" fill="#fff" opacity=".6"/><circle cx="160" cy="140" r="3" fill="#fff" opacity=".6"/>
+</svg>

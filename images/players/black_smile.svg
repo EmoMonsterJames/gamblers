@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Black Smile · Smile (female) · Young Adult — shiny black circle, yellow eyes and mouth, polka-dot skirt -->
+  <circle cx="128" cy="128" r="124" fill="#fff8e0"/>
+  <path d="M108 222 L104 250 M148 222 L152 250" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+  <!-- polka-dot skirt -->
+  <path d="M68 180 L188 180 L210 230 L46 230 Z" fill="#e8304a" stroke="#7a0a1a" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="#fff"><circle cx="80" cy="200" r="5"/><circle cx="108" cy="214" r="5"/><circle cx="136" cy="198" r="5"/><circle cx="164" cy="216" r="5"/><circle cx="186" cy="200" r="5"/><circle cx="64" cy="222" r="4"/><circle cx="196" cy="224" r="4"/></g>
+  <circle cx="128" cy="112" r="76" fill="#1a1a1a" stroke="#000" stroke-width="4"/>
+  <ellipse cx="98" cy="72" rx="24" ry="12" fill="#ffffff" opacity=".25" transform="rotate(-25 98 72)"/>
+  <!-- white gloves -->
+  <circle cx="46" cy="148" r="16" fill="#fff" stroke="#8a8a8a" stroke-width="3"/><circle cx="210" cy="148" r="16" fill="#fff" stroke="#8a8a8a" stroke-width="3"/>
+  <ellipse cx="102" cy="104" rx="11" ry="16" fill="#ffd23a"/><ellipse cx="154" cy="104" rx="11" ry="16" fill="#ffd23a"/>
+  <path d="M90 92 l-6 -6 M166 92 l6 -6" stroke="#ffd23a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M84 132 Q128 186 172 132 Q128 154 84 132 Z" fill="#ffd23a"/>
+  <!-- little bow -->
+  <path d="M164 44 L148 34 L150 56 Z M164 44 L180 34 L178 56 Z" fill="#e8304a" stroke="#7a0a1a" stroke-width="3" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Steamed Potato · Veggie (male) · Young Adult -->
+  <defs><radialGradient id="po" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ecd2a0"/><stop offset="1" stop-color="#c49a5e"/></radialGradient></defs>
+  <circle cx="128" cy="128" r="124" fill="#f4f0e4"/>
+  <!-- steam -->
+  <path d="M96 26 c-8 -10 8 -14 0 -24 M128 22 c-8 -10 8 -14 0 -24 M160 26 c-8 -10 8 -14 0 -24" fill="none" stroke="#c8c8c8" stroke-width="4" stroke-linecap="round" transform="translate(0 16)"/>
+  <!-- legs (cut by the frame) -->
+  <path d="M104 230 L100 266 M152 230 L156 266" stroke="#8a6232" stroke-width="12" stroke-linecap="round"/>
+  <!-- arms -->
+  <path d="M58 150 C38 156 30 172 34 186" fill="none" stroke="#8a6232" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="34" cy="190" r="9" fill="#c49a5e" stroke="#6a4a22" stroke-width="3"/>
+  <path d="M198 150 C218 156 226 172 222 186" fill="none" stroke="#8a6232" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="222" cy="190" r="9" fill="#c49a5e" stroke="#6a4a22" stroke-width="3"/>
+  <!-- lumpy potato body -->
+  <path d="M70 92 C68 56 104 40 132 42 C170 44 196 70 198 110 C202 150 196 190 168 222 C144 248 104 244 82 218 C58 190 72 130 70 92 Z" fill="url(#po)" stroke="#6a4a22" stroke-width="5"/>
+  <g fill="#a8804a"><ellipse cx="96" cy="76" rx="4" ry="3"/><ellipse cx="170" cy="96" rx="5" ry="3"/><ellipse cx="88" cy="190" rx="4" ry="3"/><ellipse cx="166" cy="186" rx="3" ry="3"/><ellipse cx="146" cy="62" rx="3" ry="2"/></g>
+  <!-- plain eyes + mouth -->
+  <circle cx="110" cy="122" r="8" fill="#2a1a0a"/><circle cx="154" cy="122" r="8" fill="#2a1a0a"/>
+  <circle cx="112" cy="119" r="2.5" fill="#fff"/><circle cx="156" cy="119" r="2.5" fill="#fff"/>
+  <path d="M118 150 Q132 158 146 150" fill="none" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Jenny Ying · Human (female) · Young Adult — straight brown hair, glasses, an ordinary woman -->
+  <circle cx="128" cy="128" r="124" fill="#e6eef4"/>
+  <!-- long straight brown hair (behind) -->
+  <path d="M62 104 C56 54 92 28 128 28 C166 28 200 54 194 104 L204 222 L52 222 Z" fill="#6b4226" stroke="#3a2210" stroke-width="3"/>
+  <!-- plain cardigan over a tee -->
+  <path d="M36 256 C40 204 80 186 128 186 C176 186 216 204 220 256 Z" fill="#8fa8c0" stroke="#4a5e72" stroke-width="4"/>
+  <path d="M100 188 L128 256 L156 188 Q128 200 100 188 Z" fill="#f4f0e8" stroke="#4a5e72" stroke-width="3"/>
+  <circle cx="114" cy="226" r="3" fill="#4a5e72"/><circle cx="142" cy="226" r="3" fill="#4a5e72"/>
+  <!-- straight hair falling in front of the shoulders -->
+  <path d="M62 110 L56 214 L80 210 L84 120 Z M194 110 L200 214 L176 210 L172 120 Z" fill="#7a4c2c" stroke="#3a2210" stroke-width="3" stroke-linejoin="round"/>
+  <!-- neck + face -->
+  <rect x="112" y="152" width="32" height="36" rx="10" fill="#f2d2b0" stroke="#8a6448" stroke-width="3"/>
+  <ellipse cx="128" cy="114" rx="48" ry="54" fill="#f6dcc0" stroke="#8a6448" stroke-width="4"/>
+  <!-- straight bangs with a side part -->
+  <path d="M80 104 C78 64 104 48 132 48 C160 48 180 66 178 104 C168 92 160 76 152 70 C140 84 116 88 96 84 C90 90 84 96 80 104 Z" fill="#7a4c2c" stroke="#3a2210" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M132 50 C128 62 120 74 104 82" fill="none" stroke="#5a3418" stroke-width="2"/>
+  <!-- glasses -->
+  <rect x="88" y="106" width="34" height="26" rx="8" fill="#ffffff" fill-opacity=".35" stroke="#2a2a3a" stroke-width="4"/>
+  <rect x="134" y="106" width="34" height="26" rx="8" fill="#ffffff" fill-opacity=".35" stroke="#2a2a3a" stroke-width="4"/>
+  <path d="M122 116 Q128 112 134 116 M88 114 L80 112 M168 114 L176 112" fill="none" stroke="#2a2a3a" stroke-width="3"/>
+  <!-- eyes -->
+  <ellipse cx="105" cy="120" rx="5" ry="6" fill="#2a1a10"/><ellipse cx="151" cy="120" rx="5" ry="6" fill="#2a1a10"/>
+  <circle cx="107" cy="118" r="1.8" fill="#fff"/><circle cx="153" cy="118" r="1.8" fill="#fff"/>
+  <path d="M94 100 Q104 96 114 100 M142 100 Q152 96 162 100" fill="none" stroke="#5a3418" stroke-width="3" stroke-linecap="round"/>
+  <!-- small polite smile -->
+  <path d="M116 148 Q128 156 140 148" fill="none" stroke="#a04a3a" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="96" cy="140" rx="8" ry="4" fill="#f4a8a0" opacity=".5"/><ellipse cx="160" cy="140" rx="8" ry="4" fill="#f4a8a0" opacity=".5"/>
+  <!-- simple hair tie bracelet on the wrist area -->
+  <circle cx="62" cy="236" r="7" fill="none" stroke="#d05a7a" stroke-width="3"/>
+</svg>

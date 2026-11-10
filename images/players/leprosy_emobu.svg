@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Leprosy Patient Emobu (나병환자이모부) · white man · Middle-Aged — pockmarked face, greasy unwashed brown hair, shabby clothes -->
+  <circle cx="128" cy="128" r="124" fill="#e6e2d6"/>
+  <!-- shabby stained jacket over a stretched-out shirt -->
+  <path d="M30 256 C34 206 74 184 128 184 C182 184 222 206 226 256 Z" fill="#6a6450" stroke="#2a2618" stroke-width="4"/>
+  <path d="M100 186 L128 256 L156 186 Z" fill="#c8c0a0" stroke="#2a2618" stroke-width="3"/>
+  <path d="M100 186 L112 214 L96 210 Z M156 186 L144 214 L160 210 Z" fill="#5a5440" stroke="#2a2618" stroke-width="3"/>
+  <!-- stains, patch and loose threads -->
+  <ellipse cx="128" cy="232" rx="10" ry="7" fill="#9a8a50" opacity=".7"/>
+  <ellipse cx="70" cy="226" rx="9" ry="6" fill="#4a4434" opacity=".7"/>
+  <rect x="170" y="218" width="24" height="20" fill="#8a5a3a" stroke="#2a2618" stroke-width="2" transform="rotate(-8 182 228)"/>
+  <path d="M172 220 l4 4 M180 218 l3 5 M188 220 l2 5" stroke="#d8c8a0" stroke-width="2"/>
+  <path d="M64 252 q4 -6 0 -10 M196 250 q-3 -5 1 -9" fill="none" stroke="#2a2618" stroke-width="2"/>
+  <!-- neck with stubble -->
+  <rect x="110" y="156" width="36" height="32" rx="10" fill="#f0c8a8" stroke="#8a5a40" stroke-width="4"/>
+  <!-- head -->
+  <ellipse cx="128" cy="112" rx="56" ry="60" fill="#f0c8a8" stroke="#8a5a40" stroke-width="4"/>
+  <!-- greasy, unwashed short brown hair (clumps) -->
+  <path d="M72 104 C64 58 96 40 128 42 C164 42 194 60 184 106 C178 86 170 76 160 72 L156 88 L146 70 L136 86 L126 68 L116 86 L106 70 L98 88 L92 74 C82 80 76 90 72 104 Z" fill="#6a4a22" stroke="#3a2610" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M96 56 q6 10 2 22 M128 48 q4 12 -2 24 M160 56 q2 12 -4 20" fill="none" stroke="#8a6a32" stroke-width="3" opacity=".8"/>
+  <path d="M84 70 l-6 -8 M176 74 l8 -6" stroke="#3a2610" stroke-width="3" stroke-linecap="round"/>
+  <!-- pockmarks all over the face (곰보) -->
+  <g fill="#c8906a" stroke="#a06a48" stroke-width="1">
+    <circle cx="92" cy="126" r="3.5"/><circle cx="100" cy="140" r="3"/><circle cx="86" cy="142" r="2.5"/><circle cx="110" cy="152" r="3"/>
+    <circle cx="164" cy="128" r="3.5"/><circle cx="156" cy="142" r="3"/><circle cx="170" cy="144" r="2.5"/><circle cx="146" cy="154" r="3"/>
+    <circle cx="128" cy="96" r="2.5"/><circle cx="116" cy="100" r="2"/><circle cx="142" cy="102" r="2.5"/><circle cx="128" cy="130" r="2.5"/>
+    <circle cx="96" cy="110" r="2"/><circle cx="160" cy="112" r="2"/><circle cx="120" cy="164" r="2"/><circle cx="138" cy="166" r="2"/>
+  </g>
+  <!-- tired eyes with bags -->
+  <ellipse cx="106" cy="116" rx="8" ry="7" fill="#fff" stroke="#3a2610" stroke-width="2"/><ellipse cx="150" cy="116" rx="8" ry="7" fill="#fff" stroke="#3a2610" stroke-width="2"/>
+  <circle cx="106" cy="117" r="4" fill="#3a2a1a"/><circle cx="150" cy="117" r="4" fill="#3a2a1a"/>
+  <path d="M96 112 Q106 106 116 112 M140 112 Q150 106 160 112" fill="none" stroke="#3a2610" stroke-width="3"/>
+  <path d="M98 126 Q106 130 114 126 M142 126 Q150 130 158 126" fill="none" stroke="#a06a48" stroke-width="2"/>
+  <path d="M94 100 L116 104 M140 104 L162 100" stroke="#5a3a1a" stroke-width="4" stroke-linecap="round"/>
+  <!-- stubble + crooked mouth -->
+  <g fill="#8a6a50" opacity=".55"><circle cx="112" cy="156" r="1.2"/><circle cx="120" cy="160" r="1.2"/><circle cx="136" cy="160" r="1.2"/><circle cx="144" cy="156" r="1.2"/><circle cx="128" cy="162" r="1.2"/><circle cx="104" cy="150" r="1.2"/><circle cx="152" cy="150" r="1.2"/></g>
+  <path d="M112 146 Q124 140 144 148" fill="none" stroke="#5a2a1a" stroke-width="4" stroke-linecap="round"/>
+  <!-- stink lines -->
+  <path d="M196 60 q8 -8 0 -16 q-8 -8 0 -16 M210 84 q6 -6 0 -12 q-6 -6 0 -12" fill="none" stroke="#8a9a4a" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+</svg>

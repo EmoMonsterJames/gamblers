@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Robot Bear · Bear (male) · Young Adult — like Robot Rabbit (lab coat, glasses) but kind -->
+  <circle cx="128" cy="128" r="124" fill="#eef2f6"/>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#ffffff" stroke="#6a7078" stroke-width="4"/>
+  <path d="M110 186 L128 220 L146 186 Z" fill="#4a8ad8"/>
+  <path d="M110 186 L96 256 M146 186 L160 256" stroke="#6a7078" stroke-width="3"/>
+  <rect x="166" y="214" width="22" height="16" rx="2" fill="none" stroke="#6a7078" stroke-width="3"/><path d="M172 214 L172 204 M180 214 L180 206" stroke="#3ab86a" stroke-width="3"/>
+  <circle cx="74" cy="68" r="24" fill="#a8b0b8" stroke="#4a5058" stroke-width="4"/><circle cx="182" cy="68" r="24" fill="#a8b0b8" stroke="#4a5058" stroke-width="4"/>
+  <circle cx="74" cy="68" r="11" fill="#d8dce0"/><circle cx="182" cy="68" r="11" fill="#d8dce0"/>
+  <ellipse cx="128" cy="124" rx="64" ry="60" fill="#a8b0b8" stroke="#4a5058" stroke-width="4"/>
+  <ellipse cx="128" cy="150" rx="26" ry="18" fill="#d8dce0"/>
+  <!-- soft brows + round glasses + gentle smile -->
+  <path d="M90 102 Q104 96 118 102 M138 102 Q152 96 166 102" fill="none" stroke="#2a2e34" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="104" cy="120" r="16" fill="#dff0ff" fill-opacity=".45" stroke="#1a1a1a" stroke-width="4"/>
+  <circle cx="152" cy="120" r="16" fill="#dff0ff" fill-opacity=".45" stroke="#1a1a1a" stroke-width="4"/>
+  <path d="M120 120 L136 120" stroke="#1a1a1a" stroke-width="4"/>
+  <path d="M96 122 Q104 114 112 122 M144 122 Q152 114 160 122" fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M116 152 Q128 164 140 152" fill="none" stroke="#2a2e34" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="84" cy="146" rx="10" ry="6" fill="#ff9ab0" opacity=".5"/><ellipse cx="172" cy="146" rx="10" ry="6" fill="#ff9ab0" opacity=".5"/>
+</svg>

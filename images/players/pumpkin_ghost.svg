@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Pumpkin Head Ghost · Ghost (male) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#2a1e3a"/>
+  <!-- white ghost body with hands -->
+  <path d="M70 240 L70 170 C70 140 96 128 128 128 C160 128 186 140 186 170 L186 240 L170 226 L154 242 L140 226 L128 242 L116 226 L102 242 L86 226 Z" fill="#f4f4fa" stroke="#6a6a8a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M72 186 Q46 182 40 160 M184 186 Q210 182 216 160" stroke="#6a6a8a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="40" cy="158" r="9" fill="#f4f4fa" stroke="#6a6a8a" stroke-width="4"/><circle cx="216" cy="158" r="9" fill="#f4f4fa" stroke="#6a6a8a" stroke-width="4"/>
+  <!-- pumpkin head -->
+  <path d="M128 52 C140 40 150 36 156 40" fill="none" stroke="#3a6a1a" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="96" cy="106" rx="36" ry="50" fill="#ff8a1a" stroke="#8a3a00" stroke-width="4"/>
+  <ellipse cx="160" cy="106" rx="36" ry="50" fill="#ff8a1a" stroke="#8a3a00" stroke-width="4"/>
+  <ellipse cx="128" cy="104" rx="34" ry="54" fill="#ff9a2a" stroke="#8a3a00" stroke-width="4"/>
+  <!-- glowing carved face -->
+  <path d="M94 92 L112 92 L103 76 Z M144 92 L162 92 L153 76 Z" fill="#ffe06a" stroke="#6a2a00" stroke-width="2"/>
+  <path d="M92 122 L104 132 L116 122 L128 134 L140 122 L152 132 L164 122 Q150 150 128 150 Q106 150 92 122 Z" fill="#ffe06a" stroke="#6a2a00" stroke-width="2"/>
+  <g fill="#ffe06a"><circle cx="40" cy="52" r="2"/><circle cx="214" cy="46" r="2.5"/><circle cx="200" cy="90" r="1.5"/></g>
+</svg>

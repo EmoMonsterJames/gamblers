@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Emo Bear · Bear (male) · Young Adult — yellow, punk rock, "Emo Band" T-shirt -->
+  <circle cx="128" cy="128" r="124" fill="#2a2a3a"/>
+  <!-- studded jacket over a T-shirt -->
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#1a1a1a" stroke="#000" stroke-width="4"/>
+  <path d="M96 190 L160 190 L166 256 L90 256 Z" fill="#e8304a"/>
+  <text x="128" y="224" font-family="Impact,sans-serif" font-size="17" text-anchor="middle" fill="#fff">Emo Band</text>
+  <g fill="#c8c8c8"><circle cx="66" cy="222" r="4"/><circle cx="78" cy="208" r="4"/><circle cx="190" cy="222" r="4"/><circle cx="178" cy="208" r="4"/></g>
+  <circle cx="74" cy="70" r="22" fill="#ffd23a" stroke="#8a6a10" stroke-width="4"/><circle cx="182" cy="70" r="22" fill="#ffd23a" stroke="#8a6a10" stroke-width="4"/>
+  <circle cx="74" cy="70" r="10" fill="#fff0b0"/><circle cx="182" cy="70" r="10" fill="#fff0b0"/>
+  <ellipse cx="128" cy="124" rx="62" ry="58" fill="#ffd23a" stroke="#8a6a10" stroke-width="4"/>
+  <!-- black-and-pink mohawk -->
+  <path d="M110 70 L104 30 L118 56 L122 18 L132 54 L140 22 L144 58 L156 30 L150 70 Z" fill="#ff3a9a" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse cx="128" cy="148" rx="26" ry="18" fill="#fff0b0"/>
+  <!-- eyeliner, eyes, a piercing -->
+  <path d="M92 112 L118 116 M138 116 L164 112" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="106" cy="124" rx="7" ry="9" fill="#1a1a1a"/><ellipse cx="150" cy="124" rx="7" ry="9" fill="#1a1a1a"/>
+  <circle cx="108" cy="120" r="2.5" fill="#fff"/><circle cx="152" cy="120" r="2.5" fill="#fff"/>
+  <path d="M114 152 Q128 144 142 152" fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="144" cy="156" r="4" fill="none" stroke="#c8c8c8" stroke-width="2.5"/>
+</svg>

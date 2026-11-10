@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Hadaengi · Rabbit (female) · Young Adult — rich, glammed-up actress -->
+  <circle cx="128" cy="128" r="124" fill="#fff4d6"/>
+  <g fill="#9fd8f4" stroke="#2a6a8a" stroke-width="4" stroke-linejoin="round">
+    <path d="M92 80 C76 30 84 4 100 6 C118 8 118 44 112 80 Z"/><path d="M164 80 C180 30 172 4 156 6 C138 8 138 44 144 80 Z"/></g>
+  <path d="M97 72 C90 40 94 20 101 20 C109 22 109 48 105 72 Z M159 72 C166 40 162 20 155 20 C147 22 147 48 151 72 Z" fill="#ffc8dc"/>
+  <!-- gown + fur stole + pearls -->
+  <path d="M36 256 C40 206 82 186 128 186 C174 186 216 206 220 256 Z" fill="#7a1a4a" stroke="#3a0a20" stroke-width="4"/>
+  <path d="M44 220 C60 190 90 184 104 196 C96 212 70 226 44 220 Z M212 220 C196 190 166 184 152 196 C160 212 186 226 212 220 Z" fill="#fff" stroke="#c8b8a8" stroke-width="3"/>
+  <g fill="#fff" stroke="#c8a860" stroke-width="2"><circle cx="106" cy="200" r="6"/><circle cx="118" cy="206" r="6"/><circle cx="130" cy="208" r="6"/><circle cx="142" cy="206" r="6"/><circle cx="154" cy="200" r="6"/></g>
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#9fd8f4" stroke="#2a6a8a" stroke-width="4"/>
+  <!-- sunglasses up on the head -->
+  <path d="M84 80 Q104 70 122 80 Q120 94 104 94 Q86 94 84 80 Z M134 80 Q152 70 172 80 Q170 94 152 94 Q136 94 134 80 Z" fill="#2a2a3a" stroke="#c8a040" stroke-width="3"/>
+  <!-- eyeshadow, lashes, lips -->
+  <ellipse cx="104" cy="124" rx="14" ry="10" fill="#8a6ad8" opacity=".45"/><ellipse cx="152" cy="124" rx="14" ry="10" fill="#8a6ad8" opacity=".45"/>
+  <ellipse cx="104" cy="126" rx="8" ry="10" fill="#1a1a2a"/><ellipse cx="152" cy="126" rx="8" ry="10" fill="#1a1a2a"/>
+  <circle cx="107" cy="122" r="3" fill="#fff"/><circle cx="155" cy="122" r="3" fill="#fff"/>
+  <path d="M92 118 l-8 -6 M95 114 l-5 -8 M164 118 l8 -6 M161 114 l5 -8" stroke="#1a1a2a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="88" cy="144" rx="11" ry="6" fill="#ff7aa8" opacity=".55"/><ellipse cx="168" cy="144" rx="11" ry="6" fill="#ff7aa8" opacity=".55"/>
+  <path d="M116 152 Q122 146 128 150 Q134 146 140 152 Q128 164 116 152 Z" fill="#d8104a" stroke="#7a0a2a" stroke-width="2"/>
+  <circle cx="66" cy="132" r="5" fill="#ffd23a" stroke="#a87a10" stroke-width="2"/><circle cx="190" cy="132" r="5" fill="#ffd23a" stroke="#a87a10" stroke-width="2"/>
+  <path d="M200 48 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 Z" fill="#ffd23a"/>
+</svg>

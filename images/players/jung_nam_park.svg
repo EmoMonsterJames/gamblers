@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Jung Nam Park · Human (male, East Asian) · Young Adult — challenging look, thick eyebrows -->
+  <circle cx="128" cy="128" r="124" fill="#e4ecf4"/>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#2a2e3a" stroke="#111" stroke-width="4"/>
+  <path d="M104 186 L128 222 L152 186 Z" fill="#f4f4f4"/><path d="M104 186 L92 230 M152 186 L164 230" stroke="#111" stroke-width="3"/>
+  <rect x="112" y="152" width="32" height="34" rx="10" fill="#f0c89c" stroke="#8a5a30" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="52" ry="58" fill="#f6d2a6" stroke="#8a5a30" stroke-width="4"/>
+  <ellipse cx="76" cy="114" rx="7" ry="11" fill="#f6d2a6" stroke="#8a5a30" stroke-width="3"/><ellipse cx="180" cy="114" rx="7" ry="11" fill="#f6d2a6" stroke="#8a5a30" stroke-width="3"/>
+  <!-- short spiky black hair -->
+  <path d="M74 98 C70 54 100 40 128 40 C158 40 186 54 182 98 L172 76 L160 88 L150 70 L138 86 L126 68 L114 86 L102 70 L92 88 L84 74 Z" fill="#141414" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <!-- thick eyebrows, one raised -->
+  <path d="M90 96 L122 104" stroke="#111" stroke-width="10" stroke-linecap="round"/><path d="M134 100 L166 88" stroke="#111" stroke-width="10" stroke-linecap="round"/>
+  <path d="M94 116 Q106 110 118 116 Q106 120 94 116 Z M138 114 Q150 108 162 114 Q150 120 138 114 Z" fill="#1a1a1a"/>
+  <circle cx="108" cy="115" r="1.6" fill="#fff"/><circle cx="152" cy="113" r="1.6" fill="#fff"/>
+  <!-- smirk -->
+  <path d="M110 146 Q130 150 148 138" fill="none" stroke="#5a2a10" stroke-width="4" stroke-linecap="round"/>
+  <path d="M146 134 l6 6" stroke="#5a2a10" stroke-width="3" stroke-linecap="round"/>
+</svg>

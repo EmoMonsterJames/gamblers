@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72"><rect x="2" y="2" width="236" height="68" rx="12" fill="#5b1020"/><rect x="7" y="7" width="226" height="58" rx="9" fill="none" stroke="#f5c542" stroke-width="2" stroke-dasharray="2 4"/>
+<g transform="translate(38 38)"><rect x="-14" y="-24" width="28" height="18" rx="2" fill="#111"/><rect x="-20" y="-8" width="40" height="5" rx="2" fill="#111"/><rect x="-14" y="-12" width="28" height="4" fill="#f5c542"/>
+<circle cy="12" r="12" fill="#f5c542"/><text y="18" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="17" fill="#7a5200">$</text></g>
+<text x="146" y="37" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="25" fill="#f5c542">Scrooge</text>
+<text x="146" y="57" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="15" letter-spacing="4" fill="#ffe7a8">— SLOTS —</text></svg>

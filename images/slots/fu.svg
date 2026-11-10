@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- red diamond with an upright 福 -->
+  <rect x="34" y="34" width="132" height="132" rx="10" transform="rotate(45 100 100)" fill="#d0101e" stroke="#ffd166" stroke-width="7"/>
+  <rect x="48" y="48" width="104" height="104" rx="6" transform="rotate(45 100 100)" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="100" y="128" text-anchor="middle" font-family="'Noto Serif KR','Noto Serif SC','SimSun','Batang',serif" font-size="88" font-weight="900" fill="#ffd166" stroke="#7a3a00" stroke-width="2">福</text>
+</svg>

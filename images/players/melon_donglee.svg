@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Melon Donglee · Donglee (male) · Young Adult — light-green round Donglee in short brown shorts, V-sign hand -->
+  <defs><radialGradient id="melon" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#e8ffc0"/><stop offset=".6" stop-color="#a8e070"/><stop offset="1" stop-color="#78b840"/></radialGradient></defs>
+  <circle cx="128" cy="128" r="124" fill="#f0f8e4"/>
+  <!-- legs -->
+  <path d="M106 214 L100 246 M150 214 L156 246" stroke="#4a7a20" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="98" cy="248" rx="14" ry="6" fill="#4a7a20"/><ellipse cx="158" cy="248" rx="14" ry="6" fill="#4a7a20"/>
+  <!-- round melon body -->
+  <circle cx="128" cy="132" r="80" fill="url(#melon)" stroke="#4a7a20" stroke-width="5"/>
+  <!-- faint melon-net lines -->
+  <g fill="none" stroke="#c8f0a0" stroke-width="2" opacity=".8">
+    <path d="M70 90 Q100 120 90 170 M110 58 Q130 100 120 150 M166 62 Q150 110 170 160 M196 104 Q170 130 186 176 M76 130 Q128 120 180 132"/>
+  </g>
+  <!-- short brown shorts on the lower part of the body -->
+  <path d="M60 170 Q128 186 196 170 Q190 200 166 210 L134 212 L128 198 L122 212 L90 210 Q66 200 60 170 Z" fill="#8a5a30" stroke="#4a2a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M62 176 Q128 192 194 176" fill="none" stroke="#5a3418" stroke-width="3"/>
+  <!-- left arm resting -->
+  <path d="M50 150 Q30 166 36 190" stroke="#4a7a20" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <circle cx="36" cy="192" r="9" fill="#a8e070" stroke="#4a7a20" stroke-width="3"/>
+  <!-- right arm up making a V sign -->
+  <path d="M204 120 Q226 96 214 70" stroke="#4a7a20" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <circle cx="213" cy="68" r="11" fill="#a8e070" stroke="#4a7a20" stroke-width="3"/>
+  <path d="M207 60 L198 34 M218 59 L226 33" stroke="#4a7a20" stroke-width="7" stroke-linecap="round"/>
+  <path d="M207 60 L198 34 M218 59 L226 33" stroke="#a8e070" stroke-width="3" stroke-linecap="round"/>
+  <!-- happy face -->
+  <path d="M90 110 Q102 100 114 110 M142 110 Q154 100 166 110" fill="none" stroke="#2a3a10" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="88" cy="132" rx="11" ry="6" fill="#ff9aa0" opacity=".6"/><ellipse cx="168" cy="132" rx="11" ry="6" fill="#ff9aa0" opacity=".6"/>
+  <path d="M106 134 Q128 160 150 134 Z" fill="#c83a3a" stroke="#2a3a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M116 146 Q128 154 140 146" fill="#ff8a9a"/>
+  <!-- little melon stem on top -->
+  <path d="M128 52 C126 40 132 34 140 30" fill="none" stroke="#6a4a20" stroke-width="5" stroke-linecap="round"/>
+  <path d="M138 34 C150 26 162 32 158 42 C150 44 142 40 138 34 Z" fill="#78b840" stroke="#4a7a20" stroke-width="2"/>
+</svg>

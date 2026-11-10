@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- India Graves · Human (Black woman) · Young Adult — chubby, two cute little buns, purple lip gloss, anime T-shirt -->
+  <circle cx="128" cy="128" r="124" fill="#f3e8ff"/>
+  <!-- chubby upper body + anime T-shirt -->
+  <path d="M22 256 C24 206 64 182 104 180 L152 180 C192 182 232 206 234 256 Z" fill="#2a2a3a" stroke="#0e0e18" stroke-width="4"/>
+  <path d="M104 180 Q128 198 152 180" fill="#7a4a2a" stroke="#0e0e18" stroke-width="3"/>
+  <!-- anime girl print -->
+  <circle cx="128" cy="226" r="24" fill="#ffe0ec"/>
+  <path d="M104 222 C104 196 152 196 152 222 L152 236 L146 228 L140 238 L128 228 L116 238 L110 228 L104 236 Z" fill="#ff7ab8"/>
+  <ellipse cx="119" cy="228" rx="5" ry="7" fill="#3a6aff"/><ellipse cx="137" cy="228" rx="5" ry="7" fill="#3a6aff"/>
+  <circle cx="120" cy="225" r="2" fill="#fff"/><circle cx="138" cy="225" r="2" fill="#fff"/>
+  <path d="M124 240 Q128 243 132 240" fill="none" stroke="#c81a5a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M90 250 l4 -8 l4 8 M162 250 l4 -8 l4 8" stroke="#ffd23a" stroke-width="3" fill="none"/>
+  <!-- arms resting -->
+  <path d="M40 256 C38 230 46 210 60 200" fill="none" stroke="#0e0e18" stroke-width="4"/>
+  <path d="M216 256 C218 230 210 210 196 200" fill="none" stroke="#0e0e18" stroke-width="4"/>
+  <!-- neck -->
+  <rect x="110" y="156" width="36" height="30" rx="12" fill="#7a4a2a" stroke="#3a1e0e" stroke-width="4"/>
+  <!-- two little hair buns -->
+  <circle cx="70" cy="64" r="24" fill="#1a0e08" stroke="#000" stroke-width="4"/>
+  <circle cx="186" cy="64" r="24" fill="#1a0e08" stroke="#000" stroke-width="4"/>
+  <path d="M58 56 q12 -10 24 0 M174 56 q12 -10 24 0" fill="none" stroke="#4a3020" stroke-width="3"/>
+  <path d="M86 78 l8 6 M170 78 l-8 6" stroke="#b83ad8" stroke-width="6" stroke-linecap="round"/>
+  <!-- round chubby face -->
+  <ellipse cx="128" cy="116" rx="66" ry="60" fill="#7a4a2a" stroke="#3a1e0e" stroke-width="4"/>
+  <!-- hair line pulled back -->
+  <path d="M64 108 C62 62 98 48 128 48 C158 48 194 62 192 108 C182 82 160 70 128 70 C96 70 74 82 64 108 Z" fill="#1a0e08" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+  <!-- eyes -->
+  <ellipse cx="104" cy="114" rx="9" ry="11" fill="#1a0a06"/><ellipse cx="152" cy="114" rx="9" ry="11" fill="#1a0a06"/>
+  <circle cx="107" cy="110" r="3.5" fill="#fff"/><circle cx="155" cy="110" r="3.5" fill="#fff"/>
+  <path d="M90 106 l-7 -4 M166 106 l7 -4" stroke="#1a0a06" stroke-width="3" stroke-linecap="round"/>
+  <path d="M92 96 Q104 90 116 96 M140 96 Q152 90 164 96" fill="none" stroke="#1a0e08" stroke-width="4" stroke-linecap="round"/>
+  <!-- chubby cheeks -->
+  <ellipse cx="84" cy="138" rx="13" ry="8" fill="#c8506a" opacity=".45"/><ellipse cx="172" cy="138" rx="13" ry="8" fill="#c8506a" opacity=".45"/>
+  <!-- glossy purple lips -->
+  <path d="M110 146 Q119 140 128 145 Q137 140 146 146 Q128 162 110 146 Z" fill="#8a2ac8" stroke="#4a0a7a" stroke-width="2"/>
+  <path d="M118 147 Q122 145 126 147" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+  <!-- little hoop earrings -->
+  <circle cx="62" cy="134" r="6" fill="none" stroke="#ffd23a" stroke-width="3"/><circle cx="194" cy="134" r="6" fill="none" stroke="#ffd23a" stroke-width="3"/>
+</svg>

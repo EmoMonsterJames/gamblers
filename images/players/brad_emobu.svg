@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Brad Emobu · Emobu (male) · Middle-Aged -->
+  <circle cx="128" cy="128" r="124" fill="#dde6ee"/>
+  <!-- blazer + shirt -->
+  <path d="M32 256 C36 200 78 180 128 180 C178 180 220 200 224 256 Z" fill="#3a4a6a" stroke="#1a2236" stroke-width="4"/>
+  <path d="M104 182 L128 234 L152 182 Z" fill="#fff" stroke="#1a2236" stroke-width="3"/>
+  <path d="M104 182 L120 214 L96 206 Z M152 182 L136 214 L160 206 Z" fill="#2a3652" stroke="#1a2236" stroke-width="3"/>
+  <path d="M124 196 L132 196 L136 240 L128 250 L120 240 Z" fill="#a83a3a"/>
+  <!-- neck + head -->
+  <rect x="110" y="150" width="36" height="34" rx="10" fill="#f0c8a8" stroke="#8a5a40" stroke-width="3"/>
+  <path d="M74 104 C74 60 100 48 128 48 C156 48 182 60 182 104 C182 150 162 170 128 170 C94 170 74 150 74 104 Z" fill="#f6d2b4" stroke="#8a5a40" stroke-width="4"/>
+  <ellipse cx="74" cy="112" rx="8" ry="12" fill="#f6d2b4" stroke="#8a5a40" stroke-width="3"/><ellipse cx="182" cy="112" rx="8" ry="12" fill="#f6d2b4" stroke="#8a5a40" stroke-width="3"/>
+  <!-- short brown hair, side part, a bit of grey at the temples -->
+  <path d="M72 100 C66 56 98 34 132 36 C166 36 190 58 184 100 C176 84 172 74 166 70 C150 76 120 72 104 62 C96 72 82 80 72 100 Z" fill="#7a4a22" stroke="#3e2410" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M74 98 l2 -14 M182 98 l-2 -14" stroke="#c8c0b8" stroke-width="5" stroke-linecap="round"/>
+  <!-- sharp eyes -->
+  <path d="M90 104 L118 100 M138 100 L166 104" stroke="#3e2410" stroke-width="6" stroke-linecap="round"/>
+  <path d="M94 116 Q106 108 118 114 Q106 120 94 116 Z M138 114 Q150 108 162 116 Q150 120 138 114 Z" fill="#fff" stroke="#2a1a0a" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="108" cy="114" r="4.5" fill="#3a6a9a"/><circle cx="148" cy="114" r="4.5" fill="#3a6a9a"/>
+  <circle cx="108" cy="114" r="2" fill="#000"/><circle cx="148" cy="114" r="2" fill="#000"/>
+  <!-- stubble + confident smirk -->
+  <path d="M96 150 Q128 176 160 150" fill="none" stroke="#a88a70" stroke-width="10" opacity=".25" stroke-linecap="round"/>
+  <path d="M112 148 Q130 156 146 144" fill="none" stroke="#5a2a1a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M100 132 l-4 6 M156 132 l4 6" stroke="#c8a088" stroke-width="2" stroke-linecap="round"/>
+</svg>

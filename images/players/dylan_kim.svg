@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Dylan Kim · Human (male, East Asian) · Young Adult — slightly wavy black hair, big horn-rimmed glasses, thin, Mongi wrinkle -->
+  <circle cx="128" cy="128" r="124" fill="#eef2f6"/>
+  <path d="M46 256 C50 206 88 186 128 186 C168 186 206 206 210 256 Z" fill="#5a6a4a" stroke="#2a3420" stroke-width="4"/>
+  <path d="M110 188 Q128 204 146 188" fill="#f4f4f4" stroke="#2a3420" stroke-width="3"/>
+  <rect x="114" y="150" width="28" height="38" rx="9" fill="#f2cfa6" stroke="#8a5a30" stroke-width="3"/>
+  <!-- thin long face -->
+  <ellipse cx="128" cy="110" rx="44" ry="60" fill="#f6d6ae" stroke="#8a5a30" stroke-width="4"/>
+  <ellipse cx="84" cy="116" rx="6" ry="10" fill="#f6d6ae" stroke="#8a5a30" stroke-width="3"/><ellipse cx="172" cy="116" rx="6" ry="10" fill="#f6d6ae" stroke="#8a5a30" stroke-width="3"/>
+  <!-- slightly wavy short black hair -->
+  <path d="M82 98 C76 56 102 40 128 40 C156 40 180 56 174 98 C170 86 164 80 156 82 C150 74 140 76 134 80 C126 72 116 74 110 80 C102 74 92 80 82 98 Z" fill="#141414" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+  <!-- big horn-rimmed glasses -->
+  <rect x="88" y="100" width="36" height="30" rx="10" fill="#e8f4ff" fill-opacity=".4" stroke="#3a2010" stroke-width="6"/>
+  <rect x="132" y="100" width="36" height="30" rx="10" fill="#e8f4ff" fill-opacity=".4" stroke="#3a2010" stroke-width="6"/>
+  <path d="M124 112 L132 112" stroke="#3a2010" stroke-width="5"/>
+  <ellipse cx="106" cy="116" rx="5" ry="6" fill="#1a1a1a"/><ellipse cx="150" cy="116" rx="5" ry="6" fill="#1a1a1a"/>
+  <!-- Mongi wrinkle ( - ) -->
+  <path d="M116 142 C110 148 110 158 116 164 M140 142 C146 148 146 158 140 164" fill="none" stroke="#8a5a30" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M122 154 L134 154" stroke="#5a2a10" stroke-width="4" stroke-linecap="round"/>
+</svg>

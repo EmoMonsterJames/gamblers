@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72"><defs><radialGradient id="d" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#ff3b3b"/><stop offset="1" stop-color="#a00000"/></radialGradient></defs>
+<rect x="2" y="2" width="236" height="68" rx="14" fill="url(#d)"/>
+<g fill="#ffd84a" transform="translate(30 36)"><polygon points="0,-18 5,-6 18,-6 8,2 12,15 0,7 -12,15 -8,2 -18,-6 -5,-6"/></g>
+<g fill="#ffd84a" transform="translate(210 36) scale(.7)"><polygon points="0,-18 5,-6 18,-6 8,2 12,15 0,7 -12,15 -8,2 -18,-6 -5,-6"/></g>
+<text x="122" y="50" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="38" letter-spacing="3" fill="#ffd84a" stroke="#6b0000" stroke-width="1.5" paint-order="stroke">DAEBAK!</text></svg>

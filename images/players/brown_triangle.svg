@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Brown Triangle · Triangle (male) · Young Adult — sunglasses, suit trousers, necktie, LUX suitcase -->
+  <circle cx="128" cy="128" r="124" fill="#fbf2e8"/>
+  <!-- suit trousers with a crease + shoes -->
+  <path d="M92 206 L86 246 L114 246 L124 206 Z M132 206 L142 246 L170 246 L164 206 Z" fill="#2a2a3a" stroke="#0a0a14" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M104 210 L100 244 M152 210 L156 244" stroke="#4a4a5e" stroke-width="2"/>
+  <path d="M82 246 L118 246 L118 252 L80 252 Z M138 246 L174 246 L176 252 L138 252 Z" fill="#111"/>
+  <rect x="86" y="200" width="84" height="10" rx="3" fill="#1a1a1a"/><rect x="122" y="200" width="12" height="10" fill="#d8b860"/>
+  <!-- triangle body -->
+  <path d="M128 30 L222 210 L34 210 Z" fill="#b07a4a" stroke="#5a3a1a" stroke-width="5" stroke-linejoin="round"/>
+  <!-- collar strap around the triangle + necktie -->
+  <path d="M90 104 L166 104" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M120 104 L136 104 L132 114 L124 114 Z" fill="#b0102a" stroke="#5a0010" stroke-width="2"/>
+  <path d="M124 114 L132 114 L140 176 L128 190 L116 176 Z" fill="#c81a3a" stroke="#5a0010" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M121 134 L135 128 M119 152 L137 146 M118 170 L139 164" stroke="#ffd23a" stroke-width="2.5"/>
+  <!-- arms -->
+  <path d="M74 150 Q44 140 36 112" stroke="#5a3a1a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <circle cx="36" cy="110" r="9" fill="#b07a4a" stroke="#5a3a1a" stroke-width="4"/>
+  <path d="M184 154 Q206 168 208 190" stroke="#5a3a1a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- LUX suitcase in the right hand -->
+  <path d="M196 196 Q208 182 220 196" fill="none" stroke="#3a2a10" stroke-width="5"/>
+  <rect x="182" y="196" width="56" height="40" rx="6" fill="#3a2010" stroke="#1a0a00" stroke-width="3"/>
+  <rect x="182" y="210" width="56" height="5" fill="#d8b860"/>
+  <rect x="204" y="206" width="12" height="12" rx="2" fill="#ffd23a" stroke="#8a6a00" stroke-width="2"/>
+  <text x="210" y="232" font-family="Georgia,serif" font-size="10" font-weight="700" text-anchor="middle" fill="#ffd23a">LUX</text>
+  <circle cx="208" cy="192" r="9" fill="#b07a4a" stroke="#5a3a1a" stroke-width="4"/>
+  <!-- sunglasses -->
+  <path d="M94 128 L162 128" stroke="#111" stroke-width="4"/>
+  <path d="M94 126 L124 126 L122 146 Q110 154 98 146 Z M132 126 L162 126 L158 146 Q146 154 134 146 Z" fill="#111" stroke="#000" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M100 132 L112 132 M138 132 L150 132" stroke="#6a8ab0" stroke-width="3" stroke-linecap="round"/>
+  <path d="M114 168 Q128 176 142 166" fill="none" stroke="#2a1a0a" stroke-width="5" stroke-linecap="round"/>
+</svg>

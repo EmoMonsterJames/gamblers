@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Baby Deer Danbi · Others (deer, female) · Baby -->
+  <circle cx="128" cy="128" r="124" fill="#fff4e0"/>
+  <!-- small antlers with lots of decorations -->
+  <path d="M100 66 L92 34 M92 46 L78 36 M94 54 L82 56 M156 66 L164 34 M164 46 L178 36 M162 54 L174 56" fill="none" stroke="#a8743a" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="92" cy="32" r="7" fill="#ff6aa8" stroke="#a82a68" stroke-width="2"/>
+  <path d="M164 30 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#ffe040" stroke="#a88a00" stroke-width="1.5"/>
+  <path d="M70 32 L78 36 L72 42 Z M86 34 L78 36 L84 42 Z" fill="#7ac8ff" stroke="#2a6a9a" stroke-width="1.5"/>
+  <circle cx="82" cy="56" r="5" fill="#b8ff8a" stroke="#4a8a2a" stroke-width="2"/>
+  <g fill="#fff" stroke="#c84a4a" stroke-width="1.5"><circle cx="180" cy="34" r="5"/><circle cx="176" cy="56" r="5"/></g>
+  <path d="M168 40 Q176 44 184 40" fill="none" stroke="#ffd23a" stroke-width="2"/>
+  <!-- ears -->
+  <ellipse cx="70" cy="96" rx="22" ry="11" fill="#c88a4e" stroke="#6a3e1a" stroke-width="4" transform="rotate(-25 70 96)"/>
+  <ellipse cx="186" cy="96" rx="22" ry="11" fill="#c88a4e" stroke="#6a3e1a" stroke-width="4" transform="rotate(25 186 96)"/>
+  <!-- baby onesie + bib -->
+  <path d="M48 256 C52 210 88 190 128 190 C168 190 204 210 208 256 Z" fill="#ffd0e0" stroke="#a85a7a" stroke-width="4"/>
+  <path d="M96 192 C96 230 160 230 160 192 Z" fill="#fff" stroke="#a85a7a" stroke-width="3"/>
+  <path d="M120 206 a8 8 0 0 1 16 0 c0 8 -8 12 -8 14 c0 -2 -8 -6 -8 -14z" fill="#ff8ab0"/>
+  <!-- big baby head -->
+  <ellipse cx="128" cy="124" rx="60" ry="58" fill="#c88a4e" stroke="#6a3e1a" stroke-width="4"/>
+  <g fill="#f4dcb0"><circle cx="96" cy="94" r="5"/><circle cx="160" cy="92" r="4"/><circle cx="168" cy="106" r="3"/><circle cx="88" cy="108" r="3"/></g>
+  <ellipse cx="128" cy="150" rx="30" ry="22" fill="#f4dcb0"/>
+  <!-- pouty eyes -->
+  <path d="M90 108 L116 114 M166 108 L140 114" stroke="#4a2a10" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="104" cy="124" rx="10" ry="12" fill="#2a1a0a"/><ellipse cx="152" cy="124" rx="10" ry="12" fill="#2a1a0a"/>
+  <circle cx="107" cy="120" r="4" fill="#fff"/><circle cx="155" cy="120" r="4" fill="#fff"/>
+  <!-- puffed cheeks + pout -->
+  <ellipse cx="84" cy="146" rx="12" ry="9" fill="#ff8a7a" opacity=".55"/><ellipse cx="172" cy="146" rx="12" ry="9" fill="#ff8a7a" opacity=".55"/>
+  <path d="M120 156 Q128 150 136 156 Q128 162 120 156 Z" fill="#c83a4a" stroke="#6a1a20" stroke-width="2.5"/>
+  <path d="M184 120 l8 -6 M186 128 l10 0" stroke="#6a3e1a" stroke-width="3" stroke-linecap="round"/>
+</svg>

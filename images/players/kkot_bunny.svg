@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Kkot Bunny · Rabbit (female) · Young Adult — pink, curvy, flashy clothes, makeup, Mongi wrinkle -->
+  <circle cx="128" cy="128" r="124" fill="#fff0f4"/>
+  <g fill="#ffa8c8" stroke="#a83a6a" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 78 C80 30 86 6 102 8 C118 10 118 44 112 78 Z"/><path d="M162 78 C176 30 170 6 154 8 C138 10 138 44 144 78 Z"/></g>
+  <path d="M98 70 C90 38 94 20 102 20 C110 22 110 46 106 70 Z M158 70 C166 38 162 20 154 20 C146 22 146 46 150 70 Z" fill="#ffe0ec"/>
+  <!-- curvy upper body, low neckline, flashy sequin top -->
+  <path d="M34 256 C36 214 66 192 96 188 L160 188 C190 192 220 214 222 256 Z" fill="#ffa8c8" stroke="#a83a6a" stroke-width="4"/>
+  <path d="M56 256 C58 228 80 214 100 214 C112 230 144 230 156 214 C176 214 198 228 200 256 Z" fill="#c81a7a" stroke="#6a0a3a" stroke-width="4"/>
+  <path d="M104 214 Q116 236 128 224 Q140 236 152 214" fill="none" stroke="#a83a6a" stroke-width="3"/>
+  <g fill="#ffd23a"><circle cx="80" cy="238" r="2.5"/><circle cx="176" cy="240" r="2.5"/><circle cx="128" cy="248" r="2.5"/><circle cx="104" cy="250" r="2"/><circle cx="152" cy="250" r="2"/></g>
+  <path d="M100 192 Q128 206 156 192" fill="none" stroke="#ffd23a" stroke-width="3"/>
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#ffa8c8" stroke="#a83a6a" stroke-width="4"/>
+  <ellipse cx="102" cy="118" rx="16" ry="12" fill="#b83ad8" opacity=".5"/><ellipse cx="154" cy="118" rx="16" ry="12" fill="#b83ad8" opacity=".5"/>
+  <ellipse cx="102" cy="120" rx="9" ry="11" fill="#1a0a1a"/><ellipse cx="154" cy="120" rx="9" ry="11" fill="#1a0a1a"/>
+  <circle cx="105" cy="116" r="3.5" fill="#fff"/><circle cx="157" cy="116" r="3.5" fill="#fff"/>
+  <path d="M87 112 l-8 -6 M90 106 l-5 -8 M169 112 l8 -6 M166 106 l5 -8" stroke="#1a0a1a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="84" cy="144" rx="12" ry="7" fill="#ff3a7a" opacity=".5"/><ellipse cx="172" cy="144" rx="12" ry="7" fill="#ff3a7a" opacity=".5"/>
+  <path d="M114 138 C108 144 108 154 114 160 M142 138 C148 144 148 154 142 160" fill="none" stroke="#a83a6a" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M120 149 Q128 144 136 149 Q128 156 120 149 Z" fill="#e0103a"/>
+  <path d="M152 40 l4 -12 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 Z" fill="#ffd23a"/>
+</svg>

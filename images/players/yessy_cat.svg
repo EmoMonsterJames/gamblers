@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Yessy Cat · Cat (female) · Young Adult — odd eyes, heavy make-up, flashy outfit -->
+  <circle cx="128" cy="128" r="124" fill="#2a1a3a"/>
+  <g fill="#ffd8f0" opacity=".8"><path d="M30 80 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/><path d="M222 190 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/></g>
+  <!-- off-shoulder sparkly top -->
+  <path d="M40 256 C44 206 84 188 128 188 C172 188 212 206 216 256 Z" fill="#8ad8ff" stroke="#2a6a9a" stroke-width="4"/>
+  <path d="M62 256 C70 226 90 214 128 214 C166 214 186 226 194 256 Z" fill="#ff2a8a" stroke="#8a0a4a" stroke-width="4"/>
+  <g fill="#fff"><circle cx="100" cy="236" r="2.5"/><circle cx="128" cy="230" r="2.5"/><circle cx="156" cy="238" r="2.5"/><circle cx="116" cy="248" r="2"/><circle cx="144" cy="250" r="2"/></g>
+  <!-- choker -->
+  <rect x="110" y="168" width="36" height="9" rx="4" fill="#1a1a1a"/><circle cx="128" cy="182" r="5" fill="#ffd23a" stroke="#8a6a00" stroke-width="2"/>
+  <rect x="113" y="150" width="30" height="20" rx="8" fill="#8ad8ff" stroke="#2a6a9a" stroke-width="3"/>
+  <!-- cat ears -->
+  <path d="M78 84 L74 28 L118 62 Z" fill="#8ad8ff" stroke="#2a6a9a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M84 72 L82 42 L106 62 Z" fill="#ffaad8"/>
+  <path d="M178 84 L182 28 L138 62 Z" fill="#8ad8ff" stroke="#2a6a9a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M172 72 L174 42 L150 62 Z" fill="#ffaad8"/>
+  <!-- head -->
+  <ellipse cx="128" cy="112" rx="58" ry="52" fill="#9ae0ff" stroke="#2a6a9a" stroke-width="4"/>
+  <!-- big hoop earrings -->
+  <circle cx="72" cy="132" r="9" fill="none" stroke="#ffd23a" stroke-width="3"/><circle cx="184" cy="132" r="9" fill="none" stroke="#ffd23a" stroke-width="3"/>
+  <!-- odd eyes: gold + green, heavy lashes and shadow -->
+  <path d="M88 104 Q104 88 122 104 Z" fill="#c84ae0" opacity=".7"/><path d="M134 104 Q152 88 168 104 Z" fill="#c84ae0" opacity=".7"/>
+  <path d="M90 110 Q104 98 120 110 Q104 120 90 110 Z" fill="#ffc81a" stroke="#000" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M136 110 Q152 98 166 110 Q152 120 136 110 Z" fill="#3ad86a" stroke="#000" stroke-width="3.5" stroke-linejoin="round"/>
+  <ellipse cx="105" cy="110" rx="2.5" ry="7" fill="#000"/><ellipse cx="151" cy="110" rx="2.5" ry="7" fill="#000"/>
+  <path d="M90 108 l-7 -5 M92 104 l-5 -8 M120 108 l8 -3 M166 108 l7 -5 M164 104 l5 -8 M136 108 l-8 -3" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="92" cy="130" rx="10" ry="6" fill="#ff4aa8" opacity=".5"/><ellipse cx="164" cy="130" rx="10" ry="6" fill="#ff4aa8" opacity=".5"/>
+  <!-- whiskers + glossy cat lips -->
+  <path d="M70 124 L92 128 M70 134 L92 134 M186 124 L164 128 M186 134 L164 134" stroke="#2a6a9a" stroke-width="2"/>
+  <path d="M114 138 Q121 134 128 140 Q135 134 142 138 Q138 150 128 148 Q118 150 114 138 Z" fill="#e8106a" stroke="#6a0030" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M120 140 l4 2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+</svg>

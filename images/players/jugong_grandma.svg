@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Jugong Grandma · Human (female, East Asian) · Senior — poor, shabby, thin, a bit smelly -->
+  <circle cx="128" cy="128" r="124" fill="#ece8e0"/>
+  <!-- worn, patched cardigan -->
+  <path d="M50 256 C54 208 88 190 128 190 C168 190 202 208 206 256 Z" fill="#8a7a6a" stroke="#3a3028" stroke-width="4"/>
+  <rect x="150" y="220" width="24" height="20" fill="#6a8a9a" stroke="#3a3028" stroke-width="2" stroke-dasharray="4 3"/>
+  <path d="M84 230 L96 214 L90 244" fill="none" stroke="#3a3028" stroke-width="3"/>
+  <path d="M110 192 Q128 206 146 192" fill="none" stroke="#3a3028" stroke-width="3"/>
+  <rect x="116" y="154" width="24" height="38" rx="8" fill="#e8c8a0" stroke="#7a5a3a" stroke-width="3"/>
+  <!-- thin, wrinkled face -->
+  <ellipse cx="128" cy="112" rx="42" ry="54" fill="#efd0aa" stroke="#7a5a3a" stroke-width="4"/>
+  <!-- grey hair in a bun -->
+  <circle cx="128" cy="50" r="18" fill="#b8b4ac" stroke="#6a6660" stroke-width="3"/>
+  <path d="M86 102 C84 70 104 58 128 58 C152 58 172 70 170 102 C160 82 144 76 128 78 C112 76 96 82 86 102 Z" fill="#c8c4bc" stroke="#6a6660" stroke-width="3"/>
+  <path d="M100 104 Q110 100 120 104 M136 104 Q146 100 156 104" fill="none" stroke="#5a4a3a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M100 116 Q110 112 120 116 M136 116 Q146 112 156 116" fill="none" stroke="#2a2010" stroke-width="4" stroke-linecap="round"/>
+  <!-- wrinkles -->
+  <path d="M110 86 L146 86 M114 92 L142 92 M94 122 l-6 2 M162 122 l6 2 M104 136 q6 4 4 10 M152 136 q-6 4 -4 10" fill="none" stroke="#a8805a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M116 150 Q128 144 140 150" fill="none" stroke="#5a3a2a" stroke-width="4" stroke-linecap="round"/>
+  <!-- smell lines + a fly -->
+  <path d="M190 120 q8 -10 0 -20 q-8 -10 0 -20 M206 128 q8 -10 0 -20 q-8 -10 0 -20" fill="none" stroke="#9aaa6a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="58" cy="80" r="4" fill="#2a2a2a"/><path d="M54 76 q-6 -6 -2 -8 M62 76 q6 -6 2 -8" fill="none" stroke="#8a8a8a" stroke-width="2"/>
+</svg>

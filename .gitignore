@@ -1,0 +1,6 @@
+.claude/settings.local.json
+*.csv
+Thumbs.db
+.DS_Store
+node_modules/
+.wrangler/

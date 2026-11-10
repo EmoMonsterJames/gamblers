@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="46" fill="#0a3a1a" stroke="#ffd166" stroke-width="4"/>
+  <g fill="none" stroke-width="6" stroke-linecap="round">
+    <path d="M14 66 A36 36 0 0 1 86 66" stroke="#ff4a4a"/><path d="M20 66 A30 30 0 0 1 80 66" stroke="#ffa63a"/>
+    <path d="M26 66 A24 24 0 0 1 74 66" stroke="#ffe84a"/><path d="M32 66 A18 18 0 0 1 68 66" stroke="#4ad86a"/><path d="M38 66 A12 12 0 0 1 62 66" stroke="#4aa0ff"/>
+  </g>
+  <ellipse cx="50" cy="72" rx="16" ry="7" fill="#c88a00" stroke="#6a4a00" stroke-width="2"/>
+  <ellipse cx="50" cy="69" rx="14" ry="5" fill="#ffd166"/>
+  <text x="50" y="92" text-anchor="middle" font-family="Arial Black,Arial" font-size="15" font-weight="900" fill="#fff" stroke="#0a3a1a" stroke-width="1">WILD</text>
+</svg>

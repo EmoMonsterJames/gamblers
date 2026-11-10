@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Bok Cloud · Others / Cloud (male) · Young Adult — an orange cloud bringing luck (福).
+       Cloud race: cloud face on a neck, a puffy human-shaped body with legs and mitten hands -->
+  <circle cx="128" cy="128" r="124" fill="#fff6ea"/>
+  <!-- puffy legs -->
+  <path d="M96 214 C84 214 82 230 90 236 C84 246 96 254 106 248 C114 254 124 246 120 236 C126 226 118 212 106 214 Z" fill="#ffa84a" stroke="#a84a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M160 214 C172 214 174 230 166 236 C172 246 160 254 150 248 C142 254 132 246 136 236 C130 226 138 212 150 214 Z" fill="#ffa84a" stroke="#a84a10" stroke-width="4" stroke-linejoin="round"/>
+  <!-- puffy arms + mitten hands -->
+  <path d="M84 168 C66 166 56 178 60 190 C50 196 54 212 66 210" fill="none" stroke="#a84a10" stroke-width="18" stroke-linecap="round"/>
+  <path d="M84 168 C66 166 56 178 60 190 C50 196 54 212 66 210" fill="none" stroke="#ffa84a" stroke-width="11" stroke-linecap="round"/>
+  <path d="M172 168 C190 166 200 178 196 190 C206 196 202 212 190 210" fill="none" stroke="#a84a10" stroke-width="18" stroke-linecap="round"/>
+  <path d="M172 168 C190 166 200 178 196 190 C206 196 202 212 190 210" fill="none" stroke="#ffa84a" stroke-width="11" stroke-linecap="round"/>
+  <path d="M58 202 C46 202 44 218 56 222 C64 228 76 220 74 210 C76 200 64 196 58 202 Z" fill="#ffc07a" stroke="#a84a10" stroke-width="4"/>
+  <path d="M54 206 C48 200 50 194 56 196" fill="none" stroke="#a84a10" stroke-width="3" stroke-linecap="round"/>
+  <path d="M198 202 C210 202 212 218 200 222 C192 228 180 220 182 210 C180 200 192 196 198 202 Z" fill="#ffc07a" stroke="#a84a10" stroke-width="4"/>
+  <path d="M202 206 C208 200 206 194 200 196" fill="none" stroke="#a84a10" stroke-width="3" stroke-linecap="round"/>
+  <!-- puffy torso (human shoulders, cloud bumps) -->
+  <path d="M90 160 C74 160 70 178 80 186 C72 198 82 214 96 212 C104 222 120 222 128 214 C136 222 152 222 160 212 C174 214 184 198 176 186 C186 178 182 160 166 160 C156 150 140 150 128 156 C116 150 100 150 90 160 Z" fill="#ffa84a" stroke="#a84a10" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M100 178 C106 184 114 184 118 178 M138 196 C144 202 152 202 156 196" fill="none" stroke="#e07a2a" stroke-width="3" stroke-linecap="round"/>
+  <!-- neck -->
+  <rect x="114" y="132" width="28" height="26" rx="10" fill="#ffa84a" stroke="#a84a10" stroke-width="4"/>
+  <!-- 福 badge on the chest -->
+  <rect x="116" y="170" width="24" height="24" rx="3" fill="#e8202a" stroke="#ffd23a" stroke-width="3" transform="rotate(45 128 182)"/>
+  <text x="128" y="190" font-family="serif" font-size="16" font-weight="900" text-anchor="middle" fill="#ffd23a">福</text>
+  <!-- cloud face -->
+  <path d="M66 108 C40 108 38 74 64 70 C60 42 94 30 110 46 C118 20 156 20 164 44 C182 30 214 46 202 74 C226 80 222 112 196 112 C200 134 172 146 156 134 C146 148 112 148 100 134 C84 146 58 132 66 108 Z" fill="#ffa84a" stroke="#a84a10" stroke-width="5" stroke-linejoin="round"/>
+  <ellipse cx="108" cy="88" rx="8" ry="11" fill="#3a1a0a"/><ellipse cx="150" cy="88" rx="8" ry="11" fill="#3a1a0a"/>
+  <circle cx="111" cy="84" r="3" fill="#fff"/><circle cx="153" cy="84" r="3" fill="#fff"/>
+  <path d="M96 72 L120 68 M138 68 L162 72" stroke="#3a1a0a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M112 112 Q129 126 146 112" fill="none" stroke="#3a1a0a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="90" cy="106" rx="10" ry="6" fill="#ff6a3a" opacity=".5"/><ellipse cx="168" cy="106" rx="10" ry="6" fill="#ff6a3a" opacity=".5"/>
+</svg>

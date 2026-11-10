@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Twinkle Twinkle Cloud · Others / Cloud (female) · Young Adult — sky-blue cloud face, human-like body, glamorous -->
+  <circle cx="128" cy="128" r="124" fill="#f0f6ff"/>
+  <!-- glam sequin dress + human shoulders -->
+  <path d="M40 256 C44 206 84 186 128 186 C172 186 212 206 216 256 Z" fill="#7a5ad8" stroke="#3a2a7a" stroke-width="4"/>
+  <g fill="#fff" opacity=".8"><circle cx="74" cy="232" r="2.5"/><circle cx="98" cy="214" r="2"/><circle cx="160" cy="226" r="2.5"/><circle cx="186" cy="240" r="2"/><circle cx="128" cy="246" r="2"/></g>
+  <path d="M108 190 Q128 206 148 190" fill="none" stroke="#ffd23a" stroke-width="4"/><circle cx="128" cy="200" r="5" fill="#fff" stroke="#c8a040" stroke-width="2"/>
+  <rect x="114" y="160" width="28" height="30" rx="9" fill="#a8dcff" stroke="#3a7ab8" stroke-width="3"/>
+  <!-- puffy cloud-shaped face -->
+  <path d="M74 132 C52 132 50 100 72 96 C66 70 96 56 112 70 C118 46 150 44 158 66 C176 54 202 70 192 96 C214 102 210 134 188 134 C192 160 166 172 150 160 C140 174 116 174 106 160 C88 172 64 158 74 132 Z" fill="#a8dcff" stroke="#3a7ab8" stroke-width="5" stroke-linejoin="round"/>
+  <ellipse cx="108" cy="116" rx="9" ry="12" fill="#1a2a4a"/><ellipse cx="148" cy="116" rx="9" ry="12" fill="#1a2a4a"/>
+  <circle cx="111" cy="111" r="3.5" fill="#fff"/><circle cx="151" cy="111" r="3.5" fill="#fff"/>
+  <path d="M96 106 l-7 -5 M99 102 l-4 -7 M160 106 l7 -5 M157 102 l4 -7" stroke="#1a2a4a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="94" cy="134" rx="10" ry="6" fill="#ff8ab8" opacity=".6"/><ellipse cx="162" cy="134" rx="10" ry="6" fill="#ff8ab8" opacity=".6"/>
+  <path d="M118 140 Q124 134 128 138 Q132 134 138 140 Q128 150 118 140 Z" fill="#e0306a"/>
+  <!-- twinkles -->
+  <path d="M206 44 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 Z M44 60 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 Z" fill="#ffd23a"/>
+</svg>

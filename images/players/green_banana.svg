@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Green Banana · Fruit (male) · Young Adult — an unripe banana with arms and legs -->
+  <circle cx="128" cy="128" r="124" fill="#f6fbe8"/>
+  <path d="M110 214 L100 250 M150 216 L160 250" stroke="#4a6a1a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M120 30 L132 30 L134 46 C190 70 196 160 156 214 C140 232 104 232 94 214 C134 170 132 90 118 46 Z" fill="#8ad040" stroke="#3a6a10" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M122 30 L132 30 L134 46 L118 46 Z" fill="#5a4a2a"/>
+  <path d="M130 60 C160 90 160 160 136 204" fill="none" stroke="#5aa020" stroke-width="4" stroke-linecap="round"/>
+  <path d="M100 140 Q66 132 54 104 M168 150 Q200 144 212 120" stroke="#3a6a10" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="54" cy="102" r="8" fill="#8ad040" stroke="#3a6a10" stroke-width="3"/><circle cx="212" cy="118" r="8" fill="#8ad040" stroke="#3a6a10" stroke-width="3"/>
+  <ellipse cx="122" cy="118" rx="7" ry="9" fill="#1a2a0a"/><ellipse cx="152" cy="122" rx="7" ry="9" fill="#1a2a0a"/>
+  <circle cx="124" cy="114" r="2.5" fill="#fff"/><circle cx="154" cy="118" r="2.5" fill="#fff"/>
+  <path d="M124 146 Q138 156 150 146" fill="none" stroke="#1a2a0a" stroke-width="4" stroke-linecap="round"/>
+</svg>

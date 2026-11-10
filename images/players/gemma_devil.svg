@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Gemma Devil · Devil (female) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#3a1a2a"/>
+  <!-- devil tail behind -->
+  <path d="M190 250 C226 230 230 190 214 170" fill="none" stroke="#b01a2a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M214 170 L198 160 L222 150 Z" fill="#b01a2a" stroke="#5a0010" stroke-width="3" stroke-linejoin="round"/>
+  <!-- long wavy hair behind -->
+  <path d="M62 104 C52 50 96 28 130 30 C170 30 206 56 194 108 C210 130 200 150 212 172 C200 184 210 204 192 214 L64 214 C46 204 56 184 44 172 C56 150 46 130 62 104 Z" fill="#3a1e10" stroke="#1a0a04" stroke-width="3"/>
+  <path d="M50 140 c10 8 -6 16 4 26 M206 140 c-10 8 6 16 -4 26 M58 186 c10 8 -6 14 4 22 M198 186 c-10 8 6 14 -4 22" fill="none" stroke="#6a3a1e" stroke-width="4" stroke-linecap="round"/>
+  <!-- dress -->
+  <path d="M42 256 C46 206 84 186 128 186 C172 186 210 206 214 256 Z" fill="#8a0a2a" stroke="#3a0010" stroke-width="4"/>
+  <path d="M96 190 Q128 214 160 190" fill="none" stroke="#ff4a6a" stroke-width="3"/>
+  <circle cx="128" cy="210" r="5" fill="#ffd23a"/>
+  <!-- neck + face -->
+  <rect x="113" y="152" width="30" height="36" rx="10" fill="#a8704a" stroke="#5a3418" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="50" ry="56" fill="#b47a52" stroke="#5a3418" stroke-width="4"/>
+  <!-- horns with ribbons -->
+  <path d="M94 66 C84 46 86 28 96 18 C98 36 104 50 112 60 Z" fill="#c01a2a" stroke="#5a0010" stroke-width="3"/>
+  <path d="M162 66 C172 46 170 28 160 18 C158 36 152 50 144 60 Z" fill="#c01a2a" stroke="#5a0010" stroke-width="3"/>
+  <path d="M100 46 L84 38 L86 54 Z M100 46 L114 36 L114 54 Z" fill="#ff8ad0" stroke="#a02a78" stroke-width="2"/><circle cx="100" cy="46" r="4" fill="#ff8ad0" stroke="#a02a78" stroke-width="2"/>
+  <path d="M156 46 L172 38 L170 54 Z M156 46 L142 36 L142 54 Z" fill="#ff8ad0" stroke="#a02a78" stroke-width="2"/><circle cx="156" cy="46" r="4" fill="#ff8ad0" stroke="#a02a78" stroke-width="2"/>
+  <!-- wavy fringe -->
+  <path d="M78 104 C76 66 102 52 130 54 C160 54 182 70 178 104 C170 88 158 76 140 74 C134 86 116 86 108 76 C96 82 84 92 78 104 Z" fill="#3a1e10" stroke="#1a0a04" stroke-width="3" stroke-linejoin="round"/>
+  <!-- heavy make-up eyes -->
+  <path d="M90 110 Q106 98 120 110 M136 110 Q150 98 166 110" fill="#7a2a8a" opacity=".7"/>
+  <path d="M92 114 Q106 104 120 114 Q106 122 92 114 Z M136 114 Q150 104 164 114 Q150 122 136 114 Z" fill="#fff" stroke="#000" stroke-width="3.5" stroke-linejoin="round"/>
+  <circle cx="106" cy="114" r="5" fill="#3a1a0a"/><circle cx="150" cy="114" r="5" fill="#3a1a0a"/>
+  <path d="M120 112 l8 -4 M164 112 l8 -4 M94 108 l-4 -5 M100 105 l-2 -6 M156 105 l2 -6 M162 108 l4 -5" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M94 96 Q106 90 118 96 M138 96 Q150 90 162 96" fill="none" stroke="#2a1008" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="94" cy="134" rx="10" ry="6" fill="#e84a6a" opacity=".45"/><ellipse cx="162" cy="134" rx="10" ry="6" fill="#e84a6a" opacity=".45"/>
+  <!-- red lips -->
+  <path d="M112 146 Q120 140 128 145 Q136 140 144 146 Q128 160 112 146 Z" fill="#d0102a" stroke="#6a0010" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>

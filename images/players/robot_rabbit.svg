@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Robot Rabbit · Rabbit (female) · Young Adult — grey, lab coat, glasses, harsh look -->
+  <circle cx="128" cy="128" r="124" fill="#eaf0f4"/>
+  <g fill="#a8b0b8" stroke="#4a5058" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 78 C80 30 86 6 102 8 C118 10 118 44 112 78 Z"/><path d="M162 78 C176 30 170 6 154 8 C138 10 138 44 144 78 Z"/></g>
+  <path d="M98 70 C90 38 94 20 102 20 C110 22 110 46 106 70 Z M158 70 C166 38 162 20 154 20 C146 22 146 46 150 70 Z" fill="#e8c8d0"/>
+  <!-- lab coat -->
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#ffffff" stroke="#6a7078" stroke-width="4"/>
+  <path d="M110 186 L128 220 L146 186 Z" fill="#3a5a8a"/>
+  <path d="M110 186 L96 256 M146 186 L160 256" stroke="#6a7078" stroke-width="3"/>
+  <rect x="166" y="214" width="22" height="16" rx="2" fill="none" stroke="#6a7078" stroke-width="3"/><path d="M172 214 L172 204 M180 214 L180 206" stroke="#e8483a" stroke-width="3"/>
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#a8b0b8" stroke="#4a5058" stroke-width="4"/>
+  <!-- harsh brows + square glasses -->
+  <path d="M86 104 L118 114 M170 104 L138 114" stroke="#2a2e34" stroke-width="6" stroke-linecap="round"/>
+  <rect x="88" y="114" width="32" height="22" rx="4" fill="#dff0ff" fill-opacity=".45" stroke="#1a1a1a" stroke-width="4"/>
+  <rect x="136" y="114" width="32" height="22" rx="4" fill="#dff0ff" fill-opacity=".45" stroke="#1a1a1a" stroke-width="4"/>
+  <path d="M120 122 L136 122" stroke="#1a1a1a" stroke-width="4"/>
+  <circle cx="104" cy="126" r="5" fill="#1a1a1a"/><circle cx="152" cy="126" r="5" fill="#1a1a1a"/>
+  <path d="M114 160 L142 156" stroke="#2a2e34" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Somalia Cloud (소말리아구름) · Cloud (male) · Young Adult — a very skinny brown cloud in a thin T-shirt.
+       Cloud race: fluffy cloud face on a neck, a puffy human-shaped body with thin legs and mitten hands -->
+  <circle cx="128" cy="128" r="124" fill="#f2ece2"/>
+  <!-- skinny puffy legs -->
+  <path d="M112 222 C104 222 104 236 110 240 C104 248 114 254 120 248 C124 252 130 246 126 238 C130 230 122 220 112 222 Z" fill="#9a6a42" stroke="#4a2a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M144 222 C152 222 152 236 146 240 C152 248 142 254 136 248 C132 252 126 246 130 238 C126 230 134 220 144 222 Z" fill="#9a6a42" stroke="#4a2a10" stroke-width="4" stroke-linejoin="round"/>
+  <!-- thin arms + mitten hands -->
+  <path d="M104 172 C88 176 80 192 84 206" fill="none" stroke="#4a2a10" stroke-width="12" stroke-linecap="round"/>
+  <path d="M104 172 C88 176 80 192 84 206" fill="none" stroke="#9a6a42" stroke-width="6" stroke-linecap="round"/>
+  <path d="M152 172 C168 176 176 192 172 206" fill="none" stroke="#4a2a10" stroke-width="12" stroke-linecap="round"/>
+  <path d="M152 172 C168 176 176 192 172 206" fill="none" stroke="#9a6a42" stroke-width="6" stroke-linecap="round"/>
+  <path d="M78 204 C70 206 72 218 80 218 C86 222 94 214 90 206 C88 200 82 200 78 204 Z" fill="#b8865a" stroke="#4a2a10" stroke-width="3"/>
+  <path d="M178 204 C186 206 184 218 176 218 C170 222 162 214 166 206 C168 200 174 200 178 204 Z" fill="#b8865a" stroke="#4a2a10" stroke-width="3"/>
+  <!-- very thin torso in a clinging T-shirt (ribs show through) -->
+  <path d="M104 166 C96 166 96 178 102 184 C98 196 104 212 112 220 L144 220 C152 212 158 196 154 184 C160 178 160 166 152 166 C144 160 112 160 104 166 Z" fill="#e8e8e8" stroke="#4a4a4a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M104 166 L96 180 L104 184 M152 166 L160 180 L152 184" fill="#e8e8e8" stroke="#4a4a4a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M114 186 Q128 190 142 186 M114 194 Q128 198 142 194 M116 202 Q128 206 140 202" fill="none" stroke="#b0b0b0" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- thin neck -->
+  <rect x="120" y="140" width="16" height="26" rx="7" fill="#9a6a42" stroke="#4a2a10" stroke-width="4"/>
+  <!-- small fluffy brown cloud face, sunken cheeks -->
+  <path d="M78 102 C58 102 56 76 76 72 C74 50 100 42 112 54 C118 34 146 34 152 52 C166 42 190 54 182 76 C200 80 198 104 178 104 C180 122 160 132 148 124 C140 136 116 136 108 124 C96 132 74 122 78 102 Z" fill="#9a6a42" stroke="#4a2a10" stroke-width="5" stroke-linejoin="round"/>
+  <!-- tired big eyes -->
+  <ellipse cx="112" cy="88" rx="9" ry="11" fill="#fff" stroke="#2a160a" stroke-width="2"/><ellipse cx="146" cy="88" rx="9" ry="11" fill="#fff" stroke="#2a160a" stroke-width="2"/>
+  <circle cx="112" cy="91" r="5" fill="#2a160a"/><circle cx="146" cy="91" r="5" fill="#2a160a"/>
+  <circle cx="114" cy="89" r="1.6" fill="#fff"/><circle cx="148" cy="89" r="1.6" fill="#fff"/>
+  <path d="M104 102 Q112 106 120 102 M138 102 Q146 106 154 102" fill="none" stroke="#5a3418" stroke-width="2"/>
+  <path d="M96 106 q4 8 2 14 M162 106 q-4 8 -2 14" fill="none" stroke="#6a4020" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- small shy mouth -->
+  <path d="M120 114 Q129 110 138 114" fill="none" stroke="#2a160a" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Norangi Panda · Others / Panda (female) · Young Adult — a yellow panda with a bow -->
+  <circle cx="128" cy="128" r="124" fill="#f2faf0"/>
+  <path d="M40 256 C44 204 84 184 128 184 C172 184 212 204 216 256 Z" fill="#3a3a3a" stroke="#111" stroke-width="4"/>
+  <path d="M100 190 Q128 208 156 190" fill="#ffe27a" stroke="#111" stroke-width="3"/>
+  <circle cx="76" cy="70" r="22" fill="#2a2a2a" stroke="#111" stroke-width="4"/><circle cx="180" cy="70" r="22" fill="#2a2a2a" stroke="#111" stroke-width="4"/>
+  <ellipse cx="128" cy="126" rx="64" ry="58" fill="#ffe27a" stroke="#8a6a10" stroke-width="4"/>
+  <!-- bow -->
+  <path d="M168 62 L148 50 L152 78 Z M168 62 L190 50 L186 78 Z" fill="#ff6aa0" stroke="#a81a5a" stroke-width="3" stroke-linejoin="round"/><circle cx="168" cy="63" r="6" fill="#ff8ab8" stroke="#a81a5a" stroke-width="3"/>
+  <!-- panda eye patches -->
+  <ellipse cx="102" cy="122" rx="18" ry="22" fill="#2a2a2a" transform="rotate(-20 102 122)"/>
+  <ellipse cx="154" cy="122" rx="18" ry="22" fill="#2a2a2a" transform="rotate(20 154 122)"/>
+  <circle cx="104" cy="120" r="7" fill="#fff"/><circle cx="152" cy="120" r="7" fill="#fff"/>
+  <circle cx="105" cy="121" r="4" fill="#111"/><circle cx="151" cy="121" r="4" fill="#111"/>
+  <path d="M86 110 l-6 -5 M170 110 l6 -5" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="84" cy="152" rx="10" ry="6" fill="#ff9ab0" opacity=".6"/><ellipse cx="172" cy="152" rx="10" ry="6" fill="#ff9ab0" opacity=".6"/>
+  <path d="M118 154 Q128 164 138 154" fill="none" stroke="#5a3a1a" stroke-width="4" stroke-linecap="round"/>
+</svg>

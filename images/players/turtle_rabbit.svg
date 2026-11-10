@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Turtle Rabbit · Rabbit (female) · Young Adult — no shell any more: dressed up, bold face with a slight glare -->
+  <circle cx="128" cy="128" r="124" fill="#eef8ee"/>
+  <g fill="#f2ece4" stroke="#7a6a5a" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 80 C80 34 86 10 102 12 C118 14 118 48 112 80 Z"/><path d="M162 80 C176 34 170 10 154 12 C138 14 138 48 144 80 Z"/></g>
+  <path d="M98 72 C90 42 94 24 102 24 C110 26 110 50 106 72 Z M158 72 C166 42 162 24 154 24 C146 26 146 50 150 72 Z" fill="#ffd0dc"/>
+  <!-- ribbon on an ear -->
+  <path d="M146 40 L130 30 L132 50 Z M146 40 L162 30 L160 50 Z" fill="#2aa86a" stroke="#0a5a30" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="146" cy="40" r="5" fill="#ffd23a" stroke="#8a6a00" stroke-width="2"/>
+  <!-- emerald jacket over a cream blouse with a bow -->
+  <path d="M48 256 C52 212 86 194 128 194 C170 194 204 212 208 256 Z" fill="#2aa86a" stroke="#0a5a30" stroke-width="4"/>
+  <path d="M104 196 L128 250 L152 196 Z" fill="#fff6e0" stroke="#0a5a30" stroke-width="3"/>
+  <path d="M128 206 L112 198 L114 216 Z M128 206 L144 198 L142 216 Z" fill="#e0306a" stroke="#7a0a2a" stroke-width="2"/>
+  <circle cx="128" cy="207" r="4" fill="#ffd23a"/>
+  <circle cx="84" cy="228" r="4" fill="#ffd23a" stroke="#8a6a00" stroke-width="1.5"/><circle cx="172" cy="228" r="4" fill="#ffd23a" stroke="#8a6a00" stroke-width="1.5"/>
+  <!-- bracelet hand on hip -->
+  <path d="M60 250 Q56 232 66 222" fill="none" stroke="#0a5a30" stroke-width="3"/>
+  <ellipse cx="128" cy="130" rx="60" ry="56" fill="#f2ece4" stroke="#7a6a5a" stroke-width="4"/>
+  <!-- bold, slightly glaring eyes (straight lids, angled brows) -->
+  <path d="M90 104 L118 114 M166 104 L138 114" stroke="#3a2a2a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="106" cy="126" rx="10" ry="9" fill="#2a2a2a"/><ellipse cx="150" cy="126" rx="10" ry="9" fill="#2a2a2a"/>
+  <path d="M94 120 L118 122 M138 122 L162 120" stroke="#f2ece4" stroke-width="6"/>
+  <path d="M94 121 L118 123 M138 123 L162 121" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="109" cy="127" r="2.5" fill="#fff"/><circle cx="153" cy="127" r="2.5" fill="#fff"/>
+  <path d="M92 122 l-6 -3 M164 122 l6 -3" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="90" cy="146" rx="11" ry="6" fill="#ffa0b0" opacity=".55"/><ellipse cx="166" cy="146" rx="11" ry="6" fill="#ffa0b0" opacity=".55"/>
+  <!-- confident little smirk -->
+  <path d="M116 156 Q130 160 140 152" fill="none" stroke="#a01a3a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M138 150 l4 4" stroke="#a01a3a" stroke-width="3" stroke-linecap="round"/>
+</svg>

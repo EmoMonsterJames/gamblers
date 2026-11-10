@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#f5c542"/><stop offset="1" stop-color="#b07a12"/></linearGradient></defs>
+<rect x="2" y="2" width="236" height="68" rx="14" fill="#111"/><rect x="6" y="6" width="228" height="60" rx="11" fill="none" stroke="url(#g)" stroke-width="2"/>
+<text x="54" y="51" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="40" fill="url(#g)" font-style="italic">YG</text>
+<line x1="98" y1="16" x2="98" y2="56" stroke="url(#g)" stroke-width="2"/>
+<text x="166" y="44" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="22" letter-spacing="3" fill="#fff">GAMING</text></svg>

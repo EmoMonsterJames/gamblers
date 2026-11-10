@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Jest Toto (해학토토) · Rabbit (female) · Young Adult — pink rabbit, flower pattern inside the ears, heavy makeup,
+       Mongi-wrinkle mouth, rabbit necklace, flashy dress -->
+  <circle cx="128" cy="128" r="124" fill="#fff0f6"/>
+  <!-- long ears with flower pattern inside -->
+  <g fill="#ff9cc4" stroke="#a83a6a" stroke-width="4" stroke-linejoin="round">
+    <path d="M92 78 C76 30 82 4 100 6 C118 8 118 44 110 78 Z"/><path d="M164 78 C180 30 174 4 156 6 C138 8 138 44 146 78 Z"/></g>
+  <path d="M96 70 C88 38 92 18 100 18 C108 20 108 46 104 70 Z M160 70 C168 38 164 18 156 18 C148 20 148 46 152 70 Z" fill="#fff4f8"/>
+  <g>
+    <g transform="translate(99 34)"><circle r="3" fill="#ffd23a"/><g fill="#ff5a9a"><circle cy="-5" r="3"/><circle cx="5" r="3"/><circle cy="5" r="3"/><circle cx="-5" r="3"/></g><circle r="2.4" fill="#ffd23a"/></g>
+    <g transform="translate(101 54)"><g fill="#b86aff"><circle cy="-4" r="2.5"/><circle cx="4" r="2.5"/><circle cy="4" r="2.5"/><circle cx="-4" r="2.5"/></g><circle r="2" fill="#fff"/></g>
+    <g transform="translate(157 34)"><g fill="#ff5a9a"><circle cy="-5" r="3"/><circle cx="5" r="3"/><circle cy="5" r="3"/><circle cx="-5" r="3"/></g><circle r="2.4" fill="#ffd23a"/></g>
+    <g transform="translate(155 54)"><g fill="#b86aff"><circle cy="-4" r="2.5"/><circle cx="4" r="2.5"/><circle cy="4" r="2.5"/><circle cx="-4" r="2.5"/></g><circle r="2" fill="#fff"/></g>
+    <path d="M100 42 q-4 4 0 8 M156 42 q4 4 0 8" fill="none" stroke="#4aa86a" stroke-width="2"/>
+  </g>
+  <!-- flashy gold & magenta dress with sequins and feather trim -->
+  <path d="M30 256 C34 212 66 190 98 188 L158 188 C190 190 222 212 226 256 Z" fill="#ff9cc4" stroke="#a83a6a" stroke-width="4"/>
+  <path d="M50 256 C52 226 76 210 102 208 L154 208 C180 210 204 226 206 256 Z" fill="#b8148a" stroke="#5a0a44" stroke-width="4"/>
+  <path d="M52 230 q12 -10 24 0 q12 -10 24 0 q14 -10 28 0 q14 -10 28 0 q12 -10 24 0 q12 -10 24 0" fill="none" stroke="#ffd23a" stroke-width="4"/>
+  <g fill="#ffe680"><circle cx="76" cy="244" r="3"/><circle cx="100" cy="250" r="2.5"/><circle cx="128" cy="244" r="3"/><circle cx="156" cy="250" r="2.5"/><circle cx="180" cy="244" r="3"/><circle cx="66" cy="222" r="2"/><circle cx="190" cy="222" r="2"/></g>
+  <path d="M44 214 q-12 -6 -14 6 q-10 2 -4 12 M212 214 q12 -6 14 6 q10 2 4 12" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+  <!-- rabbit necklace -->
+  <path d="M100 190 Q128 214 156 190" fill="none" stroke="#ffd23a" stroke-width="3"/>
+  <g transform="translate(128 212)">
+    <path d="M-5 -6 C-8 -18 -4 -22 -2 -10 M5 -6 C8 -18 4 -22 2 -10" fill="#fff" stroke="#c8a040" stroke-width="2"/>
+    <circle r="8" fill="#fff" stroke="#c8a040" stroke-width="2.5"/>
+    <circle cx="-3" cy="-1" r="1.4" fill="#1a0a1a"/><circle cx="3" cy="-1" r="1.4" fill="#1a0a1a"/>
+    <path d="M-2.5 3 q2.5 2 5 0" fill="none" stroke="#e0103a" stroke-width="1.4"/>
+  </g>
+  <!-- head -->
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#ff9cc4" stroke="#a83a6a" stroke-width="4"/>
+  <!-- heavy makeup: big blue + purple eyeshadow, thick liner, long lashes -->
+  <ellipse cx="102" cy="114" rx="20" ry="15" fill="#5a8aff" opacity=".55"/><ellipse cx="154" cy="114" rx="20" ry="15" fill="#5a8aff" opacity=".55"/>
+  <ellipse cx="102" cy="110" rx="18" ry="9" fill="#b83ad8" opacity=".55"/><ellipse cx="154" cy="110" rx="18" ry="9" fill="#b83ad8" opacity=".55"/>
+  <ellipse cx="102" cy="120" rx="9" ry="11" fill="#1a0a1a"/><ellipse cx="154" cy="120" rx="9" ry="11" fill="#1a0a1a"/>
+  <circle cx="105" cy="116" r="3.5" fill="#fff"/><circle cx="157" cy="116" r="3.5" fill="#fff"/>
+  <path d="M90 116 Q102 104 114 112 M142 112 Q154 104 166 116" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+  <path d="M86 112 l-9 -6 M88 106 l-6 -9 M93 102 l-3 -9 M170 112 l9 -6 M168 106 l6 -9 M163 102 l3 -9" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+  <path d="M88 96 Q100 88 114 94 M142 94 Q156 88 168 96" fill="none" stroke="#5a0a44" stroke-width="4" stroke-linecap="round"/>
+  <!-- strong blush -->
+  <ellipse cx="82" cy="146" rx="14" ry="8" fill="#ff1a6a" opacity=".55"/><ellipse cx="174" cy="146" rx="14" ry="8" fill="#ff1a6a" opacity=".55"/>
+  <!-- beauty mark -->
+  <circle cx="166" cy="158" r="2.5" fill="#3a0a2a"/>
+  <!-- Mongi wrinkle mouth "( O )" with red lipstick -->
+  <path d="M112 138 C105 145 105 156 112 163 M144 138 C151 145 151 156 144 163" fill="none" stroke="#a83a6a" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="128" cy="151" rx="8" ry="7" fill="#e0103a" stroke="#8a0a2a" stroke-width="2"/>
+  <ellipse cx="128" cy="152" rx="3.5" ry="3" fill="#6a0a1a"/>
+  <!-- sparkle -->
+  <path d="M206 70 l4 -12 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 Z" fill="#ffd23a"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Emo Rabbit · Rabbit (female) · Young Adult — yellow, ears bent over like a lying "ㄱ", roundish face, light makeup,
+       flashy club-dancer outfit -->
+  <circle cx="128" cy="128" r="124" fill="#f4f8ff"/>
+  <!-- disco sparkles -->
+  <g fill="#c86ad8"><path d="M30 92 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 Z"/><path d="M222 150 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 Z"/></g>
+  <!-- ears: straight up, then bent sideways at a right angle (a lying ㄱ) -->
+  <path d="M96 84 L92 38 C92 28 98 22 108 22 L56 22 C44 22 40 32 44 40 C48 46 54 46 62 44 L80 44 L84 84 Z" fill="#ffe27a" stroke="#9a7a1a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M160 84 L164 38 C164 28 158 22 148 22 L200 22 C212 22 216 32 212 40 C208 46 202 46 194 44 L176 44 L172 84 Z" fill="#ffe27a" stroke="#9a7a1a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M92 78 L88 40 C88 34 92 32 96 32 L62 32 C56 32 54 36 58 38 L82 38 Z M164 78 L168 40 C168 34 164 32 160 32 L194 32 C200 32 202 36 198 38 L174 38 Z" fill="#ffd0dc"/>
+  <!-- club outfit: shiny metallic crop top with fringe, glitter -->
+  <path d="M40 256 C44 206 84 188 128 188 C172 188 212 206 216 256 Z" fill="#ffe27a" stroke="#9a7a1a" stroke-width="4"/>
+  <path d="M66 256 C66 226 86 208 104 206 L152 206 C170 208 190 226 190 256 Z" fill="#c81a9a" stroke="#5a0a4a" stroke-width="4"/>
+  <path d="M66 236 L190 236" stroke="#ffd23a" stroke-width="3"/>
+  <g stroke="#ffd23a" stroke-width="2.5" stroke-linecap="round"><path d="M74 236 v14 M86 236 v16 M98 236 v14 M110 236 v16 M122 236 v14 M134 236 v16 M146 236 v14 M158 236 v16 M170 236 v14 M182 236 v12"/></g>
+  <g fill="#fff"><circle cx="96" cy="220" r="2.5"/><circle cx="118" cy="214" r="2"/><circle cx="140" cy="222" r="2.5"/><circle cx="164" cy="216" r="2"/><circle cx="128" cy="228" r="1.8"/></g>
+  <path d="M104 206 L94 190 M152 206 L162 190" stroke="#5a0a4a" stroke-width="4" stroke-linecap="round"/>
+  <!-- choker -->
+  <path d="M106 186 Q128 196 150 186" fill="none" stroke="#1a1a1a" stroke-width="5"/><circle cx="128" cy="193" r="4" fill="#ff3ab8"/>
+  <!-- roundish face -->
+  <circle cx="128" cy="128" r="62" fill="#ffe27a" stroke="#9a7a1a" stroke-width="4"/>
+  <!-- glitter eye shadow -->
+  <ellipse cx="104" cy="118" rx="15" ry="9" fill="#c86ad8" opacity=".45"/><ellipse cx="152" cy="118" rx="15" ry="9" fill="#c86ad8" opacity=".45"/>
+  <ellipse cx="104" cy="124" rx="9" ry="11" fill="#2a1a0a"/><ellipse cx="152" cy="124" rx="9" ry="11" fill="#2a1a0a"/>
+  <circle cx="107" cy="120" r="3.5" fill="#fff"/><circle cx="155" cy="120" r="3.5" fill="#fff"/>
+  <path d="M92 116 l-6 -4 M95 112 l-4 -6 M164 116 l6 -4 M161 112 l4 -6" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M100 108 l2 -4 l2 4 M150 108 l2 -4 l2 4" stroke="#fff" stroke-width="1.5" fill="none"/>
+  <ellipse cx="88" cy="146" rx="11" ry="6" fill="#ffa0b4" opacity=".55"/><ellipse cx="168" cy="146" rx="11" ry="6" fill="#ffa0b4" opacity=".55"/>
+  <path d="M118 150 Q128 160 138 150 Q128 154 118 150 Z" fill="#e0105a" stroke="#a00a3a" stroke-width="2"/>
+  <!-- big star earrings -->
+  <path d="M68 150 l4 8 l8 1 l-6 6 l2 8 l-8 -4 l-8 4 l2 -8 l-6 -6 l8 -1 Z" fill="#ffd23a" stroke="#8a6a00" stroke-width="1.5"/>
+  <path d="M188 150 l4 8 l8 1 l-6 6 l2 8 l-8 -4 l-8 4 l2 -8 l-6 -6 l8 -1 Z" fill="#ffd23a" stroke="#8a6a00" stroke-width="1.5"/>
+</svg>

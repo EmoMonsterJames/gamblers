@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #78 죠클라크 blond white man shabby -->
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#e6dfd2"/>
+<g clip-path="url(#cc)">
+<rect x="112" y="150" width="32" height="44" rx="10" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/>
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#a08868" stroke="#3a2a24" stroke-width="4"/>
+<path d="M108 190 C114 200 142 200 148 190" fill="none" stroke="#3a2a24" stroke-width="3"/><rect x="72" y="214" width="22" height="18" fill="#c9b48a" stroke="#3a2a24" stroke-width="2" transform="rotate(-8 83 223)"/><path d="M74 216 l18 14 M92 214 l-16 16" stroke="#6a5a40" stroke-width="1.5"/><rect x="156" y="230" width="20" height="16" fill="#7a8a9a" stroke="#3a2a24" stroke-width="2" transform="rotate(10 166 238)"/><circle cx="146" cy="212" r="4" fill="#6a5a40" opacity=".5"/><circle cx="104" cy="244" r="5" fill="#6a5a40" opacity=".4"/><path d="M60 258 l8 -10 l6 10 l8 -12 l6 12" fill="none" stroke="#3a2a24" stroke-width="2"/><path d="M128 196 l-4 10 l6 4 l-4 10" fill="none" stroke="#3a2a24" stroke-width="2"/>
+<ellipse cx="72" cy="120" rx="9" ry="14" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/><ellipse cx="184" cy="120" rx="9" ry="14" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/><ellipse cx="128" cy="112" rx="56" ry="62" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="104" cy="114" rx="8" ry="9" fill="#1a1a22"/><circle cx="106" cy="111" r="3" fill="#fff"/><ellipse cx="152" cy="114" rx="8" ry="9" fill="#1a1a22"/><circle cx="154" cy="111" r="3" fill="#fff"/><path d="M117 146 Q128 155 139 146" fill="none" stroke="#4a1a1a" stroke-width="4" stroke-linecap="round"/>
+<path d="M70 112 C64 50 100 38 128 40 C162 38 196 54 186 112 C182 92 170 78 150 72 C130 84 98 82 78 92 Z" fill="#f2cf62" stroke="#3a2a24" stroke-width="4"/>
+
+</g>
+</svg>

@@ -1,0 +1,47 @@
+body{
+    margin:0;
+    padding:20px;
+
+    background:#1b2430;
+
+    color:white;
+
+    font-family:Segoe UI;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.card{
+
+    background:#283548;
+
+    padding:15px;
+
+    margin:10px;
+
+    border-radius:15px;
+
+    box-shadow:
+    0 5px 15px rgba(0,0,0,.3);
+}
+
+button{
+
+    background:#4caf50;
+    color:white;
+
+    border:none;
+
+    padding:10px 15px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+}
+
+button:hover{
+    background:#388e3c;
+}

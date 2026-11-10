@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Four-Leaf Clover Rabbit · Rabbit (female) · Young Adult — yellow, luxurious, big eyes -->
+  <circle cx="128" cy="128" r="124" fill="#f0fbe8"/>
+  <g fill="#ffe27a" stroke="#9a7a1a" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 78 C80 30 86 6 102 8 C118 10 118 44 112 78 Z"/><path d="M162 78 C176 30 170 6 154 8 C138 10 138 44 144 78 Z"/></g>
+  <path d="M98 70 C90 38 94 20 102 20 C110 22 110 46 106 70 Z M158 70 C166 38 162 20 154 20 C146 22 146 46 150 70 Z" fill="#ffd0dc"/>
+  <!-- four-leaf clover hair pin -->
+  <g transform="translate(160 64)" fill="#3ab84a" stroke="#1a6a20" stroke-width="2.5"><circle cx="-8" cy="-8" r="9"/><circle cx="8" cy="-8" r="9"/><circle cx="-8" cy="8" r="9"/><circle cx="8" cy="8" r="9"/></g>
+  <!-- emerald velvet dress + gold necklace -->
+  <path d="M38 256 C42 204 84 184 128 184 C172 184 214 204 218 256 Z" fill="#1a7a4a" stroke="#0a3a20" stroke-width="4"/>
+  <path d="M100 188 Q128 212 156 188" fill="none" stroke="#ffd23a" stroke-width="5"/><path d="M128 206 l6 8 l-6 8 l-6 -8 Z" fill="#ffd23a" stroke="#a87a10" stroke-width="2"/>
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#ffe27a" stroke="#9a7a1a" stroke-width="4"/>
+  <!-- big sparkly eyes -->
+  <ellipse cx="102" cy="122" rx="15" ry="18" fill="#2a1a0a"/><ellipse cx="154" cy="122" rx="15" ry="18" fill="#2a1a0a"/>
+  <circle cx="108" cy="114" r="6" fill="#fff"/><circle cx="160" cy="114" r="6" fill="#fff"/>
+  <circle cx="98" cy="128" r="3" fill="#fff"/><circle cx="150" cy="128" r="3" fill="#fff"/>
+  <path d="M86 108 l-8 -5 M170 108 l8 -5" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="82" cy="146" rx="11" ry="6" fill="#ff8aa0" opacity=".55"/><ellipse cx="174" cy="146" rx="11" ry="6" fill="#ff8aa0" opacity=".55"/>
+  <path d="M120 152 Q128 158 136 152" fill="none" stroke="#c8304a" stroke-width="4" stroke-linecap="round"/>
+</svg>

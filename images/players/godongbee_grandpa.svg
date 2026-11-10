@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Godongbee's Grandpa · Human (male, Asian) · Senior -->
+  <circle cx="128" cy="128" r="124" fill="#e8e4d8"/>
+  <!-- vest over shirt -->
+  <path d="M36 256 C40 202 80 182 128 182 C176 182 216 202 220 256 Z" fill="#f4f0e4" stroke="#6a6250" stroke-width="4"/>
+  <path d="M60 256 C62 216 84 196 110 188 L120 256 Z M196 256 C194 216 172 196 146 188 L136 256 Z" fill="#6a5a8a" stroke="#3a2e52" stroke-width="4"/>
+  <circle cx="132" cy="220" r="4" fill="#c8a040"/><circle cx="132" cy="240" r="4" fill="#c8a040"/>
+  <!-- neck + head -->
+  <rect x="112" y="152" width="32" height="34" rx="10" fill="#e8c09a" stroke="#7a5a3a" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="54" ry="60" fill="#eec8a2" stroke="#7a5a3a" stroke-width="4"/>
+  <ellipse cx="74" cy="114" rx="9" ry="14" fill="#eec8a2" stroke="#7a5a3a" stroke-width="3"/><ellipse cx="182" cy="114" rx="9" ry="14" fill="#eec8a2" stroke="#7a5a3a" stroke-width="3"/>
+  <!-- bald top, white side hair -->
+  <path d="M74 104 C70 84 78 70 86 66 C84 82 86 94 90 104 Z M182 104 C186 84 178 70 170 66 C172 82 170 94 166 104 Z" fill="#f4f4f4" stroke="#9a9a9a" stroke-width="3"/>
+  <path d="M100 60 Q128 50 156 60" fill="none" stroke="#d8a882" stroke-width="3"/>
+  <!-- forehead wrinkles -->
+  <path d="M100 74 Q128 66 156 74 M104 84 Q128 77 152 84" fill="none" stroke="#b08460" stroke-width="3" stroke-linecap="round"/>
+  <!-- white bushy brows -->
+  <path d="M92 100 Q106 92 120 100 M136 100 Q150 92 164 100" fill="none" stroke="#f4f4f4" stroke-width="7" stroke-linecap="round"/>
+  <path d="M92 100 Q106 92 120 100 M136 100 Q150 92 164 100" fill="none" stroke="#a8a8a8" stroke-width="1.5"/>
+  <!-- sunken, drooping eyelids -->
+  <path d="M94 116 Q106 108 118 116" fill="#d8ac86" stroke="#5a3a20" stroke-width="3"/>
+  <path d="M138 116 Q150 108 162 116" fill="#d8ac86" stroke="#5a3a20" stroke-width="3"/>
+  <path d="M96 117 Q106 122 116 117 M140 117 Q150 122 160 117" fill="none" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M94 126 Q106 132 118 126 M138 126 Q150 132 162 126" fill="none" stroke="#b08460" stroke-width="2.5"/>
+  <path d="M86 118 l-6 -2 M86 124 l-6 2 M170 118 l6 -2 M170 124 l6 2" stroke="#b08460" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- cheek lines + mouth -->
+  <path d="M96 140 Q100 156 108 162 M160 140 Q156 156 148 162" fill="none" stroke="#b08460" stroke-width="3" stroke-linecap="round"/>
+  <path d="M114 154 Q128 160 142 154" fill="none" stroke="#5a3a20" stroke-width="4" stroke-linecap="round"/>
+  <path d="M120 166 Q128 170 136 166" fill="none" stroke="#b08460" stroke-width="2.5"/>
+</svg>

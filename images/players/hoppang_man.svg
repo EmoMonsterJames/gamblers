@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Hoppang Man · Others (male) · Young Adult — a steamed-bun hero (original design) -->
+  <circle cx="128" cy="128" r="124" fill="#eaf4ff"/>
+  <!-- cape + hero suit -->
+  <path d="M30 256 C34 210 70 190 96 186 L160 186 C186 190 222 210 226 256 Z" fill="#e8483a" stroke="#7a1a10" stroke-width="4"/>
+  <path d="M70 256 C74 214 98 194 128 194 C158 194 182 214 186 256 Z" fill="#3a6ad8" stroke="#1a2a6a" stroke-width="4"/>
+  <path d="M128 208 l7 14 l15 2 l-11 10 l3 15 l-14 -8 l-14 8 l3 -15 l-11 -10 l15 -2 Z" fill="#ffd23a" stroke="#a87a10" stroke-width="2"/>
+  <!-- round steamed-bun face: pale dough with a little fold on top -->
+  <circle cx="128" cy="116" r="72" fill="#fbf2e0" stroke="#b8946a" stroke-width="5"/>
+  <path d="M110 50 Q128 40 146 50 M118 46 Q128 56 138 46" fill="none" stroke="#b8946a" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="128" cy="40" rx="10" ry="6" fill="#d8a870" stroke="#9a6a3a" stroke-width="3"/>
+  <!-- rosy round cheeks -->
+  <circle cx="80" cy="134" r="20" fill="#ff9a7a" opacity=".75"/><circle cx="176" cy="134" r="20" fill="#ff9a7a" opacity=".75"/>
+  <path d="M96 100 Q106 92 116 100 M140 100 Q150 92 160 100" fill="none" stroke="#5a3a1a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="106" cy="116" rx="7" ry="9" fill="#2a1a0a"/><ellipse cx="150" cy="116" rx="7" ry="9" fill="#2a1a0a"/>
+  <circle cx="108" cy="112" r="2.5" fill="#fff"/><circle cx="152" cy="112" r="2.5" fill="#fff"/>
+  <path d="M106 148 Q128 172 150 148 Z" fill="#c83a3a" stroke="#6a1a1a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M196 60 q8 -12 0 -24 M210 64 q8 -12 0 -24" fill="none" stroke="#c8d8e8" stroke-width="4" stroke-linecap="round"/>
+</svg>

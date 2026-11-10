@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Lilly Flower Ant · Ant (female) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#ffeef4"/>
+  <!-- curled, drooping antennae; one with a ribbon -->
+  <path d="M108 66 C100 34 76 26 66 44 C58 58 66 74 78 70 C88 66 84 54 76 56" fill="none" stroke="#3a3a4a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M148 66 C156 34 180 26 190 44 C198 58 190 74 178 70 C168 66 172 54 180 56" fill="none" stroke="#3a3a4a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M164 40 L150 28 L148 46 Z M164 40 L180 30 L178 48 Z" fill="#ff5a8a" stroke="#a01a4a" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="164" cy="40" r="5" fill="#ff7aa0" stroke="#a01a4a" stroke-width="2"/>
+  <!-- stylish top + scarf -->
+  <path d="M40 256 C44 204 84 184 128 184 C172 184 212 204 216 256 Z" fill="#2a2a3a" stroke="#000" stroke-width="4"/>
+  <path d="M90 186 C100 206 156 206 166 186 L170 196 C156 220 100 220 86 196 Z" fill="#ff8ab0" stroke="#a01a4a" stroke-width="3"/>
+  <path d="M150 212 L160 250 L144 246 Z" fill="#ff8ab0" stroke="#a01a4a" stroke-width="3"/>
+  <!-- white segment neck + head -->
+  <ellipse cx="128" cy="172" rx="16" ry="14" fill="#f4f4f8" stroke="#5a5a6a" stroke-width="3"/>
+  <ellipse cx="128" cy="112" rx="56" ry="54" fill="#fafafc" stroke="#5a5a6a" stroke-width="4"/>
+  <!-- lily behind the ear -->
+  <g transform="translate(76 92) rotate(-30)"><path d="M0 0 C-14 -10 -12 -28 0 -34 C12 -28 14 -10 0 0 Z M0 0 C-22 -4 -30 -18 -26 -24 C-14 -22 -4 -12 0 0 Z M0 0 C22 -4 30 -18 26 -24 C14 -22 4 -12 0 0 Z" fill="#fff" stroke="#c84a8a" stroke-width="2"/><path d="M0 -4 l-3 -12 M0 -4 l3 -12" stroke="#e8a020" stroke-width="2"/></g>
+  <!-- lashes + eyes -->
+  <ellipse cx="106" cy="116" rx="11" ry="13" fill="#2a1a2a"/><ellipse cx="150" cy="116" rx="11" ry="13" fill="#2a1a2a"/>
+  <circle cx="110" cy="111" r="4" fill="#fff"/><circle cx="154" cy="111" r="4" fill="#fff"/>
+  <path d="M94 106 l-7 -5 M98 102 l-4 -7 M162 106 l7 -5 M158 102 l4 -7" stroke="#2a1a2a" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M96 100 Q106 92 118 98 M138 98 Q150 92 160 100" fill="#c88ae0" opacity=".5"/>
+  <ellipse cx="90" cy="136" rx="10" ry="6" fill="#ff9ac0" opacity=".55"/><ellipse cx="166" cy="136" rx="10" ry="6" fill="#ff9ac0" opacity=".55"/>
+  <!-- glossy smile -->
+  <path d="M114 144 Q128 156 142 144 Q128 150 114 144 Z" fill="#ff4a7a" stroke="#a01a4a" stroke-width="2.5"/>
+</svg>

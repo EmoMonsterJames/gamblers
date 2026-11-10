@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Baby Ling Ling Ghost · Ghost (female) · Baby — skin-tone, glammed up, LUX bag, yeonji-gonji (red dots) -->
+  <circle cx="128" cy="128" r="124" fill="#fff4ec"/>
+  <path d="M66 226 L66 132 C66 84 94 62 128 62 C162 62 190 84 190 132 L190 226 L174 212 L158 228 L142 212 L128 228 L114 212 L98 228 L82 212 Z" fill="#fbdcc4" stroke="#a8704a" stroke-width="5" stroke-linejoin="round"/>
+  <!-- big bow -->
+  <path d="M128 66 L100 48 L102 86 Z M128 66 L156 48 L154 86 Z" fill="#ff5a9a" stroke="#a81a5a" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="128" cy="66" r="8" fill="#ff8ab8" stroke="#a81a5a" stroke-width="3"/>
+  <!-- big baby eyes with lashes -->
+  <ellipse cx="106" cy="130" rx="11" ry="14" fill="#2a1a10"/><ellipse cx="150" cy="130" rx="11" ry="14" fill="#2a1a10"/>
+  <circle cx="110" cy="124" r="4.5" fill="#fff"/><circle cx="154" cy="124" r="4.5" fill="#fff"/>
+  <path d="M94 120 l-7 -5 M97 116 l-4 -7 M162 120 l7 -5 M159 116 l4 -7" stroke="#2a1a10" stroke-width="3" stroke-linecap="round"/>
+  <!-- yeonji-gonji: red dots on both cheeks and the forehead -->
+  <circle cx="88" cy="152" r="9" fill="#e0102a"/><circle cx="168" cy="152" r="9" fill="#e0102a"/><circle cx="128" cy="100" r="6" fill="#e0102a"/>
+  <path d="M120 158 Q128 164 136 158" fill="none" stroke="#c8203a" stroke-width="4" stroke-linecap="round"/>
+  <!-- tiny arms + LUX bag -->
+  <path d="M68 168 Q46 168 40 150" stroke="#a8704a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M188 168 Q206 172 210 188" stroke="#a8704a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M198 190 Q210 176 222 190" fill="none" stroke="#7a5a20" stroke-width="3"/>
+  <rect x="192" y="190" width="36" height="26" rx="5" fill="#ff8ab8" stroke="#a81a5a" stroke-width="3"/>
+  <text x="210" y="208" font-family="Georgia,serif" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">LUX</text>
+</svg>

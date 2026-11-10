@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Bomin Na (나보민) · Human (Asian woman) · Young Adult — ponytail, looks angry, women's "Polo" T-shirt, butterfly earrings -->
+  <circle cx="128" cy="128" r="124" fill="#eaf3ff"/>
+  <!-- ponytail swinging behind -->
+  <path d="M168 62 C206 52 222 86 210 120 C202 144 210 162 224 172 C200 176 184 156 188 128 C190 106 184 86 166 80 Z" fill="#1a1414" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M196 84 q10 20 2 40 M206 100 q6 18 -2 34" fill="none" stroke="#3a3030" stroke-width="3"/>
+  <rect x="160" y="62" width="14" height="18" rx="5" fill="#ff4a6a" stroke="#8a0a2a" stroke-width="3" transform="rotate(-20 167 71)"/>
+  <!-- fitted women's T-shirt with "Polo" -->
+  <path d="M42 256 C46 210 80 188 128 188 C176 188 210 210 214 256 Z" fill="#ffffff" stroke="#3a4a6a" stroke-width="4"/>
+  <path d="M108 190 Q128 210 148 190" fill="#f5dcc4" stroke="#3a4a6a" stroke-width="3"/>
+  <path d="M60 214 Q70 206 82 210 M196 214 Q186 206 174 210" fill="none" stroke="#3a4a6a" stroke-width="3"/>
+  <text x="128" y="238" font-family="Georgia, serif" font-size="24" font-style="italic" font-weight="700" text-anchor="middle" fill="#1a3a8a">Polo</text>
+  <!-- neck -->
+  <rect x="113" y="160" width="30" height="32" rx="11" fill="#f5dcc4" stroke="#a0704a" stroke-width="4"/>
+  <!-- head -->
+  <ellipse cx="128" cy="116" rx="54" ry="58" fill="#f5dcc4" stroke="#a0704a" stroke-width="4"/>
+  <!-- hair pulled tight back -->
+  <path d="M74 112 C70 66 96 50 128 50 C160 50 186 66 182 112 C176 86 160 74 128 74 C100 74 82 84 74 112 Z" fill="#1a1414" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M104 60 Q128 70 150 58" fill="none" stroke="#3a3030" stroke-width="3"/>
+  <!-- butterfly earrings -->
+  <g stroke="#6a1aa8" stroke-width="1.5">
+    <path d="M70 140 l-10 -8 q-6 6 0 12 Z M70 140 l10 -8 q6 6 0 12 Z" fill="#b86aff"/>
+    <path d="M70 140 l-8 6 q-2 6 4 6 Z M70 140 l8 6 q2 6 -4 6 Z" fill="#ff8ad8"/>
+    <path d="M186 140 l-10 -8 q-6 6 0 12 Z M186 140 l10 -8 q6 6 0 12 Z" fill="#b86aff"/>
+    <path d="M186 140 l-8 6 q-2 6 4 6 Z M186 140 l8 6 q2 6 -4 6 Z" fill="#ff8ad8"/>
+  </g>
+  <path d="M70 128 V136 M186 128 V136" stroke="#d8b040" stroke-width="2"/>
+  <!-- angry eyes: brows slanted down to the middle -->
+  <path d="M92 98 L118 108 M164 98 L138 108" stroke="#1a1414" stroke-width="6" stroke-linecap="round"/>
+  <path d="M96 118 Q106 110 118 116 Q108 124 96 118 Z M138 116 Q150 110 160 118 Q148 124 138 116 Z" fill="#fff" stroke="#1a1414" stroke-width="2"/>
+  <circle cx="108" cy="117" r="4.5" fill="#1a1414"/><circle cx="148" cy="117" r="4.5" fill="#1a1414"/>
+  <!-- angry red cheeks + anger mark -->
+  <ellipse cx="90" cy="136" rx="10" ry="5" fill="#ff5a5a" opacity=".45"/><ellipse cx="166" cy="136" rx="10" ry="5" fill="#ff5a5a" opacity=".45"/>
+  <path d="M168 70 q4 6 0 10 M174 66 q6 4 10 0 M174 82 q6 -4 10 0 M188 70 q-4 6 0 10" fill="none" stroke="#e8202a" stroke-width="3" stroke-linecap="round"/>
+  <!-- tight frowning mouth -->
+  <path d="M112 152 Q128 142 144 152" fill="none" stroke="#8a2a2a" stroke-width="5" stroke-linecap="round"/>
+</svg>

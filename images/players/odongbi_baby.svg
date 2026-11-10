@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Odongbi's Baby · Human (male, East Asian) · Baby -->
+  <circle cx="128" cy="128" r="124" fill="#e6f4ff"/>
+  <path d="M50 256 C54 210 88 192 128 192 C168 192 202 210 206 256 Z" fill="#8ad0f8" stroke="#2a6a9a" stroke-width="4"/>
+  <path d="M112 196 Q128 214 144 196" fill="#fff" stroke="#2a6a9a" stroke-width="3"/>
+  <g fill="#fff"><circle cx="90" cy="230" r="5"/><circle cx="166" cy="230" r="5"/><circle cx="128" cy="240" r="5"/></g>
+  <circle cx="128" cy="120" r="68" fill="#fbe0c4" stroke="#9a6a40" stroke-width="4"/>
+  <ellipse cx="60" cy="124" rx="8" ry="11" fill="#fbe0c4" stroke="#9a6a40" stroke-width="3"/><ellipse cx="196" cy="124" rx="8" ry="11" fill="#fbe0c4" stroke="#9a6a40" stroke-width="3"/>
+  <path d="M128 54 C116 40 126 28 138 34 C146 40 140 50 132 46" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="104" cy="122" rx="8" ry="10" fill="#1a1a1a"/><ellipse cx="152" cy="122" rx="8" ry="10" fill="#1a1a1a"/>
+  <circle cx="107" cy="118" r="3.5" fill="#fff"/><circle cx="155" cy="118" r="3.5" fill="#fff"/>
+  <ellipse cx="86" cy="146" rx="13" ry="8" fill="#ff9a9a" opacity=".6"/><ellipse cx="170" cy="146" rx="13" ry="8" fill="#ff9a9a" opacity=".6"/>
+  <ellipse cx="128" cy="154" rx="8" ry="6" fill="#c8404a" stroke="#6a1a20" stroke-width="2"/>
+  <path d="M134 158 q4 8 0 12" fill="none" stroke="#9ad8ff" stroke-width="3" stroke-linecap="round"/>
+</svg>

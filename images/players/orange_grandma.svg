@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Orange Grandma · Human (female) · Senior — orange-dyed hair, racy luxury clothes, botox-smooth face -->
+  <circle cx="128" cy="128" r="124" fill="#fff0e0"/>
+  <!-- big permed orange hair -->
+  <g fill="#ff8a1a" stroke="#a84a00" stroke-width="3"><circle cx="76" cy="84" r="26"/><circle cx="100" cy="56" r="26"/><circle cx="132" cy="46" r="26"/><circle cx="164" cy="56" r="26"/><circle cx="186" cy="86" r="26"/><circle cx="70" cy="118" r="20"/><circle cx="190" cy="120" r="20"/></g>
+  <!-- leopard dress + fur collar -->
+  <path d="M36 256 C40 202 82 184 128 184 C174 184 216 202 220 256 Z" fill="#e8b860" stroke="#7a5a20" stroke-width="4"/>
+  <g fill="#3a2a10"><ellipse cx="70" cy="226" rx="6" ry="4"/><ellipse cx="96" cy="240" rx="6" ry="4"/><ellipse cx="160" cy="236" rx="6" ry="4"/><ellipse cx="186" cy="222" rx="6" ry="4"/><ellipse cx="128" cy="248" rx="6" ry="4"/></g>
+  <path d="M60 208 C80 182 104 190 112 200 L128 230 L144 200 C152 190 176 182 196 208 C176 214 160 206 150 200 L128 236 L106 200 C96 206 80 214 60 208 Z" fill="#fff4f0" stroke="#c8b0a8" stroke-width="3"/>
+  <rect x="112" y="150" width="32" height="34" rx="10" fill="#f6d4be" stroke="#9a6a50" stroke-width="3"/>
+  <!-- smooth, shiny face (no wrinkles) -->
+  <ellipse cx="128" cy="112" rx="50" ry="56" fill="#fde2d0" stroke="#9a6a50" stroke-width="4"/>
+  <ellipse cx="110" cy="80" rx="18" ry="7" fill="#fff" opacity=".55"/>
+  <path d="M94 98 Q106 90 118 98 M138 98 Q150 90 162 98" fill="none" stroke="#a84a00" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="106" cy="114" rx="13" ry="9" fill="#2aa8a0" opacity=".45"/><ellipse cx="150" cy="114" rx="13" ry="9" fill="#2aa8a0" opacity=".45"/>
+  <ellipse cx="106" cy="116" rx="6" ry="7" fill="#1a1a1a"/><ellipse cx="150" cy="116" rx="6" ry="7" fill="#1a1a1a"/>
+  <path d="M94 110 l-6 -5 M162 110 l6 -5" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="92" cy="136" rx="10" ry="6" fill="#ff7a7a" opacity=".5"/><ellipse cx="164" cy="136" rx="10" ry="6" fill="#ff7a7a" opacity=".5"/>
+  <path d="M112 146 Q120 138 128 142 Q136 138 144 146 Q128 158 112 146 Z" fill="#e0102a"/>
+  <!-- pearl earrings + big ring -->
+  <circle cx="78" cy="126" r="7" fill="#fff" stroke="#c8b0a0" stroke-width="2"/><circle cx="178" cy="126" r="7" fill="#fff" stroke="#c8b0a0" stroke-width="2"/>
+</svg>

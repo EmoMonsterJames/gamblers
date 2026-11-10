@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- neon arch -->
+  <path d="M20 236 L20 80 Q20 14 100 14 Q180 14 180 80 L180 236" fill="#2a0a3a" stroke="#ffd166" stroke-width="8"/>
+  <g fill="#fff6a0"><circle cx="34" cy="70" r="4"/><circle cx="52" cy="38" r="4"/><circle cx="80" cy="22" r="4"/><circle cx="120" cy="22" r="4"/><circle cx="148" cy="38" r="4"/><circle cx="166" cy="70" r="4"/>
+    <circle cx="26" cy="110" r="4"/><circle cx="26" cy="150" r="4"/><circle cx="26" cy="190" r="4"/><circle cx="174" cy="110" r="4"/><circle cx="174" cy="150" r="4"/><circle cx="174" cy="190" r="4"/></g>
+  <!-- double doors -->
+  <rect x="40" y="86" width="58" height="150" rx="4" fill="#a0101e" stroke="#5a0008" stroke-width="3"/>
+  <rect x="102" y="86" width="58" height="150" rx="4" fill="#a0101e" stroke="#5a0008" stroke-width="3"/>
+  <rect x="48" y="100" width="42" height="56" rx="6" fill="#ffd166" opacity=".85"/><rect x="110" y="100" width="42" height="56" rx="6" fill="#ffd166" opacity=".85"/>
+  <circle cx="92" cy="170" r="4" fill="#ffd166"/><circle cx="108" cy="170" r="4" fill="#ffd166"/>
+  <!-- 7 7 7 sign -->
+  <rect x="40" y="40" width="120" height="38" rx="8" fill="#140c22" stroke="#ff3a8a" stroke-width="3"/>
+  <text x="100" y="69" text-anchor="middle" font-family="Arial Black,Arial" font-size="26" font-weight="900" fill="#ffd166">7 7 7</text>
+  <text x="69" y="135" text-anchor="middle" font-family="Arial Black,Arial" font-size="13" font-weight="900" fill="#7a1a00">SLOT</text>
+  <text x="131" y="135" text-anchor="middle" font-family="Arial Black,Arial" font-size="13" font-weight="900" fill="#7a1a00">HALL</text>
+</svg>

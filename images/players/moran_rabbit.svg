@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Moran Rabbit · Rabbit (female) · Young Adult — light yellow, pretty-acting face (wink, hand on cheek) -->
+  <circle cx="128" cy="128" r="124" fill="#fff6f0"/>
+  <g fill="#fff3b8" stroke="#a8903a" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 78 C80 30 86 6 102 8 C118 10 118 44 112 78 Z"/><path d="M162 78 C178 32 186 12 172 6 C156 2 144 40 144 78 Z"/></g>
+  <path d="M98 70 C90 38 94 20 102 20 C110 22 110 46 106 70 Z M152 70 C156 40 164 22 170 18 C176 20 164 48 158 70 Z" fill="#ffd0dc"/>
+  <path d="M40 256 C44 204 84 184 128 184 C172 184 212 204 216 256 Z" fill="#ffb8d0" stroke="#a84a70" stroke-width="4"/>
+  <path d="M96 192 Q112 204 128 196 Q144 204 160 192" fill="none" stroke="#fff" stroke-width="5"/>
+  <ellipse cx="128" cy="126" rx="62" ry="58" fill="#fff3b8" stroke="#a8903a" stroke-width="4"/>
+  <!-- one open eye, one wink -->
+  <ellipse cx="104" cy="122" rx="10" ry="13" fill="#2a1a10"/><circle cx="108" cy="117" r="4" fill="#fff"/>
+  <path d="M90 112 l-7 -5 M94 107 l-4 -7" stroke="#2a1a10" stroke-width="3" stroke-linecap="round"/>
+  <path d="M140 124 Q152 114 164 124" fill="none" stroke="#2a1a10" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="86" cy="144" rx="12" ry="7" fill="#ff8aa8" opacity=".6"/><ellipse cx="170" cy="144" rx="12" ry="7" fill="#ff8aa8" opacity=".6"/>
+  <path d="M120 150 Q128 158 136 150 Q128 154 120 150 Z" fill="#e8406a" stroke="#a81a4a" stroke-width="2"/>
+  <!-- hand on cheek + heart -->
+  <circle cx="186" cy="150" r="14" fill="#fff3b8" stroke="#a8903a" stroke-width="4"/>
+  <path d="M200 184 Q206 166 192 160" stroke="#a8903a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M206 92 c-8 -10 -22 2 -10 12 l10 9 l10 -9 c12 -10 -2 -22 -10 -12 Z" fill="#ff5a8a"/>
+</svg>

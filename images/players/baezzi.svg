@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #180 배찌 cute, blue cap -->
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#fff1cc"/>
+<g fill="#fff6b0" opacity=".9"><path d="M30 70 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/><path d="M214 52 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/><path d="M222 150 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/></g>
+<g clip-path="url(#cc)">
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#1d1d26" stroke="#3a2a24" stroke-width="4"/>
+<path d="M108 190 C114 202 142 202 148 190" fill="none" stroke="#e8b830" stroke-width="4"/><text x="128" y="238" font-family="Georgia,serif" font-size="26" font-weight="700" fill="#e8b830" text-anchor="middle">LUX</text><path d="M96 244 L160 244" stroke="#e8b830" stroke-width="2"/>
+<circle cx="76" cy="64" r="22" fill="#f8d2b0" stroke="#3a2a24" stroke-width="4"/><circle cx="180" cy="64" r="22" fill="#f8d2b0" stroke="#3a2a24" stroke-width="4"/><circle cx="76" cy="64" r="11" fill="#fbe6d3"/><circle cx="180" cy="64" r="11" fill="#fbe6d3"/><ellipse cx="128" cy="116" rx="68" ry="60" fill="#f8d2b0" stroke="#3a2a24" stroke-width="4"/><ellipse cx="128" cy="144" rx="24" ry="17" fill="#fbe6d3"/>
+<path d="M94 116 Q104 103 114 116" fill="none" stroke="#1a1a22" stroke-width="5" stroke-linecap="round"/><path d="M142 116 Q152 103 162 116" fill="none" stroke="#1a1a22" stroke-width="5" stroke-linecap="round"/><path d="M117 146 Q128 155 139 146" fill="none" stroke="#4a1a1a" stroke-width="4" stroke-linecap="round"/>
+<path d="M70 82 C70 20 186 20 186 82 Z" fill="#3a6ae0" stroke="#3a2a24" stroke-width="4"/><path d="M150 78 C180 70 214 76 220 86 L182 86 Z" fill="#2e54b3" stroke="#3a2a24" stroke-width="3"/>
+</g>
+</svg>

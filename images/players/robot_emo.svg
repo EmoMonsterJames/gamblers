@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Robot Emo · Emo (female, white) · Middle-Aged — brown hair, lab coat, harsh look -->
+  <circle cx="128" cy="128" r="124" fill="#eef0f4"/>
+  <!-- brown bob -->
+  <path d="M66 108 C60 54 94 34 128 34 C164 34 198 54 190 108 L194 170 C170 178 150 172 140 160 L116 160 C106 172 86 178 62 170 Z" fill="#6a3e1e" stroke="#3a2010" stroke-width="4"/>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#ffffff" stroke="#6a7078" stroke-width="4"/>
+  <path d="M110 186 L128 216 L146 186 Z" fill="#7a2a3a"/>
+  <path d="M110 186 L96 256 M146 186 L160 256" stroke="#6a7078" stroke-width="3"/>
+  <rect x="166" y="212" width="20" height="4" fill="#3a5a8a"/><rect x="166" y="220" width="20" height="4" fill="#e8483a"/>
+  <rect x="112" y="150" width="32" height="36" rx="10" fill="#f6d4be" stroke="#9a6a50" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="50" ry="56" fill="#fbdcc8" stroke="#9a6a50" stroke-width="4"/>
+  <path d="M78 96 C82 60 108 50 132 52 C158 54 176 70 178 96 C160 82 140 76 120 80 C104 76 90 84 78 96 Z" fill="#7a4a24" stroke="#3a2010" stroke-width="3" stroke-linejoin="round"/>
+  <!-- harsh brows, narrowed eyes, thin mouth -->
+  <path d="M90 102 L120 110 M166 102 L136 110" stroke="#3a2010" stroke-width="5" stroke-linecap="round"/>
+  <path d="M94 118 Q106 112 118 118 Q106 124 94 118 Z M138 118 Q150 112 162 118 Q150 124 138 118 Z" fill="#2a1a10"/>
+  <path d="M88 124 l-6 2 M168 124 l6 2" stroke="#b07a60" stroke-width="2" stroke-linecap="round"/>
+  <path d="M112 146 L144 144" stroke="#9a3a3a" stroke-width="4" stroke-linecap="round"/>
+</svg>

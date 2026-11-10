@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bonanza Meter coin: gold coin with a snowflake -->
+  <circle cx="32" cy="32" r="27" fill="#ffd34a" stroke="#a87a00" stroke-width="3"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#fff4b0" stroke-width="2"/>
+  <g stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M32 16 V48 M18 24 L46 40 M46 24 L18 40"/></g>
+  <g stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"><path d="M28 19 L32 22 L36 19 M28 45 L32 42 L36 45"/></g>
+</svg>

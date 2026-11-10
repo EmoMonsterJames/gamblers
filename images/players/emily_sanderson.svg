@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Emily Sanderson · Human (female, white) · Young Adult — long blonde hair -->
+  <circle cx="128" cy="128" r="124" fill="#eaf4ff"/>
+  <path d="M62 112 C54 50 94 30 128 30 C164 30 204 50 194 112 C202 150 208 190 196 216 L60 216 C48 190 54 150 62 112 Z" fill="#f4d470" stroke="#a8862a" stroke-width="4"/>
+  <path d="M36 256 C40 202 82 184 128 184 C174 184 216 202 220 256 Z" fill="#7ab8e8" stroke="#2a5a8a" stroke-width="4"/>
+  <path d="M108 186 Q128 204 148 186" fill="#fbe0cc" stroke="#2a5a8a" stroke-width="3"/>
+  <rect x="112" y="150" width="32" height="36" rx="10" fill="#fbe0cc" stroke="#9a6a50" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="52" ry="58" fill="#fde6d4" stroke="#9a6a50" stroke-width="4"/>
+  <path d="M74 98 C76 54 108 42 134 46 C164 48 184 66 182 98 C170 80 150 72 132 76 C116 64 94 72 74 98 Z" fill="#f8dc80" stroke="#a8862a" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="106" cy="114" rx="13" ry="15" fill="#fff" stroke="#3a2a1a" stroke-width="3"/><ellipse cx="150" cy="114" rx="13" ry="15" fill="#fff" stroke="#3a2a1a" stroke-width="3"/>
+  <circle cx="108" cy="116" r="8" fill="#3a8ad8"/><circle cx="152" cy="116" r="8" fill="#3a8ad8"/>
+  <circle cx="108" cy="116" r="4" fill="#111"/><circle cx="152" cy="116" r="4" fill="#111"/>
+  <circle cx="110" cy="112" r="3" fill="#fff"/><circle cx="154" cy="112" r="3" fill="#fff"/>
+  <path d="M94 96 Q106 90 118 96 M138 96 Q150 90 162 96" fill="none" stroke="#a8862a" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="92" cy="138" rx="10" ry="6" fill="#ff9a9a" opacity=".5"/><ellipse cx="164" cy="138" rx="10" ry="6" fill="#ff9a9a" opacity=".5"/>
+  <path d="M114 144 Q128 156 142 144" fill="none" stroke="#c8405a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M190 120 l8 -10 M196 130 l12 -4" stroke="#ff8ab0" stroke-width="5" stroke-linecap="round"/>
+</svg>

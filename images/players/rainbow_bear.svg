@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Rainbow Bear · Bear (male) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#f4f0ff"/>
+  <clipPath id="rbB"><path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z"/></clipPath>
+  <g clip-path="url(#rbB)"><rect x="0" y="184" width="256" height="12" fill="#ff5a5a"/><rect x="0" y="196" width="256" height="12" fill="#ffa63a"/><rect x="0" y="208" width="256" height="12" fill="#ffe03a"/><rect x="0" y="220" width="256" height="12" fill="#5ad86a"/><rect x="0" y="232" width="256" height="12" fill="#4aa8ff"/><rect x="0" y="244" width="256" height="12" fill="#9a6aff"/></g>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256" fill="none" stroke="#5a3a1a" stroke-width="4"/>
+  <circle cx="74" cy="66" r="24" fill="#c8945a" stroke="#5a3a1a" stroke-width="4"/><circle cx="182" cy="66" r="24" fill="#c8945a" stroke="#5a3a1a" stroke-width="4"/>
+  <circle cx="74" cy="66" r="12" fill="#f0c8a0"/><circle cx="182" cy="66" r="12" fill="#f0c8a0"/>
+  <ellipse cx="128" cy="122" rx="64" ry="60" fill="#c8945a" stroke="#5a3a1a" stroke-width="4"/>
+  <ellipse cx="128" cy="146" rx="28" ry="20" fill="#f0c8a0"/>
+  <circle cx="104" cy="114" r="8" fill="#2a1a0a"/><circle cx="152" cy="114" r="8" fill="#2a1a0a"/>
+  <circle cx="107" cy="111" r="3" fill="#fff"/><circle cx="155" cy="111" r="3" fill="#fff"/>
+  <path d="M116 146 Q128 158 140 146" fill="none" stroke="#5a3a1a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M30 44 Q56 14 82 44" fill="none" stroke="#ff5a5a" stroke-width="5"/><path d="M36 46 Q56 24 76 46" fill="none" stroke="#ffe03a" stroke-width="5"/><path d="M42 48 Q56 34 70 48" fill="none" stroke="#4aa8ff" stroke-width="5"/>
+</svg>

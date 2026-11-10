@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Congzzi · Dungi (female) · Young Adult — white, chubby, small ears, one big + one small dot eye, flashy CEO, LUX bag;
+       glamorous low-cut dress, big hoop earrings, diamond necklace -->
+  <circle cx="128" cy="128" r="124" fill="#fff6e0"/>
+  <g transform="translate(14 -2) scale(.89)">
+  <!-- small ears -->
+  <g fill="#ffffff" stroke="#8a7a6a" stroke-width="4" stroke-linejoin="round">
+    <path d="M90 74 C84 46 92 34 102 36 C112 38 112 56 108 74 Z"/><path d="M166 74 C172 46 164 34 154 36 C144 38 144 56 148 74 Z"/></g>
+  <path d="M94 68 C90 50 96 44 101 45 C106 46 106 58 104 68 Z M162 68 C166 50 160 44 155 45 C150 46 150 58 152 68 Z" fill="#ffc8d8"/>
+  </g>
+  <!-- bare shoulders + full chest -->
+  <path d="M26 256 C28 212 62 188 100 184 L156 184 C194 188 228 212 230 256 Z" fill="#ffffff" stroke="#8a7a6a" stroke-width="4"/>
+  <path d="M86 226 C92 206 116 202 127 220 M129 220 C140 202 164 206 170 226" fill="none" stroke="#c8b8a8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M128 214 L128 232" stroke="#d8c8b8" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- low-cut sequin gold dress (sweetheart neckline) -->
+  <path d="M44 256 C46 234 60 222 78 220 C88 236 112 240 128 230 C144 240 168 236 178 220 C196 222 210 234 212 256 Z" fill="#e8b830" stroke="#7a5a10" stroke-width="4"/>
+  <path d="M78 220 C80 206 70 196 62 198 M178 220 C176 206 186 196 194 198" stroke="#7a5a10" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <g fill="#fff"><circle cx="70" cy="240" r="2.5"/><circle cx="96" cy="248" r="2"/><circle cx="160" cy="246" r="2.5"/><circle cx="188" cy="238" r="2"/><circle cx="128" cy="248" r="2"/><circle cx="112" cy="240" r="1.8"/><circle cx="146" cy="238" r="1.8"/></g>
+  <!-- diamond necklace -->
+  <path d="M96 188 Q128 214 160 188" fill="none" stroke="#e8f4ff" stroke-width="3"/>
+  <g fill="#c8f0ff" stroke="#6ab0d8" stroke-width="1.5"><circle cx="104" cy="196" r="3"/><circle cx="114" cy="202" r="3"/><circle cx="142" cy="202" r="3"/><circle cx="152" cy="196" r="3"/></g>
+  <path d="M128 200 L138 210 L128 224 L118 210 Z" fill="#dff6ff" stroke="#4a9ad0" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M118 210 L138 210 M128 200 L124 210 L128 224 L132 210 Z" fill="none" stroke="#8ac8ea" stroke-width="1.5"/>
+  <path d="M146 196 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z" fill="#fff"/>
+  <g transform="translate(14 -2) scale(.89)">
+  <!-- chubby round face -->
+  <ellipse cx="128" cy="126" rx="72" ry="62" fill="#ffffff" stroke="#8a7a6a" stroke-width="4"/>
+  <ellipse cx="78" cy="150" rx="18" ry="12" fill="#ffb0c8" opacity=".6"/><ellipse cx="178" cy="150" rx="18" ry="12" fill="#ffb0c8" opacity=".6"/>
+  <!-- big gold hoop earrings -->
+  <circle cx="58" cy="158" r="14" fill="none" stroke="#ffcc33" stroke-width="5"/><circle cx="198" cy="158" r="14" fill="none" stroke="#ffcc33" stroke-width="5"/>
+  <circle cx="58" cy="172" r="4" fill="#c8f0ff" stroke="#4a9ad0" stroke-width="1.5"/><circle cx="198" cy="172" r="4" fill="#c8f0ff" stroke="#4a9ad0" stroke-width="1.5"/>
+  <!-- one big dot eye, one small dot eye, with lashes + shadow -->
+  <ellipse cx="100" cy="116" rx="18" ry="11" fill="#c86ad8" opacity=".35"/>
+  <circle cx="100" cy="120" r="12" fill="#1a1a1a"/><circle cx="104" cy="115" r="4" fill="#fff"/>
+  <path d="M86 112 l-7 -5 M90 106 l-4 -7" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="158" cy="122" r="5" fill="#1a1a1a"/><path d="M164 118 l6 -4" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Mongi wrinkle ( O ) with red lips -->
+  <path d="M114 140 C108 146 108 158 114 164 M142 140 C148 146 148 158 142 164" fill="none" stroke="#8a7a6a" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="128" cy="152" rx="6" ry="7" fill="#e0103a"/>
+  </g>
+  <!-- LUX bag -->
+  <path d="M190 210 Q206 190 222 210" fill="none" stroke="#3a2a1a" stroke-width="4"/>
+  <rect x="184" y="210" width="44" height="34" rx="6" fill="#4a2a6a" stroke="#1a0a2a" stroke-width="3"/>
+  <text x="206" y="232" font-family="Georgia,serif" font-size="12" font-weight="700" text-anchor="middle" fill="#ffd23a">LUX</text>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Mint Trapezoid · Trapezoid (female) · Young Adult — prim, with a LUX handbag -->
+  <circle cx="128" cy="128" r="124" fill="#f2fbf7"/>
+  <path d="M104 214 L98 250 M152 214 L158 250" stroke="#2a7a64" stroke-width="7" stroke-linecap="round"/>
+  <path d="M90 52 L166 52 L208 214 L48 214 Z" fill="#9fe8d0" stroke="#2a7a64" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M128 52 L104 36 L106 66 Z M128 52 L152 36 L150 66 Z" fill="#ff8ab0" stroke="#a82a58" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="128" cy="52" r="6" fill="#ffaac8" stroke="#a82a58" stroke-width="3"/>
+  <!-- prim closed eyes, lashes, small smile -->
+  <path d="M96 112 Q106 104 116 112 M140 112 Q150 104 160 112" fill="none" stroke="#1a3a30" stroke-width="5" stroke-linecap="round"/>
+  <path d="M96 112 l-6 -4 M160 112 l6 -4" stroke="#1a3a30" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="96" cy="130" rx="10" ry="5" fill="#ff9ab8" opacity=".55"/><ellipse cx="160" cy="130" rx="10" ry="5" fill="#ff9ab8" opacity=".55"/>
+  <path d="M120 138 Q128 144 136 138" fill="none" stroke="#c8204a" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms + LUX handbag -->
+  <path d="M60 150 Q40 170 46 196" stroke="#2a7a64" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M196 150 Q216 166 214 186" stroke="#2a7a64" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M200 186 Q214 168 228 186" fill="none" stroke="#7a5a20" stroke-width="4"/>
+  <rect x="194" y="186" width="40" height="30" rx="6" fill="#d8b060" stroke="#7a5a20" stroke-width="3"/>
+  <text x="214" y="206" font-family="Georgia,serif" font-size="11" font-weight="700" text-anchor="middle" fill="#4a3010">LUX</text>
+</svg>

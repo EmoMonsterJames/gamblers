@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #102 생일선물스마일 big laugh -->
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#dff0ff"/>
+<g clip-path="url(#cc)">
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#4f8ef7" stroke="#3a2a24" stroke-width="4"/>
+<path d="M104 188 L124 204 L116 214 Z M152 188 L132 204 L140 214 Z" fill="#fff" stroke="#3a2a24" stroke-width="3"/><path d="M128 204 L128 232" stroke="#3a2a24" stroke-width="3"/><g fill="#fff" stroke="#3a2a24" stroke-width="1.5"><circle cx="128" cy="214" r="2.5"/><circle cx="128" cy="226" r="2.5"/></g><path d="M156 226 c4 -6 10 -6 12 0" fill="none" stroke="#fff" stroke-width="2.5"/><text x="162" y="244" font-family="Arial" font-size="7" fill="#fff" text-anchor="middle">POLO</text>
+<g fill="#ffffff" stroke="#3a2a24" stroke-width="3"><circle cx="62" cy="222" r="13"/><circle cx="194" cy="222" r="13"/></g>
+<circle cx="128" cy="114" r="68" fill="#e9483b" stroke="#3a2a24" stroke-width="4"/><ellipse cx="100" cy="76" rx="22" ry="12" fill="#fff" opacity=".55" transform="rotate(-28 100 76)"/>
+<path d="M94 110 Q104 97 114 110" fill="none" stroke="#1a1a22" stroke-width="5" stroke-linecap="round"/><path d="M142 110 Q152 97 162 110" fill="none" stroke="#1a1a22" stroke-width="5" stroke-linecap="round"/><path d="M112 136 Q128 162 144 136 Z" fill="#8a1a2a" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><path d="M120 148 Q128 142 136 148" fill="#ff7a8a"/>
+
+</g>
+</svg>

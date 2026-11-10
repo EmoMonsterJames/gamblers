@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- legs + shoes -->
+  <path d="M78 168 L76 188 L60 192 Q56 184 66 182 L68 166 Z" fill="#1a6a2a"/><path d="M122 168 L124 188 L140 192 Q144 184 134 182 L132 166 Z" fill="#1a6a2a"/>
+  <ellipse cx="62" cy="192" rx="14" ry="6" fill="#2a1a0a"/><ellipse cx="138" cy="192" rx="14" ry="6" fill="#2a1a0a"/>
+  <!-- green coat -->
+  <path d="M58 112 Q100 96 142 112 L150 172 Q100 182 50 172 Z" fill="#2aa84a" stroke="#0a5a1a" stroke-width="4"/>
+  <rect x="56" y="150" width="88" height="10" fill="#2a1a0a"/><rect x="92" y="147" width="16" height="16" fill="#ffd166" stroke="#8a6a00" stroke-width="2"/>
+  <!-- arm holding a pot of gold -->
+  <path d="M142 120 Q166 130 166 150" fill="none" stroke="#2aa84a" stroke-width="14" stroke-linecap="round"/>
+  <ellipse cx="170" cy="164" rx="22" ry="8" fill="#ffd166" stroke="#8a6a00" stroke-width="2"/>
+  <path d="M150 164 Q150 188 170 190 Q190 188 190 164 Z" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
+  <circle cx="160" cy="160" r="6" fill="#ffd166"/><circle cx="174" cy="156" r="6" fill="#ffd166"/><circle cx="182" cy="162" r="5" fill="#ffd166"/>
+  <path d="M58 120 Q36 132 40 150" fill="none" stroke="#2aa84a" stroke-width="14" stroke-linecap="round"/>
+  <!-- face (eyes + mouth, orange beard) -->
+  <circle cx="100" cy="84" r="34" fill="#ffd8b8" stroke="#a86a4a" stroke-width="3"/>
+  <path d="M68 90 Q70 130 100 132 Q130 130 132 90 Q118 108 100 106 Q82 108 68 90 Z" fill="#ff7a2a" stroke="#a84a0a" stroke-width="3"/>
+  <ellipse cx="88" cy="80" rx="5" ry="6" fill="#2a1a0a"/><ellipse cx="112" cy="80" rx="5" ry="6" fill="#2a1a0a"/>
+  <circle cx="90" cy="78" r="1.8" fill="#fff"/><circle cx="114" cy="78" r="1.8" fill="#fff"/>
+  <path d="M90 98 Q100 106 110 98" fill="none" stroke="#5a1a0a" stroke-width="3" stroke-linecap="round"/>
+  <!-- hat -->
+  <rect x="62" y="48" width="76" height="8" rx="4" fill="#0a5a1a"/>
+  <path d="M74 50 L78 10 L122 10 L126 50 Z" fill="#2aa84a" stroke="#0a5a1a" stroke-width="4"/>
+  <rect x="76" y="36" width="48" height="8" fill="#1a1a1a"/><rect x="94" y="34" width="12" height="12" fill="#ffd166" stroke="#8a6a00" stroke-width="2"/>
+  <g fill="#2aa84a" stroke="#0a5a1a" stroke-width="1.5"><circle cx="128" cy="22" r="5"/><circle cx="136" cy="22" r="5"/><circle cx="132" cy="16" r="5"/></g>
+</svg>

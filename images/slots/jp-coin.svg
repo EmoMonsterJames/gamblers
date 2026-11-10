@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs><radialGradient id="jc" cx="38%" cy="34%" r="70%"><stop offset="0%" stop-color="#ffd0f0"/><stop offset="55%" stop-color="#d040a0"/><stop offset="100%" stop-color="#6a0a4a"/></radialGradient></defs>
+  <circle cx="50" cy="50" r="42" fill="url(#jc)" stroke="#ffd166" stroke-width="5"/>
+  <circle cx="50" cy="50" r="32" fill="none" stroke="#ffd166" stroke-width="2"/>
+  <path d="M50 22 l7 15 16 2 -12 11 3 16 -14 -8 -14 8 3 -16 -12 -11 16 -2z" fill="#ffd166" stroke="#8a5a00" stroke-width="2"/>
+  <text x="50" y="84" text-anchor="middle" font-family="Arial Black,Arial" font-size="12" font-weight="900" fill="#fff">JACKPOT</text>
+</svg>

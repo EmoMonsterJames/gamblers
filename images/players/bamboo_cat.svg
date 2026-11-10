@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Bamboo Cat · Cat (male) · Young Adult — munching bamboo -->
+  <circle cx="128" cy="128" r="124" fill="#eef8e8"/>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#4a8a4a" stroke="#1a4a1a" stroke-width="4"/>
+  <path d="M74 84 L66 34 L108 68 Z M182 84 L190 34 L148 68 Z" fill="#e8e0d4" stroke="#5a4a3a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M78 74 L74 48 L96 66 Z M178 74 L182 48 L160 66 Z" fill="#ffc8d0"/>
+  <ellipse cx="128" cy="126" rx="64" ry="58" fill="#e8e0d4" stroke="#5a4a3a" stroke-width="4"/>
+  <!-- tabby stripes -->
+  <path d="M112 70 L116 86 M128 68 L128 86 M144 70 L140 86" stroke="#9a8a7a" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="104" cy="118" rx="9" ry="11" fill="#7ab83a"/><ellipse cx="152" cy="118" rx="9" ry="11" fill="#7ab83a"/>
+  <ellipse cx="104" cy="118" rx="3" ry="9" fill="#111"/><ellipse cx="152" cy="118" rx="3" ry="9" fill="#111"/>
+  <ellipse cx="128" cy="150" rx="22" ry="14" fill="#fff4ec"/>
+  <path d="M120 150 Q128 158 136 150" fill="none" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M84 142 L60 136 M84 150 L60 154 M172 142 L196 136 M172 150 L196 154" stroke="#5a4a3a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- bamboo stalk -->
+  <rect x="190" y="92" width="16" height="140" rx="4" fill="#8ac84a" stroke="#3a6a1a" stroke-width="3"/>
+  <path d="M190 132 L206 132 M190 176 L206 176" stroke="#3a6a1a" stroke-width="3"/>
+  <path d="M206 100 Q226 86 236 96 Q222 104 206 106 Z" fill="#5aa83a" stroke="#3a6a1a" stroke-width="2"/>
+  <circle cx="184" cy="192" r="12" fill="#e8e0d4" stroke="#5a4a3a" stroke-width="3"/>
+</svg>

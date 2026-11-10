@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- No Money Bear · Bear (male) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#e2e6ea"/>
+  <!-- patched t-shirt -->
+  <path d="M30 256 C34 198 78 178 128 178 C178 178 222 198 226 256 Z" fill="#8a9a7a" stroke="#3e4a32" stroke-width="4"/>
+  <path d="M104 180 Q128 196 152 180" fill="none" stroke="#3e4a32" stroke-width="4"/>
+  <rect x="62" y="214" width="28" height="24" fill="#c86a4a" stroke="#3e4a32" stroke-width="3" transform="rotate(-10 76 226)"/>
+  <path d="M64 218 l24 0 M64 230 l24 0" stroke="#3e4a32" stroke-width="2" stroke-dasharray="3 3" transform="rotate(-10 76 226)"/>
+  <!-- droopy ears -->
+  <ellipse cx="74" cy="80" rx="24" ry="20" fill="#ffd84a" stroke="#8a6a10" stroke-width="4" transform="rotate(-40 74 80)"/>
+  <ellipse cx="74" cy="82" rx="12" ry="10" fill="#e8a848" transform="rotate(-40 74 82)"/>
+  <ellipse cx="182" cy="80" rx="24" ry="20" fill="#ffd84a" stroke="#8a6a10" stroke-width="4" transform="rotate(40 182 80)"/>
+  <ellipse cx="182" cy="82" rx="12" ry="10" fill="#e8a848" transform="rotate(40 182 82)"/>
+  <!-- head -->
+  <ellipse cx="128" cy="116" rx="62" ry="58" fill="#ffd84a" stroke="#8a6a10" stroke-width="4"/>
+  <ellipse cx="128" cy="140" rx="30" ry="22" fill="#fff0b0"/>
+  <!-- sad eyes -->
+  <path d="M90 108 L116 98 M166 108 L140 98" stroke="#6a4a00" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="104" cy="120" rx="8" ry="10" fill="#2a1a0a"/><ellipse cx="152" cy="120" rx="8" ry="10" fill="#2a1a0a"/>
+  <circle cx="107" cy="116" r="3" fill="#fff"/><circle cx="155" cy="116" r="3" fill="#fff"/>
+  <!-- frown (no nose) -->
+  <path d="M114 150 Q128 138 142 150" fill="none" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/>
+  <!-- sigh -->
+  <path d="M186 146 C200 140 206 150 200 156 C214 154 216 166 204 168" fill="none" stroke="#9aa4b0" stroke-width="4" stroke-linecap="round"/>
+  <!-- empty pocket out -->
+  <path d="M168 230 L190 230 L186 250 L172 250 Z" fill="#fff" stroke="#3e4a32" stroke-width="3"/>
+</svg>

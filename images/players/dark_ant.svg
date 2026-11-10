@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Dark Ant · Ant (male) · Young Adult — a dark-brown ant superfan holding an "EmoMonster" placard; plain tee and jeans -->
+  <circle cx="128" cy="128" r="124" fill="#efe6d6"/>
+  <!-- antennae -->
+  <path d="M110 52 C100 24 82 16 70 26" fill="none" stroke="#2a1c14" stroke-width="5" stroke-linecap="round"/><circle cx="68" cy="28" r="7" fill="#2a1c14"/>
+  <path d="M146 52 C156 24 174 16 186 26" fill="none" stroke="#2a1c14" stroke-width="5" stroke-linecap="round"/><circle cx="188" cy="28" r="7" fill="#2a1c14"/>
+  <!-- jeans at the bottom edge -->
+  <path d="M66 236 L190 236 L194 256 L62 256 Z" fill="#3a5a9a" stroke="#1a2a4a" stroke-width="3"/>
+  <path d="M128 236 L128 256" stroke="#1a2a4a" stroke-width="3"/><path d="M80 240 h20 M156 240 h20" stroke="#e0b040" stroke-width="2" stroke-dasharray="3 2"/>
+  <!-- plain t-shirt -->
+  <path d="M54 240 C52 196 86 172 128 172 C170 172 204 196 202 240 Z" fill="#d8d4c8" stroke="#6a665a" stroke-width="4"/>
+  <path d="M106 174 Q128 190 150 174" fill="none" stroke="#6a665a" stroke-width="3"/>
+  <!-- thin neck segment -->
+  <ellipse cx="128" cy="164" rx="14" ry="12" fill="#3a2a20" stroke="#140c08" stroke-width="3"/>
+  <!-- dark ant head -->
+  <ellipse cx="128" cy="108" rx="54" ry="50" fill="#3e2c22" stroke="#140c08" stroke-width="4"/>
+  <ellipse cx="108" cy="84" rx="16" ry="7" fill="#7a5e4a" opacity=".55" transform="rotate(-20 108 84)"/>
+  <!-- excited fan eyes -->
+  <ellipse cx="106" cy="110" rx="15" ry="17" fill="#fff" stroke="#140c08" stroke-width="3"/>
+  <ellipse cx="150" cy="110" rx="15" ry="17" fill="#fff" stroke="#140c08" stroke-width="3"/>
+  <circle cx="107" cy="112" r="8" fill="#140c08"/><circle cx="151" cy="112" r="8" fill="#140c08"/>
+  <path d="M104 106 l2 -5 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 Z M148 106 l2 -5 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 Z" fill="#fff"/>
+  <!-- cheering open mouth -->
+  <path d="M112 138 Q128 158 144 138 Z" fill="#7a1a1a" stroke="#e8dccc" stroke-width="3" stroke-linejoin="round"/>
+  <!-- arms raised holding the placard -->
+  <path d="M66 196 C44 176 40 140 50 110" fill="none" stroke="#3e2c22" stroke-width="12" stroke-linecap="round"/>
+  <path d="M190 196 C212 176 216 140 206 110" fill="none" stroke="#3e2c22" stroke-width="12" stroke-linecap="round"/>
+  <!-- placard sticks -->
+  <path d="M54 110 L54 60 M202 110 L202 60" stroke="#8a6440" stroke-width="5"/>
+  <!-- placard -->
+  <rect x="26" y="26" width="204" height="40" rx="6" fill="#fffbe8" stroke="#c8343a" stroke-width="4" transform="rotate(-4 128 46)"/>
+  <text x="128" y="56" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" fill="#c8343a" transform="rotate(-4 128 46)">EmoMonster</text>
+  <path d="M34 34 l4 -8 M222 30 l4 8" stroke="#ff4aa0" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="110" r="9" fill="#3e2c22" stroke="#140c08" stroke-width="3"/><circle cx="206" cy="110" r="9" fill="#3e2c22" stroke="#140c08" stroke-width="3"/>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Nubie · Dungi (female) · Young Adult — yellow, big ear ribbon, heavy makeup, Mongi wrinkle -->
+  <circle cx="128" cy="128" r="124" fill="#fff0f6"/>
+  <g fill="#ffe066" stroke="#9a7a10" stroke-width="4" stroke-linejoin="round">
+    <path d="M94 76 C80 30 86 6 102 8 C118 10 118 44 112 76 Z"/><path d="M162 76 C176 30 170 6 154 8 C138 10 138 44 144 76 Z"/></g>
+  <path d="M98 70 C90 38 94 20 102 20 C110 22 110 46 106 70 Z M158 70 C166 38 162 20 154 20 C146 22 146 46 150 70 Z" fill="#ffc8d8"/>
+  <path d="M154 34 L118 14 L120 58 Z M154 34 L192 14 L188 58 Z" fill="#ff3a7a" stroke="#9a0a3a" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="154" cy="35" r="10" fill="#ff6a9a" stroke="#9a0a3a" stroke-width="4"/>
+  <path d="M40 256 C44 204 84 184 128 184 C172 184 212 204 216 256 Z" fill="#c83aa8" stroke="#6a1a5a" stroke-width="4"/>
+  <ellipse cx="128" cy="124" rx="62" ry="58" fill="#ffe066" stroke="#9a7a10" stroke-width="4"/>
+  <ellipse cx="102" cy="118" rx="17" ry="13" fill="#7a3ad8" opacity=".6"/><ellipse cx="154" cy="118" rx="17" ry="13" fill="#7a3ad8" opacity=".6"/>
+  <ellipse cx="102" cy="120" rx="9" ry="11" fill="#1a0a2a"/><ellipse cx="154" cy="120" rx="9" ry="11" fill="#1a0a2a"/>
+  <circle cx="105" cy="116" r="3.5" fill="#fff"/><circle cx="157" cy="116" r="3.5" fill="#fff"/>
+  <path d="M86 112 l-9 -7 M89 106 l-6 -9 M94 103 l-2 -10 M170 112 l9 -7 M167 106 l6 -9 M162 103 l2 -10" stroke="#1a0a2a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="84" cy="142" rx="13" ry="8" fill="#ff4a8a" opacity=".6"/><ellipse cx="172" cy="142" rx="13" ry="8" fill="#ff4a8a" opacity=".6"/>
+  <!-- Mongi wrinkle + red lips -->
+  <path d="M114 138 C108 144 108 154 114 160 M142 138 C148 144 148 154 142 160" fill="none" stroke="#9a7a10" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M120 149 Q128 144 136 149 Q128 156 120 149 Z" fill="#e0103a"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Identity Confused Bear · Bear (gender fluid) · Young Adult — awkward make-up -->
+  <circle cx="128" cy="128" r="124" fill="#f4eaff"/>
+  <!-- shirt -->
+  <path d="M30 256 C34 198 78 178 128 178 C178 178 222 198 226 256 Z" fill="#5a6a8a" stroke="#2a3248" stroke-width="4"/>
+  <path d="M104 180 Q128 196 152 180" fill="none" stroke="#2a3248" stroke-width="4"/>
+  <path d="M120 200 C112 190 100 196 106 206 L120 220 L134 206 C140 196 128 190 120 200 Z" fill="#ff8ac8" stroke="#a02a78" stroke-width="2" transform="translate(40 10)"/>
+  <!-- ears -->
+  <circle cx="76" cy="70" r="22" fill="#9a6ac8" stroke="#4a2a7a" stroke-width="4"/><circle cx="76" cy="70" r="11" fill="#7a4aa8"/>
+  <circle cx="180" cy="70" r="22" fill="#9a6ac8" stroke="#4a2a7a" stroke-width="4"/><circle cx="180" cy="70" r="11" fill="#7a4aa8"/>
+  <!-- crooked hair pin -->
+  <path d="M150 60 L176 50" stroke="#ffd23a" stroke-width="6" stroke-linecap="round"/><circle cx="148" cy="61" r="7" fill="#ff6aa8" stroke="#a02a68" stroke-width="2"/>
+  <!-- head -->
+  <ellipse cx="128" cy="116" rx="62" ry="58" fill="#9a6ac8" stroke="#4a2a7a" stroke-width="4"/>
+  <ellipse cx="128" cy="144" rx="30" ry="20" fill="#c8a8e8"/>
+  <!-- uneven blue eye shadow -->
+  <path d="M84 108 Q102 88 120 108 Z" fill="#3ac8ff" opacity=".75"/>
+  <path d="M138 110 Q152 98 166 110 Z" fill="#3ac8ff" opacity=".5"/>
+  <circle cx="102" cy="116" r="9" fill="#1a0a2a"/><circle cx="152" cy="116" r="9" fill="#1a0a2a"/>
+  <circle cx="105" cy="113" r="3" fill="#fff"/><circle cx="155" cy="113" r="3" fill="#fff"/>
+  <path d="M92 106 l-6 -6 M98 103 l-2 -8 M162 106 l6 -6" stroke="#1a0a2a" stroke-width="3" stroke-linecap="round"/>
+  <!-- too-strong blush circles -->
+  <circle cx="84" cy="138" r="14" fill="#ff2a7a" opacity=".55"/><circle cx="174" cy="140" r="10" fill="#ff2a7a" opacity=".55"/>
+  <!-- lipstick smeared past the mouth -->
+  <path d="M108 150 Q124 140 150 146 Q138 166 112 158 Z" fill="#ff1a4a" opacity=".8"/>
+  <path d="M116 152 Q128 158 140 150" fill="none" stroke="#3a0a1a" stroke-width="4" stroke-linecap="round"/>
+</svg>

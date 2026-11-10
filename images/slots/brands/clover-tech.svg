@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72"><rect x="2" y="2" width="236" height="68" rx="12" fill="#0d3b23"/>
+<g transform="translate(38 36)" fill="#3ddc84"><circle cx="0" cy="-11" r="10"/><circle cx="11" cy="0" r="10"/><circle cx="0" cy="11" r="10"/><circle cx="-11" cy="0" r="10"/>
+<circle r="5" fill="#0d3b23"/><path d="M4 8 Q10 22 18 26" stroke="#3ddc84" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<text x="76" y="36" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="24" fill="#fff">CLOVER</text>
+<text x="77" y="57" font-family="Consolas,monospace" font-weight="700" font-size="16" letter-spacing="5" fill="#3ddc84">TECH_</text>
+<g fill="none" stroke="#3ddc84" stroke-width="2" opacity=".6"><path d="M190 22 h20 v14 h14"/><path d="M190 50 h12 v-8 h22"/><circle cx="226" cy="36" r="3" fill="#3ddc84"/><circle cx="226" cy="42" r="3" fill="#3ddc84"/></g></svg>

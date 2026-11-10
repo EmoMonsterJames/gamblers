@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Barista Emobu · Emobu (male, white) · Middle-Aged — apron and a coffee cup -->
+  <circle cx="128" cy="128" r="124" fill="#f6ece2"/>
+  <path d="M36 256 C40 204 82 184 128 184 C174 184 216 204 220 256 Z" fill="#f4f4f4" stroke="#5a4a3a" stroke-width="4"/>
+  <path d="M84 196 L172 196 L180 256 L76 256 Z" fill="#3a2a1e" stroke="#1a100a" stroke-width="3"/>
+  <path d="M96 196 L104 176 M160 196 L152 176" stroke="#3a2a1e" stroke-width="5"/>
+  <text x="128" y="228" font-family="Georgia,serif" font-size="14" font-weight="700" text-anchor="middle" fill="#e8c890">☕ BREW</text>
+  <rect x="112" y="152" width="32" height="32" rx="10" fill="#f6d4be" stroke="#8a5a40" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="52" ry="58" fill="#fbdcc8" stroke="#8a5a40" stroke-width="4"/>
+  <ellipse cx="76" cy="114" rx="7" ry="11" fill="#fbdcc8" stroke="#8a5a40" stroke-width="3"/><ellipse cx="180" cy="114" rx="7" ry="11" fill="#fbdcc8" stroke="#8a5a40" stroke-width="3"/>
+  <!-- short brown hair, a little grey at the sides -->
+  <path d="M76 96 C72 52 102 44 128 44 C156 44 184 52 180 96 C170 74 150 66 128 68 C106 66 86 74 76 96 Z" fill="#6a4a2a" stroke="#3a2410" stroke-width="3"/>
+  <path d="M78 96 L80 110 M178 96 L176 110" stroke="#b8b0a8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M94 100 Q106 94 118 100 M138 100 Q150 94 162 100" fill="none" stroke="#3a2410" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="106" cy="114" rx="6" ry="7" fill="#2a1a10"/><ellipse cx="150" cy="114" rx="6" ry="7" fill="#2a1a10"/>
+  <path d="M90 120 l-6 2 M166 120 l6 2" stroke="#b07a60" stroke-width="2" stroke-linecap="round"/>
+  <!-- moustache + smile -->
+  <path d="M108 138 Q118 130 128 136 Q138 130 148 138 Q138 142 128 140 Q118 142 108 138 Z" fill="#6a4a2a"/>
+  <path d="M114 148 Q128 158 142 148" fill="none" stroke="#5a2a1a" stroke-width="4" stroke-linecap="round"/>
+  <!-- latte cup -->
+  <path d="M190 160 L222 160 L218 196 L194 196 Z" fill="#fff" stroke="#5a4a3a" stroke-width="3"/>
+  <path d="M222 168 q12 2 0 18" fill="none" stroke="#5a4a3a" stroke-width="3"/>
+  <path d="M200 148 q4 -8 0 -14 M212 148 q4 -8 0 -14" fill="none" stroke="#b8a898" stroke-width="3" stroke-linecap="round"/>
+</svg>

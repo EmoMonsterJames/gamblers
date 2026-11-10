@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- No Money Rabbit · Rabbit (female) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#e4e8ee"/>
+  <!-- long rabbit ears: up, then flopping down at the sides -->
+  <path d="M104 74 C100 34 84 14 66 18 C46 22 36 50 38 84 C38 104 54 108 58 96 C60 70 64 46 76 44 C86 44 90 60 92 78 Z" fill="#ffe066" stroke="#8a6a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M48 92 C46 64 52 36 66 30 C74 28 80 34 80 42 C66 44 58 64 56 90 Z" fill="#ffb8c0"/>
+  <path d="M152 74 C156 34 172 14 190 18 C210 22 220 50 218 84 C218 104 202 108 198 96 C196 70 192 46 180 44 C170 44 166 60 164 78 Z" fill="#ffe066" stroke="#8a6a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M208 92 C210 64 204 36 190 30 C182 28 176 34 176 42 C190 44 198 64 200 90 Z" fill="#ffb8c0"/>
+  <!-- worn hoodie with patch -->
+  <path d="M36 256 C40 200 80 180 128 180 C176 180 216 200 220 256 Z" fill="#9aa4b0" stroke="#4a525e" stroke-width="4"/>
+  <path d="M96 184 C104 204 152 204 160 184" fill="none" stroke="#4a525e" stroke-width="4"/>
+  <path d="M110 200 L106 236 M146 200 L150 236" stroke="#4a525e" stroke-width="3"/>
+  <rect x="164" y="214" width="26" height="22" fill="#c89a6a" stroke="#4a525e" stroke-width="3" transform="rotate(8 177 225)"/>
+  <path d="M166 218 l22 16 M188 216 l-20 18" stroke="#4a525e" stroke-width="2" stroke-dasharray="3 3"/>
+  <!-- head -->
+  <ellipse cx="128" cy="118" rx="58" ry="56" fill="#ffe066" stroke="#8a6a10" stroke-width="4"/>
+  <!-- sad eyes -->
+  <path d="M92 112 L118 102 M164 112 L138 102" stroke="#6a4a00" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="106" cy="124" rx="9" ry="11" fill="#2a1a0a"/><ellipse cx="150" cy="124" rx="9" ry="11" fill="#2a1a0a"/>
+  <circle cx="109" cy="120" r="3" fill="#fff"/><circle cx="153" cy="120" r="3" fill="#fff"/>
+  <path d="M100 138 C98 146 102 152 104 152 C106 152 108 146 106 140 Z" fill="#7ac8ff"/>
+  <!-- small frown -->
+  <path d="M116 154 Q128 144 140 154" fill="none" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/>
+  <!-- little bow -->
+  <path d="M122 66 L106 58 L106 76 Z M134 66 L150 58 L150 76 Z" fill="#a8b4c0" stroke="#4a525e" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="128" cy="66" r="6" fill="#a8b4c0" stroke="#4a525e" stroke-width="3"/>
+  <!-- empty wallet thought -->
+  <g opacity=".7"><circle cx="210" cy="150" r="5" fill="#fff"/><circle cx="220" cy="132" r="8" fill="#fff"/></g>
+  <text x="206" y="118" font-size="22" font-family="Arial" fill="#8a6a10">0 G</text>
+</svg>

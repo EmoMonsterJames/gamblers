@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #230 짱구이모 black bob -->
+<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#dff0ff"/>
+<g clip-path="url(#cc)">
+<path d="M66 100 C60 40 196 40 190 100 L194 168 C170 176 86 176 62 168 Z" fill="#26222a" stroke="#3a2a24" stroke-width="4"/>
+<rect x="112" y="150" width="32" height="44" rx="10" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/>
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#ffd88a" stroke="#3a2a24" stroke-width="4"/>
+<path d="M100 192 C108 210 120 208 128 200 C136 208 148 210 156 192" fill="#fff" stroke="#3a2a24" stroke-width="3"/>
+<ellipse cx="72" cy="120" rx="9" ry="14" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/><ellipse cx="184" cy="120" rx="9" ry="14" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/><ellipse cx="128" cy="112" rx="56" ry="62" fill="#fde3cf" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="94" cy="136" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/><ellipse cx="162" cy="136" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/><ellipse cx="104" cy="114" rx="8" ry="9" fill="#1a1a22"/><circle cx="106" cy="111" r="3" fill="#fff"/><ellipse cx="152" cy="114" rx="8" ry="9" fill="#1a1a22"/><circle cx="154" cy="111" r="3" fill="#fff"/><path d="M117 146 Q128 155 139 146" fill="none" stroke="#4a1a1a" stroke-width="4" stroke-linecap="round"/>
+<path d="M68 120 C60 50 100 38 128 40 C160 38 198 52 188 120 C184 100 178 84 166 76 C150 92 110 92 90 78 C80 88 72 102 68 120 Z" fill="#26222a" stroke="#3a2a24" stroke-width="4"/><path d="M100 60 C112 52 138 50 158 58" fill="none" stroke="#878589" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+
+</g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Red Cross frame (hospital shop): the picture sits in the clear middle (29..171) -->
+  <defs>
+    <linearGradient id="rcRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7a7a"/><stop offset=".5" stop-color="#d8001e"/><stop offset="1" stop-color="#ff9a9a"/></linearGradient>
+    <g id="rcCross"><rect x="-6" y="-17" width="12" height="34" rx="2"/><rect x="-17" y="-6" width="34" height="12" rx="2"/></g>
+  </defs>
+  <!-- rim: white outer line, red band, white inner line -->
+  <rect x="20" y="20" width="160" height="160" rx="26" fill="none" stroke="#fff" stroke-width="16"/>
+  <rect x="20" y="20" width="160" height="160" rx="26" fill="none" stroke="url(#rcRim)" stroke-width="10"/>
+  <rect x="27" y="27" width="146" height="146" rx="20" fill="none" stroke="#fff" stroke-width="2"/>
+  <!-- heartbeat line along the bottom -->
+  <path d="M40 184 L76 184 L84 172 L92 196 L100 166 L108 192 L114 184 L160 184" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- crosses in the four corners -->
+  <g fill="#fff" stroke="#b0001a" stroke-width="2">
+    <use href="#rcCross" transform="translate(22 22) scale(.75)"/><use href="#rcCross" transform="translate(178 22) scale(.75)"/>
+    <use href="#rcCross" transform="translate(22 178) scale(.75)"/><use href="#rcCross" transform="translate(178 178) scale(.75)"/>
+  </g>
+  <!-- nurse cap on top -->
+  <path d="M62 27 C64 9 82 2 100 2 C118 2 136 9 138 27 C124 21 112 19 100 19 C88 19 76 21 62 27 Z" fill="#fff" stroke="#d8001e" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="#e0001e"><rect x="96" y="4" width="8" height="15" rx="1.5"/><rect x="92" y="7.5" width="16" height="8" rx="1.5"/></g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Kalisto 98 · Kalisto (male) · Young Adult — ordinary hoodie, glasses -->
+  <circle cx="128" cy="128" r="124" fill="#eaf6ff"/>
+  <!-- grey hoodie -->
+  <path d="M36 256 C40 202 82 184 128 184 C174 184 216 202 220 256 Z" fill="#8a96a4" stroke="#3a4450" stroke-width="4"/>
+  <path d="M100 186 Q128 214 156 186" fill="none" stroke="#3a4450" stroke-width="4"/>
+  <path d="M116 200 L114 232 M140 200 L142 232" stroke="#f4f4f4" stroke-width="3" stroke-linecap="round"/>
+  <!-- big ears -->
+  <path d="M84 110 C56 96 26 84 14 92 C24 116 56 132 86 132 Z" fill="#a8e060" stroke="#4a7a20" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M172 110 C200 96 230 84 242 92 C232 116 200 132 170 132 Z" fill="#a8e060" stroke="#4a7a20" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M80 114 C60 106 40 100 30 102 C42 116 60 124 80 124 Z M176 114 C196 106 216 100 226 102 C214 116 196 124 176 124 Z" fill="#88c048"/>
+  <ellipse cx="128" cy="122" rx="54" ry="60" fill="#a8e060" stroke="#4a7a20" stroke-width="4"/>
+  <!-- big eyes behind round glasses -->
+  <ellipse cx="106" cy="120" rx="16" ry="18" fill="#fff" stroke="#2a3a10" stroke-width="3"/><ellipse cx="150" cy="120" rx="16" ry="18" fill="#fff" stroke="#2a3a10" stroke-width="3"/>
+  <circle cx="108" cy="122" r="9" fill="#5a3a1a"/><circle cx="152" cy="122" r="9" fill="#5a3a1a"/>
+  <circle cx="111" cy="118" r="3.5" fill="#fff"/><circle cx="155" cy="118" r="3.5" fill="#fff"/>
+  <circle cx="106" cy="120" r="23" fill="#bfefff" fill-opacity=".25" stroke="#2a2a2a" stroke-width="4"/>
+  <circle cx="150" cy="120" r="23" fill="#bfefff" fill-opacity=".25" stroke="#2a2a2a" stroke-width="4"/>
+  <path d="M129 118 L127 118" stroke="#2a2a2a" stroke-width="4"/>
+  <path d="M116 158 Q128 164 140 158" fill="none" stroke="#2a3a10" stroke-width="4" stroke-linecap="round"/>
+</svg>

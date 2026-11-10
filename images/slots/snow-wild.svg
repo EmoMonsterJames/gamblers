@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bonanza Meter WILD: a snowman with a scarf and a WILD sign -->
+  <circle cx="32" cy="44" r="15" fill="#fff" stroke="#9ab8d0" stroke-width="2"/>
+  <circle cx="32" cy="22" r="11" fill="#fff" stroke="#9ab8d0" stroke-width="2"/>
+  <rect x="22" y="6" width="20" height="6" rx="2" fill="#2a2a3a"/><rect x="26" y="0" width="12" height="8" rx="2" fill="#2a2a3a"/>
+  <circle cx="28" cy="20" r="1.8" fill="#1a1a2a"/><circle cx="36" cy="20" r="1.8" fill="#1a1a2a"/>
+  <path d="M32 23 L39 25 L32 26 Z" fill="#ff8a1a"/>
+  <path d="M28 28 Q32 30 36 28" stroke="#1a1a2a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M20 33 Q32 37 44 33 L44 37 Q32 41 20 37 Z M38 36 L42 46 L37 46 Z" fill="#e8202a"/>
+  <rect x="10" y="44" width="44" height="13" rx="4" fill="#1a5ab0" stroke="#fff" stroke-width="2"/>
+  <text x="32" y="54.5" font-family="Arial Black,Arial" font-weight="900" font-size="10" text-anchor="middle" fill="#fff">WILD</text>
+</svg>

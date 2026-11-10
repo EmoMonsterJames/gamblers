@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Sokuri Angel · Angel (male) · Young Adult -->
+  <circle cx="128" cy="128" r="124" fill="#e8f4ff"/>
+  <!-- wings behind -->
+  <path d="M92 190 C50 180 18 140 14 96 C34 108 44 104 52 100 C44 120 60 140 70 142 C62 154 74 170 92 172 Z" fill="#fff" stroke="#8aa4c8" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M34 112 C46 134 60 148 82 160 M46 102 C54 126 68 140 86 150" fill="none" stroke="#c8d8ec" stroke-width="3"/>
+  <path d="M164 190 C206 180 238 140 242 96 C222 108 212 104 204 100 C212 120 196 140 186 142 C194 154 182 170 164 172 Z" fill="#fff" stroke="#8aa4c8" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M222 112 C210 134 196 148 174 160 M210 102 C202 126 188 140 170 150" fill="none" stroke="#c8d8ec" stroke-width="3"/>
+  <!-- white tunic with gold trim -->
+  <path d="M40 256 C44 204 84 184 128 184 C172 184 212 204 216 256 Z" fill="#fbfbff" stroke="#8aa4c8" stroke-width="4"/>
+  <path d="M100 186 Q128 210 156 186" fill="none" stroke="#e8b830" stroke-width="5"/>
+  <path d="M70 256 L100 194" stroke="#e8b830" stroke-width="4"/>
+  <!-- neck + head -->
+  <rect x="112" y="152" width="32" height="34" rx="10" fill="#f6d4b8" stroke="#8a5a40" stroke-width="3"/>
+  <ellipse cx="128" cy="110" rx="50" ry="56" fill="#f8dcc4" stroke="#8a5a40" stroke-width="4"/>
+  <ellipse cx="78" cy="114" rx="8" ry="12" fill="#f8dcc4" stroke="#8a5a40" stroke-width="3"/><ellipse cx="178" cy="114" rx="8" ry="12" fill="#f8dcc4" stroke="#8a5a40" stroke-width="3"/>
+  <!-- soft short blond hair -->
+  <path d="M76 104 C70 62 100 46 130 48 C162 48 186 66 180 104 C176 92 170 82 160 78 C150 86 136 80 128 72 C118 82 104 86 92 80 C84 86 80 94 76 104 Z" fill="#f4d06a" stroke="#a8862a" stroke-width="4" stroke-linejoin="round"/>
+  <!-- halo -->
+  <ellipse cx="128" cy="30" rx="44" ry="11" fill="none" stroke="#ffd23a" stroke-width="8"/>
+  <ellipse cx="128" cy="30" rx="44" ry="11" fill="none" stroke="#fff6b0" stroke-width="2"/>
+  <!-- warm eyes -->
+  <path d="M94 102 Q106 96 118 102 M138 102 Q150 96 162 102" fill="none" stroke="#a8862a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M96 118 Q106 108 116 118 M140 118 Q150 108 160 118" fill="none" stroke="#2a1a0a" stroke-width="4.5" stroke-linecap="round"/>
+  <ellipse cx="94" cy="134" rx="9" ry="5" fill="#ff9a8a" opacity=".45"/><ellipse cx="162" cy="134" rx="9" ry="5" fill="#ff9a8a" opacity=".45"/>
+  <!-- gentle smile -->
+  <path d="M110 144 Q128 160 146 144" fill="none" stroke="#7a3a2a" stroke-width="4" stroke-linecap="round"/>
+</svg>

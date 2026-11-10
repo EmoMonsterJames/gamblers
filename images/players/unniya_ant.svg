@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Elder Sisterya Ant (언니야개미) · Ant (female) · Adult — orange ant in a pretty dress holding a "개밋잎국수" tumbler -->
+  <circle cx="128" cy="128" r="124" fill="#fff1e0"/>
+  <!-- antennae with little bows -->
+  <path d="M106 66 C98 34 80 22 66 30" fill="none" stroke="#7a3008" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="64" cy="31" r="7" fill="#ff8a1a" stroke="#7a3008" stroke-width="3"/>
+  <path d="M150 66 C158 34 176 22 190 30" fill="none" stroke="#7a3008" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="192" cy="31" r="7" fill="#ff8a1a" stroke="#7a3008" stroke-width="3"/>
+  <path d="M176 22 l-10 -8 l0 16 Z M176 22 l10 -8 l0 16 Z" fill="#ff5aa8" stroke="#a81a5a" stroke-width="2"/>
+  <!-- pretty dress (puff sleeves, sweetheart neckline, ruffles) -->
+  <path d="M36 256 C40 210 76 188 128 188 C180 188 216 210 220 256 Z" fill="#ff7ab8" stroke="#a81a5a" stroke-width="4"/>
+  <path d="M98 192 Q113 206 128 196 Q143 206 158 192" fill="#ff8a1a" stroke="#a81a5a" stroke-width="3"/>
+  <ellipse cx="62" cy="214" rx="24" ry="18" fill="#ffb3d6" stroke="#a81a5a" stroke-width="3"/>
+  <ellipse cx="194" cy="214" rx="24" ry="18" fill="#ffb3d6" stroke="#a81a5a" stroke-width="3"/>
+  <path d="M60 248 q10 -8 20 0 q10 -8 20 0 q10 -8 20 0 q8 -8 16 0 q10 -8 20 0 q10 -8 20 0" fill="none" stroke="#fff" stroke-width="3"/>
+  <g fill="#fff"><circle cx="100" cy="226" r="3"/><circle cx="128" cy="236" r="3"/><circle cx="156" cy="226" r="3"/></g>
+  <!-- thin orange neck segment -->
+  <ellipse cx="128" cy="176" rx="16" ry="13" fill="#ff8a1a" stroke="#7a3008" stroke-width="3"/>
+  <!-- arm holding the tumbler -->
+  <path d="M194 220 C206 206 210 194 204 184" fill="none" stroke="#7a3008" stroke-width="12" stroke-linecap="round"/>
+  <path d="M194 220 C206 206 210 194 204 184" fill="none" stroke="#ff8a1a" stroke-width="7" stroke-linecap="round"/>
+  <!-- tumbler: 개밋잎국수 -->
+  <path d="M180 132 L226 132 L222 196 L184 196 Z" fill="#fff" stroke="#3a3a3a" stroke-width="3"/>
+  <rect x="178" y="122" width="50" height="12" rx="4" fill="#4aa86a" stroke="#1a5a2a" stroke-width="3"/>
+  <path d="M212 122 L218 102" stroke="#ff5a5a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M188 150 q6 -10 14 -2 q6 -10 14 0" fill="none" stroke="#4aa86a" stroke-width="3"/>
+  <text x="203" y="168" font-family="sans-serif" font-size="9.5" font-weight="900" text-anchor="middle" fill="#a81a5a">개밋잎</text>
+  <text x="203" y="182" font-family="sans-serif" font-size="9.5" font-weight="900" text-anchor="middle" fill="#a81a5a">국수</text>
+  <ellipse cx="200" cy="190" rx="13" ry="8" fill="#ff8a1a" stroke="#7a3008" stroke-width="3"/>
+  <!-- head -->
+  <ellipse cx="124" cy="114" rx="58" ry="54" fill="#ff8a1a" stroke="#7a3008" stroke-width="4"/>
+  <ellipse cx="100" cy="88" rx="18" ry="8" fill="#ffc07a" opacity=".7" transform="rotate(-20 100 88)"/>
+  <!-- big lashy eyes -->
+  <ellipse cx="102" cy="116" rx="11" ry="13" fill="#2a1206"/><ellipse cx="146" cy="116" rx="11" ry="13" fill="#2a1206"/>
+  <circle cx="106" cy="111" r="4" fill="#fff"/><circle cx="150" cy="111" r="4" fill="#fff"/>
+  <path d="M88 108 l-8 -6 M90 102 l-5 -8 M160 108 l8 -6 M158 102 l5 -8" stroke="#2a1206" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="84" cy="138" rx="11" ry="6" fill="#ff3a6a" opacity=".45"/><ellipse cx="164" cy="138" rx="11" ry="6" fill="#ff3a6a" opacity=".45"/>
+  <!-- smiling mandible mouth with lipstick -->
+  <path d="M110 144 Q124 158 138 144 Q124 150 110 144 Z" fill="#e0103a"/>
+  <path d="M104 148 l-6 8 M144 148 l6 8" stroke="#7a3008" stroke-width="4" stroke-linecap="round"/>
+</svg>

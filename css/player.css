@@ -1,0 +1,27 @@
+.player-card{
+
+    background:#263238;
+
+    border-radius:15px;
+
+    padding:15px;
+
+    margin:15px;
+
+    box-shadow:
+    0 4px 10px rgba(0,0,0,.4);
+}
+
+.player-image{
+
+    width:150px;
+
+    border-radius:50%;
+}
+
+.player-name{
+
+    font-size:24px;
+
+    color:#ffd700;
+}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Kalisto 147 · Kalisto (male) · Young Adult — big ears, big eyes, alien (no wrinkles) -->
+  <circle cx="128" cy="128" r="124" fill="#1e2a3a"/>
+  <g fill="#fff" opacity=".7"><circle cx="40" cy="60" r="2"/><circle cx="214" cy="48" r="2.5"/><circle cx="226" cy="150" r="2"/><circle cx="30" cy="170" r="2"/></g>
+  <!-- robe -->
+  <path d="M40 256 C44 206 84 186 128 186 C172 186 212 206 216 256 Z" fill="#c8b48a" stroke="#5a4a2a" stroke-width="4"/>
+  <path d="M100 188 L128 256 L156 188" fill="none" stroke="#5a4a2a" stroke-width="4"/>
+  <rect x="146" y="212" width="40" height="22" rx="5" fill="#fff" stroke="#5a4a2a" stroke-width="3"/>
+  <text x="166" y="229" font-size="15" font-weight="900" text-anchor="middle" font-family="Arial Black,Arial" fill="#3a8a1a">147</text>
+  <!-- big pointy ears -->
+  <path d="M84 104 C56 90 26 82 12 86 C26 104 50 124 84 128 Z" fill="#a8e060" stroke="#4a7a1a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M78 110 C58 102 40 98 30 98 C42 110 58 118 78 120 Z" fill="#88c048"/>
+  <path d="M172 104 C200 90 230 82 244 86 C230 104 206 124 172 128 Z" fill="#a8e060" stroke="#4a7a1a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M178 110 C198 102 216 98 226 98 C214 110 198 118 178 120 Z" fill="#88c048"/>
+  <!-- neck + wide alien head -->
+  <rect x="114" y="154" width="28" height="36" rx="10" fill="#a8e060" stroke="#4a7a1a" stroke-width="3"/>
+  <path d="M78 110 C78 70 100 54 128 54 C156 54 178 70 178 110 C178 146 156 166 128 166 C100 166 78 146 78 110 Z" fill="#b4ea6a" stroke="#4a7a1a" stroke-width="4"/>
+  <g fill="#9ad050" opacity=".6"><circle cx="110" cy="70" r="3"/><circle cx="150" cy="74" r="2.5"/></g>
+  <!-- big eyes behind glasses -->
+  <ellipse cx="106" cy="112" rx="16" ry="18" fill="#1a2a0a"/><ellipse cx="150" cy="112" rx="16" ry="18" fill="#1a2a0a"/>
+  <circle cx="111" cy="106" r="5" fill="#fff"/><circle cx="155" cy="106" r="5" fill="#fff"/>
+  <circle cx="103" cy="118" r="2.5" fill="#fff"/><circle cx="147" cy="118" r="2.5" fill="#fff"/>
+  <rect x="84" y="92" width="42" height="38" rx="12" fill="#bfefff" fill-opacity=".25" stroke="#2a2a2a" stroke-width="4"/>
+  <rect x="130" y="92" width="42" height="38" rx="12" fill="#bfefff" fill-opacity=".25" stroke="#2a2a2a" stroke-width="4"/>
+  <path d="M126 106 L130 106" stroke="#2a2a2a" stroke-width="4"/>
+  <!-- small mouth -->
+  <path d="M116 146 Q128 154 140 146" fill="none" stroke="#2a4a0a" stroke-width="4" stroke-linecap="round"/>
+</svg>

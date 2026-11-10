@@ -1,0 +1,157 @@
+// Home, players, hall of fame, world map, practice room and admin pages.
+import { h, fmt, esc } from "../core/util.js";
+import { toast, modal, confirmBox } from "../core/fx.js";
+import { Sound } from "../core/sound.js";
+import { Store } from "../core/store.js";
+import { CONFIG } from "../config.js";
+import { LOCATIONS, SHOPS, MISSIONS, TIERS, PETS, PET_EFFECTS, WEAPONS, FRAME_BY_ID, PEFFECT_BY_ID } from "../data/catalog.js";
+import { CASINO_GAMES, CASINO_BY_ID, gameRtp } from "../data/casino.js";
+import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
+import { avatar, playerCard, displayName, petView, weaponChip } from "../ui/profile.js";
+import { worldMap } from "../ui/map.js";
+import { openSlot } from "./slot.js";
+import { openCasino } from "./casino.js";
+
+// ------------------------------------------------------------ home
+export function homePage() {
+    const s = Store.season;
+    const champ = Store.hall[0];
+    return h("div.home",
+        h("div.hero",
+            h("div.hero-lights"),
+            h("div.logo-big", "GAMBLERS"),
+            h("p.tagline", "20명의 갬블러 · 하나의 왕좌 · 미션에 실패하면 탈락!"),
+            h("div.row.center",
+                h("a.btn.gold.huge", { href: "#/season" }, s && s.status !== "done" ? `▶ 시즌 ${s.number} 계속하기` : s ? `🏆 시즌 ${s.number} 결과 보기` : "🎰 새 시즌 시작"),
+                h("a.btn.ghost.big", { href: "#/practice" }, "🎮 게임 연습실"))),
+        h("div.home-grid",
+            h("a.hcard", { href: "#/players" }, h("span", "🧑‍🤝‍🧑"), h("b", "플레이어"), h("small", `${Store.players.length}명 등록`)),
+            h("a.hcard", { href: "#/map" }, h("span", "🗺️"), h("b", "월드 맵"), h("small", `카지노 ${LOCATIONS.length}곳`)),
+            h("a.hcard", { href: "#/hall" }, h("span", "🏆"), h("b", "명예의 전당"), h("small", champ ? `최근 우승: ${champ.snapshot?.name || displayName(Store.player(champ.playerId))}` : "아직 우승자 없음")),
+            h("a.hcard", { href: "#/guide" }, h("span", "📖"), h("b", "게임 방법"), h("small", "미션 · 펫 · 무기 · 상점")),
+            h("a.hcard", { href: "#/admin" }, h("span", "⚙️"), h("b", "관리자"), h("small", Store.cloud ? (Store.user ? "클라우드 저장 중" : "로그인 필요") : "로컬 모드"))));
+}
+
+// ------------------------------------------------------------ players
+export function playersPage() {
+    let q = "", country = "";
+    const list = h("div.player-grid");
+    const render = () => {
+        const s = Store.season;
+        const items = Store.players.filter(p => (!country || p.country === country) && (!q || `${p.name_ko} ${p.player_name} ${p.job} ${p.handler}`.toLowerCase().includes(q)));
+        list.replaceChildren(...items.map(p => {
+            const rec = Store.record(p.id);
+            const inSeason = s?.ps?.[p.id];
+            return h("button.pgrid-card" + (inSeason ? ".in" : ""), { onclick: () => modal(playerCard(p.id, inSeason || null), { title: displayName(p), wide: true }) },
+                avatar(p.id, 84), h("b", displayName(p)), h("small", p.player_name), h("small.muted", p.country),
+                rec.avg ? h("span.badge.rec", `평균 ${rec.avg.toFixed(1)}위`) : null, inSeason ? h("span.badge.handler", "시즌 참가") : null);
+        }));
+    };
+    const countries = [...new Set(Store.players.map(p => p.country))].filter(Boolean);
+    render();
+    return h("div.page",
+        h("h2.page-title", `🧑‍🤝‍🧑 플레이어 ${Store.players.length}명`),
+        h("div.filters",
+            h("input", { placeholder: "이름 / 직업 / 전담자 검색", oninput: e => { q = e.target.value.toLowerCase(); render(); } }),
+            h("select", { onchange: e => { country = e.target.value; render(); } }, h("option", { value: "" }, "전체 국가"), countries.map(c => h("option", { value: c }, c)))),
+        list);
+}
+
+// ------------------------------------------------------------ hall of fame
+export function hallPage() {
+    const rows = Store.hall;
+    return h("div.page.hall",
+        h("h2.page-title", "🏆 명예의 전당"),
+        rows.length ? h("div.hall-grid", rows.map(r => {
+            const sn = r.snapshot || {};
+            const p = Store.player(r.playerId);
+            return h("div.hall-card",
+                h("div.hall-season", `SEASON ${r.season}`),
+                h("div.hall-crown", "👑"),
+                avatar(r.playerId, 140),
+                h("b", sn.name || displayName(p)), h("small", sn.player_name || p?.player_name || ""),
+                h("div.hall-stats", h("span", `💰 ${fmt(sn.money)} G`), h("span", `💎 ${fmt(sn.points)} P`)),
+                sn.pet ? petView(sn.pet, sn.petEffect, 56) : null,
+                sn.weapons?.length ? h("div.wlist.small", sn.weapons.map(weaponChip)) : null,
+                h("small.muted", r.at ? new Date(r.at).toLocaleDateString() : ""));
+        })) : h("div.center-card", h("p", "아직 우승자가 없습니다. 첫 시즌의 왕좌는 누구에게?")));
+}
+
+// ------------------------------------------------------------ map
+export function mapPage() {
+    const info = h("div.loc-info", h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
+    const map = worldMap({ onPick: l => {
+        info.replaceChildren(
+            h("h3", l.emoji, " ", l.name),
+            h("p", l.req ? (l.req.points ? `🔒 ${l.req.points} 포인트 이상 보유 시 입장` : `🔒 ${l.req.country} 국적 전용 (출입권으로 입장 가능)`) : "누구나 입장 가능"),
+            h("h4", "슬롯"), h("ul", l.slots.map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
+            h("h4", "카지노 게임"), h("ul", l.casino.map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
+            h("h4", "상점"), h("ul", l.shops.map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))));
+    } });
+    return h("div.page", h("h2.page-title", "🗺️ 월드 맵"), h("div.map-page", map.el, info));
+}
+
+// ------------------------------------------------------------ practice room
+export function practicePage() {
+    let money = 200000;
+    const layer = h("div.practice-layer");
+    const ctx = kind => ({
+        pid: null, luck: { win: 0, bonus: 0 },
+        money: () => money,
+        canPlay: () => ({ ok: true }),
+        record(bet, win, points, extra = {}) { if (extra.pending) money -= bet; if (extra.settle) money += win; },
+        close() { layer.replaceChildren(); list.hidden = false; }
+    });
+    const open = (kind, id) => { list.hidden = true; layer.replaceChildren(kind === "slot" ? openSlot(SLOT_BY_ID[id], ctx()) : openCasino(CASINO_BY_ID[id], ctx())); };
+    const list = h("div",
+        h("p.muted", "시즌과 무관한 연습용 지갑(200,000G)으로 모든 게임을 테스트합니다. 프로그레시브 잭팟은 실제로 쌓입니다."),
+        h("h3", "🎰 슬롯"),
+        h("div.game-list", SLOTS.map(c => h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => open("slot", c.id) },
+            h("div.gc-kind", `${c.progressive === false ? "CLASSIC" : "PROGRESSIVE"} · ${LOCATIONS.find(l => l.slots.includes(c.id))?.name || ""}`), h("div.gc-name", c.name), h("div.gc-brand", c.brand)))),
+        h("h3", "🃏 카지노 게임"),
+        h("div.game-list", CASINO_GAMES.map(g => h("button.gcard.casino", { onclick: () => open("casino", g.id) },
+            h("div.gc-kind", `RTP ${(gameRtp(g) * 100).toFixed(1)}% · ${LOCATIONS.find(l => l.casino.includes(g.id))?.name || ""}`), h("div.gc-ico", g.icon), h("div.gc-name", g.name)))));
+    return h("div.page", h("h2.page-title", "🎮 게임 연습실"), list, layer);
+}
+
+// ------------------------------------------------------------ guide
+export function guidePage() {
+    const tierBlocks = [0, 1, 2, 3, 4].map(t => h("div.tier-block", h("b.tier.t" + t, `난이도 ${TIERS[t]}`), h("ul", MISSIONS.filter(m => m.tier === t).map(m => h("li", m.text)))));
+    return h("div.page.guide",
+        h("h2.page-title", "📖 게임 방법"),
+        h("div.guide-sec", h("h3", "진행"), h("ol",
+            h("li", "관리자가 SPIN을 눌러 등록된 플레이어 중 20명을 슬롯 릴로 선발합니다 (SKIP = 즉시 20명)."),
+            h("li", "라운드마다 공통 미션이 랜덤으로 뽑힙니다. 탈락자가 늘수록 미션 난이도가 최하 → 최상으로 올라갑니다."),
+            h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 지도 룰렛으로 플레이할 카지노가 정해집니다.`),
+            h("li", "미션에 실패한 플레이어들이 탈락 후보가 되고, 탈락 릴로 한 명이 탈락합니다 (모두 성공 시 손익 하위 3명이 후보)."),
+            h("li", "최종 2인은 무기 배틀! 보유금액이 많은 쪽이 선공 (같으면 포인트). 승자는 명예의 전당에 등극합니다."))),
+        h("div.guide-sec", h("h3", "미션"), h("div.tiers", tierBlocks)),
+        h("div.guide-sec", h("h3", "펫 & 펫효과 (승률 / 보너스 확률 증가)"),
+            h("p.muted", "일반펫·일반효과: 돈을 딸 확률만 +5~15%. 특수펫·특수효과: 돈을 딸 확률 + 보너스 확률까지. 펫+효과 합산 최대 +30%. 효과는 펫이 있을 때만 적용."),
+            h("div.pet-grid", PETS.map(p => h("div.pet-cell", petView(p.id, null, 60), h("small", p.name), h("b", `${p.kind === "special" ? "특수" : "일반"} +${p.boost}%`))))),
+        h("div.guide-sec", h("h3", "무기 (최대 6개, 배틀 시 랜덤 사용)"), h("div.wlist", WEAPONS.map(w => weaponChip(w.id)), weaponChip("basic"))),
+        h("div.guide-sec", h("h3", "포인트"), h("p", "슬롯의 P 아이콘(개수에 따라 1/3/6/10/20P)과 카지노 게임(랜덤 1~10P)으로 획득. 포인트 미션, Twins Wins(100P)·Dung Dung(50P) 입장, 포인트 상점에서 사용합니다.")));
+}
+
+// ------------------------------------------------------------ admin
+export function adminPage() {
+    const status = Store.cloud ? (Store.user ? `✅ 클라우드 연결됨 · ${esc(Store.user.email)}` : "☁️ 클라우드 연결됨 · 읽기 전용 (로그인하면 저장)") : "💾 로컬 모드 — js/config.js에 Supabase URL/KEY를 넣으면 클라우드 저장";
+    const email = h("input", { type: "email", placeholder: "관리자 이메일", autocomplete: "username" });
+    const pw = h("input", { type: "password", placeholder: "비밀번호", autocomplete: "current-password" });
+    let turnSec = +(localStorage.getItem("gamblers.turnSeconds") || CONFIG.TURN_SECONDS);
+    return h("div.page.admin",
+        h("h2.page-title", "⚙️ 관리자"),
+        h("div.admin-card", h("h3", "저장소"), h("p", status),
+            Store.cloud && !Store.user ? h("form.login", { onsubmit: async e => { e.preventDefault(); try { await Store.login(email.value, pw.value); toast("로그인 성공", "ok"); location.reload(); } catch (err) { toast(err.message, "error"); } } }, email, pw, h("button.btn.gold", "로그인")) : null,
+            Store.user ? h("button.btn.ghost", { onclick: async () => { await Store.logout(); location.reload(); } }, "로그아웃") : null),
+        h("div.admin-card", h("h3", "턴 시간"),
+            h("p.muted", "기본 10분(600초). 리허설용으로 줄일 수 있습니다 (이 브라우저에만 적용)."),
+            h("div.row", h("input", { type: "number", min: 30, step: 30, value: turnSec, onchange: e => { localStorage.setItem("gamblers.turnSeconds", e.target.value); CONFIG.TURN_SECONDS = +e.target.value; toast("저장됨", "ok"); } }), h("span", "초"))),
+        h("div.admin-card", h("h3", "사운드"), h("button.btn.ghost", { onclick: e => { const m = Sound.toggle(); e.target.textContent = m ? "🔇 꺼짐" : "🔊 켜짐"; } }, Sound.muted ? "🔇 꺼짐" : "🔊 켜짐")),
+        h("div.admin-card", h("h3", "시즌"),
+            Store.season ? h("button.btn.red", { onclick: async () => { if (await confirmBox(`진행 중인 시즌 ${Store.season.number}을(를) 중단하고 삭제할까요? (되돌릴 수 없음)`)) { Store.season.status = "done"; Store.season.aborted = true; await Store.pushSeason(); Store.endSeasonLocal(); toast("시즌을 중단했습니다", "ok"); location.hash = "#/"; } } }, "진행 중인 시즌 중단") : h("p.muted", "진행 중인 시즌 없음"),
+            !Store.cloud ? h("button.btn.ghost", { onclick: async () => { if (await confirmBox("이 브라우저의 모든 로컬 데이터(시즌·전적·명예의 전당·잭팟)를 지울까요?")) Store.resetAllLocal(); } }, "로컬 데이터 초기화") : null),
+        h("div.admin-card", h("h3", "프로그레시브 잭팟 현황"),
+            h("table.jp-table", h("tr", h("th", "게임"), h("th", "MAJOR"), h("th", "GRAND")),
+                SLOTS.filter(c => c.progressive !== false).map(c => h("tr", h("td", c.name), h("td", fmt(Store.pool(c.id).MAJOR)), h("td", fmt(Store.pool(c.id).GRAND)))))));
+}
