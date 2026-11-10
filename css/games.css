@@ -419,6 +419,19 @@
 @keyframes mfBlink { to { border-color: #fde047; background: #fde04722; } }
 .mf-note { text-align: center; color: #fde68a; font-weight: 800; }
 
+/* Hold & Spin teasing (all slots): a coin peeks in, then drops in or slides past */
+.hs-cell.teasing, .mf-slot.teasing { border-color: var(--glow, #fde047); box-shadow: inset 0 0 18px color-mix(in srgb, var(--glow, #fde047) 70%, transparent); overflow: hidden; }
+.hs-cell.tease-hot, .mf-slot.tease-hot { border-color: #ff4dd2; animation: teaseHot .22s infinite alternate; }
+@keyframes teaseHot { from { box-shadow: inset 0 0 10px #ff4dd2, 0 0 8px #ff4dd2; } to { box-shadow: inset 0 0 26px #ff4dd2, 0 0 22px #ff4dd2; } }
+.mf-slot { overflow: hidden; }
+.hs-tease { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; transform: translateY(-100%); animation: hsPeek var(--t, 900ms) cubic-bezier(.25, .8, .3, 1) forwards; pointer-events: none; }
+.mf-slot .hs-tease .mf-face { display: grid; place-items: center; }
+@keyframes hsPeek { 0% { transform: translateY(-100%); } 45% { transform: translateY(-30%); } 60% { transform: translateY(-46%); } 75% { transform: translateY(-24%); } 88% { transform: translateY(-38%); } 100% { transform: translateY(-30%); } }
+.hs-tease.in { animation: hsIn .26s cubic-bezier(.5, 0, .7, 1.4) forwards; }
+@keyframes hsIn { from { transform: translateY(-30%); } to { transform: translateY(0); } }
+.hs-tease.out { animation: hsOut .42s ease-in forwards; }
+@keyframes hsOut { from { transform: translateY(-30%); opacity: 1; } to { transform: translateY(115%); opacity: .2; } }
+
 /* omens */
 .reel-frame.omen-shake { animation: omenShake .1s 10; }
 .omen-monkey { position: absolute; inset: 0; pointer-events: none; z-index: 20; }

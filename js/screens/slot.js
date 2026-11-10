@@ -358,7 +358,50 @@ export function openSlot(cfg, ctx) {
                 : h("div.hs-coin", h("span", "🪙"), h("b.val", fmt(cn.v)));
     function holdHud(sumEl, lives) { return h("div.hs-hud", h("span", "RESPINS "), lives, h("span.hs-sum", "TOTAL ", sumEl)); }
     const setLives = (el, n, L = 3) => el.replaceChildren(...Array.from({ length: L }, (_, i) => h("i" + (i < n ? ".on" : ""))));
-    async function respinTick(board) { board.classList.add("respin"); for (let t = 0; t < 6; t++) { Sound.tick(); await sleep(turbo ? 40 : 90); } board.classList.remove("respin"); }
+    // ---------------- Hold & Spin pacing + teasing (all slots)
+    const pace = ms => turbo ? ms * 0.4 : ms;
+    const isHot = cn => !!(cn.jp || cn.wheel || cn.monkey || cn.mod);
+    function fakeCoin() { // a decoy that peeks in and slips away
+        const r = Math.random();
+        if (r < 0.28) {
+            const tiers = [["MINI", 30], ["MINOR", 25], ["MAXI", 14], ["MAJOR", 18], ["GRAND", 13]].filter(([t]) => cfg.jp?.[t]);
+            let x = Math.random() * tiers.reduce((s, t) => s + t[1], 0);
+            for (const [t, w] of tiers) if ((x -= w) < 0) return { jp: t };
+        }
+        if (mk && r < 0.5) return Math.random() < 0.5 ? { wheel: true } : { monkey: true };
+        return { v: bet * pick([1, 2, 3, 5, 10, 20]) };
+    }
+    // a coin slowly peeks into an empty cell… then drops in (land) or slides past
+    async function teaseCoin(cell, face, land, hot) {
+        const t = h("div.hs-tease", { style: { "--t": pace(hot ? 1400 : 900) + "ms" } }, face);
+        cell.append(t); cell.classList.add("teasing"); if (hot) cell.classList.add("tease-hot");
+        if (hot) { Sound.heartbeat(); setTimeout(() => Sound.heartbeat(), pace(650)); } else Sound.tease();
+        await sleep(pace(hot ? 1400 : 900));
+        t.classList.add(land ? "in" : "out");
+        if (!land) Sound.miss();
+        await sleep(pace(land ? 260 : 420));
+        t.remove(); cell.classList.remove("teasing", "tease-hot");
+    }
+    // one respin: spin the empty cells, then reveal real coins and decoys in a random order
+    async function respinRound({ spinEl, added, cellOf, faceOf, place, empties, lastChance, fakeFn = fakeCoin }) {
+        spinEl.classList.add("respin");
+        for (let t = 0; t < 10; t++) { Sound.tick(); await sleep(pace(110)); }
+        spinEl.classList.remove("respin");
+        const taken = new Set(added.map(cellOf));
+        const free = shuffle(empties.filter(c => !taken.has(c)));
+        const nFake = !added.length ? (Math.random() < (lastChance ? 0.8 : 0.5) ? 1 + (Math.random() < 0.25 ? 1 : 0) : 0) : (Math.random() < 0.2 ? 1 : 0);
+        const events = shuffle([...added.map(cn => ({ cn })), ...free.slice(0, nFake).map(cell => ({ cell, fake: fakeFn() }))]);
+        let teased = 0;
+        for (const e of events) {
+            if (e.fake) { await teaseCoin(e.cell, faceOf(e.fake), false, isHot(e.fake)); continue; }
+            const hot = isHot(e.cn);
+            if (hot || (teased < 2 && Math.random() < 0.4)) { teased++; await teaseCoin(cellOf(e.cn), faceOf(e.cn), true, hot); }
+            place(e.cn); Sound.coin();
+            await sleep(pace(420));
+        }
+    }
+    // during a respin the counter shows one life used; it refills only once a coin lands
+    const livesDuring = (steps, i) => Math.max(0, steps[i - 1].lives - 1);
     async function endJackpots(f) { for (const j of f.jpWins || []) await bigWin(j.amount, bet, { jackpot: j.tier }); }
 
     // Hold & Spin: 6 coins drop from the money tree, then respins.
@@ -380,7 +423,7 @@ export function openSlot(cfg, ctx) {
         };
         for (let i = 0; i < f.steps.length; i++) {
             const st = f.steps[i];
-            setLives(lives, st.lives);
+            setLives(lives, i ? livesDuring(f.steps, i) : st.lives);
             if (i === 0) {
                 // the drop: highlighted tree coins fall onto the board
                 const srcs = st.added.map(cn => treeEl?.querySelector(`[data-id="${cn.id}"]`));
@@ -397,22 +440,25 @@ export function openSlot(cfg, ctx) {
                 await sleep(turbo ? 150 : 500);
                 continue;
             }
-            await respinTick(board);
-            for (const cn of st.added) { place(cn); Sound.coin(); await sleep(turbo ? 60 : 160); }
+            await respinRound({
+                spinEl: board, added: st.added, cellOf: cn => cells[cn.c + "," + cn.r], faceOf: boardCoin, place,
+                empties: Object.values(cells).filter(c => !c.classList.contains("locked")), lastChance: f.steps[i - 1].lives === 1
+            });
+            setLives(lives, st.lives);
             // monkey coins pump up value coins
             for (const b of st.boosts) {
                 const m = cells[b.from[0] + "," + b.from[1]], t = cells[b.c + "," + b.r];
                 m.classList.add("boosting"); Sound.cash();
-                await fly(m, t, "🍌", { arc: -40, dur: 380 });
+                await fly(m, t, "🍌", { arc: -40, dur: 520 });
                 const val = t.querySelector(".val"); if (val) val.textContent = fmt(b.v);
                 t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop", "boosted");
                 floatText(t, `+${fmt(b.add)}`, "pts");
                 sum += b.add; sumEl.textContent = fmt(sum);
                 m.classList.remove("boosting");
-                await sleep(turbo ? 60 : 180);
+                await sleep(pace(350));
             }
             if (!st.added.length && !st.boosts.length) Sound.lose();
-            await sleep(turbo ? 120 : 380);
+            await sleep(pace(700));
         }
         if (f.full) { await banner("FULL BOARD!!!", 1500, "jackpot"); confetti(120, ["💰", "🪙", "🍌"]); }
         // monkey wheels multiply the coin total
@@ -449,19 +495,29 @@ export function openSlot(cfg, ctx) {
         const ring = h("div.mf-ring", slots, center);
         overlay.append(h("div.hs-wrap.mf-wrap", holdHud(sumEl, lives), h("div.mf-stage", ring), h("small.mf-note", "7칸을 모두 채우면 🐵 MONKEY JACKPOT!")));
         let sum = 0;
+        const fallFace = cn => h("div.mf-face", h("span", "🪙"), h("b" + (cn.jp ? ".jpl.jp-" + cn.jp.toLowerCase() : ""), cn.jp || fmt(cn.v)));
+        const placeFall = cn => {
+            const el = slots[cn.i];
+            el.replaceChildren(...fallFace(cn).childNodes);
+            el.classList.add("locked", "pop");
+            sum += cn.v || 0; sumEl.textContent = fmt(sum);
+        };
         for (let i = 0; i < f.steps.length; i++) {
             const st = f.steps[i];
-            setLives(lives, st.lives);
-            if (i > 0) { ring.classList.add("respin"); for (let t = 0; t < 6; t++) { Sound.tick(); await sleep(turbo ? 40 : 90); } ring.classList.remove("respin"); }
-            for (const cn of st.added) {
-                const el = slots[cn.i];
-                el.replaceChildren(h("span", "🪙"), h("b" + (cn.jp ? ".jpl.jp-" + cn.jp.toLowerCase() : ""), cn.jp || fmt(cn.v)));
-                el.classList.add("locked", "pop"); Sound.coin();
-                sum += cn.v || 0; sumEl.textContent = fmt(sum);
-                await sleep(turbo ? 80 : 220);
+            if (i === 0) {
+                setLives(lives, st.lives);
+                for (const cn of st.added) { placeFall(cn); Sound.coin(); await sleep(pace(380)); }
+                await sleep(pace(600));
+                continue;
             }
-            if (!st.added.length && i > 0) Sound.lose();
-            await sleep(turbo ? 120 : 380);
+            setLives(lives, livesDuring(f.steps, i));
+            await respinRound({
+                spinEl: ring, added: st.added, cellOf: cn => slots[cn.i], faceOf: fallFace, place: placeFall, fakeFn: () => { const c = fakeCoin(); return c.wheel || c.monkey ? { v: bet * 8 } : c; },
+                empties: slots.filter(s => !s.classList.contains("locked")), lastChance: f.steps[i - 1].lives === 1
+            });
+            setLives(lives, st.lives);
+            if (!st.added.length) Sound.lose();
+            await sleep(pace(700));
         }
         // the monkey collects everything into the centre
         let got = 0;
@@ -570,21 +626,27 @@ export function openSlot(cfg, ctx) {
             : cn.jp ? h("div.hs-coin.jpc.jp-" + cn.jp.toLowerCase(), coinIcon.cloneNode(true), h("b", cn.jp))
                 : h("div.hs-coin", coinIcon.cloneNode(true), h("b", fmt(cn.v)));
         let sum = 0;
-        const L = 3;
-        const setLives = n => lives.replaceChildren(...Array.from({ length: L }, (_, i) => h("i" + (i < n ? ".on" : ""))));
+        const place = cn => {
+            const el = cells[cn.c + "," + cn.r];
+            el.replaceChildren(coinEl(cn)); el.classList.add("locked", "pop");
+            sum += cn.v || 0; sumEl.textContent = fmt(sum);
+        };
         for (let i = 0; i < f.steps.length; i++) {
             const st = f.steps[i];
-            setLives(st.lives);
-            if (i > 0) { board.classList.add("respin"); for (let t = 0; t < 6; t++) { Sound.tick(); await sleep(turbo ? 40 : 90); } board.classList.remove("respin"); }
-            for (const cn of st.added) {
-                const el = cells[cn.c + "," + cn.r];
-                el.replaceChildren(coinEl(cn)); el.classList.add("locked", "pop");
-                Sound.coin();
-                sum += cn.v || 0; sumEl.textContent = fmt(sum);
-                await sleep(turbo ? 60 : 160);
+            if (i === 0) {
+                setLives(lives, st.lives);
+                for (const cn of st.added) { place(cn); Sound.coin(); await sleep(pace(300)); }
+                await sleep(pace(600));
+                continue;
             }
-            if (!st.added.length && i > 0) Sound.lose();
-            await sleep(turbo ? 120 : 380);
+            setLives(lives, livesDuring(f.steps, i));
+            await respinRound({
+                spinEl: board, added: st.added, cellOf: cn => cells[cn.c + "," + cn.r], faceOf: coinEl, place,
+                empties: Object.values(cells).filter(c => !c.classList.contains("locked")), lastChance: f.steps[i - 1].lives === 1
+            });
+            setLives(lives, st.lives);
+            if (!st.added.length) Sound.lose();
+            await sleep(pace(700));
         }
         // modifiers
         for (const m of f.mods || []) {
