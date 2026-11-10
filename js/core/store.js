@@ -17,12 +17,16 @@ function load() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } cat
 export const Store = {
     mode: "local",
     user: null,
-    players: [],
+    players: [],     // active players (selection pool)
+    allPlayers: [],  // including deactivated ones (old seasons still reference them)
+    playerEdits: {}, // local-mode admin edits: id -> full record
     decor: {},       // pid -> { frame, effect, ownedFrames:[], ownedEffects:[] }
     hall: [],        // [{ season, playerId, snapshot, at }]
     results: [],     // [{ season, playerId, rank }]
     jackpots: {},    // game -> tier -> amount
     machines: {},    // game -> state
+    jpLog: [],       // [{ game, tier, playerId, amount, season, at }] MAXI+ jackpots
+    catalog: {},     // admin overrides for shop items: see data/catalogAdmin.js
     season: null,    // current season object (see game/season.js)
     seasonCount: 0,
     _saveTimer: null,
@@ -38,9 +42,14 @@ export const Store = {
         this.results = L.results || [];
         this.jackpots = L.jackpots || {};
         this.machines = L.machines || {};
+        this.jpLog = L.jpLog || [];
+        this.catalog = L.catalog || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
-        this.players = SEED_PLAYERS.map(p => ({ ...p }));
+        this.playerEdits = L.playerEdits || {};
+        const base = new Map(SEED_PLAYERS.map(p => [p.id, { ...p }]));
+        for (const [id, p] of Object.entries(this.playerEdits)) base.set(+id, { ...base.get(+id), ...p });
+        this.setPlayers([...base.values()]);
         this.ensureJackpots();
         if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY) {
             try {
@@ -60,18 +69,22 @@ export const Store = {
 
     async pull() {
         const q = async (t, sel = "*") => { const { data, error } = await sb.from(t).select(sel); if (error) throw error; return data; };
-        const [players, hall, results, jps, machines, seasons] = await Promise.all([
+        const [players, hall, results, jps, machines, seasons, hits, settings] = await Promise.all([
             q("players"), q("hall_of_fame"), q("season_results"), q("slot_jackpots"), q("slot_machine_state"),
-            sb.from("seasons").select("*").order("number", { ascending: false }).limit(1).then(r => { if (r.error) throw r.error; return r.data; })
+            sb.from("seasons").select("*").order("number", { ascending: false }).limit(1).then(r => { if (r.error) throw r.error; return r.data; }),
+            q("jackpot_hits"), q("settings")
         ]);
         if (players?.length) {
-            this.players = players.filter(p => p.is_active !== false).sort((a, b) => a.id - b.id);
+            this.setPlayers(players);
             for (const p of players) this.decor[p.id] = { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] };
         }
         this.hall = hall.map(r => ({ season: r.season_number, playerId: r.player_id, snapshot: r.snapshot, at: r.crowned_at })).sort((a, b) => b.season - a.season);
         this.results = results.map(r => ({ season: r.season_number, playerId: r.player_id, rank: r.rank }));
         for (const r of jps) { (this.jackpots[r.game] ||= {})[r.tier] = +r.amount; }
         for (const r of machines) this.machines[r.game] = r.state || {};
+        this.jpLog = hits.map(r => ({ game: r.game, tier: r.tier, playerId: r.player_id, amount: +r.amount, season: r.season_number, at: r.hit_at }));
+        const cat = settings.find(r => r.key === "catalog");
+        if (cat) this.catalog = cat.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -81,7 +94,7 @@ export const Store = {
 
     saveLocal() {
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, playerEdits: this.playerEdits }));
         } catch (e) { console.warn(e); }
     },
 
@@ -130,7 +143,29 @@ export const Store = {
     async logout() { await sb?.auth.signOut(); this.user = null; },
 
     // ------------------------------------------------------------ players
-    player(id) { return this.players.find(p => p.id === +id); },
+    player(id) { return this.allPlayers.find(p => p.id === +id); },
+    setPlayers(list) {
+        this.allPlayers = [...list].sort((a, b) => a.id - b.id);
+        this.players = this.allPlayers.filter(p => p.is_active !== false);
+    },
+    nextPlayerId() { return Math.max(0, ...this.allPlayers.map(p => p.id)) + 1; },
+    // Admin: create or update a player (cloud: upsert; local: kept in this browser)
+    async savePlayer(p) {
+        const rec = { ...p, id: +p.id };
+        const i = this.allPlayers.findIndex(x => x.id === rec.id);
+        if (i >= 0) this.allPlayers[i] = { ...this.allPlayers[i], ...rec }; else this.allPlayers.push(rec);
+        this.setPlayers(this.allPlayers);
+        if (this.cloud) {
+            const cols = ["id", "login_id", "name_ko", "player_name", "profile_image", "country", "school", "job", "ethnicity", "age_group", "gender", "preference", "handler", "is_active"];
+            const row = Object.fromEntries(cols.map(c => [c, rec[c] ?? (c === "is_active" ? true : null)]));
+            const ok = await this.write(sb => sb.from("players").upsert(row));
+            if (!this.user) return false;
+        } else {
+            this.playerEdits[rec.id] = rec;
+        }
+        this.saveLocal();
+        return true;
+    },
     getDecor(pid) { return this.decor[pid] || (this.decor[pid] = { frame: null, effect: null, ownedFrames: [], ownedEffects: [] }); },
     setDecor(pid, patch) {
         const d = Object.assign(this.getDecor(pid), patch);
@@ -202,7 +237,28 @@ export const Store = {
         await this.flushJackpots();
         this.jackpots[cfg.id][tier] = j.seed;
         this.saveLocal();
-        await this.write(sb => sb.rpc("jp_hit", { p_game: cfg.id, p_tier: tier, p_winner: pid, p_amount: amount }));
+        await this.write(sb => sb.rpc("jp_hit", { p_game: cfg.id, p_tier: tier, p_winner: pid ?? null, p_amount: amount, p_season: this.season?.number ?? null }));
+    },
+
+    // MAXI+ jackpot winners (slots) and top-prize winners (casino).
+    // Progressive slot tiers are already logged server-side by jp_hit.
+    logJackpot(game, tier, pid, amount, { serverLogged = false } = {}) {
+        if (pid == null) return; // practice room
+        const season = this.season?.number ?? null;
+        this.jpLog.push({ game, tier, playerId: pid, amount, season, at: new Date().toISOString() });
+        this.saveLocal();
+        if (!serverLogged) this.write(sb => sb.from("jackpot_hits").insert({ game, tier, player_id: pid, amount, season_number: season }));
+    },
+    jackpotWinners(game) {
+        const R = { MAXI: 3, MAJOR: 4, GRAND: 5, JACKPOT: 3 };
+        return this.jpLog.filter(r => r.game === game && r.playerId != null && (R[r.tier] || 0) >= 3).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    },
+
+    // ------------------------------------------------------------ admin catalog overrides
+    async saveCatalog(catalog) {
+        this.catalog = catalog;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "catalog", value: catalog, updated_at: new Date().toISOString() }));
     },
 
     // ------------------------------------------------------------ machine meters

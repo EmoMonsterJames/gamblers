@@ -3,12 +3,17 @@ import { h } from "./core/util.js";
 import { Store } from "./core/store.js";
 import { Sound } from "./core/sound.js";
 import { CONFIG } from "./config.js";
+import { applyCatalog } from "./data/catalogAdmin.js";
 import { seasonScreen } from "./screens/seasonView.js";
 import { homePage, playersPage, hallPage, mapPage, practicePage, guidePage, adminPage } from "./screens/pages.js";
+import { adminCatalogPage } from "./screens/adminCatalog.js";
+import { slotGenPage } from "./screens/slotGen.js";
+import { adminPlayersPage } from "./screens/adminPlayers.js";
 
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage,
-    "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage
+    "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
+    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage
 };
 
 function nav(active) {
@@ -34,6 +39,7 @@ function route() {
     const saved = +localStorage.getItem("gamblers.turnSeconds");
     if (saved >= 30) CONFIG.TURN_SECONDS = saved;
     await Store.init();
+    applyCatalog();
     document.getElementById("boot")?.remove();
     window.addEventListener("hashchange", route);
     document.addEventListener("auth", () => route());

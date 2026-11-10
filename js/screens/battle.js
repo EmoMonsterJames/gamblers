@@ -13,9 +13,10 @@ import { S, log, name } from "../game/season.js";
 import { avatar, petView, weaponChip, displayName } from "../ui/profile.js";
 import { CONFIG } from "../config.js";
 
-export function battleView(aId, bId, onWin) {
+export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", sub = "첫 공격: 보유금액이 더 많은 플레이어 (같으면 포인트)", logLabel = "결승" } = {}) {
     const s = S();
-    const F = [aId, bId].map(pid => ({ pid, ps: s.ps[pid], hp: CONFIG.START_HP, shield: false, sleep: 0 }));
+    // HP carries over between battles (winners keep their damage; HP potions heal)
+    const F = [aId, bId].map(pid => ({ pid, ps: s.ps[pid], hp: Math.max(1, s.ps[pid].hp ?? CONFIG.START_HP), shield: false, sleep: 0 }));
     const side = i => {
         const f = F[i];
         const hpI = h("i"), hpT = h("span", `${f.hp} / ${CONFIG.START_HP}`);
@@ -36,7 +37,7 @@ export function battleView(aId, bId, onWin) {
     const startBtn = h("button.btn.red.huge", { onclick: () => run() }, "⚔️ 배틀 시작!");
     const speedBtn = h("button.btn.ghost.small", { onclick: () => { speed = speed === 1 ? 2.5 : 1; speedBtn.textContent = speed > 1 ? "⏩ 빠르게" : "▶ 보통"; } }, "▶ 보통");
     const root = h("div.battle-stage",
-        h("h2.stage-title", "🏆 FINAL BATTLE 🏆", h("small", "첫 공격: 보유금액이 더 많은 플레이어 (같으면 포인트)")),
+        h("h2.stage-title", title, h("small", sub)),
         arena,
         h("div.row.center", startBtn, speedBtn),
         logEl);
@@ -94,9 +95,9 @@ export function battleView(aId, bId, onWin) {
         winner.el.classList.add("winner");
         confetti(120, ["👑", "✨", "🪙"]);
         say(`👑 ${name(winner.pid)} 승리!`, "ok");
-        log(`⚔️ 결승: ${name(winner.pid)}이(가) ${name(loser.pid)}을(를) 꺾었다`);
+        log(`⚔️ ${logLabel}: ${name(winner.pid)}이(가) ${name(loser.pid)}을(를) 꺾었다`);
         await sleep(2200);
-        onWin(winner.pid);
+        onWin(winner.pid, loser.pid);
     }
 
     function floating(f, txt, cls) {

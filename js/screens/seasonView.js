@@ -9,7 +9,7 @@ import { Sound } from "../core/sound.js";
 import { toast, confetti, banner, confirmBox, modal, bigWin } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS } from "../data/catalog.js";
+import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS, LOANS } from "../data/catalog.js";
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
 import * as G from "../game/season.js";
@@ -19,6 +19,8 @@ import { worldMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
+import { locationShops } from "../data/catalogAdmin.js";
+import { earnView, begView } from "./corners.js";
 import { battleView } from "./battle.js";
 
 let root = null, timer = null;
@@ -34,7 +36,7 @@ function render() {
     const s = G.S();
     if (!s) { root.replaceChildren(noSeason()); return; }
     const stage = {
-        select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage,
+        select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage, battle: battleMissionStage,
         eliminated: eliminatedStage, final: finalStage, done: doneStage
     }[s.status] || (() => h("div", "?"));
     root.replaceChildren(header(s), h("div.season-body", h("div.stage", stage(s)), sidebar(s)));
@@ -70,7 +72,7 @@ function sidebar(s) {
             const r = s.results[pid];
             const mark = s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
             const cand = s.status === "judge" && s.candidates.includes(pid);
-            const el = miniPlayer(pid, s.ps[pid], h("span.mark", mark));
+            const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`), h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${s.ps[pid].hp}`), h("span.mark", mark)]);
             if (cand) el.classList.add("cand");
             el.onclick = () => modal(playerCard(pid, s.ps[pid]), { title: displayName(Store.player(pid)), wide: true });
             return el;
@@ -123,7 +125,7 @@ async function reveal(pid) {
 function missionStage(s) {
     const tier = G.tierForRound();
     const ms = G.missionsForTier(tier);
-    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰" }[m.type]), h("div.mc-text", m.text)));
+    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️" }[m.type]), h("div.mc-text", m.text)));
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
@@ -145,6 +147,7 @@ function missionStage(s) {
         render();
     } }, "📜 미션 뽑기");
     return h("div.mission-stage",
+        s.loanDeaths?.length ? h("div.loan-deaths", h("b", "☠️ 대출 미상환 사망"), s.loanDeaths.map(pid => h("div.cand-card", avatar(pid, 70, { effect: false }), h("small", displayName(Store.player(pid)))))) : null,
         h("h2.stage-title", `ROUND ${s.round} 미션 추첨`, h("small.tier.t" + tier, `난이도 ${TIERS[tier]}`)),
         h("div.mcards", cards), h("div.row.center", btn),
         h("p.muted.center", "모든 생존자가 10분씩 플레이하며 같은 미션에 도전합니다. 미션 실패자 중 한 명이 탈락!"));
@@ -215,7 +218,11 @@ function locationStage(s) {
         progEl.classList.toggle("met", met);
         hud.replaceChildren(
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
+            ps.loanGold > 0 || ps.loan ? h("div.stat.loan", h("small", "대출된 골드 (게임 전용)"), h("b", fmt(ps.loanGold || 0) + " G")) : null,
+            ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
             h("div.stat.pts", h("small", "포인트"), h("b", ps.points + " P")),
+            h("div.stat", h("small", "HP"), h("b" + (ps.hp < 50 ? ".down" : ""), `❤ ${ps.hp}`)),
+            h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
             h("div.stat", h("small", "이번 턴 포인트"), h("b", t.stats.points)),
@@ -228,10 +235,13 @@ function locationStage(s) {
 
     const ctx = kind => ({
         pid, luck,
-        money: () => ps.money,
-        canPlay: () => t.remaining <= 0 ? { ok: false, why: "⏰ 시간 종료!" } : !t.running ? { ok: false, why: "⏸ 일시정지 중입니다" } : { ok: true },
+        money: () => G.playMoney(pid),
+        canPlay: () => t.remaining <= 0 ? { ok: false, why: "⏰ 시간 종료!" } : !t.running ? { ok: false, why: "⏸ 일시정지 중입니다" }
+            : G.playsLeft(pid, kind) <= 0 ? { ok: false, why: kind === "slot" ? "이번 라운드 슬롯 스핀 횟수를 모두 썼습니다 (추가권: 일반 상점)" : "이번 라운드 카지노게임 횟수를 모두 썼습니다 (추가권: 일반 상점)" }
+            : { ok: true },
+        left: () => G.playsLeft(pid, kind),
         record(bet, win, points, extra = {}) {
-            if (extra.pending) { ps.money -= bet; updateHud(); return; }
+            if (extra.pending) { G.spendBet(pid, kind, bet); updateHud(); return; }
             if (extra.settle) { ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, extra); updateHud(); }
         },
         close() { gameLayer?.remove(); gameLayer = null; tabBody(currentTab); }
@@ -245,7 +255,7 @@ function locationStage(s) {
     }
 
     // tabs
-    const tabs = [["games", "🎰 게임"], ...loc.shops.map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]), ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]];
+    const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]), ...(loc.earn ? [["earn", "💪 돈벌기"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -258,12 +268,17 @@ function locationStage(s) {
                 h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand), h("div.gc-desc", c.desc)); }),
             ...loc.casino.map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
                 h("div.gc-kind", "CASINO GAME"), h("div.gc-ico", g.icon), h("div.gc-name", g.name), h("div.gc-desc", g.desc)); }));
-        else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, () => { updateHud(); side.replaceChildren(sideCard()); });
+        else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
         else if (id === "inv") content = inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
             onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } },
+            onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${r}`, "ok"); updateHud(); } },
+            onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
             onChange: () => side.replaceChildren(sideCard())
         });
+        else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
+        else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); });
+        else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
@@ -366,11 +381,16 @@ function eliminatedStage(s) {
 // ------------------------------------------------------------------ final
 function finalStage(s) {
     const [a, b] = G.finalists();
-    return battleView(a, b, async winner => {
+    const win = async winner => {
         const ps = s.ps[winner], d = Store.getDecor(winner), p = Store.player(winner);
         await G.crown(winner, { name: displayName(p), player_name: p.player_name, image: p.profile_image, country: p.country, money: ps.money, points: ps.points, pet: ps.pet, petEffect: ps.petEffect, weapons: ps.weapons, frame: d.frame, effect: d.effect });
         render();
-    });
+    };
+    if (b == null) { // everyone else died (loans) — last survivor wins
+        return h("div.center-card", h("h2", "☠️ 최후의 생존자"), avatar(a, 160), h("p", `${displayName(Store.player(a))}만 살아남았습니다!`),
+            h("button.btn.gold.huge", { onclick: () => win(a) }, "👑 우승 확정"));
+    }
+    return battleView(a, b, win);
 }
 
 function doneStage(s) {
@@ -385,4 +405,62 @@ function doneStage(s) {
         h("div.row.center",
             h("button.btn.gold.big", { onclick: () => { location.hash = "#/hall"; } }, "🏆 명예의 전당 보기"),
             h("button.btn.ghost.big", { onclick: () => { Store.endSeasonLocal(); G.newSeason(); render(); } }, `🎰 시즌 ${s.number + 1} 시작`)));
+}
+
+// ------------------------------------------------------------------ loans
+function loanView(pid, onChange) {
+    const s = G.S(), ps = s.ps[pid];
+    const st = G.loanStatus(pid);
+    const wrap = h("div.loan-view");
+    if (ps.loan) {
+        const L = LOANS[ps.loan.type];
+        const roundsLeft = ps.loan.due - s.round;
+        const can = (ps.loanGold || 0) + ps.money;
+        const input = h("input.input", { type: "number", min: 1, step: 100, value: Math.min(can, ps.loan.owed) });
+        wrap.append(
+            h("div.loan-card.active",
+                h("div.loan-title", L.emoji, " ", L.name, " 이용 중"),
+                h("div.loan-rows",
+                    h("div", h("small", "빌린 원금"), h("b", fmt(ps.loan.principal) + " G")),
+                    h("div", h("small", "갚을 돈 (이자 포함)"), h("b.down", fmt(ps.loan.owed) + " G")),
+                    h("div", h("small", "남은 대출 골드"), h("b", fmt(ps.loanGold || 0) + " G")),
+                    h("div", h("small", "상환 기한"), h("b" + (roundsLeft <= 0 ? ".down" : ""), roundsLeft <= 0 ? `이번 라운드가 마지막!` : `ROUND ${ps.loan.due}까지 (${roundsLeft}라운드 남음)`))),
+                h("p.muted", `라운드가 바뀔 때마다 갚을 돈이 ${L.rate * 100}%씩 불어납니다. 기한 안에 다 갚지 못하면 다음 라운드 시작과 함께 사망(탈락)합니다.`),
+                h("div.row",
+                    input,
+                    h("button.btn.gold", { onclick: async () => {
+                        const amt = Math.floor(+input.value || 0);
+                        if (amt <= 0) return toast("금액을 입력하세요", "warn");
+                        if (!(await confirmBox(`${fmt(Math.min(amt, ps.loan.owed, can))} G를 상환할까요? (남은 대출 골드 → 보유 골드 순으로 차감)`))) return;
+                        const paid = G.repayLoan(pid, amt);
+                        Sound.coin(); toast(`${fmt(paid)} G 상환!`, "ok");
+                        if (!ps.loan) { confetti(50); }
+                        onChange();
+                    } }, "💸 상환하기"),
+                    h("button.btn.ghost", { onclick: () => { input.value = Math.min(can, ps.loan.owed); } }, "최대"))));
+        return wrap;
+    }
+    wrap.append(h("p.notice", st.ok ? "골드가 바닥났군요… 대출을 받아 다시 도전하세요! 대출된 골드는 슬롯·카지노에만 쓸 수 있고, 거기서 딴 골드는 상점에서도 쓸 수 있습니다." : "🚫 " + st.why));
+    for (const L of Object.values(LOANS)) {
+        wrap.append(h("div.loan-card." + L.id,
+            h("div.loan-title", L.emoji, " ", L.name),
+            h("p.muted", `${L.rounds}라운드 안에 원금+이자 상환 · 이자 라운드마다 ${L.rate * 100}% 복리 · 미상환 시 사망`),
+            h("div.row", L.amounts.map(a => h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, onclick: async () => {
+                if (!(await confirmBox(`${L.name}에서 ${fmt(a)} G를 빌릴까요?\nROUND ${s.round + L.rounds - 1}까지 갚지 못하면 사망합니다!`))) return;
+                if (G.takeLoan(pid, L.id, a)) { Sound.bonus(); confetti(40, ["💵", "💸"]); toast(`${L.name} ${fmt(a)} G 대출!`, "ok"); onChange(); }
+            } }, `${fmt(a)} G`)))));
+    }
+    return wrap;
+}
+
+// ------------------------------------------------------------------ battle mission
+function battleMissionStage(s) {
+    const [a, b] = s.battlePair || [];
+    if (a == null || b == null || s.ps[a].out || s.ps[b].out) { // stale pair (e.g. loan death) → redraw
+        G.setMission(s.mission); return battleMissionStage(G.S());
+    }
+    return battleView(a, b, (winner, loser) => {
+        G.finishBattle(winner, loser);
+        render();
+    }, { title: `⚔️ ROUND ${s.round} 배틀 미션`, sub: `${s.mission.text} · 패배하면 탈락! 승자는 깎인 HP 그대로 다음 라운드로`, logLabel: "배틀 미션" });
 }

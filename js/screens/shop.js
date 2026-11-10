@@ -8,8 +8,9 @@ import { CONFIG } from "../config.js";
 import { S, log, name } from "../game/season.js";
 import { petView, weaponChip } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
+import { shopItems } from "../data/catalogAdmin.js";
 
-export function shopView(shopId, pid, onChange) {
+export function shopView(shopId, pid, locId, onChange) {
     const shop = SHOPS[shopId];
     const ps = S().ps[pid];
     const wrap = h("div.shop.shop-" + shopId);
@@ -17,7 +18,7 @@ export function shopView(shopId, pid, onChange) {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
             h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : `💰 ${fmt(ps.money)} G`)),
-            h("div.shop-grid", shop.list.map(it => {
+            h("div.shop-grid", shopItems(shopId, locId).map(it => {
                 const e = catalogEntry(it.cat, it.id);
                 if (!e) return null;
                 const owned = (it.cat === "pet" && ps.pet === it.id) || (it.cat === "effect" && ps.petEffect === it.id)
@@ -77,16 +78,21 @@ function desc(cat, e) {
 }
 
 // Inventory: use items, delete weapons, switch owned frames/effects
-export function inventoryView(pid, { onUseTime, onMission, onChange } = {}) {
+export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChange } = {}) {
     const ps = S().ps[pid];
     const wrap = h("div.inventory");
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
-            h("h4", "🎒 아이템"),
+            h("h4", "🎒 아이템", h("small.muted", ` · HP ${ps.hp} / ${CONFIG.START_HP}`)),
             h("div.inv-items",
                 itemBtn("time_ext", "⏱️ +5분 연장 사용", () => onUseTime?.()),
                 itemBtn("mission_pass", "🎫 미션완료권 사용", () => onMission?.()),
+                itemBtn("casino_plus1", "🃏 카지노 +1회 사용", () => onPlays?.("casino", "casino_plus1", 1)),
+                itemBtn("slot_plus5", "🎰 슬롯 +5회 사용", () => onPlays?.("slot", "slot_plus5", 5)),
+                itemBtn("hp_10", "🧪 HP +10", () => onHp?.("hp_10", 10)),
+                itemBtn("hp_50", "💊 HP +50", () => onHp?.("hp_50", 50)),
+                itemBtn("hp_full", "❤️‍🩹 HP 전체 회복", () => onHp?.("hp_full", 999)),
                 ...["pass_emo", "pass_poly", "pass_ground", "pass_foggy", "pass_mj", "pass_dung"].filter(k => ps.items[k] > 0).map(k => h("span.wchip", `🎟️ ${catalogEntry("item", k).name} ×${ps.items[k]}`))),
             h("h4", `⚔️ 무기 (${ps.weapons.length}/${CONFIG.MAX_WEAPONS})`, ps.items.weapon_del > 0 ? h("small.muted", ` · 무기삭제권 ${ps.items.weapon_del}장 — 무기를 클릭해 삭제`) : null),
             h("div.wlist", ps.weapons.length ? ps.weapons.map((w, i) => h("button.wbtn", { onclick: () => delWeapon(i) }, weaponChip(w))) : h("span.muted", "무기 없음 (기본 공격 ATK 5 / ACC 30)")),

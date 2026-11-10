@@ -150,3 +150,36 @@ alter table gamblers.admins enable row level security;
 drop policy if exists "admins self read" on gamblers.admins;
 create policy "admins self read" on gamblers.admins for select to authenticated using (user_id = (select auth.uid()));
 revoke insert, update, delete on gamblers.admins from anon, authenticated;
+
+-- ---------------------------------------------------------------- v2
+alter table gamblers.jackpot_hits add column if not exists season_number integer;
+create index if not exists jackpot_hits_game_idx on gamblers.jackpot_hits (game);
+
+create or replace function gamblers.jp_hit(p_game text, p_tier text, p_winner integer, p_amount numeric, p_season integer default null)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+    if not gamblers.is_admin() then raise exception 'admin only'; end if;
+    insert into gamblers.jackpot_hits (game, tier, player_id, amount, season_number) values (p_game, p_tier, p_winner, p_amount, p_season);
+    update gamblers.slot_jackpots set amount = seed, updated_at = now() where game = p_game and tier = p_tier;
+end $$;
+drop function if exists gamblers.jp_hit(text, text, integer, numeric);
+revoke all on function gamblers.jp_hit(text, text, integer, numeric, integer) from public, anon;
+grant execute on function gamblers.jp_hit(text, text, integer, numeric, integer) to authenticated;
+
+-- admin-editable game settings (catalog / shop overrides)
+create table if not exists gamblers.settings (
+    key text primary key,
+    value jsonb not null default '{}',
+    updated_at timestamptz not null default now()
+);
+alter table gamblers.settings enable row level security;
+grant select on gamblers.settings to anon, authenticated;
+grant insert, update, delete on gamblers.settings to authenticated;
+drop policy if exists "settings read" on gamblers.settings;
+create policy "settings read" on gamblers.settings for select to anon, authenticated using (true);
+drop policy if exists "settings admin insert" on gamblers.settings;
+create policy "settings admin insert" on gamblers.settings for insert to authenticated with check ((select gamblers.is_admin()));
+drop policy if exists "settings admin update" on gamblers.settings;
+create policy "settings admin update" on gamblers.settings for update to authenticated using ((select gamblers.is_admin())) with check ((select gamblers.is_admin()));
+drop policy if exists "settings admin delete" on gamblers.settings;
+create policy "settings admin delete" on gamblers.settings for delete to authenticated using ((select gamblers.is_admin()));

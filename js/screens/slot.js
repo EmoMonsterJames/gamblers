@@ -10,6 +10,8 @@ import { toast, bigWin, banner, floatText, confetti, shake, modal } from "../cor
 import { Store } from "../core/store.js";
 import { spinWithLuck, P_POINTS, bestJackpot } from "../slots/engine.js";
 import { BRAND_LOGO } from "../slots/configs.js";
+import { JACKPOT_RANK } from "../data/catalog.js";
+import { jackpotButton } from "../ui/jackpotList.js";
 
 const TIER_ORDER = ["GRAND", "MAJOR", "MAXI", "MINOR", "MINI"];
 
@@ -54,7 +56,7 @@ export function openSlot(cfg, ctx) {
     const turboBtn = h("button.btn.ghost.small", { onclick: () => { turbo = !turbo; turboBtn.classList.toggle("on", turbo); } }, "⚡ TURBO");
     const logo = BRAND_LOGO[cfg.brand] ? h("img.brand-logo", { src: BRAND_LOGO[cfg.brand], alt: cfg.brand }) : h("span.brand-text", cfg.brand);
     const cabinet = h("div.cabinet.theme-" + cfg.id, { style: { "--bg": cfg.theme.bg, "--accent": cfg.theme.accent, "--glow": cfg.theme.glow, "--font": cfg.theme.font } },
-        h("div.cab-top", logo, h("div.cab-title", cfg.name), h("button.btn.ghost.small.info", { onclick: () => paytable() }, "ⓘ")),
+        h("div.cab-top", logo, h("div.cab-title", cfg.name), h("div.cab-btns", jackpotButton(cfg.id, cfg.name), h("button.btn.ghost.small.info", { onclick: () => paytable() }, "ⓘ"))),
         jpBar, meterEl,
         h("div.reel-frame", reelsBox, overlay),
         msgEl,
@@ -187,7 +189,10 @@ export function openSlot(cfg, ctx) {
         // progressive jackpot payouts reset the pool
         for (const f of res.features) {
             const tiers = f.type === "hold" ? (f.jpWins || []) : f.type === "pick" ? [{ tier: f.tier, amount: f.amount }] : f.type === "wheel" && f.jp ? [{ tier: f.jp, amount: f.amount }] : [];
-            for (const j of tiers) await Store.hitJackpot(cfg, j.tier, ctx.pid, j.amount);
+            for (const j of tiers) {
+                await Store.hitJackpot(cfg, j.tier, ctx.pid, j.amount);
+                if ((JACKPOT_RANK[j.tier] || 0) >= 3) Store.logJackpot(cfg.id, j.tier, ctx.pid, j.amount, { serverLogged: !!cfg.jp?.[j.tier] && !cfg.jp[j.tier].x });
+            }
         }
         ctx.record(0, res.total, res.points, { settle: true, bet, bonus: res.bonus, jackpots: res.jackpots });
         winEl.textContent = fmt(res.total);

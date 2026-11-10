@@ -5,7 +5,9 @@
 // =====================================================================
 
 // ---------------------------------------------------------------- missions
-// type: bonus | slot_net | casino_net | points | jackpot
+// type: bonus | slot_net | casino_net | points | jackpot | battle
+// battle rule: random | even | odd (roster number) | poor | rich (money) | lowpts | highpts (points)
+//   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
 export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, MAJOR: 4, GRAND: 5 };
@@ -16,26 +18,37 @@ export const MISSIONS = [
     { id: "t0_slot",   tier: 0, type: "slot_net",   v: 5000,  text: "슬롯게임으로 5,000G 이상 벌기" },
     { id: "t0_casino", tier: 0, type: "casino_net", v: 5000,  text: "카지노게임으로 5,000G 이상 벌기" },
     { id: "t0_points", tier: 0, type: "points",     v: 10,    text: "10 포인트 이상 획득하기" },
+    { id: "t0_battle", tier: 0, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
+    { id: "t0_battle_even", tier: 0, type: "battle", rule: "even", text: "⚔️ 짝수 번호 플레이어 중 랜덤 2인 배틀" },
+    { id: "t0_battle_odd", tier: 0, type: "battle", rule: "odd", text: "⚔️ 홀수 번호 플레이어 중 랜덤 2인 배틀" },
     // 하
     { id: "t1_jp",     tier: 1, type: "jackpot", min: "MINI", text: "MINI 잭팟 WIN 하기" },
     { id: "t1_slot",   tier: 1, type: "slot_net",   v: 10000, text: "슬롯게임으로 10,000G 이상 벌기" },
     { id: "t1_casino", tier: 1, type: "casino_net", v: 10000, text: "카지노게임으로 10,000G 이상 벌기" },
     { id: "t1_points", tier: 1, type: "points",     v: 30,    text: "30 포인트 이상 획득하기" },
+    { id: "t1_battle", tier: 1, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
+    { id: "t1_battle_poor", tier: 1, type: "battle", rule: "poor", text: "⚔️ 돈이 가장 적은 사람들 중 랜덤 2인 배틀" },
     // 중
     { id: "t2_jp",     tier: 2, type: "jackpot", min: "MINOR", text: "MINOR 잭팟 WIN 하기" },
     { id: "t2_slot",   tier: 2, type: "slot_net",   v: 30000, text: "슬롯게임으로 30,000G 이상 벌기" },
     { id: "t2_casino", tier: 2, type: "casino_net", v: 30000, text: "카지노게임으로 30,000G 이상 벌기" },
     { id: "t2_points", tier: 2, type: "points",     v: 50,    text: "50 포인트 이상 획득하기" },
+    { id: "t2_battle", tier: 2, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
+    { id: "t2_battle_lowpts", tier: 2, type: "battle", rule: "lowpts", text: "⚔️ 포인트가 가장 적은 사람들 중 랜덤 2인 배틀" },
     // 상
     { id: "t3_jp",     tier: 3, type: "jackpot", min: "MINOR", text: "MINOR 잭팟 WIN 하기" },
     { id: "t3_slot",   tier: 3, type: "slot_net",   v: 50000, text: "슬롯게임으로 50,000G 이상 벌기" },
     { id: "t3_casino", tier: 3, type: "casino_net", v: 50000, text: "카지노게임으로 50,000G 이상 벌기" },
     { id: "t3_points", tier: 3, type: "points",     v: 80,    text: "80 포인트 이상 획득하기" },
+    { id: "t3_battle", tier: 3, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
+    { id: "t3_battle_rich", tier: 3, type: "battle", rule: "rich", text: "⚔️ 돈이 가장 많은 사람들 중 랜덤 2인 배틀" },
     // 최상
     { id: "t4_jp",     tier: 4, type: "jackpot", min: "MAXI",  text: "MAXI 이상 잭팟 WIN 하기" },
     { id: "t4_slot",   tier: 4, type: "slot_net",   v: 100000, text: "슬롯게임으로 100,000G 이상 벌기" },
     { id: "t4_casino", tier: 4, type: "casino_net", v: 100000, text: "카지노게임으로 100,000G 이상 벌기" },
-    { id: "t4_points", tier: 4, type: "points",     v: 100,    text: "100 포인트 이상 획득하기" }
+    { id: "t4_points", tier: 4, type: "points",     v: 100,    text: "100 포인트 이상 획득하기" },
+    { id: "t4_battle", tier: 4, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
+    { id: "t4_battle_highpts", tier: 4, type: "battle", rule: "highpts", text: "⚔️ 포인트가 가장 많은 사람들 중 랜덤 2인 배틀" }
 ];
 
 // ---------------------------------------------------------------- pets
@@ -139,6 +152,11 @@ export const ITEMS = [
     { id: "time_ext",    name: "플레이 시간 5분 연장권", emoji: "⏱️", desc: "현재 턴의 남은 시간을 5분 늘립니다." },
     { id: "weapon_del",  name: "무기삭제권",            emoji: "🗑️", desc: "보유 무기 1개를 삭제해 슬롯을 비웁니다." },
     { id: "mission_pass", name: "미션완료권",          emoji: "🎫", desc: "이번 라운드 미션을 그냥 통과합니다." },
+    { id: "casino_plus1", name: "카지노게임 1회 추가권", emoji: "🃏", desc: "이번 라운드 카지노게임 가능 횟수 +1" },
+    { id: "slot_plus5",  name: "슬롯게임 5회 추가권",   emoji: "🎰", desc: "이번 라운드 슬롯 스핀 가능 횟수 +5" },
+    { id: "hp_10",      name: "HP약",       emoji: "🧪", desc: "HP +10 회복", hp: 10 },
+    { id: "hp_50",      name: "+50 HP약",   emoji: "💊", desc: "HP +50 회복", hp: 50 },
+    { id: "hp_full",    name: "FULL HP약",  emoji: "❤️‍🩹", desc: "HP 전체 회복", hp: 999 },
     { id: "pass_emo",    name: "Emo World Casino 출입권",    emoji: "🎟️", loc: "emo" },
     { id: "pass_poly",   name: "Polynesia Casino 출입권",    emoji: "🎟️", loc: "poly" },
     { id: "pass_ground", name: "Ground Town Casino 출입권",  emoji: "🎟️", loc: "ground" },
@@ -162,6 +180,11 @@ export const SHOPS = {
         list: [
             { cat: "item", id: "time_ext", price: 30000 },
             { cat: "item", id: "weapon_del", price: 15000 },
+            { cat: "item", id: "casino_plus1", price: 300 },
+            { cat: "item", id: "slot_plus5", price: 1000 },
+            { cat: "item", id: "hp_10", price: 10000 },
+            { cat: "item", id: "hp_50", price: 45000 },
+            { cat: "item", id: "hp_full", price: 95000 },
             ...["pass_emo", "pass_poly", "pass_ground", "pass_foggy", "pass_mj", "pass_dung"].map(id => ({ cat: "item", id, price: 45000 }))
         ]
     },
@@ -204,17 +227,17 @@ export const SHOPS = {
 export const LOCATIONS = [
     { id: "lucky",    name: "Lucky Casino",       emoji: "🍀", x: 46, y: 46, color: "#3ddc84", shops: ["general", "pet", "decor"],
       slots: ["clover_luck"], casino: ["lucky_wheel", "clover_scratch"] },
-    { id: "seaside",  name: "Seaside Casino",     emoji: "🏖️", x: 80, y: 74, color: "#38bdf8", shops: ["general", "weapon", "point"],
+    { id: "seaside",  name: "Seaside Casino",     emoji: "🏖️", x: 80, y: 74, color: "#38bdf8", shops: ["general", "weapon", "point"], beg: true,
       slots: ["pearl_tide"], casino: ["shell_cups", "sea_dice"] },
     { id: "twins",    name: "Twins Wins",         emoji: "👯", x: 56, y: 22, color: "#f472b6", shops: ["general", "pet", "weapon", "point"], req: { points: 100 },
       slots: ["fufu"], casino: ["twin_flip", "royal_cards"] },
-    { id: "gamblers", name: "Gamblers Casino",    emoji: "🎰", x: 34, y: 62, color: "#facc15", shops: ["general", "decor"],
+    { id: "gamblers", name: "Gamblers Casino",    emoji: "🎰", x: 34, y: 62, color: "#facc15", shops: ["general", "decor"], earn: true,
       slots: ["money_mesh"], casino: ["gamblers_roulette", "pension_ticket"] },
-    { id: "dungdung", name: "Dung Dung Casino",   emoji: "💩", x: 64, y: 54, color: "#a16207", shops: ["general", "weapon", "decor", "pet"], req: { points: 50 },
+    { id: "dungdung", name: "Dung Dung Casino",   emoji: "💩", x: 64, y: 54, color: "#a16207", shops: ["general", "weapon", "decor", "pet"], req: { points: 50 }, earn: true, beg: true,
       slots: ["golden_dung"], casino: ["dung_gacha", "dung_plinko"] },
-    { id: "noluck",   name: "No Luck Casino",     emoji: "🐈‍⬛", x: 28, y: 36, color: "#94a3b8", shops: ["decor"],
+    { id: "noluck",   name: "No Luck Casino",     emoji: "🐈‍⬛", x: 28, y: 36, color: "#94a3b8", shops: ["decor"], beg: true,
       slots: ["bonanza"], casino: ["unlucky_chest", "black_cat_hilo"] },
-    { id: "oink",     name: "Oink Oink Town",     emoji: "🐷", x: 70, y: 36, color: "#fb7185", shops: ["general", "weapon", "point"],
+    { id: "oink",     name: "Oink Oink Town",     emoji: "🐷", x: 70, y: 36, color: "#fb7185", shops: ["general", "weapon", "point"], earn: true,
       slots: ["coin_pigglet"], casino: ["piggy_bank_break", "oink_lottery"] },
     { id: "emo",      name: "Emo World Casino",   emoji: "🐰", x: 30, y: 16, color: "#c084fc", shops: ["general", "pet", "weapon"], req: { country: "Emo World", pass: "pass_emo" },
       slots: ["rabbit_rush"], casino: ["emo_capsule"] },
@@ -222,11 +245,11 @@ export const LOCATIONS = [
       slots: ["tiki_volcano"], casino: ["shape_wheel"] },
     { id: "ground",   name: "Ground Town Casino", emoji: "🐜", x: 12, y: 58, color: "#84cc16", shops: ["general", "pet", "weapon"], req: { country: "Ground Town", pass: "pass_ground" },
       slots: ["ant_hill"], casino: ["ant_dig"] },
-    { id: "foggy",    name: "Foggy Nation Casino", emoji: "👻", x: 14, y: 84, color: "#64748b", shops: ["general", "pet", "weapon"], req: { country: "Foggy Nation", pass: "pass_foggy" },
+    { id: "foggy",    name: "Foggy Nation Casino", emoji: "👻", x: 14, y: 84, color: "#64748b", shops: ["general", "pet", "weapon"], earn: true, req: { country: "Foggy Nation", pass: "pass_foggy" },
       slots: ["ghost_vault"], casino: ["ghost_scratch"] },
     { id: "mj",       name: "MJ World Casino",    emoji: "🐱", x: 86, y: 14, color: "#2dd4bf", shops: ["general", "pet", "weapon"], req: { country: "MJ World", pass: "pass_mj" },
       slots: ["samurai_cash"], casino: ["mj_coin_flip"] },
-    { id: "dungtown", name: "Dung Town Casino",   emoji: "🏘️", x: 50, y: 84, color: "#eab308", shops: ["general", "pet", "weapon"], req: { country: "Dung Town", pass: "pass_dung" },
+    { id: "dungtown", name: "Dung Town Casino",   emoji: "🏘️", x: 50, y: 84, color: "#eab308", shops: ["general", "pet", "weapon"], earn: true, beg: true, req: { country: "Dung Town", pass: "pass_dung" },
       slots: ["dragon_hoard"], casino: ["dungtown_dice"] }
 ];
 
@@ -245,3 +268,13 @@ export const LOC_BY_ID = byId(LOCATIONS);
 export function catalogEntry(cat, id) {
     return { item: ITEM_BY_ID, pet: PET_BY_ID, effect: PETFX_BY_ID, weapon: WEAPON_BY_ID, frame: FRAME_BY_ID, peffect: PEFFECT_BY_ID }[cat]?.[id];
 }
+
+// ---------------------------------------------------------------- loans
+// Only for players whose gold has run out. Loan gold can only be bet on
+// slots / casino games; winnings become normal gold. `owed` grows by
+// `rate` at the start of every new round; unpaid after `rounds` rounds →
+// the player dies (eliminated) at the start of the next round.
+export const LOANS = {
+    lucky: { id: "lucky", name: "럭키대부", emoji: "🍀", amounts: [20000, 50000, 100000], rounds: 5, rate: 0.10 },
+    crazy: { id: "crazy", name: "크레이지대부", emoji: "🤪", amounts: [200000, 300000, 500000], rounds: 3, rate: 0.20 }
+};

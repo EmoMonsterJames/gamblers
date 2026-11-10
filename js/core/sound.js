@@ -43,5 +43,10 @@ export const Sound = {
     miss() { tone(600, 0.25, "sine", 0.05, 0, -400); },
     boom() { noise(0.6, 0.25); tone(60, 0.5, "sine", 0.2, 0, -30); },
     fanfare() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, "square", 0.06, i * 0.15)); },
-    whoosh() { noise(0.25, 0.06); }
+    whoosh() { noise(0.25, 0.06); },
+    // 뿌직뿌직: wet low burst + falling squelch
+    poop() { noise(0.18, 0.14); tone(140 + Math.random() * 40, 0.16, "sawtooth", 0.07, 0, -90); tone(90, 0.12, "square", 0.05, 0.12, -40); noise(0.1, 0.1, 0.14); },
+    splash() { noise(0.5, 0.12); tone(220, 0.35, "sine", 0.05, 0, -160); },
+    buzz() { tone(190 + Math.random() * 30, 0.5, "sawtooth", 0.012, 0, 25); },
+    cash() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.09, "square", 0.05, i * 0.06)); }
 };

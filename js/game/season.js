@@ -4,7 +4,7 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, JACKPOT_RANK, LOCATIONS, PET_BY_ID, PETFX_BY_ID } from "../data/catalog.js";
+import { MISSIONS, JACKPOT_RANK, LOCATIONS, PET_BY_ID, PETFX_BY_ID, LOANS } from "../data/catalog.js";
 import { shuffle } from "../core/util.js";
 
 export const S = () => Store.season;
@@ -30,7 +30,7 @@ export function addToRoster(pid) {
     const s = S();
     if (s.roster.includes(pid) || s.roster.length >= CONFIG.SEASON_SIZE) return;
     s.roster.push(pid);
-    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, out: false, outRound: null, rank: null, totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
+    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
     log(`🎰 ${name(pid)} 참가 확정!`);
     Store.saveSeason();
 }
@@ -55,16 +55,163 @@ export function startRound() {
     s.results = {};
     s.candidates = [];
     s.turn = null;
+    for (const pid of alive()) { const ps = s.ps[pid]; ps.use = { slot: 0, casino: 0 }; ps.extra = { slot: 0, casino: 0 }; }
+    s.loanDeaths = s.round > 1 ? loanRoundTick() : [];
+    if (alive().length <= CONFIG.FINALISTS) s.status = "final";
     Store.saveSeason(true);
+}
+
+// ---------------------------------------------------------------- play limits
+export function playsLeft(pid, kind) {
+    const ps = S().ps[pid];
+    const base = kind === "slot" ? CONFIG.ROUND_SLOT_SPINS : CONFIG.ROUND_CASINO_PLAYS;
+    return base + (ps.extra?.[kind] || 0) - (ps.use?.[kind] || 0);
+}
+export function addPlays(pid, kind, itemId, n) {
+    const ps = S().ps[pid];
+    if (!(ps.items[itemId] > 0)) return false;
+    ps.items[itemId]--;
+    (ps.extra ||= { slot: 0, casino: 0 })[kind] = (ps.extra[kind] || 0) + n;
+    log(`➕ ${name(pid)} ${kind === "slot" ? `슬롯 ${n}회` : `카지노 ${n}회`} 추가권 사용`);
+    Store.saveSeason();
+    return true;
+}
+// Take a bet: loan gold is spent first, then normal gold.
+export function spendBet(pid, kind, bet) {
+    const ps = S().ps[pid];
+    const fromLoan = Math.min(ps.loanGold || 0, bet);
+    ps.loanGold = (ps.loanGold || 0) - fromLoan;
+    ps.money -= bet - fromLoan;
+    (ps.use ||= { slot: 0, casino: 0 })[kind] = (ps.use[kind] || 0) + 1;
+}
+export const playMoney = pid => { const ps = S().ps[pid]; return ps.money + (ps.loanGold || 0); };
+
+// ---------------------------------------------------------------- loans
+export function loanStatus(pid) {
+    const s = S(), ps = s.ps[pid];
+    if (ps.loan) return { ok: false, why: "이미 대출이 있습니다. 먼저 상환하세요." };
+    if (alive().length < CONFIG.LOAN_MIN_ALIVE) return { ok: false, why: `생존자가 ${CONFIG.LOAN_MIN_ALIVE - 1}명 이하라 대출이 불가능합니다.` };
+    if (ps.money > 0 || (ps.loanGold || 0) > 0) return { ok: false, why: "골드가 0인 플레이어만 대출할 수 있습니다." };
+    return { ok: true };
+}
+export function takeLoan(pid, type, amount) {
+    const s = S(), ps = s.ps[pid], L = LOANS[type];
+    if (!loanStatus(pid).ok || !L.amounts.includes(amount)) return false;
+    ps.loanGold = (ps.loanGold || 0) + amount;
+    ps.loan = { type, principal: amount, owed: amount, round: s.round, due: s.round + L.rounds - 1 };
+    log(`🏦 ${name(pid)} ${L.name} ${amount.toLocaleString()}G 대출 (${L.rounds}라운드 안에 상환)`);
+    Store.saveSeason(true);
+    return true;
+}
+// Repay from leftover loan gold first, then normal gold.
+export function repayLoan(pid, amount) {
+    const ps = S().ps[pid], loan = ps.loan;
+    if (!loan) return 0;
+    const pay = Math.max(0, Math.min(amount, loan.owed, (ps.loanGold || 0) + ps.money));
+    const fromLoan = Math.min(ps.loanGold || 0, pay);
+    ps.loanGold -= fromLoan;
+    ps.money -= pay - fromLoan;
+    loan.owed -= pay;
+    if (loan.owed <= 0) { ps.loan = null; log(`✅ ${name(pid)} 대출 완납!`); }
+    else log(`💸 ${name(pid)} 대출 ${pay.toLocaleString()}G 상환 (남은 빚 ${loan.owed.toLocaleString()}G)`);
+    Store.saveSeason(true);
+    return pay;
+}
+// New round: add interest, kill players whose deadline has passed.
+function loanRoundTick() {
+    const s = S(), dead = [];
+    const overdue = [];
+    for (const pid of alive()) {
+        const loan = s.ps[pid].loan;
+        if (!loan) continue;
+        if (s.round > loan.due) overdue.push(pid);
+        else loan.owed = Math.ceil(loan.owed * (1 + LOANS[loan.type].rate));
+    }
+    // never kill everyone: the smallest debt survives if all would die
+    overdue.sort((a, b) => s.ps[b].loan.owed - s.ps[a].loan.owed);
+    for (const pid of overdue) {
+        if (alive().length <= 1) break;
+        const rank = alive().length;
+        Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
+        s.history.push({ round: s.round, loanDeath: true, eliminated: pid, rank });
+        log(`☠️ ${name(pid)} 대출 미상환으로 사망 (${rank}위)`);
+        dead.push(pid);
+    }
+    return dead;
 }
 export function missionsForTier(tier) { return MISSIONS.filter(m => m.tier === tier); }
 export function setMission(m) {
     const s = S();
     s.mission = { ...m };
-    s.status = "turns";
-    s.order = shuffle(alive());
     s.turnIdx = 0;
-    log(`📜 라운드 ${s.round} 미션: ${m.text}`);
+    if (m.type === "battle") {
+        s.status = "battle";
+        s.order = [];
+        s.battlePair = battlePair(m.rule);
+        log(`📜 라운드 ${s.round} 미션: ${m.text} → ${s.battlePair.map(name).join(" vs ")}`);
+    } else {
+        s.status = "turns";
+        s.order = shuffle(alive());
+        log(`📜 라운드 ${s.round} 미션: ${m.text}`);
+    }
+    Store.saveSeason(true);
+}
+
+// ---------------------------------------------------------------- battle missions
+export const rosterNo = pid => S().roster.indexOf(pid) + 1; // 1..20, the selection order
+const BATTLE_GROUP = 4; // "the poorest / richest …" = the bottom / top 4
+function battlePair(rule) {
+    const s = S(), live = alive();
+    const by = (key, dir) => [...live].sort((a, b) => dir * (s.ps[a][key] - s.ps[b][key])).slice(0, Math.min(BATTLE_GROUP, live.length));
+    let pool = {
+        even: live.filter(p => rosterNo(p) % 2 === 0),
+        odd: live.filter(p => rosterNo(p) % 2 === 1),
+        poor: by("money", 1), rich: by("money", -1),
+        lowpts: by("points", 1), highpts: by("points", -1)
+    }[rule] || live;
+    if (pool.length < 2) pool = live;
+    const pair = shuffle(pool).slice(0, 2);
+    // richer one attacks first (tie → more points)
+    return pair.sort((a, b) => (s.ps[b].money - s.ps[a].money) || (s.ps[b].points - s.ps[a].points));
+}
+export function finishBattle(winner, loser) {
+    const s = S();
+    s.candidates = [winner, loser];
+    s.results = { [winner]: { pass: true, battle: true }, [loser]: { pass: false, battle: true } };
+    log(`⚔️ 배틀 미션: ${name(winner)} 승리 (HP ${s.ps[winner].hp}), ${name(loser)} 패배`);
+    eliminate(loser);
+}
+
+// ---------------------------------------------------------------- HP items
+export function useHpItem(pid, itemId, amount) {
+    const ps = S().ps[pid];
+    if (!(ps.items[itemId] > 0)) return 0;
+    if (ps.hp >= CONFIG.START_HP) return -1;
+    const before = ps.hp;
+    ps.hp = Math.min(CONFIG.START_HP, ps.hp + amount);
+    ps.items[itemId]--;
+    log(`🧪 ${name(pid)} HP ${before} → ${ps.hp}`);
+    Store.saveSeason();
+    return ps.hp - before;
+}
+
+// ---------------------------------------------------------------- money-making corner / begging
+export const EARN_PER_SEASON = 2;
+export const earnLeft = pid => EARN_PER_SEASON - (S().ps[pid].earnUsed || 0);
+export function payEarn(pid, kind, gold, extra = {}) {
+    const ps = S().ps[pid];
+    ps.earnUsed = (ps.earnUsed || 0) + 1;
+    ps.money += gold;
+    if (extra.hp) ps.hp = Math.max(1, ps.hp - extra.hp);
+    log(`💪 ${name(pid)} 돈벌기(${kind}) +${gold.toLocaleString()}G${extra.hp ? ` · HP -${extra.hp}` : ""}`);
+    Store.saveSeason(true);
+}
+export const canBeg = pid => S().ps[pid].begRound !== S().round;
+export function payBeg(pid, gold) {
+    const s = S(), ps = s.ps[pid];
+    ps.begRound = s.round;
+    ps.money += gold;
+    log(`🥺 ${name(pid)} 구걸 +${gold.toLocaleString()}G`);
     Store.saveSeason(true);
 }
 
@@ -189,7 +336,8 @@ export function eliminate(pid) {
 // ---------------------------------------------------------------- final
 export function finalists() {
     const s = S();
-    return alive().sort((a, b) => (s.ps[b].money - s.ps[a].money) || (s.ps[b].points - s.ps[a].points));
+    const worth = pid => s.ps[pid].money - (s.ps[pid].loan?.owed || 0);
+    return alive().sort((a, b) => (worth(b) - worth(a)) || (s.ps[b].points - s.ps[a].points));
 }
 export async function crown(winnerId, snapshot) {
     const s = S();

@@ -160,3 +160,10 @@ export function playCasino(g, bet, luck = {}, choice) {
 }
 
 export const CASINO_BY_ID = Object.fromEntries(CASINO_GAMES.map(g => [g.id, g]));
+
+// The game's top prize multiplier — hitting it counts as the casino "JACKPOT".
+export function topMult(g) {
+    if (g.kind === "roulette") return ROULETTE.green ?? 14;
+    if (g.kind === "plinko") return Math.max(...g.buckets);
+    return Math.max(...(g.table || []).map(e => e.m));
+}

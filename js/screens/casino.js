@@ -6,7 +6,9 @@
 import { h, sleep, fmt, rand, pick, shuffle } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, bigWin, floatText, confetti, shake } from "../core/fx.js";
-import { playCasino, gameRtp } from "../data/casino.js";
+import { playCasino, gameRtp, topMult } from "../data/casino.js";
+import { Store } from "../core/store.js";
+import { jackpotButton } from "../ui/jackpotList.js";
 
 export function openCasino(g, ctx) {
     let bet = g.bets.find(b => b <= ctx.money()) || g.bets[0];
@@ -21,7 +23,7 @@ export function openCasino(g, ctx) {
         h("div.gs-head",
             h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("진행 중입니다", "warn"); ctx.close(); } }, "← 나가기"),
             h("div.gs-title", h("span.ico", g.icon), h("div", h("b", g.name), h("small", g.desc))),
-            h("div.gs-wallet", h("small", "보유금액"), moneyEl, h("small.rtp", `RTP ${(gameRtp(g) * 100).toFixed(1)}%`))),
+            h("div.gs-wallet", h("small", "보유금액"), moneyEl, h("small.rtp", `RTP ${(gameRtp(g) * 100).toFixed(1)}%`)), jackpotButton(g.id, g.name)),
         h("div.cg-body", stage, msg, controls, h("div.cg-bets", h("small", "BET"), chips), hist));
 
     const renderChips = () => chips.replaceChildren(...g.bets.map(b => h("button.chip" + (b === bet ? ".on" : ""), {
@@ -47,7 +49,10 @@ export function openCasino(g, ctx) {
         if (res.payout > 0) {
             msg.innerHTML = `<span class="win">WIN ×${res.mult} → +${fmt(res.payout)} G</span>${res.entry.lucky ? ' <span class="lucky">🍀 펫 행운!</span>' : ""}`;
             Sound.win();
-            if (res.mult >= 20 || res.payout >= 50000) await bigWin(res.payout, bet);
+            const top = res.mult >= topMult(g);
+            if (top) Store.logJackpot(g.id, "JACKPOT", ctx.pid, res.payout);
+            if (top) await bigWin(res.payout, bet, { title: "JACKPOT!" });
+            else if (res.mult >= 20 || res.payout >= 50000) await bigWin(res.payout, bet);
         } else { msg.innerHTML = `<span class="lose">꽝! 다음 기회에…</span>`; Sound.lose(); }
         if (res.points) { floatText(stage, `+${res.points} P`, "pts"); Sound.coin(); }
         hist.prepend(h("span.hchip" + (res.payout ? ".w" : ""), res.payout ? `+${fmt(res.payout)}` : `-${fmt(bet)}`));

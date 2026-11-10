@@ -16,5 +16,8 @@ export const CONFIG = {
     EXTEND_SECONDS: 300,      // "+5 min" ticket
     MAX_WEAPONS: 6,
     CASINO_MAX_WIN: 300000,   // biggest single casino-game payout
-    CASINO_POINT_CHANCE: 0.12 // chance a casino play also drops 1~10 points
+    CASINO_POINT_CHANCE: 0.12, // chance a casino play also drops 1~10 points
+    ROUND_CASINO_PLAYS: 5,    // casino games per player per round
+    ROUND_SLOT_SPINS: 100,    // paid slot spins per player per round (free spins do not count)
+    LOAN_MIN_ALIVE: 6         // loans are closed once 5 or fewer players are alive
 };

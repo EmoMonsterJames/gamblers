@@ -71,7 +71,7 @@ export async function bigWin(amount, bet, { title = null, jackpot = null } = {})
     const x = amount / Math.max(1, bet);
     const label = jackpot ? `${jackpot} JACKPOT` : title || (x >= 50 ? "EPIC WIN" : x >= 20 ? "MEGA WIN" : "BIG WIN");
     const num = h("div.bw-num", "0");
-    const ov = h("div.bigwin" + (jackpot ? ".jp.jp-" + jackpot.toLowerCase() : ""), h("div.bw-rays"), h("div.bw-title", label), num, h("div.bw-tap", "탭하여 닫기"));
+    const ov = h("div.bigwin" + (jackpot ? ".bwjp.bwjp-" + jackpot.toLowerCase() : ""), h("div.bw-rays"), h("div.bw-title", label), num, h("div.bw-tap", "탭하여 닫기"));
     document.body.append(ov);
     jackpot ? Sound.jackpot() : Sound.bigWin();
     confetti(jackpot ? 140 : 70, ["🪙", "💰", "💵", "✨"]);

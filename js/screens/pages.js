@@ -11,6 +11,7 @@ import { avatar, playerCard, displayName, petView, weaponChip } from "../ui/prof
 import { worldMap } from "../ui/map.js";
 import { openSlot } from "./slot.js";
 import { openCasino } from "./casino.js";
+import { locationShops } from "../data/catalogAdmin.js";
 
 // ------------------------------------------------------------ home
 export function homePage() {
@@ -86,7 +87,7 @@ export function mapPage() {
             h("p", l.req ? (l.req.points ? `🔒 ${l.req.points} 포인트 이상 보유 시 입장` : `🔒 ${l.req.country} 국적 전용 (출입권으로 입장 가능)`) : "누구나 입장 가능"),
             h("h4", "슬롯"), h("ul", l.slots.map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
             h("h4", "카지노 게임"), h("ul", l.casino.map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
-            h("h4", "상점"), h("ul", l.shops.map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))));
+            h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))));
     } });
     return h("div.page", h("h2.page-title", "🗺️ 월드 맵"), h("div.map-page", map.el, info));
 }
@@ -124,6 +125,8 @@ export function guidePage() {
             h("li", "라운드마다 공통 미션이 랜덤으로 뽑힙니다. 탈락자가 늘수록 미션 난이도가 최하 → 최상으로 올라갑니다."),
             h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 지도 룰렛으로 플레이할 카지노가 정해집니다.`),
             h("li", "미션에 실패한 플레이어들이 탈락 후보가 되고, 탈락 릴로 한 명이 탈락합니다 (모두 성공 시 손익 하위 3명이 후보)."),
+            h("li", `라운드마다 플레이어당 슬롯 ${CONFIG.ROUND_SLOT_SPINS}회 · 카지노게임 ${CONFIG.ROUND_CASINO_PLAYS}회까지 (일반 상점의 추가권으로 늘릴 수 있음). 무료 스핀은 횟수에 포함되지 않습니다.`),
+            h("li", "골드가 0이 되면 대출(럭키대부 10%/라운드·5라운드, 크레이지대부 20%/라운드·3라운드)을 받을 수 있습니다. 대출금은 게임에만 쓸 수 있고, 기한 안에 못 갚으면 다음 라운드에 사망! 생존자 5명 이하에서는 대출 불가."),
             h("li", "최종 2인은 무기 배틀! 보유금액이 많은 쪽이 선공 (같으면 포인트). 승자는 명예의 전당에 등극합니다."))),
         h("div.guide-sec", h("h3", "미션"), h("div.tiers", tierBlocks)),
         h("div.guide-sec", h("h3", "펫 & 펫효과 (승률 / 보너스 확률 증가)"),
@@ -144,6 +147,9 @@ export function adminPage() {
         h("div.admin-card", h("h3", "저장소"), h("p", status),
             Store.cloud && !Store.user ? h("form.login", { onsubmit: async e => { e.preventDefault(); try { await Store.login(email.value, pw.value); toast("로그인 성공", "ok"); location.reload(); } catch (err) { toast(err.message, "error"); } } }, email, pw, h("button.btn.gold", "로그인")) : null,
             Store.user ? h("button.btn.ghost", { onclick: async () => { await Store.logout(); location.reload(); } }, "로그아웃") : null),
+        h("div.admin-card", h("h3", "🧑‍🤝‍🧑 플레이어 관리"), h("p.muted", `플레이어 정보 수정, 새 플레이어 생성, 활성/비활성 전환 (현재 ${Store.players.length}명 활성).`), h("a.btn.gold", { href: "#/admin-players" }, "관리하기")),
+        h("div.admin-card", h("h3", "🛒 상품·상점 관리"), h("p.muted", "무기·아이템·펫·펫효과·프레임·프레임효과의 능력치, 판매 상점, 가격, 판매 카지노를 조정하고 새 상품을 추가합니다."), h("a.btn.gold", { href: "#/admin-catalog" }, "관리하기")),
+        h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),
         h("div.admin-card", h("h3", "턴 시간"),
             h("p.muted", "기본 10분(600초). 리허설용으로 줄일 수 있습니다 (이 브라우저에만 적용)."),
             h("div.row", h("input", { type: "number", min: 30, step: 30, value: turnSec, onchange: e => { localStorage.setItem("gamblers.turnSeconds", e.target.value); CONFIG.TURN_SECONDS = +e.target.value; toast("저장됨", "ok"); } }), h("span", "초"))),
