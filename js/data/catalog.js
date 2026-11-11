@@ -10,7 +10,7 @@
 //   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
-export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5 };
+export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5 };
 
 export const MISSIONS = [
     // 최하
@@ -102,6 +102,7 @@ export const PET_EFFECTS = [
 
 // ---------------------------------------------------------------- weapons
 // type: attack | block (blocks the next hit) | sleep (opponent skips 1~3 turns)
+//       magic (random spell) | nomove (does nothing — not sold, only from a magic spell)
 export const BASIC_ATTACK = { id: "basic", name: "기본 공격", emoji: "✊", type: "attack", atk: 5, acc: 30, anim: "punch" };
 export const WEAPONS = [
     { id: "punch",      name: "펀치",            emoji: "👊", type: "attack", atk: 5,  acc: 70, anim: "punch" },
@@ -117,7 +118,11 @@ export const WEAPONS = [
     // rare (point shop)
     { id: "thunder",    name: "번개 해머",       emoji: "⚡", type: "attack", atk: 40, acc: 65, anim: "thunder", rare: true },
     { id: "dragon_breath", name: "드래곤 브레스", emoji: "🐲", type: "attack", atk: 50, acc: 55, anim: "fire", rare: true },
-    { id: "gold_storm", name: "황금 동전 폭풍",  emoji: "🌪️", type: "attack", atk: 25, acc: 90, anim: "storm", rare: true }
+    { id: "gold_storm", name: "황금 동전 폭풍",  emoji: "🌪️", type: "attack", atk: 25, acc: 90, anim: "storm", rare: true },
+    // magic: one of five random spells on a hit (see battle.js MAGIC_SPELLS)
+    { id: "magic",      name: "마법",            emoji: "🪄", type: "magic",  atk: 0,  acc: 80, anim: "magic" },
+    // not for sale — what a magic spell turns an opponent's weapon into
+    { id: "no_move",    name: "No Move",         emoji: "🫥", type: "nomove", atk: 0,  acc: 100, anim: "nomove", hidden: true }
 ];
 
 // ---------------------------------------------------------------- decorations (no skills)
@@ -154,6 +159,7 @@ export const ITEMS = [
     { id: "mission_pass", name: "미션완료권",          emoji: "🎫", desc: "이번 라운드 미션을 그냥 통과합니다." },
     { id: "casino_plus1", name: "카지노게임 1회 추가권", emoji: "🃏", desc: "이번 라운드 카지노게임 가능 횟수 +1" },
     { id: "slot_plus5",  name: "슬롯게임 5회 추가권",   emoji: "🎰", desc: "이번 라운드 슬롯 스핀 가능 횟수 +5" },
+    { id: "pet_swap",    name: "펫 교체권",             emoji: "🔁", desc: "이미 펫이 있을 때 다른 펫으로 바꾸려면 필요합니다. (기존 펫은 사라지고 펫효과는 유지)" },
     { id: "hp_10",      name: "HP약",       emoji: "🧪", desc: "HP +10 회복", hp: 10 },
     { id: "hp_50",      name: "+50 HP약",   emoji: "💊", desc: "HP +50 회복", hp: 50 },
     { id: "hp_full",    name: "FULL HP약",  emoji: "❤️‍🩹", desc: "HP 전체 회복", hp: 999 },
@@ -172,7 +178,7 @@ const petPriceG = { 5: 45000, 10: 90000, 15: 160000 };
 const specialPetPriceG = { 5: 80000, 10: 150000 };
 const fxPriceG = { 5: 30000, 10: 65000, 15: 120000 };
 const specialFxPriceG = { 5: 60000, 10: 120000 };
-const weaponPriceG = { punch: 12000, guard: 25000, tongue: 28000, kick: 12000, rock: 45000, ghost_punch: 65000, ko_punch: 55000, holo_ball: 80000, sleep_flute: 70000, coin_throw: 30000 };
+const weaponPriceG = { magic: 500000, punch: 12000, guard: 25000, tongue: 28000, kick: 12000, rock: 45000, ghost_punch: 65000, ko_punch: 55000, holo_ball: 80000, sleep_flute: 70000, coin_throw: 30000 };
 
 export const SHOPS = {
     general: {
@@ -182,6 +188,7 @@ export const SHOPS = {
             { cat: "item", id: "weapon_del", price: 15000 },
             { cat: "item", id: "casino_plus1", price: 300 },
             { cat: "item", id: "slot_plus5", price: 1000 },
+            { cat: "item", id: "pet_swap", price: 20000 },
             { cat: "item", id: "hp_10", price: 10000 },
             { cat: "item", id: "hp_50", price: 45000 },
             { cat: "item", id: "hp_full", price: 95000 },
@@ -199,7 +206,7 @@ export const SHOPS = {
     },
     weapon: {
         name: "무기 상점", icon: "⚔️", cur: "G",
-        list: WEAPONS.filter(w => !w.rare).map(w => ({ cat: "weapon", id: w.id, price: weaponPriceG[w.id] }))
+        list: WEAPONS.filter(w => !w.rare && !w.hidden).map(w => ({ cat: "weapon", id: w.id, price: weaponPriceG[w.id] }))
     },
     decor: {
         name: "프레임/효과 상점", icon: "🖼️", cur: "G",
@@ -226,13 +233,13 @@ export const SHOPS = {
 // country (nationals only; others need the matching pass item).
 export const LOCATIONS = [
     { id: "lucky",    name: "Lucky Casino",       emoji: "🍀", x: 46, y: 46, color: "#3ddc84", shops: ["general", "pet", "decor"],
-      slots: ["clover_luck", "monkey_drop"], casino: ["lucky_wheel", "clover_scratch"] },
+      slots: ["clover_luck", "monkey_drop", "five_cats"], casino: ["lucky_wheel", "clover_scratch"] },
     { id: "seaside",  name: "Seaside Casino",     emoji: "🏖️", x: 80, y: 74, color: "#38bdf8", shops: ["general", "weapon", "point"], beg: true,
-      slots: ["pearl_tide"], casino: ["shell_cups", "sea_dice"] },
+      slots: ["pearl_tide", "niagara"], casino: ["shell_cups", "sea_dice"] },
     { id: "twins",    name: "Twins Wins",         emoji: "👯", x: 56, y: 22, color: "#f472b6", shops: ["general", "pet", "weapon", "point"], req: { points: 100 },
-      slots: ["fufu"], casino: ["twin_flip", "royal_cards"] },
+      slots: ["fufu", "lucky_boxes"], casino: ["twin_flip", "royal_cards"] },
     { id: "gamblers", name: "Gamblers Casino",    emoji: "🎰", x: 34, y: 62, color: "#facc15", shops: ["general", "decor"], earn: true,
-      slots: ["money_mesh"], casino: ["gamblers_roulette", "pension_ticket"] },
+      slots: ["money_mesh", "cat_mouse"], casino: ["gamblers_roulette", "pension_ticket"] },
     { id: "dungdung", name: "Dung Dung Casino",   emoji: "💩", x: 64, y: 54, color: "#a16207", shops: ["general", "weapon", "decor", "pet"], req: { points: 50 }, earn: true, beg: true,
       slots: ["golden_dung"], casino: ["dung_gacha", "dung_plinko"] },
     { id: "noluck",   name: "No Luck Casino",     emoji: "🐈‍⬛", x: 28, y: 36, color: "#94a3b8", shops: ["decor"], beg: true,
@@ -246,11 +253,11 @@ export const LOCATIONS = [
     { id: "ground",   name: "Ground Town Casino", emoji: "🐜", x: 12, y: 58, color: "#84cc16", shops: ["general", "pet", "weapon"], req: { country: "Ground Town", pass: "pass_ground" },
       slots: ["ant_hill"], casino: ["ant_dig"] },
     { id: "foggy",    name: "Foggy Nation Casino", emoji: "👻", x: 14, y: 84, color: "#64748b", shops: ["general", "pet", "weapon"], earn: true, req: { country: "Foggy Nation", pass: "pass_foggy" },
-      slots: ["ghost_vault"], casino: ["ghost_scratch"] },
+      slots: ["ghost_vault", "froggie"], casino: ["ghost_scratch"] },
     { id: "mj",       name: "MJ World Casino",    emoji: "🐱", x: 86, y: 14, color: "#2dd4bf", shops: ["general", "pet", "weapon"], req: { country: "MJ World", pass: "pass_mj" },
       slots: ["samurai_cash"], casino: ["mj_coin_flip"] },
     { id: "dungtown", name: "Dung Town Casino",   emoji: "🏘️", x: 50, y: 84, color: "#eab308", shops: ["general", "pet", "weapon"], earn: true, beg: true, req: { country: "Dung Town", pass: "pass_dung" },
-      slots: ["dragon_hoard"], casino: ["dungtown_dice"] }
+      slots: ["dragon_hoard", "crack_or_not"], casino: ["dungtown_dice"] }
 ];
 
 export const COUNTRIES = ["Emo World", "Polynesia", "Ground Town", "Foggy Nation", "MJ World", "Dung Town"];

@@ -44,7 +44,7 @@ function gateTier(cfg, tier, bet) {
 
 // ------------------------------------------------------------ grid
 function reelPairs(cfg, mode, reel) {
-    const base = cfg.w, over = mode !== "base" ? (cfg.wFree || {}) : {};
+    const base = cfg.w, over = mode === "mouse" ? (cfg.wMouse || cfg.wFree || {}) : mode !== "base" ? (cfg.wFree || {}) : {};
     const out = [];
     for (const s of Object.keys(cfg.syms)) {
         let w = over[s] ?? base[s] ?? 0;
@@ -89,7 +89,8 @@ function inject(grid, sym, count, { distinctReels = true, avoid = null } = {}) {
     }
     return cells;
 }
-const SPECIAL = new Set(["F", "P", "C", "M", "M1", "M2", "M3", "R", "X", "B", "L"]);
+const SPECIAL = new Set(["F", "P", "C", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "B", "L", "D", "N", "PK", "MT"]);
+const isWild = x => x === "W" || x === "MW"; // MW = Cat and Mouse mouse wild
 function isSpecial(s) { return SPECIAL.has(s); }
 export function countSym(grid, sym) { let n = 0; for (const col of grid) for (const s of col) if (s === sym) n++; return n; }
 function cellsOf(grid, sym) { const out = []; grid.forEach((col, c) => col.forEach((s, r) => { if (s === sym) out.push([c, r]); })); return out; }
@@ -105,7 +106,7 @@ export function evalWays(cfg, grid, bet, mult = 1, wildReels = []) {
         const cells = [];
         for (let c = 0; c < grid.length; c++) {
             const hit = [];
-            grid[c].forEach((x, r) => { if (x === s || x === "W" || wildReels.includes(c)) hit.push([c, r]); });
+            grid[c].forEach((x, r) => { if (x === s || isWild(x) || wildReels.includes(c)) hit.push([c, r]); });
             if (!hit.length) break;
             ways *= hit.length; n++; cells.push(...hit);
         }
@@ -126,6 +127,36 @@ function addPoints(grid, cfg) {
     if (n) inject(grid, "P", n, { distinctReels: n <= grid.length });
     return P_POINTS[Math.min(n, 5)];
 }
+
+// ------------------------------------------------------------ meter bursts
+// A progressive meter can burst at ANY fill (early, half way, full …): the
+// fuller it is the likelier, and a full meter keeps rattling until it goes.
+// k is solved per (max, step sizes) so the mean number of meter events per
+// burst stays max / mean step — the same bonus rate as "burst when full".
+export const FULL_Q = 0.35;
+const _burstK = new Map();
+const qAt = (k, v, max) => v >= max ? FULL_Q : Math.min(0.3, k * (0.12 + (v / max) ** 2));
+function burstK(max, steps) {
+    const key = max + "|" + steps.join(";");
+    if (_burstK.has(key)) return _burstK.get(key);
+    const sw = steps.reduce((s, x) => s + x[1], 0);
+    const target = max / (steps.reduce((s, x) => s + x[0] * x[1], 0) / sw);
+    const events = k => {
+        const e = Array(max + 1).fill(0);
+        e[max] = 1 / FULL_Q;
+        for (let v = max - 1; v >= 0; v--) {
+            let s = 1;
+            for (const [a, w] of steps) { const v2 = Math.min(max, v + a); s += w / sw * (1 - qAt(k, v2, max)) * e[v2]; }
+            e[v] = s;
+        }
+        return e[0];
+    };
+    let lo = 0, hi = 2;
+    for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (events(mid) > target) lo = mid; else hi = mid; }
+    _burstK.set(key, lo);
+    return lo;
+}
+export function burstQ(v, max, steps = [[1, 1]]) { return qAt(burstK(max, steps), v, max); }
 
 // ------------------------------------------------------------ bonus pieces
 // Hold & Spin. `modifiers` (Bonanza thermometers: hot / extra / cold) each
@@ -244,6 +275,9 @@ function freeBonus(cfg, bet, spins, opts = {}) {
 export function spin(cfg, ctx) {
     if (cfg.engine === "classic") return classicSpin(cfg, ctx);
     if (cfg.engine === "monkey") return monkeySpin(cfg, ctx);
+    if (cfg.engine === "catmouse") return catMouseSpin(cfg, ctx);
+    if (cfg.engine === "cascade") return cascadeSpin(cfg, ctx);
+    if (cfg.engine === "egg") return eggSpin(cfg, ctx);
     const { bet } = ctx;
     const state = structuredClone(ctx.state || {});
     const F = cfg.features || {};
@@ -290,40 +324,60 @@ export function spin(cfg, ctx) {
     // ---- persistent machine meters
     const M = cfg.meter && !cfg.meter.off ? cfg.meter : null;
     if (M) {
-        if (M.kind === "thermo") {
-            state.thermo = state.thermo || { hot: 0, extra: 0, cold: 0 };
-            // practice test: "thermo:hot" / "thermo:hot+cold" / "thermo:all"
-            const ft = force.startsWith("thermo") ? force.split(":")[1] : null;
+        if (MM_KEYS[M.kind]) {
+            // several meters side by side (Bonanza thermometers, 5 Cats, Froggie, Lucky Boxes)
+            // practice test: "thermo:hot" / "mm:happy+rich" / "mm:all"
+            const KEYS = MM_KEYS[M.kind];
+            const sk = M.kind === "thermo" ? "thermo" : "mm";
+            const st = state[sk] ||= {};
+            const counts = M.counts ? (state.mmN ||= {}) : null;
+            const fmm = force.match(/^(thermo|mm):([^:]+)/);
+            const ft = fmm ? fmm[2] : null;
+            const featOn = key => !M.feat || on(M.feat[key]);
             const full = [];
-            const KEYS = [["hot", "M1"], ["extra", "M2"], ["cold", "M3"]];
             for (const [key, sym] of KEYS) {
+                st[key] ||= 0;
+                if (counts) counts[key] ??= M.counts.start;
+                if (!featOn(key)) continue;
                 const forced = ft && (ft === "all" || ft.split("+").includes(key));
-                if (forced || rand() < M.p * boost) {
-                    const n = 1 + (rand() < 0.2 ? 1 : 0);
-                    inject(grid, sym, n);
-                    state.thermo[key] = forced ? M.max : Math.min(M.max, state.thermo[key] + n);
-                    meterEvents.push({ key, add: n, value: state.thermo[key] });
-                    if (state.thermo[key] >= M.max) full.push(key);
-                }
+                const r = mmTick(M, st, counts, key, forced, boost);
+                if (!r) continue;
+                inject(grid, sym, r.ev.add);
+                meterEvents.push(r.ev);
+                if (r.burst) full.push(key);
             }
-            // a bursting thermometer can set off the others (the fuller, the likelier)
-            if (full.length && !ft) for (const [key, sym] of KEYS) {
-                if (full.includes(key) || rand() >= (state.thermo[key] / M.max) * (M.chain ?? 0.6)) continue;
+            // a bursting meter can set off the others (the fuller, the likelier)
+            if (full.length && !ft && M.chain) for (const [key, sym] of KEYS) {
+                if (full.includes(key) || !featOn(key) || rand() >= (st[key] / M.max) * M.chain) continue;
                 if (!countSym(grid, sym)) inject(grid, sym, 1);
-                full.push(key); meterEvents.push({ key, add: 0, value: M.max, chain: true });
+                full.push(key); meterEvents.push({ key, add: 0, value: st[key], chain: true });
             }
             if (full.length) {
-                for (const key of full) { state.thermo[key] = 0; meterEvents.push({ key, full: true }); }
-                if (on("hold")) features.push({ pending: "hold", modifiers: KEYS.map(k => k[0]).filter(k => full.includes(k)), start: F.hold.start || 6 });
+                const nAt = {};
+                for (const key of full) {
+                    nAt[key] = counts?.[key];
+                    meterEvents.push({ key, full: true, at: st[key] / M.max, n: counts?.[key] });
+                    st[key] = 0; if (counts) counts[key] = M.counts.start;
+                }
+                const order = KEYS.map(k => k[0]).filter(k => full.includes(k));
+                if (M.kind === "thermo") { if (on("hold")) features.push({ pending: "hold", modifiers: order, start: F.hold.start || 6 }); }
+                else if (M.kind === "cats") features.push({ pending: "chold", cats: order });
+                else if (M.kind === "frogs") for (const k of order) features.push({ pending: M.feat[k] });
+                else if (M.kind === "boxes") {
+                    // yellow first (one wild spin), then the free games
+                    if (order.includes("yellow")) features.push({ pending: "bwild", n: nAt.yellow });
+                    if (order.includes("red")) features.push({ pending: "bfree", spins: nAt.red, wilds: 0, box: "red" });
+                    if (order.includes("rainbow")) features.push({ pending: "bfree", spins: nAt.rainbow, wilds: nAt.rainbow, box: "rainbow" });
+                }
             }
         } else if (M.kind === "reelcoins") {
             state.cols = state.cols || Array(grid.length).fill(0);
             for (let c = 0; c < grid.length; c++) {
                 if (rand() < M.p * boost) {
                     inject(grid.map((col, i) => i === c ? col : []), "M", 1); // place on this reel
-                    state.cols[c]++;
+                    state.cols[c] = Math.min(M.max, state.cols[c] + 1);
                     meterEvents.push({ reel: c, value: state.cols[c] });
-                    if (state.cols[c] >= M.max) { wildReels.push(c); state.cols[c] = 0; meterEvents.push({ reel: c, full: true }); }
+                    if (rand() < burstQ(state.cols[c], M.max)) { wildReels.push(c); meterEvents.push({ reel: c, full: true, at: state.cols[c] / M.max }); state.cols[c] = 0; }
                 }
             }
         } else {
@@ -333,10 +387,10 @@ export function spin(cfg, ctx) {
                 const n = 1 + (rand() < 0.25 ? 1 : 0);
                 inject(grid, "M", n, { distinctReels: true });
                 const add = M.addPerSym ? n : 1;
-                state.meter = fm ? M.max : Math.min(M.max, state.meter + add);
+                state.meter = Math.min(M.max, state.meter + add);
                 meterEvents.push({ add, value: state.meter });
-                if (state.meter >= M.max) {
-                    state.meter = 0; meterEvents.push({ full: true });
+                if (fm || rand() < burstQ(state.meter, M.max, M.addPerSym ? [[1, 75], [2, 25]] : [[1, 1]])) {
+                    meterEvents.push({ full: true, at: state.meter / M.max }); state.meter = 0;
                     const alive = k => !F[k]?.off;
                     let what = M.onFull;
                     if (M.onFullW) { // several possible bonuses (FuFu): weighted, minus the ones the admin removed
@@ -365,11 +419,19 @@ export function spin(cfg, ctx) {
             const tw = f.fromMeter && M?.pickTw ? M.pickTw : F.pick.tw;
             done.push(pickBonus(cfg, bet, tw, f.fromMeter ? (M.pickTitle || M.title) : F.pick.title));
         }
+        else if (f.pending === "chold") done.push(catsHold(cfg, bet, f.cats, ctx.pool, force));
+        else if (f.pending === "rspin") done.push(ribbitSpin(cfg, bet, ctx.pool, force.endsWith(":full") ? { land: 0.3 } : {}));
+        else if (f.pending === "rcatch") done.push(ribbitCatch(cfg, bet, ctx.pool, force.endsWith(":full") ? { land: 0.3 } : {}));
+        else if (f.pending === "rpick") done.push(ribbitPick(cfg, bet, ctx.pool, force));
+        else if (f.pending === "bfree") done.push(boxFree(cfg, bet, f.spins, f.wilds, f.box, state, boost));
+        else if (f.pending === "bwild") done.push(boxWild(cfg, bet, f.n));
     }
     // jackpot values + feature totals
     let featureWin = 0, featurePoints = 0;
     for (const d of done) {
-        if (d.type === "hold") {
+        if (d.jpWins && d.type !== "hold") { // new bonus types settle themselves
+            jackpots.push(...d.jpWins.map(j => j.tier));
+        } else if (d.type === "hold") {
             d.jpWins = d.jackpots.map(t => ({ tier: t, amount: jackpotValue(cfg, t, bet, ctx.pool) }));
             d.total = d.coinSum + d.jpWins.reduce((s, x) => s + x.amount, 0);
             jackpots.push(...d.jackpots);
@@ -386,7 +448,7 @@ export function spin(cfg, ctx) {
     let total = base.win + featureWin;
     const maxWin = (cfg.maxX || 5000) * bet;
     // progressive jackpots are paid in full; the cap only applies to the rest
-    const jpProg = done.reduce((s, d) => s + (d.type === "hold" ? d.jpWins.filter(x => !cfg.jp[x.tier]?.x).reduce((a, x) => a + x.amount, 0) : (d.type === "pick" || (d.type === "wheel" && d.jp)) && !cfg.jp[d.tier || d.jp]?.x ? d.total : 0), 0);
+    const jpProg = progShare(cfg, done);
     if (total - jpProg > maxWin) total = maxWin + jpProg;
 
     // ---- teasing: which reels get the long "anticipation" spin
@@ -402,7 +464,7 @@ export function spin(cfg, ctx) {
 
 function teaseReels(cfg, grid) {
     const out = [];
-    const trig = { F: 3, R: 3, X: 3 };
+    const trig = { F: 3, R: 3, X: 3, D: 3, N: 3, PK: 3, MT: 3 };
     for (const sym of Object.keys(trig)) {
         let n = 0;
         for (let c = 0; c < grid.length; c++) {
@@ -413,6 +475,438 @@ function teaseReels(cfg, grid) {
     const coins = countSym(grid, "C");
     if (cfg.features?.hold && coins >= (cfg.features.hold.trigger || 6) - 2) for (let c = 3; c < grid.length; c++) if (!out.includes(c)) out.push(c);
     return out.sort((a, b) => a - b);
+}
+
+// progressive (non-fixed) jackpot share of the bonus wins — paid in full, outside the max-win cap
+function progShare(cfg, done) {
+    const prog = (t, a) => cfg.jp?.[t] && !cfg.jp[t].x ? a : 0;
+    return done.reduce((s, d) => s + (d.jpWins ? d.jpWins.reduce((a, x) => a + prog(x.tier, x.amount), 0)
+        : (d.type === "pick" || (d.type === "wheel" && d.jp)) ? prog(d.tier || d.jp, d.total) : 0), 0);
+}
+// totals / cap / omen for the engines below
+function settle(cfg, ctx, { grid, base, done, points = 0, state, wildReels = [], meterEvents = [], extra = {} }) {
+    const bet = ctx.bet;
+    const jackpots = [];
+    let featureWin = 0, featurePoints = 0;
+    for (const d of done) { if (d.jpWins) jackpots.push(...d.jpWins.map(j => j.tier)); featureWin += d.total || 0; featurePoints += d.points || 0; }
+    let total = base.win + featureWin;
+    const jpProg = progShare(cfg, done);
+    const maxWin = (cfg.maxX || 5000) * bet;
+    if (total - jpProg > maxWin) total = maxWin + jpProg;
+    const bonus = done.length > 0;
+    const omen = cfg.omens?.length && ((bonus && rand() < 0.6) || (!bonus && rand() < 0.03)) ? 1 + ri(cfg.omens.length) : 0;
+    return { grid, base, wildReels, features: done, jackpots, points: points + featurePoints, total: Math.round(total), bonus, state, meterEvents, anticipation: grid ? teaseReels(cfg, grid) : [], omen, ...extra };
+}
+function jpCoin(cfg, bet, table) {
+    const v = pickW(table.v.map((x, i) => [x, table.w[i]]));
+    return isNaN(+v) ? { jp: gateTier(cfg, v, bet) } : { v: Math.round(+v * bet) };
+}
+const jpWinsOf = (cfg, bet, pool, tiers) => tiers.map(t => ({ tier: t, amount: jackpotValue(cfg, t, bet, pool) }));
+const sumOf = list => list.reduce((s, x) => s + (x.amount ?? x.win ?? 0), 0);
+
+// ------------------------------------------------------------ multi meters
+// key → reel symbol. A tick adds 1~2, maybe raises the box count (Lucky
+// Boxes) and rolls the burst chance for the new fill.
+export const MM_KEYS = {
+    thermo: [["hot", "M1"], ["extra", "M2"], ["cold", "M3"]],
+    cats: [["happy", "M1"], ["lucky", "M2"], ["meow", "M3"], ["rich", "M4"], ["fluffy", "M5"]],
+    frogs: [["spin", "M1"], ["catch", "M2"], ["pick", "M3"]],
+    boxes: [["red", "M1"], ["rainbow", "M2"], ["yellow", "M3"]]
+};
+function mmTick(M, st, counts, key, forced, boost) {
+    if (!forced && rand() >= (M.pk?.[key] ?? M.p) * boost) return null;
+    const add = 1 + (rand() < 0.2 ? 1 : 0);
+    st[key] = Math.min(M.max, (st[key] || 0) + add);
+    const ev = { key, add, value: st[key] };
+    if (counts) {
+        if (counts[key] < M.counts.max && rand() < M.counts.up) { const up = 1 + (rand() < 0.3 ? 1 : 0); counts[key] = Math.min(M.counts.max, counts[key] + up); ev.up = up; }
+        ev.n = counts[key];
+    }
+    return { ev, burst: forced || rand() < burstQ(st[key], M.max, [[1, 80], [2, 20]]) };
+}
+
+// ------------------------------------------------------------ 5 Cats: cat Hold & Spin
+// Every cat that burst adds its power to ONE Hold & Spin (any mix, even all five):
+// happy = a second 5x3 board · lucky = a MINI~MAJOR jackpot egg · meow = eggs grow
+// every respin · rich = COLLECT ALL (all eggs merge into one, worth double) ·
+// fluffy = instant win (the current egg total paid on the spot, 1~2 times).
+function catsHold(cfg, bet, cats, pool, force = "") {
+    const h = cfg.features.chold;
+    const R = 5, ROWS = 3, B = cats.includes("happy") ? 2 : 1;
+    const board = new Map();
+    const K = (b, c, r) => b + "," + c + "," + r;
+    const empties = () => { const e = []; for (let b = 0; b < B; b++) for (let c = 0; c < R; c++) for (let r = 0; r < ROWS; r++) if (!board.has(K(b, c, r))) e.push([b, c, r]); return e; };
+    const values = () => [...board.entries()].filter(([, x]) => x.v != null);
+    const sumNow = () => values().reduce((s, [, x]) => s + x.v, 0);
+    const land = force.endsWith(":full") ? 0.3 : h.land;
+    const put = (b, c, r, cn) => { board.set(K(b, c, r), cn); return { b, c, r, ...cn }; };
+    const first = [];
+    const start = [...shuffle(empties().filter(e => e[0] === 0)).slice(0, h.start), ...(B > 1 ? shuffle(empties().filter(e => e[0] === 1)).slice(0, h.start2 || 3) : [])];
+    for (const [b, c, r] of start) first.push(put(b, c, r, jpCoin(cfg, bet, h.coin)));
+    if (cats.includes("lucky")) {
+        const i = Math.max(0, first.findIndex(x => x.v != null));
+        const tier = gateTier(cfg, pickW(Object.entries(h.luckyTw)), bet);
+        const t = first[i];
+        delete t.v; t.jp = tier; t.lucky = true;
+        board.set(K(t.b, t.c, t.r), { jp: tier, lucky: true });
+    }
+    const steps = [{ added: first, lives: h.lives, boosts: [], instant: 0 }];
+    let lives = h.lives, guard = 0, instants = 0, nInst = 0;
+    while (lives > 0 && empties().length && guard++ < 120) {
+        const added = [];
+        for (const [b, c, r] of empties()) if (rand() < land) added.push(put(b, c, r, jpCoin(cfg, bet, h.coin)));
+        const boosts = [];
+        if (cats.includes("meow") && rand() < h.meowP) for (const [k, x] of shuffle(values()).slice(0, 1 + ri(3))) {
+            const add = Math.round(pickW(h.meowAdd) * bet); x.v += add;
+            const [b, c, r] = k.split(",").map(Number); boosts.push({ b, c, r, add, v: x.v });
+        }
+        let instant = 0;
+        if (cats.includes("fluffy") && nInst < 2 && rand() < h.fluffyP) { instant = sumNow(); instants += instant; nInst++; }
+        if (added.length) lives = h.lives; else lives--;
+        steps.push({ added, lives, boosts, instant });
+    }
+    let endInstant = 0;
+    if (cats.includes("fluffy") && !nInst) { endInstant = sumNow(); instants += endInstant; }
+    const coinSum = sumNow();
+    const rich = cats.includes("rich") ? coinSum : 0;
+    const fullBoards = [...Array(B).keys()].filter(b => empties().every(e => e[0] !== b));
+    const jackpots = [...board.values()].filter(x => x.jp).map(x => x.jp);
+    for (const b of fullBoards) jackpots.push(gateTier(cfg, "GRAND", bet));
+    const jpWins = jpWinsOf(cfg, bet, pool, jackpots);
+    return { type: "chold", cats, boards: B, reels: R, rows: ROWS, steps, coinSum, rich, instants, endInstant, fullBoards, jackpots, jpWins, total: coinSum + rich + instants + sumOf(jpWins) };
+}
+
+// ------------------------------------------------------------ Froggie: Ribbit bonuses
+// Ribbit Spin: Hold & Spin. A frog hops over the coins and pumps them up,
+// a lotus leaf adds a respin (3 → 4 → 5 max).
+function ribbitSpin(cfg, bet, pool, opts = {}) {
+    const h = cfg.features.rspin;
+    const R = 5, ROWS = 3;
+    const board = new Map();
+    const empties = () => { const e = []; for (let c = 0; c < R; c++) for (let r = 0; r < ROWS; r++) if (!board.has(c + "," + r)) e.push([c, r]); return e; };
+    const first = shuffle(empties()).slice(0, h.start).map(([c, r]) => { const cn = jpCoin(cfg, bet, h.coin); board.set(c + "," + r, cn); return { c, r, ...cn }; });
+    let livesMax = h.lives, lives = livesMax, guard = 0;
+    const steps = [{ added: first, hops: [], lives, livesMax }];
+    const land = opts.land ?? h.land;
+    while (lives > 0 && empties().length && guard++ < 120) {
+        const added = [];
+        for (const [c, r] of empties()) {
+            if (rand() >= land) continue;
+            const kind = pickW([["coin", h.wCoin], ["frog", h.wFrog], ["lotus", livesMax < h.maxLives ? h.wLotus : 0]]);
+            const cn = kind === "frog" ? { frog: true } : kind === "lotus" ? { lotus: true } : jpCoin(cfg, bet, h.coin);
+            board.set(c + "," + r, cn); added.push({ c, r, ...cn });
+            if (kind === "lotus") livesMax = Math.min(h.maxLives, livesMax + 1);
+        }
+        const hops = [];
+        for (const fr of added.filter(x => x.frog)) {
+            const path = [];
+            for (const [k, x] of shuffle([...board.entries()].filter(([, x]) => x.v != null)).slice(0, 2 + ri(3))) {
+                const add = Math.round(pickW(h.hop) * bet); x.v += add;
+                const [c, r] = k.split(",").map(Number); path.push({ c, r, add, v: x.v });
+            }
+            hops.push({ from: [fr.c, fr.r], path });
+        }
+        if (added.length) lives = livesMax; else lives--;
+        steps.push({ added, hops, lives, livesMax });
+    }
+    const full = board.size >= R * ROWS;
+    const jackpots = [...board.values()].filter(x => x.jp).map(x => x.jp);
+    if (full) jackpots.push(gateTier(cfg, "GRAND", bet));
+    const coinSum = [...board.values()].reduce((s, x) => s + (x.v || 0), 0);
+    const jpWins = jpWinsOf(cfg, bet, pool, jackpots);
+    return { type: "rspin", reels: R, rows: ROWS, steps, full, coinSum, jackpots, jpWins, total: coinSum + sumOf(jpWins) };
+}
+// Ribbit Catch: a 5x5 board with a 3x3 catch net. Only coins landing inside the
+// net are caught. A lotus leaf grows the net (3 → 4 → 5 = whole board), a frog
+// turns the net into x2~x5 for that one respin.
+function ribbitCatch(cfg, bet, pool, opts = {}) {
+    const h = cfg.features.rcatch, N = h.size;
+    let s = 3, x = ri(N - s + 1), y = ri(N - s + 1);
+    const inSq = (c, r) => c >= x && c < x + s && r >= y && r < y + s;
+    const caught = new Map();
+    const free = () => { const o = []; for (let c = x; c < x + s; c++) for (let r = y; r < y + s; r++) if (!caught.has(c + "," + r)) o.push([c, r]); return o; };
+    const first = shuffle(free()).slice(0, h.start).map(([c, r]) => { const cn = jpCoin(cfg, bet, h.coin); caught.set(c + "," + r, cn); return { c, r, ...cn, in: true }; });
+    const steps = [{ landed: first, sq: { x, y, s }, mult: 1, lives: h.lives, grow: 0 }];
+    let lives = h.lives, guard = 0;
+    const land = opts.land ?? h.land;
+    while (lives > 0 && caught.size < N * N && guard++ < 150) {
+        const landed = [];
+        for (let c = 0; c < N; c++) for (let r = 0; r < N; r++) {
+            if (caught.has(c + "," + r) || rand() >= land) continue;
+            const kind = pickW([["coin", h.wCoin], ["lotus", s < N ? h.wLotus : 0], ["frog", h.wFrog]]);
+            landed.push({ c, r, ...(kind === "coin" ? jpCoin(cfg, bet, h.coin) : { [kind]: true }) });
+        }
+        let grow = 0;
+        for (const l of landed) if (l.lotus && s < N) {
+            const ns = s + 1;
+            x = Math.max(0, Math.min(N - ns, x - ri(2))); y = Math.max(0, Math.min(N - ns, y - ri(2)));
+            s = ns; grow++;
+        }
+        const mult = landed.some(l => l.frog) ? pickW(h.mult) : 1;
+        let got = 0;
+        for (const l of landed) {
+            if (l.lotus || l.frog) continue;
+            l.in = inSq(l.c, l.r);
+            if (!l.in) continue;
+            const cn = l.jp ? { jp: l.jp } : { v: l.v * mult };
+            if (l.v != null) l.v2 = cn.v;
+            caught.set(l.c + "," + l.r, cn); got++;
+        }
+        if (got) lives = h.lives; else lives--;
+        steps.push({ landed, sq: { x, y, s }, mult, lives, grow });
+    }
+    const full = caught.size >= N * N;
+    const jackpots = [...caught.values()].filter(c => c.jp).map(c => c.jp);
+    if (full) jackpots.push(gateTier(cfg, "GRAND", bet));
+    const coinSum = [...caught.values()].reduce((a, c) => a + (c.v || 0), 0);
+    const jpWins = jpWinsOf(cfg, bet, pool, jackpots);
+    return { type: "rcatch", size: N, steps, full, coinSum, jackpots, jpWins, total: coinSum + sumOf(jpWins) };
+}
+// Ribbit Pick: match 3 lotus leaves (MINI~GRAND or FROG). Three frogs → the
+// frog wheel: a jackpot, Ribbit Catch or Ribbit Spin.
+function ribbitPick(cfg, bet, pool, force = "") {
+    const P = cfg.features.rpick;
+    const keys = Object.keys(P.tw);
+    const fp = force.split(":"); // practice: mm:pick:frog[:CATCH|SPIN]
+    let key = fp[2] === "frog" ? "FROG" : pickW(keys.map(t => [t, P.tw[t]]));
+    if (key !== "FROG") key = gateTier(cfg, key, bet);
+    const items = keys.includes(key) ? keys : [...keys, key];
+    const decoys = [];
+    for (const t of items.filter(t => t !== key)) { const k = ri(3); for (let i = 0; i < k; i++) decoys.push(t); }
+    const seq = [...shuffle([key, key, ...shuffle(decoys).slice(0, 7)]), key];
+    const out = { type: "rpick", title: P.title, items, seq, tiles: 12, tier: key };
+    let jps = [key], sub = null;
+    if (key === "FROG") {
+        const want = fp[3] ? P.wheel.seg.indexOf(fp[3]) : -1;
+        const idx = want >= 0 ? want : pickW(P.wheel.seg.map((s, i) => [i, P.wheel.w[i]]));
+        const seg = P.wheel.seg[idx];
+        jps = [];
+        if (seg === "CATCH") sub = ribbitCatch(cfg, bet, pool);
+        else if (seg === "SPIN") sub = ribbitSpin(cfg, bet, pool);
+        else jps = [gateTier(cfg, seg, bet)];
+        out.wheel = { seg: P.wheel.seg, idx, jp: jps[0] || null };
+    }
+    const own = jpWinsOf(cfg, bet, pool, jps);
+    out.own = own; out.sub = sub;
+    out.jpWins = [...own, ...(sub?.jpWins || [])];
+    out.total = sumOf(own) + (sub ? sub.total : 0);
+    return out;
+}
+
+// ------------------------------------------------------------ Lucky Boxes
+function scatterWilds(grid, n) {
+    const cells = [];
+    grid.forEach((col, c) => col.forEach((s, r) => { if (!isSpecial(s) && !isWild(s)) cells.push([c, r]); }));
+    const picked = shuffle(cells).slice(0, n);
+    for (const [c, r] of picked) grid[c][r] = "W";
+    return picked;
+}
+// red: N free games · rainbow: N free games + N wilds spread over them. The yellow
+// box keeps growing during the free games and can burst for an instant wild drop.
+function boxFree(cfg, bet, spins, wilds, box, state, boost) {
+    const M = cfg.meter, st = state.mm, counts = state.mmN;
+    const per = Array(spins).fill(0);
+    for (let i = 0; i < wilds; i++) per[ri(spins)]++;
+    const out = [];
+    for (let i = 0; i < spins; i++) {
+        const grid = drawGrid(cfg, "free");
+        let yellow = null;
+        if (!cfg.features.bwild?.off) {
+            const r = mmTick(M, st, counts, "yellow", false, boost);
+            if (r) {
+                inject(grid, "M3", r.ev.add); yellow = { ...r.ev };
+                if (r.burst) { yellow.burst = counts.yellow; st.yellow = 0; counts.yellow = M.counts.start; }
+            }
+        }
+        const points = addPoints(grid, cfg);
+        const pre = grid.map(c => [...c]);
+        const wcells = scatterWilds(grid, per[i] + (yellow?.burst || 0));
+        const ev = evalWays(cfg, grid, bet);
+        out.push({ pre, grid, win: ev.win, lines: ev.lines, points, rainbow: per[i], yellow, wilds: wcells });
+    }
+    return { type: "bfree", box, spins: out, total: sumOf(out), points: out.reduce((s, x) => s + x.points, 0), scales: true };
+}
+// yellow: one spin with N wilds thrown all over the reels
+function boxWild(cfg, bet, n) {
+    const grid = drawGrid(cfg, "free");
+    const pre = grid.map(c => [...c]);
+    const wcells = scatterWilds(grid, n);
+    const ev = evalWays(cfg, grid, bet);
+    return { type: "bwild", n, pre, grid, wilds: wcells, win: ev.win, lines: ev.lines, total: ev.win, scales: true };
+}
+
+// ------------------------------------------------------------ Cat and Mouse (classic, 5x3 ways)
+// FREE x3 = 8 free spins · DOUBLE x3 = 8 free spins on two reel sets; DOUBLE x3
+// on the extra set = +3 spins and the sets split into four · CAT x3 = the cat
+// throws 3 fish, pick one for a jackpot · MOUSE x3 = 8 free spins where every
+// A K Q J 10 turns into a mouse WILD.
+function catMouseSpin(cfg, ctx) {
+    const { bet } = ctx;
+    const state = structuredClone(ctx.state || {});
+    const F = cfg.features, boost = 1 + (ctx.luck?.bonus || 0), force = ctx.force || "";
+    const on = k => !!F[k] && !F[k].off;
+    const SYM = { free: "F", double: "D", fish: "X", mouse: "N" };
+    const grid = drawGrid(cfg, "base");
+    let pick = null;
+    for (const k of Object.keys(SYM)) if (on(k) && (force ? force.split(":")[0] === k : rand() < F[k].p * boost)) { pick = k; break; }
+    if (pick) inject(grid, SYM[pick], 3);
+    for (const k of Object.keys(SYM)) if (k !== pick && on(k) && rand() < 0.045) inject(grid, SYM[k], 2, { avoid: c => c >= 3 });
+    const points = addPoints(grid, cfg);
+    const base = evalWays(cfg, grid, bet);
+    const done = [];
+    if (pick === "free") done.push(freeBonus(cfg, bet, F.free.spins, {}));
+    if (pick === "double") done.push(doubleFree(cfg, bet, force === "double:split"));
+    if (pick === "fish") done.push(pickOneBonus(cfg, bet, ctx.pool, F.fish));
+    if (pick === "mouse") done.push(mouseFree(cfg, bet));
+    return settle(cfg, ctx, { grid, base, done, points, state });
+}
+function doubleFree(cfg, bet, forceSplit = false) {
+    const f = cfg.features.double;
+    let sets = 2, left = f.spins, guard = 0;
+    const out = [];
+    while (left > 0 && guard++ < 40) {
+        left--;
+        const grids = Array.from({ length: sets }, () => drawGrid(cfg, "free"));
+        let add = 0;
+        const split = sets === 2 && (forceSplit ? out.length === 1 : rand() < f.splitP);
+        if (split) { inject(grids[1], "D", 3); add = f.add; left += add; }
+        const points = addPoints(grids[0], cfg);
+        const evs = grids.map(g => evalWays(cfg, g, bet));
+        out.push({ grids, wins: evs.map(e => e.win), lines: evs.map(e => e.lines), win: evs.reduce((s, e) => s + e.win, 0), add, split, points });
+        if (split) sets = 4;
+    }
+    return { type: "double", spins: out, total: sumOf(out), points: out.reduce((s, x) => s + x.points, 0), scales: true };
+}
+function mouseFree(cfg, bet) {
+    const f = cfg.features.mouse;
+    const out = [];
+    for (let i = 0; i < f.spins; i++) {
+        const grid = drawGrid(cfg, "mouse").map(col => col.map(s => CARD_SYMS.includes(s) ? "MW" : s));
+        const points = addPoints(grid, cfg);
+        const ev = evalWays(cfg, grid, bet);
+        out.push({ grid, win: ev.win, lines: ev.lines, points, wildReels: [] });
+    }
+    return { type: "free", mouse: true, spins: out, mult: 1, total: sumOf(out), points: out.reduce((s, x) => s + x.points, 0), extra: 0 };
+}
+// pick one of N (fish / barrels …): prizes are jackpot tiers or bet multiples
+function pickOneBonus(cfg, bet, pool, P) {
+    const idx = pickW(P.prizes.map((p, i) => [i, P.w[i]]));
+    const prize = P.prizes[idx];
+    const others = shuffle(P.prizes.filter(p => p !== prize)).slice(0, (P.n || 3) - 1);
+    const isJp = isNaN(parseFloat(prize));
+    const jpWins = isJp ? jpWinsOf(cfg, bet, pool, [prize]) : [];
+    const amount = isJp ? jpWins[0].amount : Math.round(parseFloat(prize) * bet);
+    return { type: "pickone", title: P.title, icon: P.icon, n: P.n || 3, prize, others, amount, total: amount, jpWins };
+}
+// match 3 with bet-multiple prizes (Niagara)
+function matchBonus(cfg, bet, P) {
+    const prize = pickW(P.prizes.map((p, i) => [p, P.w[i]]));
+    const decoys = [];
+    for (const p of P.prizes.filter(p => p !== prize)) { const k = ri(3); for (let i = 0; i < k; i++) decoys.push(p); }
+    const seq = [...shuffle([prize, prize, ...shuffle(decoys).slice(0, 7)]), prize];
+    return { type: "pick", classic: true, title: P.title, prizes: P.prizes, icon: P.icon, tier: prize, seq, tiles: 12, total: Math.round(parseFloat(prize) * bet) };
+}
+
+// ------------------------------------------------------------ Niagara (cascading reels)
+// Winning symbols wash away and new ones fall in. 4+ cascades in a row on one
+// spin = 5 / 10 / 15 / 25 / 50 / 100 free games. Feature first: the chain
+// length is decided up front, the refills are steered to give exactly that.
+export const CASCADE_FG = { 4: 5, 5: 10, 6: 15, 7: 25, 8: 50, 9: 100 };
+function forceWin(cfg, grid, drops) {
+    const s = pickW(Object.keys(cfg.syms).filter(k => cfg.syms[k].pay).map(k => [k, cfg.w[k] || 1]));
+    for (let c = 0; c < 3; c++) {
+        const rows = drops ? Array.from({ length: drops[c] }, (_, r) => r) : grid[c].map((_, r) => r).filter(r => !isSpecial(grid[c][r]));
+        if (rows.length) grid[c][rows[ri(rows.length)]] = s;
+    }
+}
+function cascadeRun(cfg, bet, grid0, target, mode, cap) {
+    let grid = grid0.map(c => [...c]);
+    const R = grid.length, ROWS = grid[0].length;
+    const fresh = c => pickW(reelPairs(cfg, mode, c));
+    const steps = [];
+    let chain = 0, win = 0;
+    if (target && !evalWays(cfg, grid, bet).win) forceWin(cfg, grid, null);
+    const start = grid.map(c => [...c]);
+    for (let guard = 0; guard < 40; guard++) {
+        const ev = evalWays(cfg, grid, bet);
+        if (!ev.win) break;
+        chain++; win += ev.win;
+        const rm = new Set(ev.lines.flatMap(l => l.cells.map(([c, r]) => c + "," + r)));
+        const next = [], drops = [];
+        for (let c = 0; c < R; c++) {
+            const keep = grid[c].filter((s, r) => !rm.has(c + "," + r));
+            const n = ROWS - keep.length;
+            next.push([...Array.from({ length: n }, () => fresh(c)), ...keep]);
+            drops.push(n);
+        }
+        steps.push({ win: ev.win, lines: ev.lines, removed: [...rm].map(k => k.split(",").map(Number)), drops, after: null });
+        if (target && chain < target) { if (!evalWays(cfg, next, bet).win) forceWin(cfg, next, drops); }
+        else if (!(target ? false : chain < cap)) {
+            for (let t = 0; t < 80 && evalWays(cfg, next, bet).win; t++)
+                for (let c = 0; c < R; c++) for (let r = 0; r < drops[c]; r++) next[c][r] = fresh(c);
+        }
+        steps[steps.length - 1].after = next.map(c => [...c]);
+        grid = next;
+    }
+    return { start, steps, final: grid, chain, win };
+}
+function cascadeSpin(cfg, ctx) {
+    const { bet } = ctx;
+    const state = structuredClone(ctx.state || {});
+    const F = cfg.features, boost = 1 + (ctx.luck?.bonus || 0), force = ctx.force || "";
+    const on = k => !!F[k] && !F[k].off;
+    let pick = null;
+    for (const k of ["free", "pick", "match"]) if (on(k) && (force ? force.split(":")[0] === k : rand() < F[k].p * boost)) { pick = k; break; }
+    const grid = drawGrid(cfg, "base");
+    if (pick === "pick") inject(grid, "PK", 3); else if (on("pick") && rand() < 0.05) inject(grid, "PK", 2, { avoid: c => c >= 3 });
+    if (pick === "match") inject(grid, "MT", 3); else if (on("match") && rand() < 0.05) inject(grid, "MT", 2, { avoid: c => c >= 3 });
+    const points = addPoints(grid, cfg);
+    const target = pick === "free" ? (force.includes(":") ? +force.split(":")[1] : pickW(cfg.cascade.chainW)) : null;
+    const run = cascadeRun(cfg, bet, grid, target, "base", cfg.cascade.maxBase);
+    const base = { win: run.win, lines: run.steps.flatMap(s => s.lines) };
+    const done = [];
+    if (pick === "free") done.push(cascadeFree(cfg, bet, CASCADE_FG[Math.min(9, run.chain)], run.chain));
+    if (pick === "pick") done.push(pickOneBonus(cfg, bet, ctx.pool, F.pick));
+    if (pick === "match") done.push(matchBonus(cfg, bet, F.match));
+    const res = settle(cfg, ctx, { grid: run.start, base, done, points, state, extra: { cascade: run } });
+    if (run.chain === 3 && !res.bonus) res.chainTease = true;
+    return res;
+}
+function cascadeFree(cfg, bet, spins, chain) {
+    const out = [];
+    let left = spins, awarded = spins, guard = 0;
+    while (left > 0 && guard++ < 120) {
+        left--;
+        const grid = drawGrid(cfg, "free");
+        const points = addPoints(grid, cfg);
+        const run = cascadeRun(cfg, bet, grid, null, "free", cfg.cascade.maxFree);
+        let add = 0;
+        if (run.chain >= 4 && awarded < 100) { add = Math.min(100 - awarded, CASCADE_FG[Math.min(9, run.chain)]); left += add; awarded += add; }
+        out.push({ run, win: run.win, points, add });
+    }
+    return { type: "cfree", chain, awarded, spins: out, total: sumOf(out), points: out.reduce((s, x) => s + x.points, 0), scales: true };
+}
+
+// ------------------------------------------------------------ Crack or Not (ostrich egg)
+// No reels: every tap is a bet. The egg cracks a little more each time and can
+// break on ANY tap — then a baby ostrich pops out with 1x ~ 200x the bet.
+function eggSpin(cfg, ctx) {
+    const { bet } = ctx;
+    const state = structuredClone(ctx.state || {});
+    const E = cfg.egg, F = cfg.features, boost = 1 + (ctx.luck?.bonus || 0), force = ctx.force || "";
+    const doBreak = !F.crack.off && (force ? force.startsWith("crack") : rand() < F.crack.p * boost);
+    const before = state.crack || 0;
+    const add = 1 + (rand() < 0.3 ? 1 : 0);
+    const done = [];
+    if (doBreak) {
+        const mult = force.includes(":") ? +force.split(":")[1] : pickW(E.mult.map((m, i) => [m, E.w[i]]));
+        const amount = Math.round(mult * bet * (cfg.px || 1));
+        done.push({ type: "egg", mult, amount, total: amount, at: before, jpWins: mult >= E.jpAt ? [{ tier: "EGG", amount }] : [] });
+        state.crack = 0;
+    } else state.crack = Math.min(E.max, before + add);
+    const tease = !doBreak && rand() < 0.07;
+    const points = rand() < 0.1 ? P_POINTS[pickW([[1, 70], [2, 22], [3, 8]])] : 0;
+    return settle(cfg, ctx, { grid: null, base: { win: 0, lines: [] }, done, points, state, extra: { egg: { before, after: state.crack, add, tease }, anticipation: tease ? [0] : [] } });
 }
 
 // ------------------------------------------------------------ Monkey Drop (money tree)

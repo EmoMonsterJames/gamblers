@@ -70,8 +70,86 @@ const SONGS = {
             // coin sparkles
             if (s === 31 || (bar === 0 && s === 11)) { bgmVoice(a, out, t, { freq: 1318, type: "square", dur: 0.06, vol: 0.03, cut: 9000, cutEnd: 6000 }); bgmVoice(a, out, t + 0.05, { freq: 1760, type: "square", dur: 0.12, vol: 0.03, cut: 9000, cutEnd: 6000 }); }
         }
+    },
+    // 5 Cats: fast samurai loop — shamisen plucks (D miyako-bushi scale) over taiko drums, 132 BPM
+    samurai_taiko: {
+        bpm: 132, steps: 32,
+        play(a, out, s, t, len) {
+            // taiko: deep hits + rim clicks
+            if ([0, 6, 8, 16, 22, 24, 27, 30].includes(s)) taiko(a, out, t, s % 16 === 0 ? 0.55 : 0.38);
+            if (s % 4 === 2) bgmNoise(a, out, t, { dur: 0.03, vol: 0.09, hp: 3500 });
+            if (s === 12 || s === 28) { bgmNoise(a, out, t, { dur: 0.18, vol: 0.12, hp: 900 }); } // shime-daiko roll
+            if (s === 13 || s === 29) bgmNoise(a, out, t, { dur: 0.08, vol: 0.08, hp: 1400 });
+            // shamisen: bright, fast-decaying plucks
+            const SHAM = { 0: 62, 2: 63, 3: 62, 4: 67, 6: 69, 7: 70, 8: 69, 10: 67, 12: 63, 14: 62, 16: 74, 18: 70, 19: 69, 20: 67, 22: 69, 23: 70, 24: 69, 26: 63, 28: 62, 30: 63, 31: 67 };
+            if (SHAM[s] != null) {
+                bgmVoice(a, out, t, { freq: midi(SHAM[s]), type: "sawtooth", dur: len * 1.3, vol: 0.06, cut: 5200, cutEnd: 700, attack: 0.002 });
+                bgmVoice(a, out, t, { freq: midi(SHAM[s] + 12), type: "triangle", dur: len * 0.6, vol: 0.02, cut: 7000, cutEnd: 2000, attack: 0.002 });
+            }
+            // drone
+            if (s === 0 || s === 16) bgmVoice(a, out, t, { freq: midi(38), type: "triangle", dur: len * 14, vol: 0.08, cut: 600, cutEnd: 200, attack: 0.05 });
+            if (s === 8 || s === 24) bgmVoice(a, out, t, { freq: midi(45), type: "triangle", dur: len * 6, vol: 0.05, cut: 600, cutEnd: 200, attack: 0.05 });
+            // "yo-oh!" style shout stab on the turnaround
+            if (s === 31) bgmVoice(a, out, t, { freq: midi(74), type: "square", dur: len * 1.5, vol: 0.02, cut: 2000, cutEnd: 800 });
+        }
+    },
+    // Froggie / Crack or Not / Niagara / Lucky Boxes: up-tempo casino lounge jazz, 120 BPM
+    // (Gm7 – C7 – Fmaj7 – D7, swing ride, walking bass, rhodes comping, vibes)
+    lounge_jazz: {
+        bpm: 120, steps: 32,
+        play(a, out, s, t, len) {
+            const sw = s % 4 === 3 ? len * 0.33 : 0; // swing the off-beat
+            if (s % 8 === 0 || s % 8 === 4 || s % 8 === 7) bgmNoise(a, out, t + sw, { dur: s % 8 === 7 ? 0.05 : 0.12, vol: 0.05, hp: 8000 }); // ride
+            if (s % 8 === 4) bgmNoise(a, out, t, { dur: 0.09, vol: 0.05, hp: 2500 }); // brush on 2 & 4
+            if (s === 0 || s === 18) kick(a, out, t, 0.22);
+            // walking bass (quarter notes)
+            const BASS = [43, 46, 48, 40, 41, 45, 38, 42];
+            if (s % 4 === 0) bgmVoice(a, out, t, { freq: midi(BASS[s / 4]), type: "triangle", dur: len * 3.6, vol: 0.2, cut: 900, cutEnd: 250, attack: 0.008 });
+            // rhodes comping
+            const CH = [[55, 58, 62, 65], [52, 58, 60, 64], [53, 57, 60, 64], [54, 57, 60, 62]];
+            const ci = s >> 3;
+            if (s % 8 === 0 || s % 8 === 3 || (s % 8 === 6 && ci % 2)) for (const n of CH[ci]) bgmVoice(a, out, t + sw, { freq: midi(n), type: "sine", dur: s % 8 === 0 ? len * 3 : len * 1.4, vol: 0.035, cut: 3000, cutEnd: 1200, detune: 6, attack: 0.01 });
+            // vibraphone lick
+            const VIB = { 2: 74, 3: 77, 10: 76, 11: 72, 19: 72, 20: 69, 26: 74, 27: 72, 28: 69, 30: 66 };
+            if (VIB[s]) bgmVoice(a, out, t + sw, { freq: midi(VIB[s]), type: "sine", dur: len * 2.5, vol: 0.04, cut: 6000, cutEnd: 3000, attack: 0.004 });
+        }
+    },
+    // Cat and Mouse: synthwave arpeggios + 808 bass, 118 BPM (Am – F – C – G)
+    synthwave: {
+        bpm: 118, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (st % 4 === 0) kick(a, out, t, 0.42);
+            if (st === 4 || st === 12) { bgmNoise(a, out, t, { dur: 0.2, vol: 0.2, hp: 1200 }); bgmVoice(a, out, t, { freq: 200, type: "triangle", dur: 0.1, vol: 0.1, cut: 1000, cutEnd: 300 }); }
+            if (st % 2 === 0) bgmNoise(a, out, t, { dur: 0.03, vol: st % 4 === 2 ? 0.06 : 0.03, hp: 9000 });
+            // 808 bass with a pitch drop
+            const ROOT = [33, 29, 36, 31][bar];
+            if ([0, 3, 8, 11, 14].includes(st)) eight08(a, out, t, midi(ROOT), st === 0 ? len * 3 : len * 1.8);
+            // arpeggio
+            const CH = [[57, 60, 64, 69], [57, 60, 65, 69], [55, 60, 64, 67], [55, 59, 62, 67]][bar];
+            const ARP = [0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 3, 2, 1, 2, 3, 2];
+            bgmVoice(a, out, t, { freq: midi(CH[ARP[st]] + 12), type: "sawtooth", dur: len * 0.9, vol: 0.026, cut: 3200, cutEnd: 900, detune: st % 2 ? 7 : -7, attack: 0.004 });
+            // pad
+            if (st === 0) for (const n of CH) for (const dt of [-10, 10]) bgmVoice(a, out, t, { freq: midi(n), type: "sawtooth", dur: len * 15, vol: 0.01, cut: 1400, cutEnd: 700, detune: dt, attack: 0.25 });
+            // neon lead hook on the last bar
+            const LEAD = { 48: 74, 50: 72, 52: 71, 54: 67, 56: 69, 60: 71, 62: 72 };
+            if (LEAD[s]) bgmVoice(a, out, t, { freq: midi(LEAD[s]), type: "square", dur: len * 1.8, vol: 0.025, cut: 4000, cutEnd: 1500, attack: 0.01 });
+        }
     }
 };
+function taiko(a, out, t, vol = 0.5) {
+    const o = a.createOscillator(), g = a.createGain();
+    o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.25);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    o.connect(g).connect(out); o.start(t); o.stop(t + 0.5);
+    bgmNoise(a, out, t, { dur: 0.05, vol: vol * 0.3, hp: 600 });
+}
+function eight08(a, out, t, freq, dur) {
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(freq * 2, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.06);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
+}
 function bgmStop() {
     if (!bgm) return;
     clearInterval(bgm.timer);

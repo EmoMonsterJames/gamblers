@@ -13,6 +13,15 @@ import { S, log, name } from "../game/season.js";
 import { avatar, petView, weaponChip, displayName } from "../ui/profile.js";
 import { CONFIG } from "../config.js";
 
+// 🪄 마법 weapon: equal chance of each spell
+const MAGIC_SPELLS = [
+    { id: "swap", name: "무기 봉인! 상대 무기 → No Move", icon: "🫥", w: 1 },
+    { id: "atk10", name: "매직 미사일 ATK 10", icon: "✨", atk: 10, w: 1 },
+    { id: "atk5", name: "반짝 펀치 ATK 5", icon: "💫", atk: 5, w: 1 },
+    { id: "atk20", name: "메테오 ATK 20", icon: "☄️", atk: 20, w: 1 },
+    { id: "sleep", name: "수면 마법 (1~2턴)", icon: "💤", w: 1 }
+];
+
 export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", sub = "첫 공격: 보유금액이 더 많은 플레이어 (같으면 포인트)", logLabel = "결승" } = {}) {
     const s = S();
     // HP carries over between battles (winners keep their damage; HP potions heal)
@@ -67,7 +76,9 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             say(`${w.emoji} ${name(atk.pid)}의 ${w.name}!`);
             const hit = Math.random() * 100 < w.acc;
             await animate(w, atk, def, hit);
-            if (w.type === "block") {
+            if (w.type === "nomove") {
+                say(`🫥 ${name(atk.pid)}은(는) 아무것도 하지 않았다… (No Move)`, "muted"); floating(atk, "…", "miss");
+            } else if (w.type === "block") {
                 if (hit) { atk.shield = true; say(`🛡️ 방어 태세! 다음 공격을 막는다`, "ok"); } else say("방어 실패…", "muted");
             } else if (!hit) {
                 say("…빗나감! MISS", "muted"); floating(def, "MISS", "miss"); Sound.miss();
@@ -76,12 +87,9 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             } else if (w.type === "sleep") {
                 def.sleep = 1 + Math.floor(Math.random() * 3);
                 say(`💤 ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
-            } else {
-                def.hp -= w.atk; setHp(def);
-                floating(def, `-${w.atk}`, "dmg"); Sound.hit(); shake(def.el, "hit-shake");
-                if (w.atk >= 50) { shake(arena, "big-shake"); Sound.boom(); }
-                say(`💥 ${name(def.pid)}에게 ${w.atk} 데미지! (HP ${Math.max(0, def.hp)})`, "bad");
-            }
+            } else if (w.type === "magic") {
+                await castMagic(atk, def);
+            } else damage(def, w.atk);
             status(atk); status(def);
             atk.el.classList.remove("acting");
             await W(650);
@@ -98,6 +106,34 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
         log(`⚔️ ${logLabel}: ${name(winner.pid)}이(가) ${name(loser.pid)}을(를) 꺾었다`);
         await sleep(2200);
         onWin(winner.pid, loser.pid);
+    }
+
+    function damage(def, atk) {
+        def.hp -= atk; setHp(def);
+        floating(def, `-${atk}`, "dmg"); Sound.hit(); shake(def.el, "hit-shake");
+        if (atk >= 50) { shake(arena, "big-shake"); Sound.boom(); }
+        say(`💥 ${name(def.pid)}에게 ${atk} 데미지! (HP ${Math.max(0, def.hp)})`, "bad");
+    }
+    // 🪄 마법: one random spell. Turning a weapon into No Move is permanent (it stays in the arsenal).
+    async function castMagic(atk, def) {
+        const swappable = def.ps.weapons.map((w, i) => [w, i]).filter(([w]) => w !== "no_move");
+        const spells = MAGIC_SPELLS.filter(s => s.id !== "swap" || swappable.length);
+        const sp = pick(spells.flatMap(s => Array(s.w).fill(s)));
+        const card = h("div.magic-card", h("span", sp.icon), h("b", sp.name));
+        fxLayer.append(card); Sound.bonus();
+        await W(1100); card.remove();
+        if (sp.id === "swap") {
+            const [wid, i] = pick(swappable);
+            def.ps.weapons[i] = "no_move";
+            def.el.closest(".fside").querySelector(".wlist").replaceChildren(...def.ps.weapons.map(weaponChip));
+            floating(def, "NO MOVE!", "sleep");
+            say(`🪄 마법! ${name(def.pid)}의 ${WEAPON_BY_ID[wid]?.name || wid}이(가) 🫥 No Move로 바뀌었다!`, "bad");
+            log(`🪄 ${name(atk.pid)}의 마법: ${name(def.pid)}의 ${WEAPON_BY_ID[wid]?.name || wid} → No Move`);
+            Store.saveSeason();
+        } else if (sp.id === "sleep") {
+            def.sleep = 1 + Math.floor(Math.random() * 2);
+            say(`🪄 수면 마법! ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
+        } else damage(def, sp.atk);
     }
 
     function floating(f, txt, cls) {
@@ -162,6 +198,18 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
                 const tw = proj("🌪️", "huge"); fly(tw, target, 700, "scale(1.6)");
                 for (let i = 0; i < 6; i++) { const c = proj("🪙", "spin"); fly(c, { x: target.x + (Math.random() - .5) * 90, y: target.y + (Math.random() - .5) * 90 }, 600).then(() => c.remove()); await W(80); }
                 await W(500); tw.remove(); break;
+            }
+            case "magic": {
+                const wand = proj("🪄", "glow");
+                wand.animate([{ transform: "translate(-50%,-50%) rotate(-30deg)" }, { transform: "translate(-50%,-50%) rotate(40deg) scale(1.4)" }], { duration: 420 / speed, fill: "forwards" });
+                await W(380);
+                for (let i = 0; i < 9; i++) { const s = proj(["✨", "⭐", "💫"][i % 3], "spin"); fly(s, { x: target.x + (Math.random() - .5) * 80, y: target.y + (Math.random() - .5) * 80 }, 520).then(() => s.remove()); await W(55); }
+                await W(450); wand.remove(); break;
+            }
+            case "nomove": {
+                const q = h("div.proj", "🫥"); q.style.left = A.x + "px"; q.style.top = A.y - 70 + "px"; fxLayer.append(q);
+                await q.animate([{ transform: "translate(-50%,-50%) scale(.6)", opacity: 0 }, { transform: "translate(-50%,-50%) scale(1.3)", opacity: 1 }, { transform: "translate(-50%,-50%) scale(1)", opacity: 0 }], { duration: 900 / speed }).finished;
+                q.remove(); break;
             }
             default: { const p = proj("✊"); await fly(p, target, 400); p.remove(); }
         }

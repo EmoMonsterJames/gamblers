@@ -454,11 +454,75 @@ function loanView(pid, onChange) {
 }
 
 // ------------------------------------------------------------------ battle mission
+// The two fighters are drawn one at a time from the candidates, with a
+// slowing roulette over the remaining cards. The fight starts only when the
+// ⚔️ button is pressed (battleView's own start button).
+function battleDrawStage(s) {
+    const pair = s.battlePair;
+    const pool = (s.battlePool || []).filter(p => !s.ps[p].out);
+    if (!pair.every(p => pool.includes(p))) pool.push(...pair.filter(p => !pool.includes(p)));
+    const cards = new Map(pool.map(pid => [pid, h("div.bd-card", avatar(pid, 84, { effect: false }), h("small", displayName(Store.player(pid))))]));
+    const slots = [0, 1].map(i => h("div.bd-slot", h("div.bd-q", "?"), h("small", i === 0 ? "첫 번째 파이터" : "두 번째 파이터")));
+    const status = h("p.bd-status", `후보 ${pool.length}명 중 2명이 배틀에 나섭니다…`);
+    let drawing = false;
+    const btn = h("button.btn.red.huge", { onclick: () => draw() }, "🎲 배틀 상대 추첨");
+    const wrap = h("div.battle-draw",
+        h("h2.stage-title", `⚔️ ROUND ${s.round} 배틀 미션`, h("small", s.mission.text)),
+        h("div.bd-vs", slots[0], h("div.vs-big", "VS"), slots[1]),
+        status,
+        h("div.bd-pool", [...cards.values()]),
+        h("div.row.center", btn));
+    async function spinTo(target, remaining) {
+        // a light hops around the remaining candidates, slows down, teases, then stops
+        const list = [...remaining];
+        let i = Math.floor(Math.random() * list.length), gap = 55;
+        const ti = list.indexOf(target);
+        const laps = list.length * (2 + Math.floor(Math.random() * 2));
+        const total = laps + ((ti - i + list.length) % list.length);
+        for (let k = 0; k <= total; k++) {
+            cards.forEach(c => c.classList.remove("hot"));
+            const pid = list[(i + k) % list.length];
+            cards.get(pid).classList.add("hot");
+            if (total - k < 6) Sound.heartbeat(); else Sound.tick();
+            await sleep(gap);
+            gap = total - k < 8 ? gap * 1.35 : gap * 1.04;
+        }
+        cards.forEach(c => c.classList.remove("hot"));
+    }
+    async function draw() {
+        if (drawing) return; drawing = true; btn.disabled = true;
+        const remaining = new Set(pool);
+        for (let n = 0; n < 2; n++) {
+            const pid = pair[n];
+            status.textContent = n === 0 ? "첫 번째 파이터를 뽑는 중… 🥁" : `남은 후보 ${remaining.size}명 중 두 번째 파이터… 🥁`;
+            wrap.classList.add("tense");
+            await spinTo(pid, remaining);
+            wrap.classList.remove("tense");
+            const card = cards.get(pid);
+            card.classList.add("chosen");
+            Sound.boom(); confetti(30, ["⚔️", "🔥"]);
+            slots[n].replaceChildren(avatar(pid, 110), h("b", displayName(Store.player(pid))));
+            slots[n].classList.add("filled");
+            remaining.delete(pid);
+            await banner(`${n === 0 ? "1번" : "2번"} 파이터: ${displayName(Store.player(pid))}!`, 1300, "mission");
+            if (n === 0 && remaining.size > 1) { status.textContent = "과연 상대는…?"; await sleep(700); }
+        }
+        status.textContent = "대진 확정!";
+        Sound.fanfare();
+        G.battleDrawn();
+        btn.remove();
+        await sleep(1400);
+        render(); // → arena; the fight waits for its ⚔️ 배틀 시작 button
+    }
+    return wrap;
+}
 function battleMissionStage(s) {
     const [a, b] = s.battlePair || [];
     if (a == null || b == null || s.ps[a].out || s.ps[b].out) { // stale pair (e.g. loan death) → redraw
         G.setMission(s.mission); return battleMissionStage(G.S());
     }
+    // old saves (no draw state) go straight to the arena
+    if (s.battleDrawn === false) return battleDrawStage(s);
     return battleView(a, b, (winner, loser) => {
         G.finishBattle(winner, loser);
         render();

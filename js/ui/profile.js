@@ -82,7 +82,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
 }
 export function weaponChip(id) {
     const w = WEAPON_BY_ID[id] || BASIC_ATTACK;
-    const stat = w.type === "attack" ? `ATK ${w.atk} · ACC ${w.acc}` : w.type === "block" ? `방어 · ACC ${w.acc}` : `수면 · ACC ${w.acc}`;
+    const stat = w.type === "attack" ? `ATK ${w.atk} · ACC ${w.acc}` : w.type === "block" ? `방어 · ACC ${w.acc}` : w.type === "magic" ? `랜덤 마법 · ACC ${w.acc}` : w.type === "nomove" ? "아무 효과 없음" : `수면 · ACC ${w.acc}`;
     return h("span.wchip" + (w.rare ? ".rare" : ""), { title: stat }, h("i", w.emoji), w.name, h("small", stat));
 }
 function itemsLine(ps) {

@@ -147,8 +147,9 @@ export function setMission(m) {
     if (m.type === "battle") {
         s.status = "battle";
         s.order = [];
-        s.battlePair = battlePair(m.rule);
-        log(`📜 라운드 ${s.round} 미션: ${m.text} → ${s.battlePair.map(name).join(" vs ")}`);
+        const bp = battlePair(m.rule);
+        s.battlePair = bp.pair; s.battlePool = bp.pool; s.battleDrawn = false; // the pair is revealed one by one on screen
+        log(`📜 라운드 ${s.round} 미션: ${m.text}`);
     } else {
         s.status = "turns";
         s.order = shuffle(alive());
@@ -172,7 +173,15 @@ function battlePair(rule) {
     if (pool.length < 2) pool = live;
     const pair = shuffle(pool).slice(0, 2);
     // richer one attacks first (tie → more points)
-    return pair.sort((a, b) => (s.ps[b].money - s.ps[a].money) || (s.ps[b].points - s.ps[a].points));
+    pair.sort((a, b) => (s.ps[b].money - s.ps[a].money) || (s.ps[b].points - s.ps[a].points));
+    return { pair, pool };
+}
+// called once the on-screen draw has revealed both fighters
+export function battleDrawn() {
+    const s = S();
+    s.battleDrawn = true;
+    log(`⚔️ 배틀 상대 추첨: ${s.battlePair.map(name).join(" vs ")}`);
+    Store.saveSeason(true);
 }
 export function finishBattle(winner, loser) {
     const s = S();

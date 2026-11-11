@@ -20,7 +20,7 @@ export async function simulate(cfg, { spins = 200000, bet = null, onProgress = n
         let w = res.base.win;
         for (const f of res.features) {
             feat[f.type] = (feat[f.type] || 0) + 1;
-            if (f.type === "free" || f.type === "grow") w += res.classic ? f.spins.reduce((s, x) => s + (x.sub ? 0 : x.win), 0) : f.total;
+            if (f.scales || f.type === "free" || f.type === "grow") w += res.classic ? f.spins.reduce((s, x) => s + (x.sub ? 0 : x.win), 0) : f.total;
         }
         w = Math.min(w, res.total);
         wag += bet; ways += w; other += res.total - w;

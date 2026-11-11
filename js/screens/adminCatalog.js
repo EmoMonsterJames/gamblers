@@ -67,7 +67,7 @@ export function adminCatalogPage() {
     function field(c, f, val, set) {
         const label = h("small", FIELD_LABEL[f] || f);
         let input;
-        if (f === "type") input = h("select", { onchange: e => set(e.target.value) }, ["attack", "block", "sleep"].map(t => h("option", { value: t, selected: t === val }, { attack: "공격", block: "방어", sleep: "수면" }[t])));
+        if (f === "type") input = h("select", { onchange: e => set(e.target.value) }, ["attack", "block", "sleep", "magic", "nomove"].map(t => h("option", { value: t, selected: t === val }, { attack: "공격", block: "방어", sleep: "수면", magic: "마법", nomove: "No Move" }[t])));
         else if (f === "kind") input = h("select", { onchange: e => set(e.target.value) }, ["normal", "special"].map(t => h("option", { value: t, selected: t === val }, t === "normal" ? "일반" : "특수")));
         else if (["atk", "acc", "boost"].includes(f)) input = h("input.num", { type: "number", min: 0, max: f === "boost" ? 30 : 100, value: val ?? "", onchange: e => set(+e.target.value) });
         else input = h("input" + (f === "emoji" ? ".emo" : ""), { value: val ?? "", onchange: e => set(e.target.value) });
@@ -79,7 +79,7 @@ export function adminCatalogPage() {
         const sel = (k, opts) => h("select", { onchange: e => { v[k] = e.target.value; } }, opts.map(o => h("option", { value: o, selected: o === v[k] }, o)));
         const L = (t, el) => h("label.cf", h("small", t), el);
         const fields = {
-            weapon: [L("아이콘", inp("emoji")), L("종류", sel("type", ["attack", "block", "sleep"])), L("ATK", inp("atk", { type: "number" })), L("ACC", inp("acc", { type: "number" })), L("애니메이션", sel("anim", WEAPON_ANIMS))],
+            weapon: [L("아이콘", inp("emoji")), L("종류", sel("type", ["attack", "block", "sleep", "magic", "nomove"])), L("ATK", inp("atk", { type: "number" })), L("ACC", inp("acc", { type: "number" })), L("애니메이션", sel("anim", WEAPON_ANIMS))],
             pet: [L("이모지", inp("emoji")), L("구분", sel("kind", ["normal", "special"])), L("확률 %", inp("boost", { type: "number" })), L("움직임", sel("petAnim", PET_ANIMS))],
             effect: [L("문자/이모지 (띄어쓰기 구분)", inp("chars")), L("구분", sel("kind", ["normal", "special"])), L("확률 %", inp("boost", { type: "number" })), L("효과 모양", sel("mode", FX_MODES))],
             frame: [L("스타일", sel("style", FRAME_STYLES))],

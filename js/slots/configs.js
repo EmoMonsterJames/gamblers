@@ -253,19 +253,141 @@ export const SLOTS = [
             column: { p: 0.012, len: [[1, 52], [2, 30], [3, 13], [4, 5]], coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR"], w: [22, 24, 20, 14, 9, 5, 3, 2, 0.4] } }
         },
         tests: [["free", "8 무료스핀"], ["hold", "Hold & Spin"], ["hold:wheel", "H&S + 휠 코인"], ["hold:monkey", "H&S + 원숭이 코인"], ["hold:jp", "H&S + 잭팟 코인"], ["hold:mix", "H&S + 휠·원숭이·잭팟"], ["hold:full", "H&S 풀보드"], ["fall", "원숭이 떨어짐"], ["fall:full", "원숭이 풀보드 (MONKEY)"], ["column", "연속 보너스"], ["column:max", "연속 보너스 (5릴)"]]
+    }),
+    // ------------------------------------------------ 5 Cats (five cat meters → stacking Hold & Spin)
+    video({
+        id: "five_cats", name: "5 Cats", brand: "HYHG GAMING", progressive: true, bets: [500, 800, 1000, 2000, 5000], maxX: 5000, linearGate: true,
+        desc: "다다미 방의 고양이 5마리가 금덩이를 쌓는다! 금덩이는 언제든 터질 수 있고, 터진 고양이의 능력이 모두 합쳐진 HOLD & SPIN — Happy(릴 하나 더 · 더블 보드) · Lucky(MINI~MAJOR 잭팟 알) · Meow(알 금액 UP) · Rich(COLLECT ALL x2) · Fluffy(INSTANT WIN). 5마리가 한꺼번에 터질 수도! FREE 3개 = 6 무료스핀.",
+        theme: { bg: "linear-gradient(180deg,#3b2414 0%,#5c3a1e 42%,#24150b 100%)", accent: "#e8b04a", glow: "#ffdf7a", font: "'Rye', serif" },
+        highs: [{ e: "🏮", name: "Lantern" }, { e: "🎐", name: "Wind Chime" }, { e: "🍣", name: "Sushi" }], lows: [{ e: "🐟", name: "Fish" }, { e: "🧶", name: "Yarn" }],
+        wild: { e: "🐾", name: "PAW WILD", w: [0, 4, 4, 4, 0], wFree: [0, 6, 6, 6, 0] },
+        look: { F: { img: "images/slots/free-games.svg" }, M1: { e: "😸", name: "Happy" }, M2: { e: "😺", name: "Lucky" }, M3: { e: "😽", name: "Meow" }, M4: { e: "😼", name: "Rich" }, M5: { e: "😻", name: "Fluffy" } },
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAXI: { x: 100 }, MAJOR: { seed: 300000, rate: 0.01 }, GRAND: { seed: 1500000, rate: 0.02, cap: 5000000 } },
+        meter: { kind: "cats", max: 10, p: 0.015, chain: 0.25 },
+        bgm: "samurai_taiko",
+        omens: [{ fx: "cats" }, { fx: "text", text: "😾 Cats are revolting!!!! 😾" }, { fx: "mosaic" }, { fx: "ingots" }],
+        features: {
+            free: { p: 0.006, spins: 6, mult: 1 },
+            chold: {
+                start: 6, start2: 3, lives: 3, land: 0.075,
+                coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR", "MAXI", "MAJOR"], w: [26, 26, 18, 12, 8, 4, 2, 0.6, 0.15, 0.03, 0.008] },
+                luckyTw: { MINI: 58, MINOR: 30, MAXI: 10, MAJOR: 2 }, meowP: 0.45, meowAdd: [[0.5, 40], [1, 32], [2, 18], [3, 10]], fluffyP: 0.12
+            }
+        },
+        tests: [["free", "6 무료스핀"], ["mm:happy", "😸 Happy (더블 릴)"], ["mm:lucky", "😺 Lucky (잭팟 알)"], ["mm:meow", "😽 Meow (알 금액 UP)"], ["mm:rich", "😼 Rich (COLLECT ALL)"], ["mm:fluffy", "😻 Fluffy (INSTANT WIN)"], ["mm:happy+meow+rich", "3마리 동시"], ["mm:all", "5마리 한꺼번에!"], ["mm:all:full", "5마리 + 풀보드"]]
+    }),
+    // ------------------------------------------------ Froggie (three lotus frogs)
+    video({
+        id: "froggie", name: "Froggie", brand: "IPEX", progressive: true, bets: [500, 1000, 1500, 2000, 3000, 5000], maxX: 5000, linearGate: true,
+        desc: "비 내리는 연못, 연꽃 위 개구리 3마리가 점점 빵빵해진다… 언제 가라앉을지 몰라! RIBBIT SPIN(개구리 점프로 코인 UP · 연꽃잎 = 리스핀 +1, 최대 5) · RIBBIT CATCH(3x3 그물 안 코인만 수집 · 연꽃잎 = 그물 확장 · 개구리 = x2~x5) · RIBBIT PICK(연꽃잎 3개 매칭 잭팟, 개구리 3개 = 개구리 휠). FREE 3개 = 6 무료스핀.",
+        theme: { bg: "linear-gradient(180deg,#1f3b4d 0%,#1d5241 55%,#0b2a21 100%)", accent: "#4ade80", glow: "#fde047", font: "'Lilita One', sans-serif" },
+        highs: [{ e: "👑", name: "Frog Crown" }, { e: "🐠", name: "Goldfish" }, { e: "🐞", name: "Ladybug" }], lows: [{ e: "💧", name: "Raindrop" }, { e: "🌿", name: "Reed" }],
+        wild: { e: "☔", name: "RAIN WILD", w: [0, 4, 4, 4, 0], wFree: [0, 6, 6, 6, 0] },
+        look: { F: { img: "images/slots/free-games.svg" }, M1: { e: "🐸", name: "Ribbit Spin", cls: "frog-g" }, M2: { e: "🐸", name: "Ribbit Catch", cls: "frog-y" }, M3: { e: "🐸", name: "Ribbit Pick", cls: "frog-o" } },
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAXI: { x: 100 }, MAJOR: { seed: 300000, rate: 0.01 }, GRAND: { seed: 1500000, rate: 0.02, cap: 5000000 } },
+        meter: { kind: "frogs", max: 12, p: 0.032, chain: 0.12, feat: { spin: "rspin", catch: "rcatch", pick: "rpick" } },
+        bgm: "lounge_jazz",
+        omens: [{ fx: "text", text: "🍀 Lucky has arrived 🍀" }, { fx: "shake" }, { fx: "frogs" }, { fx: "rain", chars: ["🪷", "🌸", "🍃", "🪷"] }],
+        features: {
+            free: { p: 0.006, spins: 6, mult: 1 },
+            rspin: {
+                start: 6, lives: 3, maxLives: 5, land: 0.075, wCoin: 86, wFrog: 8, wLotus: 6, hop: [[0.5, 40], [1, 32], [2, 18], [3, 10]],
+                coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR", "MAXI", "MAJOR"], w: [26, 26, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }
+            },
+            rcatch: {
+                size: 5, start: 4, lives: 3, land: 0.09, wCoin: 84, wLotus: 8, wFrog: 8, mult: [[2, 45], [3, 30], [4, 15], [5, 10]],
+                coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR", "MAXI", "MAJOR"], w: [26, 26, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }
+            },
+            rpick: {
+                title: "🪷 RIBBIT PICK 🪷", tw: { MINI: 40, MINOR: 24, MAXI: 9, MAJOR: 3, GRAND: 0.4, FROG: 22 },
+                wheel: { seg: ["CATCH", "MINOR", "SPIN", "MAXI", "CATCH", "MINI", "SPIN", "MAJOR", "CATCH", "MINOR", "SPIN", "GRAND"], w: [12, 10, 12, 5, 12, 12, 12, 2, 12, 10, 12, 0.5] }
+            }
+        },
+        tests: [["free", "6 무료스핀"], ["mm:spin", "🟢 RIBBIT SPIN"], ["mm:spin:full", "RIBBIT SPIN 풀보드"], ["mm:catch", "🟡 RIBBIT CATCH"], ["mm:catch:full", "RIBBIT CATCH (코인 많이)"], ["mm:pick", "🟠 RIBBIT PICK"], ["mm:pick:frog", "PICK → 개구리 휠"], ["mm:pick:frog:CATCH", "개구리 휠 → CATCH"], ["mm:pick:frog:SPIN", "개구리 휠 → SPIN"], ["mm:all", "3마리 동시"]]
+    }),
+    // ------------------------------------------------ Cat and Mouse (non-progressive, neon arcade)
+    video({
+        id: "cat_mouse", name: "Cat and Mouse", brand: "Classic Gaming", engine: "catmouse", progressive: false, bets: [100, 300, 500, 1000], maxX: 3000,
+        desc: "네온사인 오락실의 고양이와 쥐! FREE 3개 = 8 무료스핀 · DOUBLE 3개 = 8 무료스핀 + 릴 2세트 (추가 릴에 DOUBLE 3개 = +3스핀 & 4세트로 분할) · 고양이 3개 = 생선 3마리 중 하나를 골라 잭팟 · 쥐 3개 = 8 무료스핀, A·K·Q·J·10이 모두 쥐 WILD!",
+        theme: { bg: "radial-gradient(circle at 50% 18%,#3b0764 0%,#14052b 55%,#05010d 100%)", accent: "#ff3cac", glow: "#22d3ee", font: "'Lilita One', sans-serif" },
+        highs: [{ e: "🧀", name: "Neon Cheese" }, { e: "🐟", name: "Neon Fish" }, { e: "🧶", name: "Yarn Ball" }], lows: [{ e: "🥛", name: "Milk" }, { e: "🐾", name: "Paw" }],
+        wild: { e: "⭐", name: "NEON WILD", w: [0, 4, 4, 4, 0], wFree: [0, 6, 6, 6, 0] },
+        look: { F: { e: "FREE", name: "FREE", cls: "sym-neon-free" }, D: { e: "DOUBLE", name: "DOUBLE", cls: "sym-neon-double" }, X: { e: "🐱", name: "Neon Cat", cls: "sym-neon-cat" }, N: { e: "🐭", name: "Neon Mouse", cls: "sym-neon-mouse" }, MW: { e: "🐭", name: "MOUSE WILD", cls: "sym-wild sym-mousewild" } },
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { x: 100 }, GRAND: { x: 500 } },
+        wMouse: { A: 1.2, K: 1.2, Q: 1.3, J: 1.3, T: 1.4 },
+        bgm: "synthwave",
+        omens: [{ fx: "text", text: "🍀 Lucky has arrived 🍀" }, { fx: "shake" }, { fx: "chase" }, { fx: "rain", chars: ["💵", "💰", "🪙", "💸"] }],
+        features: {
+            free: { p: 0.006, spins: 8, mult: 1 },
+            double: { p: 0.004, spins: 8, add: 3, splitP: 0.1 },
+            fish: { p: 0.004, title: "🐟 FISH PICK 🐟", n: 3, icon: "🐟", prizes: ["MINI", "MINOR", "MAJOR", "GRAND"], w: [62, 28, 9, 1] },
+            mouse: { p: 0.004, spins: 8 }
+        },
+        tests: [["free", "8 무료스핀"], ["double", "DOUBLE (더블 릴)"], ["double:split", "DOUBLE → 4세트 분할"], ["fish", "🐱 생선 픽 잭팟"], ["mouse", "🐭 쥐 WILD 무료스핀"]]
+    }),
+    // ------------------------------------------------ Crack or Not (no reels: tap the ostrich egg)
+    {
+        id: "crack_or_not", name: "Crack or Not", brand: "DAEBAK", engine: "egg", progressive: true, bets: [100, 200, 300, 500, 800, 1000], px: 1, maxX: 500,
+        desc: "둥지 위의 커다란 타조알. 탭(베팅)할 때마다 금이 조금씩 가고… 어느 순간 쩍! 깨지면 새끼 타조가 튀어나와 BET × 1 ~ 200배를 던져준다. 금이 얼마나 갔든 언제든 깨질 수 있다!",
+        theme: { bg: "linear-gradient(180deg,#fde9b0 0%,#e0b26a 45%,#6b4423 100%)", accent: "#f59e0b", glow: "#fff7d6", font: "'Lilita One', sans-serif" },
+        jpText: "🥚 SPECIAL JACKPOT · 알이 깨지면 BET × 1 ~ 200 🐣",
+        egg: { max: 12, jpAt: 100, mult: [1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 100, 200], w: [10, 12, 12, 14, 12, 11, 9, 7, 5, 4, 2.2, 0.8] },
+        bgm: "lounge_jazz",
+        omens: [{ fx: "feathers" }, { fx: "cracks" }],
+        features: { crack: { p: 0.0638 } },
+        tests: [["crack", "🥚 알 깨기 (랜덤 배수)"], ["crack:200", "🥚 알 깨기 x200"]]
+    },
+    // ------------------------------------------------ Niagara (cascading reels)
+    video({
+        id: "niagara", name: "Niagara", brand: "CLOUD GAMING", engine: "cascade", progressive: false, jp: null, bets: [100, 200, 300, 500, 800, 1000, 2000], maxX: 5000,
+        desc: "나이아가라 폭포의 캐스케이드 릴! 당첨 심볼은 물에 쓸려가고 새 심볼이 쏟아진다. 한 스핀에 4번 이상 연속 당첨 = 무료게임 (4연속 5회 · 5연속 10 · 6연속 15 · 7연속 25 · 8연속 50 · 9연속 100). 통나무 3개 = PICK ONE, 보석 3개 = MATCH 3 (상금은 베팅 기준 랜덤).",
+        theme: { bg: "linear-gradient(180deg,#7dd3fc 0%,#0ea5e9 34%,#0c4a6e 75%,#082f49 100%)", accent: "#38bdf8", glow: "#e0f2fe", font: "'Lilita One', sans-serif" },
+        highs: [{ e: "🛶", name: "Mist Boat" }, { e: "🌈", name: "Rainbow" }, { e: "🦅", name: "Eagle" }], lows: [{ e: "🐟", name: "Trout" }, { e: "🍁", name: "Maple" }],
+        wild: { e: "💦", name: "SPLASH WILD", w: [0, 4, 4, 4, 0] },
+        look: { PK: { e: "🛢️", name: "Barrel (Pick One)" }, MT: { e: "💎", name: "Gem (Match 3)" } },
+        cascade: { maxBase: 3, maxFree: 6, chainW: [[4, 60], [5, 22], [6, 10], [7, 5], [8, 2.2], [9, 0.8]] },
+        bgm: "lounge_jazz",
+        omens: [{ fx: "shake" }, { fx: "flood" }],
+        features: {
+            free: { p: 0.006 },
+            pick: { p: 0.006, title: "🛢️ BARREL PICK ONE 🛢️", n: 5, icon: "🛢️", prizes: ["5", "8", "10", "15", "20", "30", "50"], w: [26, 22, 18, 14, 10, 6, 4] },
+            match: { p: 0.005, title: "💎 NIAGARA MATCH 3 💎", icon: "💧", prizes: ["5", "10", "20", "50", "100"], w: [40, 30, 18, 9, 3] }
+        },
+        tests: [["free", "4연속 캐스케이드 → 무료게임"], ["free:6", "6연속 → 15 무료게임"], ["free:9", "9연속 → 100 무료게임"], ["pick", "🛢️ PICK ONE"], ["match", "💎 MATCH 3"]]
+    }),
+    // ------------------------------------------------ Lucky Boxes (three growing boxes)
+    video({
+        id: "lucky_boxes", name: "Lucky Boxes", brand: "DAEBAK", progressive: true, rows: 4, bets: [300, 500, 1000, 1500, 2000, 3000], maxX: 5000, linearGate: true,
+        desc: "금은보화 속 상자 3개! 릴의 상자가 던져질 때마다 상자가 커지고 숫자가 올라간다(6~20). 언제든 펑! — 빨간 상자 = 그 숫자만큼 무료게임 · 레인보우 = 무료게임 + 같은 수의 WILD를 나눠 뿌림 · 노란 상자 = 그 숫자만큼 WILD를 릴 전체에 한 번에! (무료게임 중에도 노란 상자는 터질 수 있음). 열쇠 3개 = MATCH 3 잭팟, 휠 3개 = LUCKY WHEEL. 4x5 = 1024 WAYS.",
+        theme: { bg: "linear-gradient(180deg,#4c1d95 0%,#2e1065 50%,#12052b 100%)", accent: "#fbbf24", glow: "#fde68a", font: "'Lilita One', sans-serif" },
+        highs: [{ e: "💎", name: "Diamond" }, { e: "👑", name: "Crown" }, { e: "💍", name: "Ring" }], lows: [{ e: "🪙", name: "Coin" }, { e: "📿", name: "Pearls" }],
+        wild: { e: "🌟", name: "STAR WILD", w: [0, 3, 3, 3, 0], wFree: [0, 4, 4, 4, 0] },
+        look: { M1: { e: "🎁", name: "Red Box", cls: "box-red" }, M2: { e: "🎁", name: "Rainbow Box", cls: "box-rainbow" }, M3: { e: "🎁", name: "Yellow Box", cls: "box-yellow" }, X: { e: "🔑", name: "Lucky Key" }, R: { img: "images/slots/wheel.svg", name: "Lucky Wheel" } },
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAXI: { x: 100 }, MAJOR: { seed: 150000, rate: 0.012 }, GRAND: { seed: 800000, rate: 0.02, cap: 3000000 } },
+        meter: { kind: "boxes", max: 10, p: 0.025, counts: { start: 6, max: 20, up: 0.45 }, feat: { red: "bred", rainbow: "brainbow", yellow: "bwild" } },
+        bgm: "lounge_jazz",
+        omens: [{ fx: "text", text: "🍀 Lucky has arrived 🍀" }, { fx: "shake" }, { fx: "boxopen" }, { fx: "dwarf" }],
+        features: {
+            pick: { p: 0.004, sym: true, title: "🔑 LUCKY BOX MATCH 🔑", tw: { MINI: 52, MINOR: 30, MAXI: 12, MAJOR: 5, GRAND: 0.4 } },
+            wheel: { p: 0.005, sym: true, seg: ["5", "MINI", "8", "15", "5", "MINOR", "10", "30", "6", "MAXI", "12", "20"], w: [16, 5, 12, 6, 16, 2.5, 10, 2, 14, 0.6, 9, 4] },
+            bred: {}, brainbow: {}, bwild: {}
+        },
+        tests: [["mm:red", "🟥 빨간 상자 (무료게임)"], ["mm:rainbow", "🌈 레인보우 상자 (무료게임+WILD)"], ["mm:yellow", "🟨 노란 상자 (WILD 뿌리기)"], ["mm:red+yellow", "빨강 + 노랑 동시"], ["pick", "🔑 MATCH 3 잭팟"], ["wheel", "🎡 LUCKY WHEEL"]]
     })
 ];
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.
 const PX = {
-    money_mesh: 1.517, coin_pigglet: 1.76, fufu: 2.09, samurai_cash: 1.57, bonanza: 2.05, // these four re-simulated (300k spins) after the bonus rework ≈ 88% clover_luck: 2.48,
+    money_mesh: 1.517, coin_pigglet: 1.76, fufu: 2.09, samurai_cash: 1.57, bonanza: 2.05, clover_luck: 2.48, // these re-simulated (300k spins) after the bonus rework ≈ 88%
     pearl_tide: 2.2, golden_dung: 2.41, rabbit_rush: 2.25, tiki_volcano: 2.2, ant_hill: 2.13, ghost_vault: 2.8, dragon_hoard: 2.37,
-    monkey_drop: 1.35 // 1M-spin sim (200k × 5 bets): 86.7% = 80.0% non-progressive + 6.7% MAJOR/GRAND at seed (+ pool growth 3%)
+    monkey_drop: 1.35, // 1M-spin sim (200k × 5 bets): 86.7% = 80.0% non-progressive + 6.7% MAJOR/GRAND at seed (+ pool growth 3%)
+    // new machines, browser sim at the mid bet (2–5 × 150k spins each): 5 Cats 87.7% · Froggie 89.4% · Cat and Mouse 87.8% · Niagara 86.9% · Lucky Boxes 89.0% · Crack or Not 86.0%
+    five_cats: 1.16, froggie: 2.02, cat_mouse: 0.31, niagara: 1.93, lucky_boxes: 0.089, crack_or_not: 1
 };
 for (const s of SLOTS) s.px = PX[s.id] ?? s.px;
 export const SLOT_BY_ID = Object.fromEntries(SLOTS.map(s => [s.id, s]));
 export const BRAND_LOGO = {
     "BLK": "images/slots/brands/blk.svg", "CLOUD GAMING": "images/slots/brands/cloud-gaming.svg", "CLOVER-TECH": "images/slots/brands/clover-tech.svg",
     "DAEBAK": "images/slots/brands/daebak.svg", "IPEX": "images/slots/brands/ipex.svg", "Rabbit-Gaming": "images/slots/brands/rabbit-gaming.svg",
-    "HYHG GAMING": "images/slots/brands/hyhg-gaming.svg", "Scrooge-Slots": "images/slots/brands/scrooge-slots.svg", "YG GAMING": "images/slots/brands/yg-gaming.svg"
+    "HYHG GAMING": "images/slots/brands/hyhg-gaming.svg", "Classic Gaming": "images/slots/brands/classic-gaming.svg", "Scrooge-Slots": "images/slots/brands/scrooge-slots.svg", "YG GAMING": "images/slots/brands/yg-gaming.svg"
 };

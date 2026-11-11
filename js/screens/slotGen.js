@@ -76,7 +76,7 @@ export function slotGenPage() {
                 ...st.omens.map((o, i) => h("div.row.wrap.sg-item",
                     h("b", `#${i + 1}`),
                     h("select", { onchange: e => { o.kind = e.target.value; draw(); } }, OMEN_KINDS.map(k => h("option", { value: k, selected: k === o.kind }, k))),
-                    o.kind === "기타" ? h("input", { value: o.text || "", placeholder: "전조 설명", oninput: e => { o.text = e.target.value; } }) : null,
+                    h("input.sg-note", { value: o.text || "", placeholder: o.kind === "기타" ? "전조 설명" : "추가 설명 (선택)", oninput: e => { o.text = e.target.value; } }),
                     h("button.btn.ghost.small", { onclick: () => { st.omens.splice(i, 1); draw(); } }, "✕"))),
                 h("button.btn.ghost.small", { onclick: () => { st.omens.push({ kind: OMEN_KINDS[0] }); draw(); } }, "＋ 전조 추가")),
             sec(`보너스 (${st.bonuses.length}개)`,
@@ -84,15 +84,15 @@ export function slotGenPage() {
                     h("div.row.wrap",
                         h("b", `#${i + 1}`),
                         h("select", { onchange: e => { b.type = e.target.value; draw(); } }, BONUS_TYPES.map(k => h("option", { value: k, selected: k === b.type }, k))),
+                        h("input.sg-note", { value: (b.type === "others" ? b.text : b.note) || "", placeholder: b.type === "others" ? "보너스 설명" : "이 보너스에 대한 설명 (선택)", oninput: e => { if (b.type === "others") b.text = e.target.value; else b.note = e.target.value; } }),
                         h("button.btn.ghost.small", { onclick: () => { st.bonuses.splice(i, 1); draw(); } }, "✕")),
                     b.type === "free spins" ? h("div.row.wrap",
                         h("label", "무료 스핀 ", h("input.num", { type: "number", min: 1, value: b.count ?? 10, oninput: e => { b.count = +e.target.value; } }), " 회"),
                         h("select", { onchange: e => { b.sub = e.target.value; draw(); } }, FREE_KINDS.map(k => h("option", { value: k, selected: k === (b.sub || FREE_KINDS[0]) }, k))),
-                        b.sub === "others" ? h("input", { value: b.text || "", placeholder: "무료 스핀 방식 설명", oninput: e => { b.text = e.target.value; } }) : null) : null,
+                        h("input.sg-note", { value: b.text || "", placeholder: b.sub === "others" ? "무료 스핀 방식 설명" : "무료 스핀 추가 설명 (선택)", oninput: e => { b.text = e.target.value; } })) : null,
                     b.type === "hold and spin" ? h("div.row.wrap",
                         h("select", { onchange: e => { b.sub = e.target.value; draw(); } }, HOLD_KINDS.map(k => h("option", { value: k, selected: k === (b.sub || HOLD_KINDS[0]) }, k))),
-                        b.sub === "others" ? h("input", { value: b.text || "", placeholder: "Hold & Spin 방식 설명", oninput: e => { b.text = e.target.value; } }) : null) : null,
-                    b.type === "others" ? h("input", { value: b.text || "", placeholder: "보너스 설명", oninput: e => { b.text = e.target.value; } }) : null,
+                        h("input.sg-note", { value: b.text || "", placeholder: b.sub === "others" ? "Hold & Spin 방식 설명" : "Hold & Spin 추가 설명 (선택)", oninput: e => { b.text = e.target.value; } })) : null,
                     b.type === "연속 bonus column" ? h("small.muted", "첫 컬럼에 보너스 컬럼이 나온 뒤 상금이 적힌 동전/아이콘이 연달아 나오면 그 금액을 모두 획득") : null)),
                 h("button.btn.ghost.small", { onclick: () => { st.bonuses.push({ type: BONUS_TYPES[0], count: 10, sub: FREE_KINDS[0] }); draw(); } }, "＋ 보너스 추가")),
             sec("특이사항", text("notes", "기타 요구사항", 3)),
@@ -111,13 +111,15 @@ function buildPrompt(st) {
     const jps = st.progressive ? [...JP_TIERS.filter(t => st.jp[t]), ...(st.jp.SPECIAL ? [`특수잭팟(${st.specialJp || "설명 없음 — 테마에 맞게 설계"})`] : [])] : [];
     const loc = LOCATIONS.find(l => l.id === st.location);
     const size = st.size === "기타" ? `기타: ${st.sizeOther || "(설명 없음)"}` : st.size;
-    const omen = st.omens.length ? st.omens.map((o, i) => `  ${i + 1}. ${o.kind === "기타" ? `기타 — ${o.text || "(설명 없음)"}` : o.kind}`).join("\n") : "  (없음)";
+    const omen = st.omens.length ? st.omens.map((o, i) => `  ${i + 1}. ${o.kind === "기타" ? `기타 — ${o.text || "(설명 없음)"}` : o.kind + (o.text?.trim() ? ` — ${o.text.trim()}` : "")}`).join("\n") : "  (없음)";
     const bonus = st.bonuses.length ? st.bonuses.map((b, i) => {
         let d = b.type;
-        if (b.type === "free spins") d += ` — ${b.count ?? 10}회, ${b.sub === "others" ? `기타: ${b.text || ""}` : (b.sub || FREE_KINDS[0])}`;
-        if (b.type === "hold and spin") d += ` — ${b.sub === "others" ? `기타: ${b.text || ""}` : (b.sub || HOLD_KINDS[0])}`;
+        const extra = b.text?.trim() ? `: ${b.text.trim()}` : "";
+        if (b.type === "free spins") d += ` — ${b.count ?? 10}회, ${b.sub === "others" ? `기타: ${b.text || ""}` : (b.sub || FREE_KINDS[0]) + extra}`;
+        if (b.type === "hold and spin") d += ` — ${b.sub === "others" ? `기타: ${b.text || ""}` : (b.sub || HOLD_KINDS[0]) + extra}`;
         if (b.type === "연속 bonus column") d += " — 첫 컬럼(1번 릴)에 보너스 컬럼이 나오면, 이후 상금이 적힌 동전/아이콘이 연달아 나오고 적힌 금액을 모두 획득";
         if (b.type === "others") d = `기타 — ${b.text || "(설명 없음)"}`;
+        else if (b.note?.trim()) d += ` — ${b.note.trim()}`;
         return `  ${i + 1}. ${d}`;
     }).join("\n") : "  (없음)";
     return `Gamblers 프로젝트(바닐라 JS, 빌드 없음)에 새 슬롯게임을 하나 추가해줘.
