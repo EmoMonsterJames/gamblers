@@ -83,6 +83,7 @@ export const Store = {
         this.hall = hall.map(r => ({ season: r.season_number, playerId: r.player_id, snapshot: r.snapshot, at: r.crowned_at })).sort((a, b) => b.season - a.season);
         this.results = results.map(r => ({ season: r.season_number, playerId: r.player_id, rank: r.rank }));
         for (const r of jps) { (this.jackpots[r.game] ||= {})[r.tier] = +r.amount; }
+        this.machines = {}; // cloud is the source of truth (a reset deletes the rows)
         for (const r of machines) this.machines[r.game] = r.state || {};
         this.jpLog = hits.map(r => ({ game: r.game, tier: r.tier, playerId: r.player_id, amount: +r.amount, season: r.season_number, at: r.hit_at }));
         const cat = settings.find(r => r.key === "catalog");
