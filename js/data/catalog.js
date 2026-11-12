@@ -5,6 +5,7 @@
 // =====================================================================
 
 import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf } from "./regions.js";
+import { THEME_HOME } from "../slots/themeConfigs.js";
 export { REGIONS, REGION_ITEMS };
 export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
@@ -14,7 +15,7 @@ export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 //   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
-export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5, MEGA: 6, VAULT: 6 };
+export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, JOKER: 3.5, MAJOR: 4, STRIKE: 4.5, GRAND: 5, MEGA: 6, VAULT: 6 };
 
 export const MISSIONS = [
     // 최하
@@ -130,7 +131,21 @@ export const MISSIONS = [
     { id: "m4_daebak", tier: 4, type: "brand_win", brand: "DAEBAK", v: 1000, text: "슬롯 브랜드 DAEBAK 게임에서 1회 스핀으로 1,000G 벌기" },
     { id: "m4_yg", tier: 4, type: "brand_win", brand: "YG GAMING", v: 1000, text: "슬롯 브랜드 YG Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
     { id: "m4_bet3000", tier: 4, type: "bet_win", bets: [3000], v: 50000, text: "슬롯게임에서 3,000G 베팅으로 1회 스핀에 50,000G 이상 벌기" },
-    { id: "m4_card", tier: 4, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" }
+    { id: "m4_card", tier: 4, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+
+    // ---- added missions (3) -------------------------------------------
+    // card letter "*": drawn from the letters NOT in G A M B L E R S · spell: solve a Spelling Bee this turn
+    // earn_min: round 돈벌기 total < v → candidate · rank fewmaps_round / fewgear: fewest distinct maps /
+    // fewest visits to oxygen·wings·space-suit maps this round → candidates
+    { id: "k3_card", tier: 3, type: "card", letter: "*", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 제외 알파벳 중 하나)" },
+    { id: "k3_spell", tier: 3, type: "spell", text: "Spelling Bee에 성공하지 못한 플레이어 탈락" },
+    { id: "k3_maps", tier: 3, type: "rank", rule: "fewmaps_round", text: "이번 라운드에 방문한 맵 종류가 가장 적은 플레이어(들)가 탈락 후보" },
+    { id: "k4_card", tier: 4, type: "card", letter: "*", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 제외 알파벳 중 하나)" },
+    { id: "k4_spell", tier: 4, type: "spell", text: "Spelling Bee에 성공하지 못한 플레이어 탈락" },
+    { id: "k4_job", tier: 4, type: "job_min", v: 30000, text: "직업으로 번 돈이 30,000G 미만인 플레이어 탈락" },
+    { id: "k4_earn", tier: 4, type: "earn_min", v: 3000, text: "돈벌기로 번 돈이 3,000G 미만인 플레이어 탈락" },
+    { id: "k4_maps", tier: 4, type: "rank", rule: "fewmaps_round", text: "이번 라운드에 방문한 맵 종류가 가장 적은 플레이어(들)가 탈락 후보" },
+    { id: "k4_gear", tier: 4, type: "rank", rule: "fewgear", text: "장비가 필요한 맵(산소통·날개·우주복) 방문 횟수가 가장 적은 플레이어(들)가 탈락 후보" }
 ];
 // brand names are compared loosely ("CLOVER TECH" = "CLOVER-TECH", "YG Gaming" = "YG GAMING")
 export const brandKey = b => String(b || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -477,6 +492,8 @@ for (const m of NEW_MAPS) {
 // the 7 special slots
 const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: "foggy", neon_cadets: "twins", four_pillars: "mj", gift: "balloon", chrono_heist: "oink" };
 for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id === lid)?.slots.push(sid);
+// the 15 theme machines (round 4) — js/slots/themeConfigs.js
+for (const [sid, lid] of Object.entries(THEME_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 
 // earn corners: `earn: true` (old saves) = the classic four
 export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];

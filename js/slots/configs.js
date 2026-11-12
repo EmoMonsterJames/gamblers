@@ -1,5 +1,6 @@
 import { NEW_MAPS, mapSlots, slotIdOf, RULE_REGIONS, seed01 } from "../data/regions.js";
 import { SPECIAL_SLOTS } from "./specialConfigs.js";
+import { THEME_SLOTS } from "./themeConfigs.js";
 // =====================================================================
 // Slot machine definitions (one per casino, no duplicates).
 // Symbols: e = emoji, img = image path. pay = [3,4,5 of a kind] in bet
@@ -427,7 +428,7 @@ for (const m of NEW_MAPS) for (const [i, s] of mapSlots(m).entries()) {
         look: t.look(s.sp), features, px: RULE_PX[id] ?? t.px, ...(every ? { bonusEvery: every } : {})
     }));
 }
-SLOTS.push(...SPECIAL_SLOTS);
+SLOTS.push(...SPECIAL_SLOTS, ...THEME_SLOTS);
 
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.

@@ -4,7 +4,7 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, ALPHABET, ALL_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
+import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
 import { shuffle, pick } from "../core/util.js";
 import { sandboxNextTurn } from "./sandbox.js";
 
@@ -199,6 +199,11 @@ export function setMission(m) {
     const s = S();
     s.mission = { ...m };
     // random alphabet card mission: the letter is drawn now
+    if (m.type === "card" && m.letter === "*") {
+        const L = pick(EXTRA_LETTERS);
+        s.mission.letter = L;
+        s.mission.text = `알파벳 카드 ${L} 없는 플레이어 탈락 (랜덤 추첨: ${L} · GAMBLERS 제외)`;
+    }
     if (m.type === "card" && m.letter === "?") {
         const L = pick(ALPHABET);
         s.mission.letter = L;
@@ -228,7 +233,10 @@ const METRIC = {
     money: pid => S().ps[pid].money, points: pid => S().ps[pid].points, hp: pid => S().ps[pid].hp,
     weapons: pid => S().ps[pid].weapons.length, maps: pid => (S().ps[pid].visited || []).length,
     items: pid => itemCount(S().ps[pid]), spins: pid => S().ps[pid].totals.spins,
-    net: pid => S().ps[pid].totals.slotNet + S().ps[pid].totals.casinoNet
+    net: pid => S().ps[pid].totals.slotNet + S().ps[pid].totals.casinoNet,
+    // this round (mission rank rules): distinct maps / visits to gear-only maps
+    roundMaps: pid => (S().results[pid]?.stats?.locs || []).length,
+    roundGear: pid => S().results[pid]?.stats?.gearVisits || 0
 };
 // players at the extreme of a metric (ties included), widened until there are `min` of them
 function extremeGroup(list, metric, dir = 1, min = 2) {
@@ -304,6 +312,7 @@ export function payEarn(pid, kind, gold, extra = {}) {
     const ps = S().ps[pid];
     ps.earnUsed = (ps.earnUsed || 0) + 1;
     ps.money += gold;
+    const t = S().turn; if (t?.pid === pid) t.stats.earn = (t.stats.earn || 0) + gold;
     if (extra.hp) ps.hp = Math.max(1, ps.hp - extra.hp);
     log(`💪 ${name(pid)} 돈벌기(${kind}) +${gold.toLocaleString()}G${extra.hp ? ` · HP -${extra.hp}` : ""}`);
     Store.saveSeason(true);
@@ -578,6 +587,13 @@ export function useCardForEntry(pid, letter) {
     Store.saveSeason();
     return true;
 }
+// maps that can only be reached with oxygen / wings / a space suit (region rule or map rule)
+const GEAR_ITEMS = ["oxygen", "wings", "space_suit"];
+export function needsGear(loc) {
+    const r = REGIONS.find(x => x.id === loc?.region);
+    return GEAR_ITEMS.includes(r?.need) || !!r?.needAny?.some(i => GEAR_ITEMS.includes(i))
+        || (loc?.req?.gear || []).some(g => GEAR_ITEMS.includes(g)) || (loc?.req?.passGear || []).some(g => GEAR_ITEMS.includes(g));
+}
 export function setLocation(locId, { teleport = false } = {}) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     t.loc = locId;
@@ -590,6 +606,7 @@ export function setLocation(locId, { teleport = false } = {}) {
     }
     if (!(ps.visited ||= []).includes(locId)) ps.visited.push(locId);
     if (!(t.stats.locs ||= []).includes(locId)) t.stats.locs.push(locId);
+    if (needsGear(loc)) t.stats.gearVisits = (t.stats.gearVisits || 0) + 1;
     log(`🗺️ ${name(t.pid)} → ${loc.name}`);
     Store.saveSeason();
 }
@@ -701,6 +718,8 @@ export function missionMet(m, st) {
         case "slot_wins": return (st.slotWins || 0) >= m.v;
         case "beg_max": return (st.beg || 0) > m.v;
         case "job_min": return (st.job || 0) >= m.v;
+        case "earn_min": return (st.earn || 0) >= m.v;
+        case "spell": return !!st.spellOk;
         case "card": return !!st.cardUsed;
         case "has": return st.pid != null && hasThing(st.pid, m.what);
         case "rank": return true;
@@ -730,6 +749,8 @@ export function missionProgress(m, st) {
         case "slot_wins": return { cur: st.slotWins || 0, goal: m.v, label: `WIN ${st.slotWins || 0} / ${m.v}` };
         case "beg_max": return { cur: st.beg || 0, goal: m.v + 1, label: `구걸 ${(st.beg || 0).toLocaleString()}G (${m.v.toLocaleString()}G 넘으면 안전)` };
         case "job_min": return { cur: st.job || 0, goal: m.v, label: `직업 ${(st.job || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
+        case "earn_min": return { cur: st.earn || 0, goal: m.v, label: `돈벌기 ${(st.earn || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
+        case "spell": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐝 Spelling Bee 성공!" : "🐝 Spelling Bee 코너가 있는 맵에서 단어를 맞히세요" };
         case "card": return { cur: met ? 1 : 0, goal: 1, label: met ? `카드 ${m.letter} 사용!` : `카드 ${m.letter}: 턴 종료 때 사용 여부를 묻습니다` };
         case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? "보유 중 — 안전" : m.what === "pet" ? "펫 없음 (상점에서 구매 가능)" : "펫·펫효과·프레임·효과 없음" };
         case "rank": return { cur: 0, goal: 1, label: "라운드 끝에 판정" };
@@ -791,8 +812,13 @@ function judge() {
     let cands;
     if (m?.type === "rank") {
         // fewest season slot plays (ties) — "…and the least gold" narrows that group to its 2 poorest
-        const g = extremeGroup(live, "spins", 1, m.rule === "fewspins_poor" ? 2 : 1);
-        cands = m.rule === "fewspins_poor" ? [...g].sort((a, b) => s.ps[a].money - s.ps[b].money).slice(0, 2) : g;
+        // fewmaps_round / fewgear: fewest distinct maps / fewest gear-map visits this round (ties)
+        if (m.rule === "fewmaps_round") cands = extremeGroup(live, "roundMaps", 1, 1);
+        else if (m.rule === "fewgear") cands = extremeGroup(live, "roundGear", 1, 1);
+        else {
+            const g = extremeGroup(live, "spins", 1, m.rule === "fewspins_poor" ? 2 : 1);
+            cands = m.rule === "fewspins_poor" ? [...g].sort((a, b) => s.ps[a].money - s.ps[b].money).slice(0, 2) : g;
+        }
         for (const pid of live) if (s.results[pid]) s.results[pid].pass = !cands.includes(pid);
     } else cands = live.filter(pid => !s.results[pid]?.pass);
     s.allPassed = cands.length === 0;

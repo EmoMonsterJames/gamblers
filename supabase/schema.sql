@@ -183,3 +183,30 @@ drop policy if exists "settings admin update" on gamblers.settings;
 create policy "settings admin update" on gamblers.settings for update to authenticated using ((select gamblers.is_admin())) with check ((select gamblers.is_admin()));
 drop policy if exists "settings admin delete" on gamblers.settings;
 create policy "settings admin delete" on gamblers.settings for delete to authenticated using ((select gamblers.is_admin()));
+
+-- admin resource dashboard (#/admin-resources): DB size, per-table size / rows,
+-- connections. Admin only; read-only catalog queries.
+create or replace function gamblers.resource_stats()
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare r jsonb;
+begin
+    if not gamblers.is_admin() then raise exception 'admin only'; end if;
+    select jsonb_build_object(
+        'db_bytes', pg_catalog.pg_database_size(pg_catalog.current_database()),
+        'connections', (select count(*) from pg_catalog.pg_stat_activity),
+        'max_connections', pg_catalog.current_setting('max_connections')::int,
+        'tables', coalesce((select jsonb_agg(jsonb_build_object(
+                'name', c.relname,
+                'bytes', pg_catalog.pg_total_relation_size(c.oid),
+                'rows', s.n_live_tup,
+                'writes', s.n_tup_ins + s.n_tup_upd + s.n_tup_del,
+                'seq_scans', s.seq_scan) order by pg_catalog.pg_total_relation_size(c.oid) desc)
+            from pg_catalog.pg_class c
+            join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+            left join pg_catalog.pg_stat_user_tables s on s.relid = c.oid
+            where n.nspname = 'gamblers' and c.relkind = 'r'), '[]'::jsonb)
+    ) into r;
+    return r;
+end $$;
+revoke all on function gamblers.resource_stats() from public, anon;
+grant execute on function gamblers.resource_stats() to authenticated;

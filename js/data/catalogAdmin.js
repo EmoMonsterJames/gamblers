@@ -112,6 +112,28 @@ export function locationsWithShop(shopId) { return LOCATIONS.filter(l => locatio
 // second-shop listings (alt: true in SHOPS) are added as they are
 export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).filter(it => it.alt && !saleOf(it.cat, it.id).off && !(ITEM_BY_ID[it.id]?.letter && !cardSoldHere(shopId, ITEM_BY_ID[it.id].letter, locId))).map(it => ({ cat: it.cat, id: it.id, price: it.price })); }
 
+// What a map's shop tab sells. A tab left with nothing to sell (e.g. every
+// product moved elsewhere / turned off in the admin) is stocked with 2~8
+// different goods of that shop type, fixed per map (seeded by map + shop).
+// Map passes and alphabet cards are never used as filler.
+export function shopListing(shopId, locId) {
+    const list = [...shopItems(shopId, locId), ...altItems(shopId, locId)];
+    if (list.length || !locId || shopId === "discount") return list;
+    return fillerItems(shopId, locId);
+}
+export function fillerItems(shopId, locId) {
+    const noTime = LOCATIONS.find(l => l.id === locId)?.crazy;
+    const ok = it => it.price && !ITEM_BY_ID[it.id]?.loc && !ITEM_BY_ID[it.id]?.letter && !(noTime && it.id === "time_ext") && !saleOf(it.cat, it.id).off;
+    const seen = new Set();
+    const uniq = it => { const k = `${it.cat}:${it.id}`; if (seen.has(k)) return false; seen.add(k); return true; };
+    let pool = (SHOPS[shopId]?.list || []).filter(ok).filter(uniq);
+    if (!pool.length && SHOPS[shopId]?.cur === "G") pool = SHOPS.general.list.filter(ok).filter(uniq);
+    const rnd = seeded(`fill|${shopId}|${locId}`);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    const n = Math.min(pool.length, 2 + Math.floor(rnd() * 7)); // 2~8
+    return pool.slice(0, n).map(it => ({ cat: it.cat, id: it.id, price: it.price, gold: it.gold || 0, filler: true }));
+}
+
 // ---------------------------------------------------------------- discount shop
 // A different handful of gold-shop goods every round at every map, 10~20% off.
 function seeded(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }

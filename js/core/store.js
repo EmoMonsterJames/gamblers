@@ -121,8 +121,16 @@ export const Store = {
         if (this.sandbox) return;
         if (!this.cloud) return;
         if (!this.user) { if (!this._warned) { toast("관리자 로그인 전이라 클라우드에 저장되지 않습니다 (이 브라우저에만 저장)", "warn", 4000); this._warned = true; } return; }
+        this.io.writes++; this.io.log.push(Date.now()); if (this.io.log.length > 500) this.io.log.shift();
         try { const r = await fn(sb); if (r?.error) throw r.error; return r?.data; }
-        catch (e) { console.error(e); toast("저장 실패: " + (e.message || e), "error"); }
+        catch (e) { this.io.errors++; console.error(e); toast("저장 실패: " + (e.message || e), "error"); }
+    },
+    // cloud writes made by this browser since the page loaded (resource dashboard)
+    io: { writes: 0, errors: 0, log: [], since: Date.now() },
+    // read-only query for the admin resource dashboard: fn(sb) → { data, error, count }
+    async probe(fn) {
+        if (!sb) return { error: { message: "로컬 모드 (Supabase 미설정)" } };
+        try { return await fn(sb); } catch (e) { return { error: e }; }
     },
 
     // ------------------------------------------------------------ auth

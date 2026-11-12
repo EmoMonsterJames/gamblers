@@ -1,11 +1,11 @@
 // Admin: manage weapons / items / pets / pet effects / frames / frame
 // effects — stats, which shop sells them, price and at which casinos.
 import { h, fmt } from "../core/util.js";
-import { toast, confirmBox } from "../core/fx.js";
+import { toast, confirmBox, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { SHOPS, LOCATIONS } from "../data/catalog.js";
 import { CATS, STAT_FIELDS, saleOf, applyCatalog, locationShops, WEAPON_ANIMS, PET_ANIMS, FX_MODES, FRAME_STYLES } from "../data/catalogAdmin.js";
-import { petView, weaponChip } from "../ui/profile.js";
+import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
 
 const FIELD_LABEL = { name: "이름", emoji: "아이콘", type: "종류", atk: "ATK", acc: "ACC", kind: "구분", boost: "확률 %", desc: "설명" };
@@ -14,14 +14,16 @@ export function adminCatalogPage() {
     if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🛒 상품·상점 관리"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
     const work = structuredClone(Store.catalog || {});
     work.edits ||= {}; work.custom ||= {};
-    let cat = "weapon", dirty = false;
+    let cat = "weapon", dirty = false, query = "";
     const tabs = h("div.tabs");
     const body = h("div.cat-body");
+    const count = h("small.muted");
+    const search = h("input.cat-search", { type: "search", placeholder: "🔍 이름 · ID · 설명으로 검색", oninput: e => { query = e.target.value.trim().toLowerCase(); draw(); } });
     const saveBtn = h("button.btn.gold", { onclick: save }, "💾 저장");
     const page = h("div.page.admin-catalog",
         h("div.row.between", h("h2.page-title", "🛒 상품·상점 관리"), h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), saveBtn)),
         h("p.muted", "가격을 비우면 기본값. '판매 장소'를 하나도 고르지 않으면 해당 상점이 있는 모든 카지노에서 판매합니다. 장소를 고르면 그 카지노에만 (상점이 없던 곳이면 상점 탭이 새로 생깁니다). 포인트 상점은 P, 나머지는 G로 판매됩니다."),
-        tabs, body);
+        tabs, h("div.row.cat-search-row", search, count), body);
 
     const edit = (c, id) => (work.edits[`${c}:${id}`] ||= {});
     const markDirty = () => { dirty = true; saveBtn.textContent = "💾 저장 *"; };
@@ -29,7 +31,10 @@ export function adminCatalogPage() {
         tabs.replaceChildren(...Object.entries(CATS).map(([k, c]) => h("button.tab" + (k === cat ? ".on" : ""), { onclick: () => { cat = k; draw(); } }, c.label)));
         // preview the working copy
         const saved = Store.catalog; Store.catalog = work; applyCatalog();
-        const rows = CATS[cat].list.map(e => row(cat, e));
+        const hit = e => !query || [e.id, e.name, e.emoji, e.desc, e.type, e.kind].some(v => v != null && String(v).toLowerCase().includes(query));
+        const list = CATS[cat].list.filter(hit);
+        const rows = list.length ? list.map(e => row(cat, e)) : [h("p.muted.center", `'${query}'에 맞는 ${CATS[cat].label}이(가) 없습니다`)];
+        count.textContent = `${list.length} / ${CATS[cat].list.length}개`;
         Store.catalog = saved; applyCatalog();
         body.replaceChildren(
             h("div.cat-table", h("div.cat-row.head", h("span", ""), h("span", "능력치"), h("span", "판매 상점 / 가격"), h("span", "판매 장소"), h("span", "")), rows),
@@ -53,7 +58,7 @@ export function adminCatalogPage() {
             } }, l.emoji);
         }));
         return h("div.cat-row" + (sale.off ? ".off" : ""),
-            h("div.cat-prev", preview(c, e), e.custom ? h("small.badge", "추가됨") : null),
+            h("div.cat-prev", { title: "눌러서 크게 보기", onclick: ev => { if (!ev.target.closest(".fr-deco.reveal")) openPreview(c, e); } }, preview(c, e), e.custom ? h("small.badge", "추가됨") : null),
             stats,
             h("div.cat-sale", shopSel, h("div.row", price, h("small", sale.cur))),
             locs,
@@ -117,10 +122,15 @@ export function adminCatalogPage() {
     return page;
 }
 
-function preview(c, e) {
-    if (c === "pet") return petView(e.id, null, 48);
+function preview(c, e, big = false) {
+    if (c === "pet") return petView(e.id, null, big ? 140 : 48);
     if (c === "weapon") return weaponChip(e.id);
-    if (c === "effect" || c === "peffect") { const b = h("div.fx-preview.small", h("span", c === "effect" ? "🐾" : "🙂")); b.append(particles(e.fx, 0.6)); return b; }
-    if (c === "frame") return h("div.avatar.preview.small." + e.cls, h("div.fr-dummy", "🙂"));
+    if (c === "effect" || c === "peffect") { const b = h("div.fx-preview" + (big ? ".big" : ".small"), h("span", c === "effect" ? "🐾" : "🙂")); b.append(particles(e.fx, big ? 1.4 : 0.6)); return b; }
+    // the real frame (with its decoration / reveal cover), same as in the shop
+    if (c === "frame") return framePreview(e, big ? 170 : 64);
     return h("div.big-emoji", e.emoji || "🎁");
+}
+// click a preview → large view (frames: try the reveal click / animation there)
+function openPreview(c, e) {
+    modal(h("div.admin-prev-big", preview(c, e, true), h("b", e.name), e.desc ? h("p.muted", e.desc) : "", e.reveal ? h("small.muted", "👆 프레임을 누르면 가려진 프로필이 보입니다") : ""), { title: `🔍 미리보기 · ${CATS[c].label}` });
 }

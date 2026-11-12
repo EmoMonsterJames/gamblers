@@ -104,6 +104,7 @@ export function spellingView(pid, loc, onChange) {
         if (!(await confirmBox(`${sp.placed.join(" ")}\n이 단어로 제출할까요?${ok ? "" : "\n(틀리면 넣은 알파벳권은 돌려받지 못합니다)"}`, "제출", "취소"))) return;
         ps.spell = null;
         ps.spellLast = { w: word, pos: sp.pos, ok, prize: ok ? prize : 0, tried: sp.placed.join("") };
+        if (ok && s.turn?.pid === pid) s.turn.stats.spellOk = true; // "Spelling Bee 성공" missions
         if (ok) {
             ps.money += prize;
             G.log(`🐝 ${G.name(pid)} Spelling Bee 정답! ${word} (+${prize.toLocaleString()}G · 힌트 ${sp.hints}개)`);

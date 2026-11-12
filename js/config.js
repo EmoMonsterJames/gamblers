@@ -7,6 +7,7 @@ export const CONFIG = {
     SUPABASE_URL: "https://doxdtjyhrbnaldtbnmnk.supabase.co",
     SUPABASE_KEY: "sb_publishable_Y4bd2iV6FwmRt4Zduc8GEg_2THg2siZ",
     SUPABASE_SCHEMA: "gamblers",
+    GITHUB_REPO: "EmoMonsterJames/gamblers", // resource dashboard: public repo size / file checks
 
     SEASON_SIZE: 20,          // players picked per season
     FINALISTS: 2,             // players left for the final battle

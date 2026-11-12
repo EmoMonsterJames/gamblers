@@ -15,7 +15,7 @@ import { playSpecial, buildPanel } from "./slotSpecial.js";
 import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
 
-const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "MAJOR", "MONKEY", "MAXI", "MINOR", "MINI"];
+const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
 
 export function openSlot(cfg, ctx) {
     const classic = cfg.engine === "classic";
@@ -35,12 +35,14 @@ export function openSlot(cfg, ctx) {
         if (def.card) cls.push("sym-card", "card-" + key);
         if (def.cls) cls.push(def.cls);
         if (key === "W" || key === "MW") cls.push("sym-wild");
-        if (["F", "C", "B", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "BG", "WH", "7", "D", "N", "PK", "MT", "MS", "SW", "SU", "MO", "SB", "SK", "RB", "DS", "BL", "BP"].includes(key)) cls.push("sym-special");
+        if (["F", "C", "B", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "BG", "WH", "7", "D", "N", "PK", "MT", "MS", "SW", "SU", "MO", "SB", "SK", "RB", "DS", "BL", "BP"].includes(key) || (special && /^Z/.test(key))) cls.push("sym-special");
+        if (/^W[0-9]+$/.test(key)) cls.push("sym-wild");
         if (key === "P") cls.push("sym-p");
         const el = h("div." + cls.join("."), { "data-s": key });
         if (def.img) el.append(h("img", { src: def.img, alt: def.name || key, draggable: "false" }));
         else el.append(h("span", def.e ?? key));
         if (key === "W" || key === "MW") el.append(h("small.tag", "WILD"));
+        else if (/^W[0-9]+$/.test(key)) el.append(h("small.tag", "x" + key.slice(1) + " WILD"));
         return el;
     }
     const randomKey = () => {
@@ -74,7 +76,7 @@ export function openSlot(cfg, ctx) {
     const forest = cfg.tree ? h("div.md-forest", { "aria-hidden": "true" },
         ["🌴", "🌳", "🌴", "🌳", "🌿", "🌿"].map((e, i) => h("span.mf-tree.t" + i, e)),
         h("span.mf-play.swing", "🐒"), h("span.mf-play.hop", "🐵"), h("span.mf-play.hop2", "🐒"), h("span.mf-play.banana", "🍌")) : null;
-    const cabinet = h("div.cabinet.theme-" + cfg.id, { style: { "--bg": cfg.theme.bg, "--accent": cfg.theme.accent, "--glow": cfg.theme.glow, "--font": cfg.theme.font } },
+    const cabinet = h("div.cabinet.theme-" + cfg.id + (cfg.skin ? ".skin-" + cfg.skin : ""), { style: { "--bg": cfg.theme.bg, "--accent": cfg.theme.accent, "--glow": cfg.theme.glow, "--font": cfg.theme.font } },
         forest, themeDeco(),
         h("div.cab-top", logo, h("div.cab-title", cfg.name), h("div.cab-btns", testSel, jackpotButton(cfg.id, cfg.name), h("button.btn.ghost.small.info", { onclick: () => paytable() }, "ⓘ"))),
         jpBar, meterEl,

@@ -14,13 +14,14 @@ import { adminPlayersPage } from "./screens/adminPlayers.js";
 import { slotdexPage } from "./screens/slotdex.js";
 import { adminMapsPage } from "./screens/adminMaps.js";
 import { adminSimPage } from "./screens/adminSim.js";
+import { adminResourcesPage } from "./screens/adminResources.js";
 import { applyMaps } from "./data/mapAdmin.js";
 
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
-    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-resources": adminResourcesPage
 };
 
 function nav(active) {

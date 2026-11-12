@@ -93,6 +93,46 @@ const SONGS = {
             if (s === 31) bgmVoice(a, out, t, { freq: midi(74), type: "square", dur: len * 1.5, vol: 0.02, cut: 2000, cutEnd: 800 });
         }
     },
+    // Midnight Ouija: pipe organ + low strings mystery waltz, 84 BPM in 3/4 (Dm – A7 – Gm – A), music-box sparkles
+    organ_waltz: {
+        bpm: 84, steps: 48,
+        play(a, out, s, t, len) {
+            const bar = Math.floor(s / 12), st = s % 12;
+            const ROOT = [38, 33, 43, 33][bar];
+            const CH = [[62, 65, 69], [61, 64, 67], [62, 67, 70], [61, 64, 69]][bar];
+            if (st === 0) {
+                bgmVoice(a, out, t, { freq: midi(ROOT), type: "sawtooth", dur: len * 11, vol: 0.09, cut: 500, cutEnd: 220, attack: 0.12 }); // low strings
+                bgmVoice(a, out, t, { freq: midi(ROOT - 12), type: "triangle", dur: len * 3, vol: 0.18, cut: 700, cutEnd: 200 });
+            }
+            if (st === 4 || st === 8) for (const n of CH) { // organ "oom-pah-pah"
+                bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len * 3, vol: 0.022, cut: 2200, cutEnd: 1400, attack: 0.02 });
+                bgmVoice(a, out, t, { freq: midi(n + 12), type: "sine", dur: len * 3, vol: 0.018, cut: 4000, cutEnd: 2000, attack: 0.02 });
+            }
+            const MEL = { 0: 74, 6: 77, 12: 76, 18: 73, 24: 74, 28: 70, 32: 69, 36: 76, 42: 73 };
+            if (MEL[s]) bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "square", dur: len * 5, vol: 0.03, cut: 2600, cutEnd: 1200, detune: 4, attack: 0.03 });
+            const BOX = { 9: 86, 10: 89, 33: 93, 34: 88, 46: 85 }; // occasional music-box notes
+            if (BOX[s] && Math.random() < 0.7) bgmVoice(a, out, t, { freq: midi(BOX[s]), type: "sine", dur: len * 2.5, vol: 0.035, cut: 9000, cutEnd: 6000, attack: 0.002 });
+            if (st === 0 && bar === 0) bgmNoise(a, out, t, { dur: 0.6, vol: 0.015, hp: 3000 }); // wind
+        }
+    },
+    // Coin Claw: banjo + whistle country hoedown, 124 BPM (G – C – D – G)
+    banjo_country: {
+        bpm: 124, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            const ROOT = [43, 36, 38, 43][bar], FIFTH = ROOT + 7;
+            const CH = [[55, 59, 62, 67], [55, 60, 64, 67], [54, 57, 62, 66], [55, 59, 62, 67]][bar];
+            if (st === 0 || st === 8) bgmVoice(a, out, t, { freq: midi(st === 0 ? ROOT : FIFTH - 12), type: "triangle", dur: len * 3, vol: 0.2, cut: 800, cutEnd: 220 }); // boom
+            if (st === 4 || st === 12) { bgmNoise(a, out, t, { dur: 0.08, vol: 0.06, hp: 3000 }); for (const n of CH.slice(0, 3)) bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len, vol: 0.015, cut: 2400, cutEnd: 900 }); } // chick
+            if (st === 0) kick(a, out, t, 0.25);
+            // banjo forward roll (plucked)
+            const ROLL = [0, 1, 3, 0, 2, 3, 0, 1];
+            bgmVoice(a, out, t, { freq: midi(CH[ROLL[st % 8]] + 12), type: "sawtooth", dur: len * 0.9, vol: 0.03, cut: 5000, cutEnd: 700, attack: 0.002 });
+            // whistle tune
+            const WH = { 0: 79, 4: 83, 6: 81, 8: 79, 12: 76, 16: 76, 20: 79, 24: 84, 28: 83, 32: 81, 36: 78, 40: 81, 44: 86, 48: 83, 52: 81, 56: 79 };
+            if (WH[s]) bgmVoice(a, out, t, { freq: midi(WH[s]), type: "sine", dur: len * 3.4, vol: 0.045, cut: 8000, cutEnd: 5000, detune: 8, attack: 0.03 });
+        }
+    },
     // Froggie / Crack or Not / Niagara / Lucky Boxes: up-tempo casino lounge jazz, 120 BPM
     // (Gm7 – C7 – Fmaj7 – D7, swing ride, walking bass, rhodes comping, vibes)
     lounge_jazz: {

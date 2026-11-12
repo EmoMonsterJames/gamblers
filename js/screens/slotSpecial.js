@@ -30,7 +30,45 @@ const FX = {
     wildthrow: { icon: "🎁🎁🎁", text: "", snd: "whoosh", cls: "gift" },
     rewind: { icon: "⏪📼", text: "REWIND GLITCH!", snd: "whoosh", cls: "glitch" },
     lasers: { icon: "🔴", text: "", snd: "coin", cls: "beam" },
-    replay: { icon: "🌀⏩", text: "TIME-LOOP REPLAY!", snd: "bonus", cls: "glitch" }
+    replay: { icon: "🌀⏩", text: "TIME-LOOP REPLAY!", snd: "bonus", cls: "glitch" },
+    // ---- the 15 theme machines (themeEngine.js)
+    pendulum: { icon: "🕰️", text: "PENDULUM SWING!", snd: "whoosh", cls: "gold", swing: true },
+    swing: { icon: "🕰️", text: "", snd: "whoosh", cls: "gold" },
+    mesh: { icon: "⚙️⚙️", text: "+1x MESH!", snd: "coin", cls: "gold" },
+    distill: { icon: "🧪💧", text: "DISTILLER x2!", snd: "bonus", cls: "potion" },
+    grimoire: { icon: "📖⚡", text: "MYSTERY GRIMOIRE!", snd: "boom", cls: "bolt" },
+    erupt: { icon: "⚗️💥", text: "CHAIN REACTION BREW!", snd: "boom", cls: "potion", shake: true },
+    supernova: { icon: "💥🌟", text: "SUPERNOVA!", snd: "boom", cls: "sun", shake: true },
+    blackhole: { icon: "🕳️", text: "BLACK HOLE GRAVITY!", snd: "whoosh", cls: "moon" },
+    comet: { icon: "☄️", text: "COMET TRAIL!", snd: "whoosh", cls: "meteor" },
+    nebula: { icon: "🌀🌌", text: "NEBULA PORTAL!", snd: "bonus", cls: "moon" },
+    megacore: { icon: "🤖🧊", text: "MEGA-CORE DROP!", snd: "boom", cls: "beam", shake: true },
+    emp: { icon: "⚡🤖⚡", text: "EMP OVERCHARGE!", snd: "boom", cls: "bolt", shake: true },
+    magnet: { icon: "🧲🤖", text: "MAGNET COLLECT!", snd: "cash", cls: "beam" },
+    overdrive: { icon: "🔋⚔️🤖", text: "OVERDRIVE BATTLE!", snd: "boom", cls: "bolt", shake: true },
+    kernel: { icon: "🍿", text: "", snd: "coin", cls: "gold" },
+    jam: { icon: "🎞️💨", text: "PROJECTOR JAM!", snd: "whoosh", cls: "glitch" },
+    glasses3d: { icon: "🕶️", text: "3D MODE!", snd: "bonus", cls: "glitch" },
+    pop: { icon: "🍿💥", text: "BUCKET POP!", snd: "boom", cls: "gold", shake: true },
+    doublefeature: { icon: "🍿🍿🍿", text: "DOUBLE-FEATURE!", snd: "boom", cls: "gold", shake: true },
+    swarm: { icon: "👻👻👻", text: "SPECTRAL SWARM!", snd: "whoosh", cls: "ghost" },
+    nudge: { icon: "👻🤚", text: "PHANTOM NUDGE!", snd: "whoosh", cls: "ghost" },
+    blade: { icon: "🔪", text: "BLADE SLICE!", snd: "boom", cls: "fire", shake: true },
+    necro: { icon: "🧙‍♂️⚡", text: "NECROMANCER'S RESPIN!", snd: "boom", cls: "bolt" },
+    bloodmoon: { icon: "🌕🩸", text: "BLOOD MOON ECLIPSE!", snd: "boom", cls: "fire", shake: true },
+    megabubble: { icon: "🧙‍♀️🫧", text: "ECTOPLASM SURGE!", snd: "splash", cls: "potion" },
+    soulpop: { icon: "🫧👻", text: "SOUL POP!", snd: "coin", cls: "potion" },
+    speeddial: { icon: "📞💗", text: "SPEED DIALING...", snd: "bonus", cls: "lcd" },
+    t9: { icon: "⌨️", text: "AUTO-CORRECTING...", snd: "tick", cls: "lcd" },
+    cheat: { icon: "✱ #", text: "SECRET CHEAT CODE!", snd: "boom", cls: "lcd", shake: true },
+    echo: { icon: "🥁☀️", text: "TALKING DRUM ECHO!", snd: "boom", cls: "sun", shake: true },
+    kente: { icon: "🧵✨", text: "KENTE LOOM WEAVE!", snd: "bonus", cls: "gold" },
+    pinup: { icon: "🎳", text: "", snd: "coin", cls: "gold" },
+    ball: { icon: "🎱💨🎳", text: "BOWLING BALL!", snd: "boom", cls: "beam", shake: true },
+    strike: { icon: "🎳💥", text: "STRIKE!!!", snd: "boom", cls: "fire", shake: true },
+    bingocoin: { icon: "🪙", text: "", snd: "coin", cls: "gold" },
+    money: { icon: "💸", text: "", snd: "cash", cls: "gold" },
+    claw: { icon: "🦾✨", text: "CLAW TIME!", snd: "bonus", cls: "gold" }
 };
 
 export async function playSpecial(res, api) {
@@ -174,6 +212,11 @@ export async function playSpecial(res, api) {
                     break;
                 }
                 case "laser": await laser(p); break;
+                case "pickn": await pickN(p); break;
+                case "ladder": await ladder(p); break;
+                case "plinko": await plinko(p); break;
+                case "claw": await claw(p); break;
+                case "panel": api.meter(p.key, p.value, p.hl); await pace(p.hl ? 700 : 250); break;
                 case "tease": msgEl.innerHTML = `<span class="tease">아깝다!! 😱</span>`; break;
             }
         }
@@ -192,7 +235,7 @@ export async function playSpecial(res, api) {
             return;
         }
         const d = FX[p.name] || { icon: "✨", text: "", snd: "bonus", cls: "gold" };
-        if (p.name === "rewind" && p.grids?.length) {
+        if (p.grids?.length) {
             cabinet.classList.add("sp-rewinding");
             for (const g of p.grids) { api.showGrid(g); Sound.whoosh(); await pace(260); }
             cabinet.classList.remove("sp-rewinding");
@@ -259,6 +302,117 @@ export async function playSpecial(res, api) {
         return taken;
     }
 
+    // ------------------------------------------------------------ pick N of M (cards / flasks / cups)
+    // The engine already decided the prizes; they are revealed in the order the player taps.
+    async function pickN(p) {
+        const grid = h("div.pickn-grid" + (p.panelCards ? ".cards" : ""));
+        const left = h("small.pickn-left", `남은 선택 ${p.k}`);
+        overlay.append(h("div.pickn-wrap", h("div.pickn-head", p.title), left, grid));
+        let k = 0;
+        const tiles = [];
+        await new Promise(done => {
+            for (let i = 0; i < p.n; i++) {
+                const t = h("button.pn-tile", { style: { "--i": i } }, h("span.pn-back", p.icon || "❓"), h("b.pn-face"));
+                t.onclick = async () => {
+                    if (t.classList.contains("open") || k >= p.k) return;
+                    const r = p.reveals[k++];
+                    t.classList.add("open", "pn-" + (r.cls || "ok"));
+                    t.querySelector(".pn-face").textContent = r.text;
+                    left.textContent = `남은 선택 ${p.k - k}`;
+                    r.cls === "bad" ? (Sound.boom?.(), api.shake(frame)) : r.cls === "jp" ? Sound.bonus() : Sound.coin();
+                    if (k >= p.k) { await sleep(600); done(); }
+                };
+                tiles.push(t); grid.append(t);
+            }
+            (async () => { while (k < p.k) { await sleep(9000); if (k < p.k) tiles.find(x => !x.classList.contains("open"))?.click(); await sleep(700); } })();
+        });
+        // show what the other cards were
+        let j = 0;
+        for (const t of tiles.filter(x => !x.classList.contains("open"))) { t.classList.add("open", "pn-rest"); t.querySelector(".pn-face").textContent = p.rest?.[j++]?.text || ""; }
+        await pace(p.rest ? 1300 : 500);
+        overlay.replaceChildren();
+    }
+
+    // ------------------------------------------------------------ ladder (safe dial, nebula rings, pendulum…)
+    async function ladder(p) {
+        const steps = p.steps.map((s, i) => h("div.ld-step", { style: { "--i": i } }, h("span", p.icon || "⭐"), h("b", s)));
+        const wrap = h("div.ladder-wrap", h("div.ladder-head", p.title), h("div.ladder", ...[...steps].reverse()));
+        overlay.append(wrap);
+        Sound.bonus();
+        await pace(500);
+        for (let i = 0; i <= p.reached; i++) { steps[i].classList.add("on"); Sound.coin(); await pace(i === p.reached ? 700 : 420); }
+        steps[p.reached]?.classList.add("final");
+        Sound.bonus();
+        await pace(900);
+        overlay.replaceChildren();
+    }
+
+    // ------------------------------------------------------------ Plinko tree (Pay Day)
+    async function plinko(p) {
+        const W = 9, ROWS = p.rows;
+        const board = h("div.plk-board", { style: { "--rows": ROWS + 1 } });
+        const pegs = [];
+        for (let r = 0; r <= ROWS; r++) {
+            const row = h("div.plk-row", { style: { "--n": r + 1 } });
+            for (let c = 0; c <= r; c++) {
+                const bp = p.bumps.find(b => b.row === r && b.col === c);
+                const el = h("i.plk-peg" + (bp ? ".bump" + (bp.label.startsWith("x") ? ".mult" : ".jp") : ""), bp ? bp.label : "");
+                row.append(el); pegs.push({ r, c, el });
+            }
+            board.append(row);
+        }
+        const slots = h("div.plk-slots", p.bottom.map(b => h("span", b)));
+        const tally = h("div.plk-tally");
+        overlay.append(h("div.plk-wrap", h("div.plk-head", p.title + " · 구슬 3개"), board, slots, tally));
+        for (const [i, b] of p.balls.entries()) {
+            const go = h("button.btn.gold", `${p.glyph} 구슬 ${i + 1} 떨어뜨리기`);
+            tally.replaceChildren(go);
+            await Promise.race([new Promise(r => go.onclick = r), sleep(5000)]);
+            go.remove();
+            const ball = h("b.plk-ball", p.glyph);
+            board.append(ball);
+            let label = "";
+            for (let r = 0; r < b.path.length; r++) {
+                const peg = pegs.find(x => x.r === r && x.c === b.path[r]);
+                if (!peg) continue;
+                const box = board.getBoundingClientRect(), pb = peg.el.getBoundingClientRect();
+                ball.style.left = (pb.left - box.left + pb.width / 2) + "px"; ball.style.top = (pb.top - box.top + pb.height / 2) + "px";
+                const bp = p.bumps.find(x => x.row === r && x.col === b.path[r]);
+                if (bp) { label = bp.label; ball.textContent = `${p.glyph} ${label}`; peg.el.classList.remove("hit"); void peg.el.offsetWidth; peg.el.classList.add("hit"); Sound.bonus(); } else Sound.tick();
+                await pace(260);
+            }
+            slots.children[b.slot]?.classList.add("hit");
+            Sound.coin();
+            tally.append(h("div.plk-res", `${p.glyph} ${i + 1}: ${p.bottom[b.slot]}${b.mult > 1 ? ` × x${b.mult}` : ""} = ${fmt(b.value)} G${b.tier ? ` + ${b.tier}` : ""}`));
+            await pace(700);
+            ball.remove(); slots.children[b.slot]?.classList.remove("hit");
+        }
+        await pace(900);
+        overlay.replaceChildren();
+    }
+
+    // ------------------------------------------------------------ claw machine (Coin Claw)
+    async function claw(p) {
+        const LABEL = { free: "FREE SPIN", wheel: "🎡 WHEEL", mystery: "❓", jackpot: "💰 JACKPOT" };
+        const balls = h("div.claw-balls", p.balls.map((b, i) => h("i.claw-ball", { style: { "--i": i } }, "❓")));
+        const arm = h("div.claw-arm", h("span", "🦾"));
+        const btn = h("button.btn.gold.big", "🕹️ 집게 내리기!");
+        const res = h("div.claw-res");
+        overlay.append(h("div.claw-wrap", h("div.claw-head", "🦾 CLAW MACHINE · 버튼을 눌러 공을 뽑아라!"), h("div.claw-box", arm, balls), btn, res));
+        await Promise.race([new Promise(r => btn.onclick = r), sleep(7000)]);
+        btn.remove();
+        const target = balls.children[Math.floor(Math.random() * balls.children.length)];
+        arm.style.setProperty("--x", target.offsetLeft + target.offsetWidth / 2 + "px");
+        arm.classList.add("down"); Sound.whoosh();
+        await pace(900);
+        target.classList.add("grabbed"); target.textContent = LABEL[p.pick] || p.pick;
+        arm.classList.remove("down"); arm.classList.add("up"); Sound.bonus();
+        await pace(800);
+        res.textContent = `🎉 ${LABEL[p.pick] || p.pick} 공!`;
+        await pace(1100);
+        overlay.replaceChildren();
+    }
+
     // ------------------------------------------------------------ Laser Grid Breach (pick until an alarm)
     async function laser(p) {
         const grid = h("div.laser-grid");
@@ -311,8 +465,45 @@ export function buildPanel(cfg, state = {}) {
     else if (E === "sp_pod") el.append(h("div.sp-aura", h("span.hw", "🐹"), h("span.vs", "MEGA HAMSTER = 모든 잭팟 합계"), h("span.hw r", "🐹")));
     else if (E === "sp_heist") el.append(h("div.sp-aura", h("span.dial", "🔐"), h("span.vs", "TIME VAULT · 레이저를 모두 해제하라"), h("span.dial r", "⏱️")));
     else if (E === "sp_dj") el.append(h("div.sp-aura", h("span.disc", "💿"), h("span.vs", "DJ CRYPTO LIVE"), h("span.disc r", "💿")));
+    // ---- the 15 theme machines
+    const aura = (l, text, r = l) => el.append(h("div.sp-aura", h("span.aura-l", l), h("span.vs", text), h("span.aura-r", r)));
+    const custom = (k, render) => { parts[k] = { render }; };
+    if (E === "sp_clockwork") el.append(h("div.tp-gears", h("i.g1", "⚙️"), h("i.g2", "⚙️"), h("i.g3", "⚙️"), h("b", "THE CLOCKWORK VAULT"), h("i.g4", "🔒")));
+    else if (E === "sp_alchemist") el.append(h("span.spp-ico", "⚗️"), bar("tube", "💧 DISTILLER", "tube"));
+    else if (E === "sp_astral") aura("🌌", "STARLIGHT SYNDICATE · 별 4개 이상 = 별자리", "🔭");
+    else if (E === "sp_neon") el.append(h("span.spp-ico.sparky", "🤖"), bar("battery", "🔋 SPARKY BATTERY", "battery"));
+    else if (E === "sp_popcorn") {
+        el.append(h("span.spp-ico", "🍿"), bar("red", "🔴 FREE GAMES", "red"), bar("blue", "🔵 MULTIPLIER", "blue"), bar("gold", "🟡 WILD REELS", "gold"));
+        parts.red.fmt = v => `${v}회`; parts.blue.fmt = v => `x${v}`; parts.gold.fmt = v => `${Math.min(4, 1 + Math.floor(v / 5))}릴`;
+    }
+    else if (E === "sp_ouija") aura("🕯️", "MIDNIGHT OUIJA · 25 LINES", "🕯️");
+    else if (E === "sp_tower") el.append(h("div.tp-guillotine", h("i.blade", "🔪"), h("b", "TOWER OF TERROR · 가운데 한 줄"), h("i.moon", "🌩️")));
+    else if (E === "sp_bog") aura("🫧", "THE BOG · 늪의 마녀가 지켜본다", "🧙‍♀️");
+    else if (E === "sp_cyberdial") el.append(h("div.tp-lcd", h("b", "CYBER-DIAL 2000"), h("span.lcd-blink", "▮ READY TO DIAL")));
+    else if (E === "sp_sundrum") aura("☀️", "SUN-DRUM LEGACY · 3 RINGS", "🥁");
+    else if (E === "sp_strikes") {
+        const pins = h("div.lane-pins", Array.from({ length: 10 }, (_, i) => h("i", { style: { "--i": i } }, "🎳")));
+        const marks = h("div.lane-strikes", h("small", "STRIKE"), [0, 1, 2].map(i => h("b", "✕")));
+        el.append(h("div.tp-lane", h("div.lane-floor", pins), marks));
+        custom("pins", v => { [...pins.children].forEach((p, i) => p.classList.toggle("on", i < v)); pins.classList.toggle("full", v >= 10); });
+        custom("strikes", v => [...marks.querySelectorAll("b")].forEach((b, i) => b.classList.toggle("on", i < v)));
+    } else if (E === "sp_vampire") {
+        const cells = Array.from({ length: 25 }, () => h("i.bg-cell"));
+        const vamp = h("span.bg-vamp", "🧛");
+        el.append(h("div.tp-bingo", h("div.bg-head", "B I N G O"), h("div.bg-grid", cells), vamp));
+        const ICON = { fang: "🦷", bat: "🦇", wheel: "🎡" };
+        custom("bingo", (arr, hl) => {
+            cells.forEach((c, i) => { const x = arr?.[i]; c.className = "bg-cell" + (x ? " on k-" + x.k : "") + (hl?.includes(i) ? " hl" : ""); c.textContent = !x ? "" : x.k === "cash" ? (x.v >= 1e4 ? Math.round(x.v / 1000) + "K" : x.v) : ICON[x.k]; });
+            vamp.classList.remove("peek"); void vamp.offsetWidth; vamp.classList.add("peek");
+        });
+    } else if (E === "sp_payday") {
+        const env = (g, k) => { const fill = h("i.env-fill"); const e = h("div.env", h("b", g), fill); custom(k, v => { fill.style.height = Math.min(100, v) + "%"; e.classList.toggle("full", v >= 100); }); return e; };
+        el.append(h("div.tp-envs", env("福", "fu"), h("span.vs", "PAY DAY 💸"), env("到", "dao")));
+    } else if (E === "sp_jokers") el.append(h("div.tp-cards", Array.from({ length: 5 }, (_, i) => h("i.tcard", { style: { "--i": i } }, "🂠"))));
+    else if (E === "sp_coinclaw") el.append(h("div.tp-claw", h("span.tc-arm", "🦾"), h("div.tc-balls", ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓"].map((b, i) => h("i", { style: { "--i": i } }, b))), h("span.tc-spark", "✨")));
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
+        if (p.render) return p.render(value, max);
         const f = Math.max(0, Math.min(1, value / (max || 1)));
         if (p.gold) {
             p.gold.style.setProperty("--heat", f.toFixed(3));
@@ -320,7 +511,7 @@ export function buildPanel(cfg, state = {}) {
             return;
         }
         p.fill.style.width = f * 100 + "%";
-        p.v.textContent = `${value}/${max}`;
+        p.v.textContent = p.fmt ? p.fmt(value, max) : `${value}/${max}`;
         p.b.classList.toggle("full", f >= 1); p.b.classList.toggle("near", f >= 0.7 && f < 1);
         p.b.classList.remove("bump"); void p.b.offsetWidth; p.b.classList.add("bump");
     };
@@ -328,5 +519,11 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_kitchen") set("titan", state.titan || 0, cfg.titanMax || 25);
     if (E === "sp_pillars") for (const k of ["E1", "E2", "E3", "E4", "E5"]) set(k, state.yong?.[k] || 0, cfg.yong?.max || 8);
     if (E === "sp_gift") set("heat", state.heat || 0, 100);
+    if (E === "sp_alchemist") set("tube", state.tube || 0, 12);
+    if (E === "sp_neon") set("battery", state.battery || 0, 30);
+    if (E === "sp_popcorn") { set("red", state.red ?? 8, 50); set("blue", state.blue ?? 2, 10); set("gold", state.gold || 0, 20); }
+    if (E === "sp_strikes") { set("pins", state.pins ?? 1); set("strikes", state.strikes || 0); }
+    if (E === "sp_vampire") set("bingo", state.board || []);
+    if (E === "sp_payday") { set("fu", state.fu || 0, 100); set("dao", state.dao || 0, 100); }
     return { el, set };
 }

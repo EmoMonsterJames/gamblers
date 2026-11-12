@@ -25,6 +25,7 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = ri(i + 
 const clone = g => g.map(c => [...c]);
 const key = (c, r) => c + "," + r;
 import { P_POINTS, pointCount } from "./points.js";
+import { THEME_MACHINES } from "./themeEngine.js";
 let ptCfg = null; // slot being spun (for the bet-scaled P chance)
 
 // ------------------------------------------------------------ jackpots
@@ -57,7 +58,7 @@ function draw(cfg, cols, rows, over = {}) {
 }
 const SPECIALS = new Set(["F", "P", "MS", "SW", "SU", "MO", "SB", "SK", "RB", "DS", "BL", "BP", "GC", "OJ", "DJ"]);
 const isDigit = s => /^[OD]\d$/.test(s) || s === "OJ" || s === "DJ";
-const plain = s => s && !SPECIALS.has(s) && !isDigit(s) && s !== "W";
+const plain = s => s && !SPECIALS.has(s) && !isDigit(s) && s !== "W" && !/^Z/.test(s) && !/^W\d/.test(s) && s !== "_"; // Z* = bonus icons of the theme machines
 function inject(grid, sym, n, { distinct = true, avoid = null } = {}) {
     const cells = [];
     if (distinct) {
@@ -144,7 +145,7 @@ function finish(cfg, ctx, o) {
 
 export function specialSpin(cfg, ctx) {
     ptCfg = cfg;
-    const fn = { sp_kitchen: kitchen, sp_dj: dj, sp_orb: orbSlot, sp_pod: orbSlot, sp_pillars: pillars, sp_gift: gift, sp_heist: heist }[cfg.engine];
+    const fn = { sp_kitchen: kitchen, sp_dj: dj, sp_orb: orbSlot, sp_pod: orbSlot, sp_pillars: pillars, sp_gift: gift, sp_heist: heist }[cfg.engine] || THEME_MACHINES[cfg.engine];
     return fn(cfg, ctx);
 }
 function ctl(cfg, ctx) {
@@ -932,3 +933,6 @@ function heist(cfg, ctx) {
     }
     return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: phases[0].antic });
 }
+
+// shared with the 15 theme machines (themeEngine.js)
+export { R, ri, pickW, shuffle, clone, key, gate, draw, inject, addPoints, count, teaseFor, finish, ctl, lineText };

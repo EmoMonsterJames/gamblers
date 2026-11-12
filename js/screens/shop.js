@@ -9,7 +9,7 @@ import { sleep } from "../core/util.js";
 import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft } from "../game/season.js";
 import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
-import { shopItems, altItems, discountItems } from "../data/catalogAdmin.js";
+import { shopListing, discountItems } from "../data/catalogAdmin.js";
 import { letterCard, npcTicket } from "../ui/letterCard.js";
 
 export function shopView(shopId, pid, locId, onChange) {
@@ -17,7 +17,7 @@ export function shopView(shopId, pid, locId, onChange) {
     const ps = S().ps[pid];
     const wrap = h("div.shop.shop-" + shopId);
     // discount shop: a seeded handful per map per round; other shops: their list + second-shop listings
-    const list = () => shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : [...shopItems(shopId, locId), ...altItems(shopId, locId)];
+    const list = () => shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId);
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
