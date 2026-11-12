@@ -55,7 +55,7 @@ export function adminResourcesPage() {
         const overall = level(top?.pct ?? 0);
         const nBad = ranked.filter(x => level(x.pct) === "bad").length, nWarn = ranked.filter(x => level(x.pct) === "warn").length;
         const verdict = overall === "bad" ? "과부하 상태입니다 — 아래 🔴 항목부터 줄이세요." : overall === "warn" ? "전체적으로 정상이지만 한도에 다가가는 항목이 있습니다." : "전체적으로 여유가 있습니다 (과부하 아님).";
-        const bar = x => h("div.res-bar." + level(x.pct), h("i", { style: `width:${Math.min(100, (x.pct ?? 0) * 100).toFixed(1)}%` }));
+        const bar = x => h("div.res-bar.lv-" + level(x.pct), h("i", { style: `width:${Math.min(100, (x.pct ?? 0) * 100).toFixed(1)}%` }));
         const groups = [...new Set(m.map(x => x.group))];
         body.replaceChildren(
             h("div.res-summary." + overall,
@@ -67,13 +67,13 @@ export function adminResourcesPage() {
             h("h3", "🏋️ 부하 순위 (한도 대비)"),
             h("div.res-rank", ranked.slice(0, 8).map((x, i) => h("div.res-rank-row", h("b", `${i + 1}`), h("span", `${x.group} · ${x.name}`), bar(x), h("small", `${(x.pct * 100).toFixed(1)}%`)))),
             ...groups.map(g => h("div.admin-card.res-group", h("h3", g),
-                h("div.res-table", m.filter(x => x.group === g).map(x => h("div.res-row." + level(x.pct),
+                h("div.res-table", m.filter(x => x.group === g).map(x => h("div.res-row.lv-" + level(x.pct),
                     h("span.res-name", x.name, x.note ? h("small", x.note) : ""),
                     h("span.res-val", x.value, x.limit ? h("small", ` / ${fmtLimit(x)}`) : ""),
                     x.pct != null ? bar(x) : h("span"),
                     h("span.res-lv", x.pct != null ? `${LV[level(x.pct)]} ${(x.pct * 100).toFixed(1)}%` : LV.info)))))),
             sbRes.tables ? h("div.admin-card.res-group", h("h3", "🗄️ Supabase 테이블별"),
-                h("div.res-table", sbRes.tables.map(t => h("div.res-row.info",
+                h("div.res-table", sbRes.tables.map(t => h("div.res-row.lv-info",
                     h("span.res-name", t.name), h("span.res-val", `${fmt(t.rows)}행`), h("span", t.bytes != null ? bytes(t.bytes) : ""),
                     h("span.res-lv", t.writes != null ? `쓰기 ${fmt(t.writes)} · 풀스캔 ${fmt(t.seq_scans)}` : t.ms != null ? `${t.ms} ms` : ""))))) : "",
             h("div.admin-card.res-note", h("h3", "ℹ️ 측정할 수 없는 지표"),

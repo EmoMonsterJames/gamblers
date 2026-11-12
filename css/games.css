@@ -765,3 +765,22 @@
   width: calc(var(--w) * (100% + var(--g)) / var(--nc) - var(--g) + 6px); height: calc(var(--h) * (100% + var(--g)) / var(--nr) - var(--g) + 6px);
   border: 3px solid #facc15; background: #facc1510; box-shadow: inset 0 0 0 1px #facc1555, 0 0 14px #facc1544; }
 .catch-wrap .catch-board .hs-cell:not(.locked) { opacity: .75; }
+/* ---- omens: big single objects / rising swarms */
+.omen-big { position: absolute; inset: 0; z-index: 21; pointer-events: none; display: grid; place-items: center; overflow: hidden; border-radius: 18px; }
+.omen-big span { font-size: 110px; line-height: 1; filter: drop-shadow(0 0 20px #fff8); }
+.omen-big b { position: absolute; bottom: 14%; left: 0; right: 0; text-align: center; font: 900 26px 'Lilita One', sans-serif; color: #fde047; text-shadow: 0 0 12px #000, 0 0 6px #f97316; }
+.ob-rise span { animation: obRise 1.9s ease-out both; }
+@keyframes obRise { 0% { transform: translateY(70%) scale(.4); opacity: 0; } 30% { opacity: 1; } 70% { transform: translateY(-10%) scale(1.5); opacity: 1; } 100% { transform: translateY(-60%) scale(1.8); opacity: 0; } }
+.ob-light { background: radial-gradient(circle, #fffbe6, #fde68a00 70%); animation: obLight 1.9s ease-in-out both; }
+.ob-light span { animation: obRise 1.9s ease-out both; }
+@keyframes obLight { 0% { opacity: 0; } 40%, 70% { opacity: 1; background-color: #fff8; } 100% { opacity: 0; } }
+.ob-fly span { animation: obFly 1.9s cubic-bezier(.4, .1, .6, .9) both; font-size: 130px; }
+@keyframes obFly { 0% { transform: translate(-160%, 30%) rotate(-12deg); } 100% { transform: translate(160%, -30%) rotate(8deg); } }
+.ob-cover span { font-size: 60px; animation: obCover 1.9s ease-in-out both; }
+@keyframes obCover { 0% { transform: scale(.2) rotate(-40deg); opacity: 0; } 45%, 70% { transform: scale(6) rotate(10deg); opacity: 1; } 100% { transform: scale(7) rotate(20deg); opacity: 0; } }
+.ob-flash { animation: obFlash .18s steps(2) 10; }
+.ob-flash span { opacity: .8; }
+@keyframes obFlash { 0% { background: #fff; } 100% { background: transparent; } }
+.omen-rise { position: absolute; inset: 0; pointer-events: none; z-index: 20; overflow: hidden; }
+.omen-rise i { position: absolute; bottom: -40px; font-style: normal; font-size: calc(30px * var(--s)); animation: omRise 1.6s ease-out var(--d) both; filter: drop-shadow(0 0 8px #fde68a); }
+@keyframes omRise { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-110%) translateY(-260px); opacity: 0; } }

@@ -15,7 +15,7 @@ export function particles(def, scale = 1) {
     if (def.mode === "koipond") layer.append(h("div.fx-pond"));
     if (def.mode === "monggi") {
         // colourful rabbit / circle blobs with eyes and the '( - )' wrinkle
-        for (let i = 0; i < (def.n || 6); i++) layer.append(h("span.fx-mg" + (i % 2 ? ".bun" : ".ball"), { style: { "--i": i, "--hue": (i * 57) % 360, "--x": `${4 + (i * 17) % 80}%`, "--y": `${6 + (i * 29) % 72}%`, "--d": `${(i * 0.7).toFixed(1)}s`, fontSize: `${(def.size || 9) * scale}px` } }, h("b.mg-face", def.chars[0])));
+        for (let i = 0; i < (def.n || 6); i++) layer.append(h("span.fx-mg" + (i % 2 ? ".bun" : ".ball"), { style: { "--i": i, "--n": def.n || 6, "--hue": (i * 57) % 360, "--d": `${(i * 0.7).toFixed(1)}s`, fontSize: `${(def.size || 9) * scale}px` } }, h("b.mg-face", def.chars[0])));
         return layer;
     }
     const n = def.n || 6;

@@ -8,7 +8,7 @@
 // =====================================================================
 import { R, ri, pickW, shuffle, clone, key, gate as gate0, draw, inject, addPoints, count, teaseFor, finish, ctl, spJackpotValue } from "./specialEngine.js";
 // per-machine jackpot throttle: cfg.jpDown = { TIER: probability to step down one tier }
-const JP_DOWN_ORDER = ["MEGA", "VAULT", "GRAND", "STRIKE", "MAJOR", "JOKER", "MAXI", "MINOR", "MINI"];
+const JP_DOWN_ORDER = ["MEGA", "VAULT", "GRAND", "LOTUS", "STRIKE", "MAJOR", "JOKER", "MAXI", "MINOR", "MINI"];
 function down(cfg, t) {
     for (let g = 0; g < 8 && cfg.jpDown?.[t] && R() < cfg.jpDown[t]; g++) {
         const i = JP_DOWN_ORDER.indexOf(t), nx = JP_DOWN_ORDER.slice(i + 1).find(x => cfg.jp?.[x]);
@@ -912,22 +912,27 @@ function bingoCoin(cfg, bet) {
     const k = pickW([["cash", 80], ["fang", 2.5], ["bat", 8], ["wheel", 9.5]]);
     return k === "cash" || k === "bat" ? { k, v: Math.round(cash(cfg, bet, pickW([[0.2, 30], [0.5, 30], [1, 22], [2, 11], [3, 5], [5, 2]])) * (cfg.fscale?.bingo ?? 1)) } : { k };
 }
-function bingoPay(cfg, ctx, phases, board, { onlyComplete = true, label = "BINGO" } = {}) {
+function bingoPay(cfg, ctx, phases, board, { label = "BINGO" } = {}) {
     const done = BINGO_LINES.filter(L => L.every(i => board[i]));
     let paid = 0, majors = 0;
+    const WSEG = ["x2", "x3", "x4", "x5", "x2", "x3"];
     for (const L of done) {
-        const coins = L.map(i => board[i]);
-        let sum = coins.filter(x => x.v).reduce((s, x) => s + x.v, 0);
-        // bat coins (≤3) pull every neighbouring coin's value in too
-        for (const i of L.filter(i => board[i].k === "bat").slice(0, 3)) for (const j of [i - 1, i + 1, i - 5, i + 5]) if (j >= 0 && j < 25 && board[j]?.v && !L.includes(j) && Math.abs((j % 5) - (i % 5)) <= 1) sum += board[j].v;
-        // wheel coins (≤2) multiply by x2~x5 each
-        let m = 1; const wheels = L.filter(i => board[i].k === "wheel").slice(0, 2);
-        for (const _ of wheels) { const x = pickW([[2, 45], [3, 30], [4, 15], [5, 10]]); m *= x; phases.push({ t: "wheel", seg: ["x2", "x3", "x4", "x5", "x2", "x3"], idx: [0, 1, 2, 3].find(i => ["x2", "x3", "x4", "x5"][i] === "x" + x), title: "🧛 VAMPIRE WHEEL 🧛" }); }
-        const fangs = L.filter(i => board[i].k === "fang").slice(0, 5);
+        // after the line is called, every bonus coin on it fires in turn:
+        // cash → tally · 🦇 bat → all coins on the line merge into the bat · 🎡 wheel → x2~x5 on the line · 🦷 fang → flips until a jackpot
+        const coins = L.map(i => ({ ...board[i] }));
+        const sum = coins.filter(x => x.v).reduce((s, x) => s + x.v, 0);
+        const bat = coins.findIndex(x => x.k === "bat");
+        const wheels = coins.map((x, i) => x.k === "wheel" ? i : -1).filter(i => i >= 0).slice(0, 2).map(at => { const x = pickW([[2, 45], [3, 30], [4, 15], [5, 10]]); return { at, x, idx: WSEG.indexOf("x" + x) }; });
+        const m = wheels.reduce((a, w) => a * w.x, 1);
+        const fangs = coins.map((x, i) => x.k === "fang" ? i : -1).filter(i => i >= 0).map(at => {
+            let t = pickW([["MINI", 60], ["MINOR", 32], ["MAJOR", 8]]); if (t === "MAJOR" && majors >= 2) t = "MINOR"; t = gate(cfg, t, ctx.bet); if (t === "MAJOR") majors++;
+            return { at, tier: t, amount: jpv(cfg, ctx, t) };
+        });
+        const total = Math.round(sum * m);
         phases.push({ t: "panel", key: "bingo", value: board.map(x => x ? { ...x } : null), hl: L });
-        phases.push({ t: "banner", text: `${label}!`, cls: "jackpot" });
-        if (sum) { phases.push({ t: "win", cells: [], win: Math.round(sum * m), text: `🧛 ${label}${m > 1 ? ` x${m}` : ""}` }); paid += Math.round(sum * m); }
-        for (const _ of fangs) { let t = pickW([["MINI", 60], ["MINOR", 32], ["MAJOR", 8]]); if (t === "MAJOR" && majors >= 2) t = "MINOR"; t = gate(cfg, t, ctx.bet); if (t === "MAJOR") majors++; phases.push({ t: "jp", tier: t, amount: jpv(cfg, ctx, t) }); }
+        phases.push({ t: "bingoline", label, coins, sum, bat, wheels, seg: WSEG, mult: m, fangs, total });
+        if (total) { phases.push({ t: "win", cells: [], win: total, text: `🧛 ${label}${m > 1 ? ` x${m}` : ""}` }); paid += total; }
+        for (const fg of fangs) phases.push({ t: "jp", tier: fg.tier, amount: fg.amount });
     }
     for (const L of done) for (const i of L) board[i] = null;
     return { lines: done.length, paid };
@@ -987,9 +992,9 @@ function vampire(cfg, ctx) {
 // =====================================================================
 function plinko(cfg, ctx, { mults, jps }) {
     const ROWS = 8, bet = ctx.bet;
-    // bumpers sit on fixed pegs; the ball keeps the label of the LAST bumper it hit
+    // bumpers sit on fixed pegs; a ball that touches one STOPS there and pays it at once
+    // (xN bumper = N x 2 bet instant cash, jackpot bumper = that jackpot); otherwise it lands in a bottom slot
     const bumps = [];
-    const slots = mults && jps ? 9 : 9;
     const add = (row, col, label) => bumps.push({ row, col, label });
     const pegs = [[2, 1], [3, 2], [4, 1], [4, 3], [5, 2], [5, 4], [6, 1], [6, 3], [6, 5], [7, 2], [7, 4], [7, 6]];
     const labels = [...(mults ? ["x2", "x3", "x4", "x5"] : []), ...(jps ? ["MINI", "MINOR", "MAJOR"] : [])];
@@ -997,12 +1002,11 @@ function plinko(cfg, ctx, { mults, jps }) {
     const bottom = [10, 5, 3, 2, 1, 2, 3, 5, 10];
     const balls = [];
     for (let b = 0; b < 3; b++) {
-        let col = 0; const path = [0], hits = [];
-        for (let r = 1; r <= ROWS; r++) { col += R() < 0.5 ? 0 : 1; path.push(col); const bp = bumps.find(x => x.row === r && x.col === col); if (bp) hits.push(bp.label); }
-        const last = hits[hits.length - 1] || null, lastM = [...hits].reverse().find(x => x.startsWith("x")), lastJ = [...hits].reverse().find(x => !x.startsWith("x"));
-        const m = mults && lastM ? +lastM.slice(1) : 1;
-        const tier = jps && lastJ ? gate(cfg, lastJ, bet) : null;
-        balls.push({ path, hits, slot: col, value: cash(cfg, bet, bottom[col]) * m, mult: m, tier, last });
+        let col = 0, stop = null; const path = [0];
+        for (let r = 1; r <= ROWS; r++) { col += R() < 0.5 ? 0 : 1; path.push(col); const bp = bumps.find(x => x.row === r && x.col === col); if (bp) { stop = bp.label; break; } }
+        if (!stop) { balls.push({ path, slot: col, value: cash(cfg, bet, bottom[col]), tier: null }); continue; }
+        if (stop.startsWith("x")) { const n = +stop.slice(1); balls.push({ path, stop, value: cash(cfg, bet, n * 2), tier: null }); }
+        else balls.push({ path, stop, value: 0, tier: gate(cfg, stop, bet) });
     }
     return { rows: ROWS, bumps, bottom: bottom.map(x => x + "x"), balls };
 }
@@ -1025,7 +1029,7 @@ function payday(cfg, ctx) {
         meter(phases, which === "dao" ? "dao" : "fu", 100, 100); if (which === "both") meter(phases, "dao", 100, 100);
         phases.push({ t: "banner", text: title, cls: "jackpot" });
         const p = plinko(cfg, ctx, o);
-        phases.push({ t: "plinko", title, ...p, glyph: which === "dao" ? "到" : which === "both" ? "福到" : "福" });
+        phases.push({ t: "plinko", title, ...p, glyph: which === "dao" ? "🔴" : which === "both" ? "🟣" : "🟡" });
         const sum = p.balls.reduce((s, b) => s + b.value, 0);
         phases.push({ t: "win", cells: [], win: sum, text: `${title} · 구슬 3개` });
         for (const b of p.balls) if (b.tier) phases.push({ t: "jp", tier: b.tier, amount: jpv(cfg, ctx, b.tier) });
@@ -1127,14 +1131,26 @@ function jokers(cfg, ctx) {
 function clawPick(cfg, ctx, phases, { noFree = false } = {}) {
     const bet = ctx.bet;
     const kind = pickW([["mystery", 38], ["wheel", 30], ["jackpot", 10], ...(noFree ? [] : [["free", 22]])]);
-    phases.push({ t: "claw", pick: kind, balls: ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓", "💰", "🎡"] });
-    if (kind === "mystery") { const x = pickW([[2, 30], [3, 25], [5, 20], [8, 12], [10, 8], [20, 4], [30, 1]]); return { kind, x, do: () => phases.push({ t: "win", cells: [], win: cash(cfg, bet, x), text: `❓ MYSTERY BALL ${x}x` }) }; }
+    const balls = ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓", "💰", "🎡"];
+    // the grabbed ball opens up inside the claw and shows its prize
+    if (kind === "mystery") {
+        const x = pickW([[2, 30], [3, 25], [5, 20], [8, 12], [10, 8], [20, 4], [30, 1]]), v = cash(cfg, bet, x);
+        phases.push({ t: "claw", pick: kind, balls, prize: short(v) + " G" });
+        return { kind, x, do: () => phases.push({ t: "win", cells: [], win: v, text: `❓ MYSTERY BALL ${x}x` }) };
+    }
     if (kind === "wheel") {
         const SEG = ["3x", "5x", "8x", "10x", "15x", "20x", "30x", "50x"], W = [26, 24, 18, 14, 9, 5, 3, 1];
         const idx = pickW(SEG.map((s, i) => [i, W[i]])); const x = +SEG[idx].slice(0, -1);
-        return { kind, x, do: () => { phases.push({ t: "wheel", seg: SEG, idx, title: "🎡 CLAW WHEEL 🎡" }); phases.push({ t: "win", cells: [], win: cash(cfg, bet, x), text: `🎡 CLAW WHEEL ${x}x` }); } };
+        phases.push({ t: "claw", pick: kind, balls, prize: "휠 돌리기!" });
+        const spin = () => phases.push({ t: "wheel", seg: SEG, idx, title: "🎡 CLAW WHEEL 🎡" });
+        return { kind, x, spin, do: () => { spin(); phases.push({ t: "win", cells: [], win: cash(cfg, bet, x), text: `🎡 CLAW WHEEL ${x}x` }); } };
     }
-    if (kind === "jackpot") { const t = gate(cfg, pickW([["MINI", 50], ["MINOR", 30], ["MAXI", 14], ["MAJOR", 5], ["GRAND", 1]]), bet); return { kind, tier: t, do: () => phases.push({ t: "jp", tier: t, amount: jpv(cfg, ctx, t) }) }; }
+    if (kind === "jackpot") {
+        const t = gate(cfg, pickW([["MINI", 50], ["MINOR", 30], ["MAXI", 14], ["MAJOR", 5], ["GRAND", 1]]), bet);
+        phases.push({ t: "claw", pick: kind, balls, prize: t });
+        return { kind, tier: t, do: () => phases.push({ t: "jp", tier: t, amount: jpv(cfg, ctx, t) }) };
+    }
+    phases.push({ t: "claw", pick: kind, balls, prize: (cfg.features?.claw?.spins || 10) + " FREE" });
     return { kind, do: () => { } };
 }
 function coinclaw(cfg, ctx) {
@@ -1177,7 +1193,7 @@ function coinclaw(cfg, ctx) {
     if (doClaw) clawBonus();
     if (doHold) {
         kinds.push("hold"); feat(cfg, "hold");
-        const coin = coinMaker(cfg, bet, { vals: [[1, 30], [2, 25], [3, 15], [5, 12], [8, 6], [10, 4], [20, 1.5], [50, 0.3]], jp: 0.035, tw: { MINI: 60, MINOR: 30, MAXI: 8, MAJOR: 2 }, extra: [{ p: 0.025, coin: { claw: true, label: "🦾", cls: "mult", v: 0 } }] });
+        const coin = coinMaker(cfg, bet, { vals: [[1, 30], [2, 25], [3, 15], [5, 12], [8, 6], [10, 4], [20, 1.5], [50, 0.3]], jp: 0.035, tw: { MINI: 60, MINOR: 30, MAXI: 8, MAJOR: 2 }, extra: [{ p: 0.025, coin: { claw: true, sym: "ZW", label: "❓", cls: "mult", v: 0 } }] });
         const hs = holdSpin(cfg, ctx, phases, {
             C: 5, Rn: 3, start: 6, coin, p: 0.075, sym: "ZC", title: "🟡 BALL HOLD & SPIN 🟡",
             onAdd: (board, added) => {
@@ -1185,7 +1201,7 @@ function coinclaw(cfg, ctx) {
                     const cn = board.get(key(c, r)); if (!cn.claw) continue;
                     const p = clawPick(cfg, ctx, phases, { noFree: true });
                     if (p.kind === "jackpot") { cn.jp = p.tier; cn.label = null; }
-                    else { cn.v = cash(cfg, bet, p.x); cn.label = null; if (p.kind === "wheel") p.do = null; }
+                    else { if (p.kind === "wheel") p.spin(); cn.v = cash(cfg, bet, p.x); cn.label = null; cn.cls = "val"; }
                 }
             }
         });
@@ -1194,9 +1210,288 @@ function coinclaw(cfg, ctx) {
     return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: phases[0].antic, five, lines: ev.lines });
 }
 
+
+// =====================================================================
+// 🕊️ Cathedral of Wings — 24-shard rose window (6x4), clusters 5+ with cascades
+// =====================================================================
+const CATH_CENTER = [[2, 1], [3, 1], [2, 2], [3, 2]];
+function biggestNear(cfg, g, lo = 3, hi = 4) {
+    // largest cluster that is lo..hi big (a near-miss)
+    const ev = clusterEval(cfg, g, 0, { min: lo });
+    return ev.lines.filter(l => l.n <= hi).sort((a, b) => b.n - a.n)[0] || null;
+}
+function growCluster(g, cells, sym, need) {
+    // add orthogonal neighbours of the cluster until it is `need` big
+    const have = new Set(cells.map(([c, r]) => key(c, r))), out = [];
+    for (let guard = 0; have.size < need && guard < 40; guard++) {
+        const ring = [];
+        for (const k of have) { const [c, r] = k.split(",").map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const x = c + dx, y = r + dy; if (x < 0 || y < 0 || x >= g.length || y >= g[0].length || have.has(key(x, y)) || /^Z|^_$/.test(g[x][y])) continue; ring.push([x, y]); } }
+        if (!ring.length) break;
+        const [x, y] = ring[ri(ring.length)]; g[x][y] = sym; have.add(key(x, y)); out.push([x, y]);
+    }
+    return out;
+}
+function cathedral(cfg, ctx) {
+    const { bet } = ctx, { F, hit } = ctl(cfg, ctx);
+    const state = structuredClone(ctx.state || {});
+    const doBell = hit("bells"), doFlock = !doBell && hit("flock"), doHalo = !doBell && !doFlock && hit("halo"), doFeather = !doBell && !doFlock && !doHalo && hit("feather");
+    let grid = draw(cfg, 6, 4);
+    const kinds = [];
+    if (doBell) inject(grid, "ZB", 3); else if (R() < 0.06) inject(grid, "ZB", 2, { avoid: c => c >= 4 });
+    let haloSym = null;
+    if (doHalo) { haloSym = pickW(payKeys(cfg).map(k => [k, k.startsWith("H") ? 2 : 1])); for (const [c, r] of CATH_CENTER) grid[c][r] = haloSym; growCluster(grid, CATH_CENTER, haloSym, 5 + ri(2)); }
+    if (doFeather) { // build a 3-4 shard near-miss for the feathers to finish
+        const s = pickW(payKeys(cfg).map(k => [k, 1])); const c0 = ri(6), r0 = ri(4); grid[c0][r0] = s; growCluster(grid, [[c0, r0]], s, 3 + ri(2));
+    }
+    const points = addPoints(grid);
+    const phases = [{ t: "spin", grid: clone(grid), antic: teaseFor(grid, ["ZB"]), near: doBell ? null : nearMiss(grid, "ZB") }];
+    endFeat();
+    let five = 0;
+    if (doFlock) {
+        kinds.push("flock"); feat(cfg, "flock");
+        phases.push({ t: "fx", name: "flock" });
+        const n = 5 + ri(6), cells = shuffle(cellsAll(grid).filter(([c, r]) => plainSym(grid[c][r]))).slice(0, n);
+        for (const [c, r] of cells) grid[c][r] = "W2";
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "wild", text: `🕊️ FLOCK SCATTER! 비둘기 떼가 ${cells.length}장의 유리를 x2 WILD로!` });
+    }
+    if (doHalo) {
+        kinds.push("halo"); feat(cfg, "halo");
+        phases.push({ t: "fx", name: "halo" });
+        // golden sunbeams along 2 spokes through the centre medallion
+        const SPOKES = [[0, 1, 2, 3, 4, 5].map(c => [c, 1]), [0, 1, 2, 3, 4, 5].map(c => [c, 2]), [0, 1, 2, 3].map(r => [2, r]), [0, 1, 2, 3].map(r => [3, r]), [[0, 0], [1, 0], [2, 1], [3, 2], [4, 3], [5, 3]], [[0, 3], [1, 3], [2, 2], [3, 1], [4, 0], [5, 0]]];
+        const beams = shuffle(SPOKES).slice(0, 2).flat().filter(([c, r]) => grid[c][r] !== haloSym && !/^Z|^W/.test(grid[c][r]));
+        for (const [c, r] of beams) grid[c][r] = haloSym;
+        phases.push({ t: "morph", grid: clone(grid), cells: beams, fx: "gold", text: `😇 HALO RESONANCE! 햇살이 바퀴살을 따라 ${name(cfg, haloSym)} 복제!` });
+    }
+    if (doFeather) {
+        const near = biggestNear(cfg, grid);
+        if (near) {
+            kinds.push("feather"); feat(cfg, "feather");
+            phases.push({ t: "fx", name: "feather" });
+            const add = growCluster(grid, near.cells.filter(([c, r]) => grid[c][r] === near.sym), near.sym, 5 + ri(3));
+            phases.push({ t: "morph", grid: clone(grid), cells: add, fx: "evolve", text: `🪶 FEATHER DRIFT! 깃털이 내려앉아 ${name(cfg, near.sym)} 클러스터 완성!` });
+        }
+    }
+    const cs = cascade(cfg, grid, bet, phases, { min: 5 });
+    five += cs.five;
+    if (doBell) {
+        kinds.push("bells"); feat(cfg, "bells");
+        const tw = F.bells.tw, keys = Object.keys(tw).filter(t => cfg.jp?.[t]);
+        const tier = gate(cfg, pickW(keys.map(k => [k, tw[k]])), bet);
+        phases.push({ t: "pick", f: matchPick(cfg, ctx, "🔔 BELL TOWER · 같은 스테인드글라스 3장을 맞춰라 🔔", "🔔", keys, tier) });
+        phases.push({ t: "jp", tier, amount: jpv(cfg, ctx, tier) });
+    }
+    return finish(cfg, ctx, { grid, phases, points, state, baseWin: cs.total, kinds, antic: phases[0].antic, five, lines: [] });
+}
+const plainSym = s => s && !/^Z|^W|^_$|^P$/.test(s);
+
+// =====================================================================
+// 🎩 The Velvet Table — 16 card slots (4x4, 256 ways)
+// =====================================================================
+function velvet(cfg, ctx) {
+    const { bet } = ctx, { F, hit } = ctl(cfg, ctx);
+    const state = structuredClone(ctx.state || {});
+    const doVip = hit("vip"), doAll = !doVip && hit("allin"), doCut = !doVip && hit("housecut");
+    let grid = draw(cfg, 4, 4);
+    const kinds = [];
+    if (doVip) inject(grid, "ZV", 3); else if (R() < 0.06) inject(grid, "ZV", 2, { avoid: c => c >= 2 });
+    if (doCut && !waysEval(cfg, grid, bet).win) grid = forceRun(cfg, grid, pickW(payKeys(cfg).map(k => [k, 1])), 3).grid;
+    const points = addPoints(grid);
+    const phases = [{ t: "spin", grid: clone(grid), antic: teaseFor(grid, ["ZV"]), near: doVip ? null : nearMiss(grid, "ZV") }];
+    endFeat();
+    if (doAll) {
+        kinds.push("allin"); feat(cfg, "allin");
+        phases.push({ t: "fx", name: "allin" });
+        const cells = cellsAll(grid).filter(([c, r]) => /^L/.test(grid[c][r]));
+        for (const [c, r] of cells) grid[c][r] = "H1";
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "gold", text: `🧤 ALL-IN SWEEP! 칩 ${cells.length}개가 전부 골드바로!` });
+    }
+    const ev = waysEval(cfg, grid, bet);
+    let baseWin = winP(phases, cfg, ev), five = ev.five;
+    if (doCut && ev.win) {
+        kinds.push("housecut"); feat(cfg, "housecut");
+        phases.push({ t: "fx", name: "rake" });
+        const pot = Math.round(ev.win * FSC);
+        phases.push({ t: "clear", cells: ev.lines.flatMap(l => l.cells) });
+        phases.push({ t: "win", cells: [], win: pot, text: `🪙 THE HOUSE CUT · 팟 x2 (${fmtN(ev.win)} → ${fmtN(ev.win + pot)})` });
+        phases.push({ t: "banner", text: "🃏 FREE RE-DEAL 🃏", cls: "bonus" });
+        const g2 = draw(cfg, 4, 4);
+        phases.push({ t: "spin", grid: clone(g2) });
+        const e2 = waysEval(cfg, g2, bet); five += e2.five;
+        winP(phases, cfg, e2, "RE-DEAL → POT");
+    }
+    if (doVip) {
+        kinds.push("vip"); feat(cfg, "vip");
+        const tw = F.vip.tw, keys = Object.keys(tw).filter(t => cfg.jp?.[t]);
+        const tier = gate(cfg, pickW(keys.map(k => [k, tw[k]])), bet);
+        phases.push({ t: "pick", f: matchPick(cfg, ctx, "💎 VIP VAULT · 같은 칩 3개를 맞춰라 💎", "🎴", keys, tier) });
+        phases.push({ t: "jp", tier, amount: jpv(cfg, ctx, tier) });
+    }
+    return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: phases[0].antic, five, lines: ev.lines });
+}
+const fmtN = v => v.toLocaleString("en-US");
+
+// =====================================================================
+// 🛸 Astro-Diner 5099 — 4-storey building, 20 windows (5x4, ways)
+// =====================================================================
+function astro(cfg, ctx) {
+    const { bet } = ctx, { hit } = ctl(cfg, ctx);
+    const state = structuredClone(ctx.state || {});
+    const doGrav = hit("gravity"), doUfo = !doGrav && hit("ufo"), doMeteor = !doGrav && !doUfo && hit("meteor");
+    let grid = draw(cfg, 5, 4);
+    const kinds = [];
+    const points = addPoints(grid);
+    const phases = [{ t: "spin", grid: clone(grid), antic: [] }];
+    endFeat();
+    let mult = null;
+    if (doGrav) {
+        kinds.push("gravity"); feat(cfg, "gravity");
+        phases.push({ t: "fx", name: "gravity" });
+        // everything floats up; the top floor turns into Hover-Car wilds
+        const cells = [];
+        for (let c = 0; c < 5; c++) { const col = grid[c].filter(s => s !== "P"); while (col.length < 4) col.push(pickW(payKeys(cfg).map(k => [k, 1]))); grid[c] = col; grid[c][0] = "W"; cells.push([c, 0]); }
+        if (R() < 0.35) { const c = ri(5); grid[c][1] = "W"; cells.push([c, 1]); }
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "wild", text: "🌀 GRAVITY GLITCH! 꼭대기 층이 전부 HOVER-CAR WILD로!" });
+    }
+    if (doUfo) {
+        kinds.push("ufo"); feat(cfg, "ufo");
+        phases.push({ t: "fx", name: "ufo" });
+        const n = R() < 0.3 ? 3 : 2, s = pickW(highKeys(cfg).map(k => [k, 1]));
+        const c0 = 1 + ri(4 - n), r0 = ri(5 - n), cells = [];
+        for (let c = c0; c < c0 + n; c++) for (let r = r0; r < r0 + n; r++) { grid[c][r] = s; cells.push([c, r]); }
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "gold", text: `🛸 UFO DELIVERY! ${n}x${n} 메가 ${name(cfg, s)} 전송!` });
+    }
+    if (doMeteor) {
+        kinds.push("meteor"); feat(cfg, "meteor");
+        phases.push({ t: "fx", name: "meteor" });
+        const cells = shuffle(cellsAll(grid)).slice(0, 2 + ri(4)), M = new Map();
+        for (const [c, r] of cells) M.set(key(c, r), pickW([[2, 55], [3, 30], [5, 15]]));
+        mult = (c, r) => M.get(key(c, r)) || 1;
+        phases.push({ t: "badge", cells: cells.map(([c, r]) => ({ c, r, text: "☄️x" + M.get(key(c, r)), cls: "mult" })) });
+    }
+    const ev = waysEval(cfg, grid, bet, { mult });
+    const baseWin = winP(phases, cfg, ev);
+    return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: [], five: ev.five, lines: ev.lines });
+}
+
+// =====================================================================
+// 🐸 Lilypad Leap — 19 pads in a 3-4-5-4-3 honeycomb (clusters 4+)
+// =====================================================================
+const LILY_BLANK = new Set(["0,0", "0,4", "1,4", "3,4", "4,0", "4,4"]);
+const lilyBlank = g => { for (const k of LILY_BLANK) { const [c, r] = k.split(",").map(Number); g[c][r] = "_"; } return g; };
+const lilyCells = () => cellsAll(Array.from({ length: 5 }, () => Array(5).fill(0))).filter(([c, r]) => !LILY_BLANK.has(key(c, r)));
+function lilypad(cfg, ctx) {
+    const { bet } = ctx, { F, hit } = ctl(cfg, ctx);
+    const state = structuredClone(ctx.state || {});
+    const doTongue = hit("tongue"), doRipple = !doTongue && hit("ripple"), doTad = !doTongue && !doRipple && hit("tadpole");
+    let grid = lilyBlank(draw(cfg, 5, 5));
+    const kinds = [];
+    const points = addPoints(grid);
+    lilyBlank(grid);
+    const phases = [{ t: "spin", grid: clone(grid), antic: [] }];
+    endFeat();
+    if (doTongue) {
+        kinds.push("tongue"); feat(cfg, "tongue");
+        phases.push({ t: "fx", name: "tongue" });
+        // beetles anywhere get snatched into one connected clump
+        const start = [2, 1 + ri(3)]; grid[start[0]][start[1]] = "H1";
+        const cells = [start, ...growCluster(grid, [start], "H1", 4 + ri(3))];
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "gold", text: `👅 TONGUE LASH! 황금 딱정벌레 ${cells.length}마리를 한데 끌어모았다!` });
+    }
+    if (doRipple) {
+        kinds.push("ripple"); feat(cfg, "ripple");
+        phases.push({ t: "fx", name: "ripple" });
+        const s = pickW(payKeys(cfg).map(k => [k, k.startsWith("H") ? 1 : 2]));
+        const cells = lilyCells().filter(([c, r]) => Math.abs(c - 2) <= 1 && Math.abs(r - 2) <= 1 + (R() < 0.3 ? 1 : 0));
+        for (const [c, r] of cells) grid[c][r] = s;
+        phases.push({ t: "morph", grid: clone(grid), cells, fx: "wild", text: `💧 POND RIPPLE SYNC! 물결이 닿은 ${cells.length}개 잎이 ${name(cfg, s)}로!` });
+    }
+    const ev = clusterEval(cfg, grid, bet, { min: 4 });
+    let baseWin = winP(phases, cfg, ev);
+    if (doTad) {
+        kinds.push("tadpole"); feat(cfg, "tadpole");
+        phases.push({ t: "fx", name: "tadpole" });
+        const cells = shuffle(lilyCells()).slice(0, 3 + ri(3));
+        const vals = cells.map(() => {
+            const x = R();
+            if (x < 0.003) return { jp: down(cfg, "LOTUS") };
+            if (x < 0.07) return { jp: gate(cfg, pickW([["MINI", 60], ["MINOR", 28], ["MAXI", 9], ["MAJOR", 3]]), bet) };
+            return { v: cash(cfg, bet, pickW([[0.5, 25], [1, 28], [2, 22], [3, 12], [5, 8], [10, 4], [25, 1]])) };
+        });
+        for (const [c, r] of cells) grid[c][r] = "ZL";
+        phases.push({ t: "land", grid: clone(grid), cells, roll: true });
+        phases.push({ t: "badge", cells: cells.map(([c, r], i) => ({ c, r, text: vals[i].jp || short(vals[i].v), cls: vals[i].jp ? "jpb" : "val" })) });
+        const sum = vals.reduce((s, x) => s + (x.v || 0), 0);
+        if (sum) { phases.push({ t: "win", cells, win: sum, text: `🪷 TADPOLE SWARM · 연꽃 ${cells.length}송이 즉시 상금` }); baseWin += sum; }
+        for (const x of vals) if (x.jp) phases.push({ t: "jp", tier: x.jp, amount: jpv(cfg, ctx, x.jp) });
+    }
+    return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: [], five: ev.five, lines: ev.lines });
+}
+
+// =====================================================================
+// 🚕 Gridlock Rush Hour — 4-way intersection, 4x4 ways
+// =====================================================================
+function gridlock(cfg, ctx) {
+    const { bet } = ctx, { F, hit } = ctl(cfg, ctx);
+    const state = structuredClone(ctx.state || {});
+    const doBadge = hit("badge"), doGreen = !doBadge && hit("green"), doSub = !doBadge && !doGreen && hit("subway"), doHeli = !doBadge && !doGreen && !doSub && hit("heli");
+    let grid = draw(cfg, 4, 4);
+    const kinds = [];
+    if (doBadge) inject(grid, "ZP", 3); else if (R() < 0.06) inject(grid, "ZP", 2, { avoid: c => c >= 2 });
+    const points = addPoints(grid);
+    const phases = [{ t: "spin", grid: clone(grid), antic: teaseFor(grid, ["ZP"]), near: doBadge ? null : nearMiss(grid, "ZP") }];
+    endFeat();
+    let mult = null, five = 0;
+    if (doGreen) {
+        kinds.push("green"); feat(cfg, "green");
+        phases.push({ t: "fx", name: "green" });
+        // stalled civilian cars leave, an armoured-truck convoy drives straight through one lane
+        const civ = cellsAll(grid).filter(([c, r]) => /^L/.test(grid[c][r]));
+        for (const [c, r] of civ) grid[c][r] = pickW(highKeys(cfg).map(k => [k, 1]));
+        const lane = ri(4), conv = [0, 1, 2, 3].map(c => [c, lane]);
+        for (const [c, r] of conv) grid[c][r] = "W";
+        phases.push({ t: "morph", grid: clone(grid), cells: [...civ, ...conv], fx: "wild", text: `🚦 GREEN LIGHT EXPRESS! 민간 차량 ${civ.length}대 정리 · 현금수송차 WILD 행렬 통과!` });
+    }
+    if (doSub) {
+        kinds.push("subway"); feat(cfg, "subway");
+        phases.push({ t: "fx", name: "subway" });
+        const cells = shuffle(cellsAll(grid)).slice(0, 2 + ri(4)), M = new Map();
+        for (const [c, r] of cells) M.set(key(c, r), pickW([[2, 55], [3, 30], [4, 15]]));
+        mult = (c, r) => M.get(key(c, r)) || 1;
+        phases.push({ t: "badge", cells: cells.map(([c, r]) => ({ c, r, text: "🕳️x" + M.get(key(c, r)), cls: "mult" })) });
+    }
+    const ev = waysEval(cfg, grid, bet, { mult });
+    let baseWin = winP(phases, cfg, ev); five += ev.five;
+    if (doHeli) {
+        kinds.push("heli"); feat(cfg, "heli");
+        phases.push({ t: "fx", name: "heli" });
+        const n = R() < 0.25 ? 3 : 2, c0 = ri(5 - n), r0 = ri(5 - n), lock = new Set();
+        // the beam lands on a paying symbol and the lit squares share it
+        const s = pickW(highKeys(cfg).map(k => [k, 1]));
+        for (let c = c0; c < c0 + n; c++) for (let r = r0; r < r0 + n; r++) { lock.add(key(c, r)); if (R() < 0.6) grid[c][r] = s; }
+        phases.push({ t: "badge", cells: [...lock].map(k => { const [c, r] = k.split(",").map(Number); return { c, r, text: "🔦", cls: "mult" }; }) });
+        phases.push({ t: "show", grid: clone(grid), pop: [...lock].map(k => k.split(",").map(Number)) });
+        phases.push({ t: "banner", text: "🚁 HELICOPTER SPOTLIGHT · FREE RESPIN 🚁", cls: "bonus" });
+        const g2 = draw(cfg, 4, 4);
+        for (const k of lock) { const [c, r] = k.split(",").map(Number); g2[c][r] = grid[c][r]; }
+        const rolled = cellsAll(g2).filter(([c, r]) => !lock.has(key(c, r)));
+        phases.push({ t: "land", grid: clone(g2), cells: rolled, roll: true });
+        const e2 = waysEval(cfg, g2, bet); five += e2.five;
+        winP(phases, cfg, e2, "🚁 TRAFFIC WAVE");
+    }
+    if (doBadge) {
+        kinds.push("badge"); feat(cfg, "badge");
+        const tw = F.badge.tw, keys = Object.keys(tw).filter(t => cfg.jp?.[t]);
+        const tier = gate(cfg, pickW(keys.map(k => [k, tw[k]])), bet);
+        phases.push({ t: "pick", f: matchPick(cfg, ctx, "🚔 PRECINCT JACKPOT · 같은 배지 3개를 맞춰라 🚔", "🚔", keys, tier) });
+        phases.push({ t: "jp", tier, amount: jpv(cfg, ctx, tier) });
+    }
+    return finish(cfg, ctx, { grid, phases, points, state, baseWin, kinds, antic: phases[0].antic, five, lines: ev.lines });
+}
 const wrap = fn => (cfg, ctx) => { FSC = 1; try { return fn(cfg, ctx); } finally { FSC = 1; } };
 export const THEME_MACHINES = Object.fromEntries(Object.entries({
     sp_clockwork: clockwork, sp_alchemist: alchemist, sp_astral: astral, sp_neon: neon, sp_popcorn: popcorn,
     sp_ouija: ouija, sp_tower: tower, sp_bog: bog, sp_cyberdial: cyberdial, sp_sundrum: sundrum,
-    sp_strikes: strikes, sp_vampire: vampire, sp_payday: payday, sp_jokers: jokers, sp_coinclaw: coinclaw
+    sp_strikes: strikes, sp_vampire: vampire, sp_payday: payday, sp_jokers: jokers, sp_coinclaw: coinclaw,
+    sp_cathedral: cathedral, sp_velvet: velvet, sp_astro: astro, sp_lilypad: lilypad, sp_gridlock: gridlock
 }).map(([k, fn]) => [k, wrap(fn)]));

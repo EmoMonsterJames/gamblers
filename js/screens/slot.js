@@ -15,7 +15,7 @@ import { playSpecial, buildPanel } from "./slotSpecial.js";
 import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
 
-const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
+const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "LOTUS", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
 
 export function openSlot(cfg, ctx) {
     const classic = cfg.engine === "classic";
@@ -33,7 +33,7 @@ export function openSlot(cfg, ctx) {
         const def = (cfg.look && cfg.look[key]) || (key === "W" ? cfg.wild : null) || cfg.syms?.[key] || (key === "P" ? { e: "P", cls: "sym-p" } : { e: key });
         const cls = ["sym", "s-" + key.replace(/[^\w]/g, "_")];
         if (def.card) cls.push("sym-card", "card-" + key);
-        if (def.cls) cls.push(def.cls);
+        if (def.cls) cls.push(...def.cls.split(" ").filter(Boolean));
         if (key === "W" || key === "MW") cls.push("sym-wild");
         if (["F", "C", "B", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "BG", "WH", "7", "D", "N", "PK", "MT", "MS", "SW", "SU", "MO", "SB", "SK", "RB", "DS", "BL", "BP"].includes(key) || (special && /^Z/.test(key))) cls.push("sym-special");
         if (/^W[0-9]+$/.test(key)) cls.push("sym-wild");
@@ -854,6 +854,18 @@ export function openSlot(cfg, ctx) {
         if (o.fx === "shake" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1500); }
         if (o.fx === "wind" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
         if (o.fx === "wind" && !o.chars) o = { ...o, chars: ["🍃", "🌫️", "〰️"] };
+        // one huge thing (halo rising, light flooding in, spaceship fly-by, lily pad cover, flash strobe)
+        if (o.fx === "big") {
+            const l = h("div.omen-big.ob-" + (o.cls || "rise"), h("span", o.icon || "✨"), o.text ? h("b", o.text) : null);
+            cabinet.append(l); o.cls === "flash" || o.cls === "light" ? Sound.boom() : Sound.whoosh(); if (o.text) Sound.tease();
+            await sleep(1900); l.remove();
+        }
+        // many small things floating upward (halos, bubbles)
+        if (o.fx === "rise") {
+            if (o.shake) frame.classList.add("omen-shake");
+            const l = h("div.omen-rise", Array.from({ length: 22 }, (_, i) => h("i", { style: { left: 4 + rnd() * 92 + "%", "--d": rnd() * 0.9 + "s", "--s": (0.7 + rnd() * 0.9).toFixed(2) } }, o.chars[i % o.chars.length])));
+            cabinet.append(l); Sound.bonus(); await sleep(1800); l.remove(); frame.classList.remove("omen-shake");
+        }
         if (o.fx === "text") { const t = h("div.omen-text", o.text); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
         if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); await sleep(1100); frame.classList.remove("omen-shake"); }
         if (o.fx === "rain") {

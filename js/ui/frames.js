@@ -35,9 +35,9 @@ const BUILD = {
         h("i.slot-handle", h("b"))],
     rocket: () => [h("i.rk-nose"), h("i.rk-fin.l"), h("i.rk-fin.r"), h("i.rk-fire", "🔥")],
     winners: () => [h("div.win-crown", h("span", "👑"), h("b", "WINNER")), ...many(4, i => h("i.lk-spark", { style: { "--i": i } }, "✨"))],
-    cupid: () => [h("div.cupid-heart", h("i.half.l", "❤️"), h("i.half.r", "❤️")), h("i.wing.l", "🪽"), h("i.wing.r", "🪽"), h("i.cupid", "👼"), h("i.cupid-arrow", "💘")],
+    cupid: () => [h("i.cp-rim"), h("i.wing.l", "🪽"), h("i.wing.r", "🪽"), h("div.cp-door.l", h("i.cp-leaf")), h("div.cp-door.r", h("i.cp-leaf")), h("i.cupid", h("b", "👼"))],
     ufo: () => [h("i.ufo", "🛸"), h("i.ufo-alien", "👽"), h("i.ufo-beam")],
-    mummy: () => [h("div.dp-clip", h("div.bandages", many(5, i => h("i", { style: { "--i": i } }))), h("i.mm-eyes", h("b"), h("b")))]
+    mummy: () => [h("div.dp-clip", h("div.bandages", many(6, i => h("i", { style: { "--i": i } }))), h("i.mm-eyes", h("b"), h("b")))]
 };
 
 // returns the deco layer for a frame (or null) — src = profile image (Slot frame reels)

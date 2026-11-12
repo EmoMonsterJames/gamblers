@@ -182,16 +182,26 @@
 .win-crown b { position: absolute; left: 50%; bottom: 12%; transform: translateX(-50%); font-size: .085em; font-weight: 900; letter-spacing: .05em; color: #7c2d12; background: linear-gradient(90deg, #fde047, #fff7ae, #facc15); padding: .1em .4em; border-radius: .3em; white-space: nowrap; box-shadow: 0 0 .5em #fde047; }
 @keyframes crownGlow { to { filter: brightness(1.25) drop-shadow(0 0 .06em #fff); } }
 /* 💘 천사큐피드 */
-.fr-cupid { box-shadow: 0 0 0 .04em #fda4af, 0 6px 16px #0007; }
-.cupid-heart { position: absolute; inset: -32% -32% -40%; }
-.cupid-heart .half { position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.35em; line-height: 1; animation: heartBreakL 6s ease-in-out infinite; }
-.cupid-heart .half.l { clip-path: inset(0 50% 0 0); } .cupid-heart .half.r { clip-path: inset(0 0 0 50%); animation-name: heartBreakR; }
-@keyframes heartBreakL { 0%, 30%, 85%, 100% { transform: none; } 38%, 70% { transform: translate(-.14em, .04em) rotate(-14deg); } }
-@keyframes heartBreakR { 0%, 30%, 85%, 100% { transform: none; } 38%, 70% { transform: translate(.14em, .04em) rotate(14deg); } }
-.dk-cupid .cupid, .dk-cupid .cupid-arrow { position: absolute; z-index: 5; font-size: .36em; left: 50%; top: -20%; opacity: 0; animation: cupidFly 6s ease-in-out infinite; }
-.dk-cupid .cupid-arrow { font-size: .3em; animation-name: cupidArrow; }
-@keyframes cupidFly { 0%, 45% { opacity: 0; transform: translate(3em, -1em); } 55% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; transform: translate(-50%, 0) rotate(-8deg); } 92%, 100% { opacity: 0; transform: translate(-4em, -1.5em); } }
-@keyframes cupidArrow { 0%, 66% { opacity: 0; transform: translate(-50%, 0) scale(.5); } 76% { opacity: 1; transform: translate(-50%, 2.2em) scale(1.2); } 86%, 100% { opacity: 0; transform: translate(-50%, 2.6em) scale(1.6); } }
+/* the frame itself is a heart: picture clipped to a heart, two heart "doors" swing open, wings on the sides, cupid pacing on top */
+.avatar.fr-cupid { --heart: polygon(50% 97%, 12% 62%, 3% 46%, 2% 30%, 8% 16%, 20% 7%, 34% 6%, 45% 12%, 50% 20%, 55% 12%, 66% 6%, 80% 7%, 92% 16%, 98% 30%, 97% 46%, 88% 62%); background: none; box-shadow: none; border-radius: 0; }
+.avatar.fr-cupid > img, .avatar.fr-cupid .fr-dummy { width: 84%; height: 84%; border-radius: 0; clip-path: var(--heart); background: radial-gradient(circle at 50% 35%, #fff, #ffe4ec); object-fit: cover; display: grid; place-items: center; }
+.dk-cupid { z-index: auto; }
+.dk-cupid .cp-rim { position: absolute; inset: -2%; clip-path: var(--heart); background: linear-gradient(160deg, #fecdd3, #f43f5e 55%, #be123c); filter: drop-shadow(0 .03em .06em #0006); z-index: 0; }
+.dk-cupid .wing { z-index: 0; top: 14%; font-size: .46em; }
+.dk-cupid .wing.l { left: -.5em; } .dk-cupid .wing.r { right: -.5em; }
+.cp-door { position: absolute; top: 8%; bottom: 8%; width: 42%; overflow: hidden; z-index: 2; perspective: 2em; }
+.cp-door.l { left: 8%; } .cp-door.r { right: 8%; }
+.cp-leaf { position: absolute; top: 0; bottom: 0; width: 200%; clip-path: var(--heart); background: radial-gradient(circle at 50% 38%, #fda4af, #e11d48 70%); box-shadow: inset 0 0 .06em #9f1239; }
+.cp-door.l .cp-leaf { left: 0; } .cp-door.r .cp-leaf { right: 0; }
+.cp-door.l { transform-origin: left center; animation: cpDoorL 7s ease-in-out infinite; }
+.cp-door.r { transform-origin: right center; animation: cpDoorR 7s ease-in-out infinite; }
+.cp-door::after { content: "💘"; position: absolute; top: 34%; font-size: .22em; } .cp-door.l::after { right: -.5em; } .cp-door.r::after { left: -.5em; }
+@keyframes cpDoorL { 0%, 10% { transform: perspective(3em) rotateY(0); opacity: 1; } 22% { opacity: 1; } 24%, 82% { transform: perspective(3em) rotateY(-96deg); opacity: 0; } 84% { opacity: 1; } 94%, 100% { transform: perspective(3em) rotateY(0); } }
+@keyframes cpDoorR { 0%, 10% { transform: perspective(3em) rotateY(0); opacity: 1; } 22% { opacity: 1; } 24%, 82% { transform: perspective(3em) rotateY(96deg); opacity: 0; } 84% { opacity: 1; } 94%, 100% { transform: perspective(3em) rotateY(0); } }
+.dk-cupid .cupid { position: absolute; z-index: 5; font-size: .3em; left: 50%; top: -28%; margin-left: -.5em; animation: cupidPace 9s ease-in-out infinite; }
+.dk-cupid .cupid b { display: inline-block; animation: cupidBob .6s ease-in-out infinite alternate; }
+@keyframes cupidPace { 0% { transform: translateX(-1.1em) scaleX(1); } 45% { transform: translateX(1.1em) scaleX(1); } 50% { transform: translateX(1.1em) scaleX(-1); } 95% { transform: translateX(-1.1em) scaleX(-1); } 100% { transform: translateX(-1.1em) scaleX(1); } }
+@keyframes cupidBob { to { transform: translateY(-.12em) rotate(6deg); } }
 /* 🛸 우주선 */
 .fr-ufo { box-shadow: 0 0 0 .04em #a78bfa, 0 0 .14em #22d3ee88, 0 6px 16px #0007; }
 .ufo { position: absolute; top: -48%; left: 50%; font-size: .44em; line-height: 1; z-index: 6; animation: ufoMove 8s ease-in-out infinite; }
@@ -204,11 +214,17 @@
 /* 🧟 미이라 */
 .fr-mummy { box-shadow: 0 0 0 .04em #d6d3d1, 0 0 0 .07em #78716c, 0 6px 16px #0007; }
 .bandages { position: absolute; inset: 0; }
-.bandages i { position: absolute; left: -10%; width: 120%; height: 18%; top: calc(var(--i) * 20% + 1%); background: repeating-linear-gradient(100deg, #f5f5dc 0 .06em, #e7e5d0 .06em .1em); box-shadow: 0 .01em .02em #0004; transform-origin: left; transform: scaleX(0) rotate(calc((var(--i) % 2 * 2 - 1) * 6deg)); animation: wrapBand 8s ease-in-out infinite; animation-delay: calc(var(--i) * .12s); }
-@keyframes wrapBand { 0%, 4% { transform: scaleX(0) rotate(calc((var(--i) % 2 * 2 - 1) * 6deg)); transform-origin: left; } 22%, 70% { transform: scaleX(1) rotate(calc((var(--i) % 2 * 2 - 1) * 6deg)); transform-origin: left; } 71% { transform-origin: right; } 88%, 100% { transform: scaleX(0) rotate(calc((var(--i) % 2 * 2 - 1) * 6deg)); transform-origin: right; } }
-.mm-eyes { position: absolute; top: 34%; left: 26%; right: 26%; display: flex; justify-content: space-between; opacity: 0; animation: mummyEyes 8s infinite; z-index: 2; }
+/* bandages wind on strip by strip, hold, then unwind (peel off and drop away) — loop */
+.bandages i { position: absolute; left: -10%; width: 120%; height: 17%; top: calc(var(--i) * 16.6% - 1%); background: repeating-linear-gradient(100deg, #f5f5dc 0 .06em, #e7e5d0 .06em .1em); box-shadow: 0 .01em .02em #0005; rotate: calc((var(--i) - 2.5) * 2.4deg); clip-path: inset(0 100% 0 0); animation: wrapBand 9s ease-in-out infinite; animation-delay: calc(var(--i) * .14s); }
+@keyframes wrapBand {
+    0%, 6% { clip-path: inset(0 100% 0 0); transform: none; opacity: 1; }
+    24%, 64% { clip-path: inset(0 0 0 0); transform: none; opacity: 1; }
+    76% { clip-path: inset(0 0 0 55%); transform: translateY(.06em) rotate(8deg); opacity: 1; }
+    86% { clip-path: inset(0 0 0 100%); transform: translateY(.3em) rotate(20deg); opacity: 0; }
+    100% { clip-path: inset(0 100% 0 0); transform: none; opacity: 0; } }
+.mm-eyes { position: absolute; top: 34%; left: 26%; right: 26%; display: flex; justify-content: space-between; opacity: 0; animation: mummyEyes 9s infinite; z-index: 2; }
 .mm-eyes b { width: .17em; height: .17em; border-radius: 50%; background: radial-gradient(circle, #111 32%, #fff 36%); box-shadow: 0 0 .03em #000; animation: mBlink 1.4s infinite; }
-@keyframes mummyEyes { 0%, 26% { opacity: 0; } 30%, 66% { opacity: 1; } 72%, 100% { opacity: 0; } }
+@keyframes mummyEyes { 0%, 30% { opacity: 0; } 34%, 62% { opacity: 1; } 64%, 100% { opacity: 0; } }
 @keyframes mBlink { 0%, 80%, 100% { transform: scaleY(1); } 88% { transform: scaleY(.1); } }
 
 /* ---------------------------------------------------------- new frame effects */
@@ -225,9 +241,11 @@
 .fx-hands .fx-p { top: 38%; filter: hue-rotate(300deg) saturate(3) brightness(.85) drop-shadow(0 0 4px #7f1d1d); animation-name: fxStroke; animation-delay: 0s !important; }
 .fx-hands .fx-p:nth-child(1) { left: -2%; } .fx-hands .fx-p:nth-child(2) { left: auto; right: -2%; animation-delay: -1.2s !important; }
 @keyframes fxStroke { 0%, 100% { transform: translateY(-18cqh) rotate(-12deg); } 50% { transform: translateY(22cqh) rotate(14deg); } }
-.fx-cloud { position: absolute; top: -6%; left: 50%; transform: translateX(-50%); font-size: 1.4em; }
-.fx-flash { position: absolute; inset: 10%; border-radius: 50%; background: #fff; opacity: 0; animation: fxFlash 2.8s infinite; }
-.fx-thunder .fx-p { top: 18%; opacity: 0; animation-name: fxBolt; animation-timing-function: steps(1); filter: drop-shadow(0 0 6px #fde047); }
+/* thunder sits above the frame: cloud + bolts never cover the picture */
+.fx-cloud { position: absolute; top: -30%; left: 50%; transform: translateX(-50%); font-size: 30cqmin; line-height: 1; z-index: 2; animation: cloudDrift 5.6s ease-in-out infinite; }
+@keyframes cloudDrift { 50% { transform: translateX(-38%); } }
+.fx-flash { position: absolute; left: 14%; right: 14%; top: -30%; height: 30%; border-radius: 50%; background: radial-gradient(ellipse, #fff, #fef9c300 70%); opacity: 0; animation: fxFlash 2.8s infinite; }
+.fx-thunder .fx-p { top: -12% !important; left: calc(28% + var(--i) * 18%) !important; opacity: 0; animation-name: fxBolt; animation-timing-function: steps(1); filter: drop-shadow(0 0 6px #fde047); }
 @keyframes fxFlash { 0%, 60%, 66%, 100% { opacity: 0; } 62% { opacity: .55; } 64% { opacity: .15; } 65% { opacity: .5; } }
 @keyframes fxBolt { 0%, 58% { opacity: 0; transform: scale(.8); } 60%, 68% { opacity: 1; transform: scale(1.4); } 70%, 100% { opacity: 0; } }
 .fx-dyn { position: absolute; left: 50%; bottom: 0; font-size: 1.1em; transform: translateX(-50%) rotate(-20deg); animation: tntShow 3.2s infinite; }
@@ -240,7 +258,9 @@
 .fx-pond { position: absolute; left: 4%; right: 4%; bottom: 0; height: 18%; border-radius: 50%; background: radial-gradient(ellipse, #38bdf8, #0369a1 70%, transparent 72%); }
 .fx-koipond .fx-p { top: 84%; left: calc(18% + var(--i) * 9%); animation-name: fxKoi; animation-timing-function: ease-in-out; }
 @keyframes fxKoi { 0% { transform: translate(0, 0) rotate(-40deg); opacity: 0; } 10% { opacity: 1; } 50% { transform: translate(calc(var(--dx) * .25), -55cqh) rotate(0deg); } 90% { opacity: 1; } 100% { transform: translate(calc(var(--dx) * .5), 0) rotate(50deg); opacity: 0; } }
-.fx-mg { position: absolute; left: var(--x); top: var(--y); width: 3.4em; height: 3em; border-radius: 50%; background: hsl(var(--hue) 85% 72%); box-shadow: inset 0 -.3em 0 hsl(var(--hue) 70% 60%); display: grid; place-items: center; animation: fxFloat 4s ease-in-out infinite; animation-delay: calc(var(--d) * -1); }
+/* monggi blobs circle around the outside of the frame, never over the picture */
+.fx-mg { position: absolute; left: 50%; top: 50%; margin: -1.5em 0 0 -1.7em; width: 3.4em; height: 3em; border-radius: 50%; background: hsl(var(--hue) 85% 72%); box-shadow: inset 0 -.3em 0 hsl(var(--hue) 70% 60%); display: grid; place-items: center; --a0: calc(var(--i) * 360deg / var(--n)); animation: mgOrbit 14s linear infinite; }
+@keyframes mgOrbit { from { transform: rotate(var(--a0)) translateY(-47cqmin) rotate(calc(var(--a0) * -1)); } 25% { transform: rotate(calc(var(--a0) + 90deg)) translateY(-50cqmin) rotate(calc((var(--a0) + 90deg) * -1)); } 50% { transform: rotate(calc(var(--a0) + 180deg)) translateY(-47cqmin) rotate(calc((var(--a0) + 180deg) * -1)); } 75% { transform: rotate(calc(var(--a0) + 270deg)) translateY(-50cqmin) rotate(calc((var(--a0) + 270deg) * -1)); } to { transform: rotate(calc(var(--a0) + 360deg)) translateY(-47cqmin) rotate(calc((var(--a0) + 360deg) * -1)); } }
 .fx-mg.bun::before, .fx-mg.bun::after { content: ""; position: absolute; top: -1.4em; width: .9em; height: 1.8em; border-radius: 50%; background: inherit; }
 .fx-mg.bun::before { left: .5em; transform: rotate(-12deg); } .fx-mg.bun::after { right: .5em; transform: rotate(12deg); }
 .mg-face { font-size: 1em; font-weight: 900; color: #3f3f46; white-space: nowrap; letter-spacing: -.05em; position: relative; z-index: 1; }
@@ -350,13 +370,14 @@ button.sb-hint { cursor: pointer; } button.sb-hint:disabled { opacity: .5; curso
 .res-table { display: flex; flex-direction: column; }
 .res-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(110px, 1fr) minmax(90px, 1.2fr) 130px; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
 .res-row:last-child { border-bottom: 0; }
+.res-row > * { min-width: 0; overflow-wrap: anywhere; }
 .res-name small { display: block; opacity: .6; font-size: .78em; word-break: break-all; }
 .res-val small { opacity: .6; }
 .res-lv { font-size: .85em; text-align: right; }
 .res-bar { height: 10px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
 .res-bar i { display: block; height: 100%; border-radius: 6px; background: #2ecc71; }
-.res-bar.warn i { background: #f1c40f; } .res-bar.bad i { background: #e74c3c; }
-.res-row.bad .res-lv { color: #ff6b5b; } .res-row.warn .res-lv { color: #f1c40f; }
+.res-bar.lv-warn i { background: #f1c40f; } .res-bar.lv-bad i { background: #e74c3c; }
+.res-row.lv-bad .res-lv { color: #ff6b5b; } .res-row.lv-warn .res-lv { color: #f1c40f; }
 .res-note ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
 @media (max-width: 640px) {
   .res-row { grid-template-columns: 1fr 1fr; }

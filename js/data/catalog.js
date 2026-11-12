@@ -15,7 +15,7 @@ export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 //   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
-export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, JOKER: 3.5, MAJOR: 4, STRIKE: 4.5, GRAND: 5, MEGA: 6, VAULT: 6 };
+export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, JOKER: 3.5, MAJOR: 4, STRIKE: 4.5, LOTUS: 4.7, GRAND: 5, MEGA: 6, VAULT: 6 };
 
 export const MISSIONS = [
     // 최하

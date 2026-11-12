@@ -201,7 +201,7 @@ export const THEME_SLOTS = [
     {
         id: "vampire_bingo", name: "Vampire Bingo", brand: "Rabbit-Gaming", engine: "sp_vampire", progressive: true,
         jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { seed: 40000, rate: 0.012 }, GRAND: { seed: 400000, rate: 0.02, cap: 1500000 } },
-        bets: [100, 300, 500, 1000, 1500, 2000], reels: 5, rows: 3, maxX: 5000, px: 1.513, fscale: { bingo: 0.35 }, jpDown: { MINOR: 0.6, GRAND: 0.8 },
+        bets: [100, 300, 500, 1000, 1500, 2000], reels: 5, rows: 3, maxX: 5000, px: 1.58, fscale: { bingo: 0.35 }, jpDown: { MINOR: 0.6, GRAND: 0.8 },
         desc: "릴에서 튀어나온 코인이 가운데 5x5 빙고판을 채운다. 빙고줄이 완성되면 '빙고!' — 줄 위 금액 코인을 모두 수령! 🎡 휠 코인(빙고당 최대 2개) = x2~x5씩 곱해 최대 x25 · 🦷 뱀파이어 코인(최대 5개) = 뒤집혀 MINI~MAJOR 잭팟 (MAJOR는 최대 2번) · 🦇 박쥐 코인(최대 3개) = 주변 코인까지 한 번에 수거 · 🍷 피의 잔 4개 = PICK ONE (MINI·MINOR·MINI x2·MINOR x2) · 🅱️ 빙고판 아이콘 3개 = 빙고 홀드앤스핀 (판이 꽉 차면 GRAND)",
         theme: { bg: "linear-gradient(180deg,#450a0a 0%,#7f1d1d 40%,#0c0a09 100%)", accent: "#fca5a5", glow: "#ef4444", font: "'Creepster', 'Lilita One', sans-serif" },
         skin: "bingo",
@@ -216,8 +216,8 @@ export const THEME_SLOTS = [
     // ------------------------------------------------ 13. Pay Day
     {
         id: "pay_day", name: "Pay Day", brand: "IPEX", engine: "sp_payday", progressive: true,
-        jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 5000], reels: 5, rows: 3, maxX: 3000, px: 1.9, jpDown: { MAXI: 0.85, MAJOR: 0.6, MINOR: 0.5 },
-        desc: "월급날! 릴에서 던져진 돈이 하얀 돈봉투 두 개(福·到)를 가득 채운다. 福 봉투가 터지면 PLINKO TREE — 福 구슬 3개, x2~x5 범퍼를 칠 때마다 구슬 배수가 바뀐다 (마지막 범퍼 적용) · 到 봉투 = 잭팟 범퍼(MINI~MAJOR) PLINKO · 福到 동시 = 배수 + 잭팟 범퍼 모두! · ✉️ PAYCHECK 3개 = MATCH 3 (그랜드는 여기서만)",
+        jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 5000], reels: 5, rows: 3, maxX: 3000, px: 2.12, jpDown: { MAXI: 0.85, MAJOR: 0.6, MINOR: 0.5 },
+        desc: "월급날! 릴에서 던져진 돈이 하얀 돈봉투 두 개(福·到)를 가득 채운다. 福 봉투가 터지면 PLINKO TREE — 🟡 구슬 3개를 떨어뜨려 x2~x5 범퍼에 닿는 순간 그 자리에서 즉시 상금(배수 x2 베팅) · 到 봉투 = 🔴 구슬이 잭팟 범퍼(MINI~MAJOR)에 닿으면 바로 잭팟 · 福到 동시 = 배수 + 잭팟 범퍼 모두! · ✉️ PAYCHECK 3개 = MATCH 3 (그랜드는 여기서만)",
         theme: { bg: "linear-gradient(180deg,#14532d 0%,#166534 40%,#052e16 100%)", accent: "#fde047", glow: "#ef4444", font: "'Lilita One', sans-serif" },
         skin: "money",
         syms: { ...CARDS, H1: { e: "💰", name: "Money Bag", pay: [0.6, 2, 6] }, H2: { e: "💵", name: "Cash Stack", pay: [0.5, 1.5, 4] }, H3: { e: "🧧", name: "Red Envelope", pay: [0.4, 1.2, 3] }, H4: { e: "🪙", name: "Gold Coin", pay: [0.3, 1, 2.5] } },
@@ -247,7 +247,7 @@ export const THEME_SLOTS = [
     // ------------------------------------------------ 15. Coin Claw
     {
         id: "coin_claw", name: "Coin Claw", brand: "DAEBAK", engine: "sp_coinclaw", progressive: true,
-        jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 4000, 5000], reels: 5, rows: 3, maxX: 3000, px: 2.089,
+        jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 4000, 5000], reels: 5, rows: 3, maxX: 3000, px: 2.15,
         desc: "반짝이는 인형뽑기 기계 안에 물음표 공·휠 공·FREE SPIN 공·잭팟 공이 가득! 🦾 집게 아이콘 3개 = 버튼을 눌러 공 뽑기 — FREE SPIN 공 = 10 무료스핀(최대 50, 무료스핀 중 집게가 또 나오면 계속 뽑기) · 휠 공 = 3x~50x 휠 · ❓ 공 = 2x~30x 상금 · 잭팟 공 = MINI~GRAND · 🟡 상금 공 6개 = 홀드앤스핀 (도중에 집게가 나오면 뽑은 상금으로 교체)",
         theme: { bg: "linear-gradient(180deg,#be185d 0%,#1d4ed8 60%,#0c0a09 100%)", accent: "#fde047", glow: "#38bdf8", font: "'Lilita One', sans-serif" },
         skin: "claw",
@@ -258,12 +258,93 @@ export const THEME_SLOTS = [
         bgm: "lounge_jazz",
         omens: [LUCKY, { fx: "shake" }, { fx: "burst", icon: "🦾", chars: ["✨", "🦾", "✨"] }, { fx: "rain", chars: ["❓", "🔮", "❓"] }, { fx: "rain", chars: ["🍀", "🍀", "☘️"] }],
         tests: [["claw", "🦾 집게 보너스"], ["hold", "🟡 홀드앤스핀"]]
-    }
+    },
+    // ------------------------------------------------ 16. Cathedral of Wings
+    {
+        id: "cathedral_wings", name: "Cathedral of Wings", brand: "IPEX", engine: "sp_cathedral", progressive: true,
+        jp: PROG(40000, 400000, 1500000), bets: [100, 200, 300, 500, 800, 1000], reels: 6, rows: 4, maxX: 5000, px: 4.69,
+        desc: "햇살 가득한 고딕 종탑의 거대한 원형 스테인드글라스 장미창 (유리 조각 24장). 빛나는 하얀 비둘기 떼가 유리를 가로지르며 같은 색 유리 5장 이상이 이어지면 반짝이며 사라진다 (CLUSTER 5+ · CASCADE). 🕊️ FLOCK SCATTER = 종소리에 놀란 비둘기가 5~10장을 x2 WILD로 · 😇 HALO RESONANCE = 중앙 메달리온 클러스터에서 햇살이 바퀴살을 따라 당첨 심볼 복제 · 🪶 FEATHER DRIFT = 아깝게 빗나가면 깃털이 내려앉아 색을 맞춰 무료 캐스케이드 · 🔔 종 3개 = BELL TOWER 잭팟",
+        theme: { bg: "radial-gradient(circle at 50% 30%,#fef3c7 0%,#b45309 30%,#1e1b4b 75%,#0f0a1e 100%)", accent: "#fde68a", glow: "#f0abfc", font: "'Lilita One', sans-serif" },
+        skin: "glass",
+        syms: { H1: { e: "🕊️", name: "White Dove", pay: CL(1.0) }, H2: { e: "👼", name: "Cherub", pay: CL(0.6) }, H3: { e: "🌹", name: "Rose", pay: CL(0.45) },
+            L1: { e: "🟦", name: "Blue Glass", pay: CL(0.2) }, L2: { e: "🟥", name: "Red Glass", pay: CL(0.16) }, L3: { e: "🟩", name: "Green Glass", pay: CL(0.14) }  },
+        look: { W: { e: "✝️", name: "LIGHT WILD" }, W2: { e: "🕊️", name: "x2 WILD", cls: "sym-wild" }, ZB: sp("🔔", "Bell") },
+        w: { H1: 5, H2: 6, H3: 7, L1: 10, L2: 10.5, L3: 11, W: 1 },
+        features: { flock: { p: 0.003 }, halo: { p: 0.0025 }, feather: { p: 0.004 }, bells: { p: 0.0008, sym: true, tw: { MINI: 45, MINOR: 30, MAXI: 15, MAJOR: 8, GRAND: 2 } } },
+        bgm: "monkey_funk",
+        omens: [{ fx: "big", icon: "😇", cls: "rise", text: "🍀 Lucky has arrived 🍀" }, { fx: "rise", chars: ["😇", "⭕", "✨", "🕊️"], shake: true }, { fx: "big", icon: "☀️", cls: "light" }],
+        tests: [["flock", "🕊️ FLOCK SCATTER"], ["halo", "😇 HALO RESONANCE"], ["feather", "🪶 FEATHER DRIFT RESPIN"], ["bells", "🔔 BELL TOWER 잭팟"]]
+    },
+    // ------------------------------------------------ 17. The Velvet Table
+    {
+        id: "velvet_table", name: "The Velvet Table", brand: "DAEBAK", engine: "sp_velvet", progressive: true,
+        jp: PROG(80000, 800000, 3000000), bets: [200, 400, 500, 1000, 2000], reels: 4, rows: 4, maxX: 5000, px: 0.385,
+        desc: "몬테카를로 지하 VIP 금고. 팔각형 펠트 테이블의 금테 카드 슬롯 16칸에 황동 딜러 팔이 칩·다이아 반지·골드바를 시계방향으로 빠르게 깔아준다 (4x4 · 256 WAYS). 🧤 ALL-IN SWEEP = 벨벳 장갑이 ALL-IN 명패를 내리치며 저가 칩을 전부 골드바로 · 🪙 THE HOUSE CUT = 당첨 핸드를 갈퀴가 중앙 팟으로 쓸어 담아 2배 + 무료 RE-DEAL 1회 · 💎 VIP 칩 3개 = VIP VAULT 잭팟",
+        theme: { bg: "radial-gradient(ellipse at 50% 40%,#14532d 0%,#052e16 45%,#1c0a0a 100%)", accent: "#facc15", glow: "#dc2626", font: "'Lilita One', sans-serif" },
+        skin: "velvet",
+        syms: { H1: { e: "🧈", name: "Gold Bar", cls: "sym-gold", pay: [1, 4] }, H2: { e: "💍", name: "Diamond Ring", pay: [0.8, 3] }, H3: { e: "🍾", name: "Champagne", pay: [0.6, 2] }, H4: { e: "🎲", name: "Ivory Dice", pay: [0.5, 1.5] },
+            L1: { e: "🔴", name: "Red Chip", pay: [0.2, 0.6] }, L2: { e: "🔵", name: "Blue Chip", pay: [0.15, 0.5] }, L3: { e: "🟢", name: "Green Chip", pay: [0.15, 0.5] } },
+        look: { W: { e: "🎩", name: "DEALER WILD" }, ZV: sp("💎", "VIP Chip") },
+        w: { H1: 3, H2: 3.5, H3: 4, H4: 4.5, L1: 7, L2: 7, L3: 7.5, W: [0, 1.2, 1.2, 0] },
+        features: { allin: { p: 0.003 }, housecut: { p: 0.006 }, vip: { p: 0.0008, sym: true, tw: { MINI: 45, MINOR: 30, MAXI: 15, MAJOR: 8, GRAND: 2 } } },
+        bgm: "monkey_funk",
+        omens: [{ fx: "shake", text: "🍀 Lucky has arrived 🍀 · BIG TREMBLE" }, { fx: "burst", icon: "💸", chars: ["💵", "💴", "💶", "💷"] }],
+        tests: [["allin", "🧤 ALL-IN SWEEP"], ["housecut", "🪙 THE HOUSE CUT"], ["vip", "💎 VIP VAULT 잭팟"]]
+    },
+    // ------------------------------------------------ 18. Astro-Diner 5099
+    {
+        id: "astro_diner", name: "Astro-Diner 5099", brand: "Scrooge-Slots", engine: "sp_astro", progressive: false, jp: null,
+        bets: [100, 200, 300, 500, 800, 1000], reels: 5, rows: 4, maxX: 3000, px: 0.736,
+        desc: "소행성 위 유리 돔 속 1950년대 원자력 시대 콜로니. 4층짜리 미래형 아파트 겸 다이너의 단면, 20개 창문에 진공 튜브가 외계 식료품·광선총·로봇 펫을 쏘아 보낸다 (5x4 · 1024 WAYS). 🌀 GRAVITY GLITCH = 중력 발생기가 깜빡여 모두 꼭대기 층으로 떠올라 HOVER-CAR WILD로 · 🛸 UFO DELIVERY = 작은 비행접시가 중앙 아파트에 2x2/3x3 메가 심볼 전송 · ☄️ METEOR SHOWER = 유성이 창문을 때려 x2/x3/x5 배수",
+        jpText: "🌀 GRAVITY GLITCH · 🛸 UFO DELIVERY 2x2/3x3 · ☄️ METEOR SHOWER x2~x5",
+        theme: { bg: "radial-gradient(circle at 50% 20%,#0e7490 0%,#312e81 45%,#020617 100%)", accent: "#5eead4", glow: "#f472b6", font: "'Lilita One', sans-serif" },
+        skin: "dome",
+        syms: { A: CARDS.A, K: CARDS.K, Q: CARDS.Q, J: CARDS.J, H1: { e: "👽", name: "Alien Chef", pay: [0.6, 2, 6] }, H2: { e: "🤖", name: "Robot Pet", pay: [0.5, 1.5, 4] }, H3: { e: "🔫", name: "Raygun", pay: [0.4, 1.2, 3] }, H4: { e: "🍔", name: "Astro Burger", pay: [0.3, 1, 2.5] } },
+        look: { W: { e: "🚗", name: "HOVER-CAR WILD" } },
+        w: { A: 6, K: 6, Q: 6.5, J: 6.5, H1: 2.5, H2: 3, H3: 3.5, H4: 4, W: [0, 1.2, 1.2, 1.2, 0] },
+        features: { gravity: { p: 0.002 }, ufo: { p: 0.004 }, meteor: { p: 0.0045 } },
+        bgm: "synthwave",
+        omens: [{ fx: "big", icon: "🚀", cls: "fly" }, { fx: "shake", text: "👽 ALIEN WARNING!!!!!!!!!!!" }, { fx: "wind", chars: ["🛸", "🛸", "🛸", "✨"] }],
+        tests: [["gravity", "🌀 GRAVITY GLITCH"], ["ufo", "🛸 UFO DELIVERY"], ["meteor", "☄️ METEOR SHOWER"]]
+    },
+    // ------------------------------------------------ 19. Lilypad Leap
+    {
+        id: "lilypad_leap", name: "Lilypad Leap", brand: "HYHG GAMING", engine: "sp_lilypad", progressive: true,
+        jp: { ...PROG(150000, 1500000, 6000000), LOTUS: { seed: 600000, rate: 0.006, cap: 2500000 } }, bets: [300, 1000, 2000, 3000, 5000], reels: 5, rows: 5, maxX: 3000, px: 3.67,
+        desc: "달빛 비치는 열대우림 연못을 위에서 내려다본 모습. 기둥 대신 연잎 19장이 벌집 모양(3-4-5-4-3)으로 떠 있고, 반딧불·잠자리·황금 딱정벌레가 매 라운드 내려앉는다 (CLUSTER 4+). 👅 TONGUE LASH = 황소개구리 혀가 흩어진 황금 딱정벌레 최대 6마리를 한데 끌어모아 확정 당첨 · 💧 POND RIPPLE SYNC = 중앙 연잎에 빗방울, 물결이 닿은 잎이 모두 같은 심볼로 · 🪷 TADPOLE SWARM = 올챙이 떼가 연잎 3~5장을 들어올려 숨은 연꽃 즉시 상금 · 🪷 GOLDEN LOTUS = 특수 잭팟 (연꽃 아래에서만)",
+        theme: { bg: "radial-gradient(circle at 50% 40%,#065f46 0%,#064e3b 40%,#020617 100%)", accent: "#86efac", glow: "#fde047", font: "'Lilita One', sans-serif" },
+        skin: "pond",
+        syms: { H1: { e: "🪲", name: "Golden Beetle", cls: "sym-gold", pay: CL(0.9) }, H2: { e: "🐸", name: "Tree Frog", pay: CL(0.6) }, H3: { e: "🐞", name: "Ladybug", pay: CL(0.45) },
+            L1: { e: "✨", name: "Firefly", pay: CL(0.2) }, L2: { e: "🍃", name: "Leaf", pay: CL(0.16) }, L3: { e: "💧", name: "Dewdrop", pay: CL(0.14) } },
+        look: { W: { e: "🌕", name: "MOON WILD" }, ZL: sp("🪷", "Lotus Flower") },
+        w: { H1: 4, H2: 5, H3: 6, L1: 9, L2: 9.5, L3: 10, W: 0.7 },
+        features: { tongue: { p: 0.0035 }, ripple: { p: 0.0035 }, tadpole: { p: 0.003 } },
+        bgm: "celestial_brass",
+        omens: [{ fx: "frogs" }, { fx: "big", icon: "🍃", cls: "cover" }],
+        tests: [["tongue", "👅 TONGUE LASH"], ["ripple", "💧 POND RIPPLE SYNC"], ["tadpole", "🪷 TADPOLE SWARM"]]
+    },
+    // ------------------------------------------------ 20. Gridlock Rush Hour
+    {
+        id: "gridlock_rush", name: "Gridlock Rush Hour", brand: "CLOVER-TECH", engine: "sp_gridlock", progressive: true,
+        jp: PROG(40000, 400000, 1500000), bets: [100, 200, 300, 500, 800, 1000], reels: 4, rows: 4, maxX: 5000, px: 0.464,
+        desc: "헬리콥터에서 내려다본 1970년대 뉴욕 사거리. 릴 대신 4개 차선에서 옐로캡·지하철·배달 트럭·순찰차가 들어와 4x4 교통 격자에 멈춰 선다 (256 WAYS). 🚦 GREEN LIGHT EXPRESS = 신호가 모두 초록불, 멈춘 민간 차량을 치우고 현금수송차 WILD 행렬이 한 차선을 관통 · 🕳️ SUBWAY RUMBLE = 지하철이 지나가며 x2~x4 맨홀 뚜껑 배수 · 🚁 HELICOPTER SPOTLIGHT = 서치라이트 안의 차량을 고정하고 무료 리스핀 · 🚨 경광등 3개 = PRECINCT 잭팟",
+        theme: { bg: "linear-gradient(180deg,#1f2937 0%,#111827 60%,#030712 100%)", accent: "#facc15", glow: "#22d3ee", font: "'Lilita One', sans-serif" },
+        skin: "street",
+        syms: { H1: { e: "🚕", name: "Yellow Cab", pay: [1, 4] }, H2: { e: "🚇", name: "Subway Car", pay: [0.8, 3] }, H3: { e: "🚚", name: "Delivery Truck", pay: [0.6, 2] }, H4: { e: "🚓", name: "Police Cruiser", pay: [0.5, 1.5] },
+            L1: { e: "🚗", name: "Sedan", pay: [0.2, 0.6] }, L2: { e: "🛵", name: "Scooter", pay: [0.15, 0.5] }, L3: { e: "🚲", name: "Bicycle", pay: [0.15, 0.5] } },
+        look: { W: { e: "🚐", name: "ARMORED TRUCK WILD" }, ZP: sp("🚨", "Police Siren") },
+        w: { H1: 3, H2: 3.5, H3: 4, H4: 4.5, L1: 7, L2: 7, L3: 7.5, W: [0, 1.2, 1.2, 0] },
+        features: { green: { p: 0.0025 }, subway: { p: 0.0035 }, heli: { p: 0.0035 }, badge: { p: 0.0008, sym: true, tw: { MINI: 45, MINOR: 30, MAXI: 15, MAJOR: 8, GRAND: 2 } } },
+        bgm: "tropical_steel",
+        omens: [{ fx: "shake", text: "🌃 NEON LIGHTS ARE SHINING 🌃" }, { fx: "big", icon: "📸", cls: "flash" }],
+        tests: [["green", "🚦 GREEN LIGHT EXPRESS"], ["subway", "🕳️ SUBWAY RUMBLE"], ["heli", "🚁 HELICOPTER SPOTLIGHT"], ["badge", "🚨 PRECINCT 잭팟"]]
+    },
 ];
 
 // map placement (one machine per map, never shared)
 export const THEME_HOME = {
     clockwork_vault: "igloo", alchemists_lab: "underground", astral_weaver: "zodiac", neon_blitz: "cany", popcorn_pandemonium: "mj2",
     midnight_ouija: "coffin", tower_of_terror: "spooky", the_bog: "blackwater", cyber_dial: "poly2", sun_drum: "dung2",
-    three_strikes: "crazy_casino", vampire_bingo: "evil_town", pay_day: "riches", jokers: "island", coin_claw: "redblue"
+    three_strikes: "crazy_casino", vampire_bingo: "evil_town", pay_day: "riches", jokers: "island", coin_claw: "redblue",
+    cathedral_wings: "dove", velvet_table: "winners", astro_diner: "spacetown", lilypad_leap: "ribbit", gridlock_rush: "downtown"
 };

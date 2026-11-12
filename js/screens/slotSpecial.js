@@ -7,6 +7,20 @@
 import { h, sleep, fmt, countUp } from "../core/util.js";
 
 const FX = {
+    flock: { icon: "🔔🕊️🕊️🕊️", text: "FLOCK SCATTER!", snd: "whoosh", cls: "gold" },
+    halo: { icon: "😇☀️", text: "HALO RESONANCE!", snd: "bonus", cls: "gold", shake: true },
+    feather: { icon: "🪶🪶🪶", text: "FEATHER DRIFT RESPIN!", snd: "whoosh", cls: "gold" },
+    allin: { icon: "🧤🃏", text: "ALL-IN SWEEP!", snd: "boom", cls: "fire", shake: true },
+    rake: { icon: "🪙🧹🪙", text: "THE HOUSE CUT · POT x2!", snd: "cash", cls: "gold" },
+    gravity: { icon: "🌀🚗🌀", text: "GRAVITY GLITCH!", snd: "whoosh", cls: "bolt", shake: true },
+    ufo: { icon: "🛸✨", text: "UFO DELIVERY!", snd: "whoosh", cls: "bolt" },
+    meteor: { icon: "☄️☄️☄️", text: "METEOR SHOWER!", snd: "boom", cls: "fire", shake: true },
+    tongue: { icon: "🐸👅🪲", text: "TONGUE LASH!", snd: "whoosh", cls: "gold" },
+    ripple: { icon: "💧〰️", text: "POND RIPPLE SYNC!", snd: "splash", cls: "potion" },
+    tadpole: { icon: "🫧🐸🫧", text: "TADPOLE SWARM!", snd: "splash", cls: "potion" },
+    green: { icon: "🚦🟢🚐", text: "GREEN LIGHT EXPRESS!", snd: "boom", cls: "gold", shake: true },
+    subway: { icon: "🚇💨", text: "SUBWAY RUMBLE!", snd: "boom", cls: "bass", shake: true },
+    heli: { icon: "🚁🔦", text: "HELICOPTER SPOTLIGHT!", snd: "whoosh", cls: "bolt" },
     flare: { icon: "🔥🦖🔥", text: "GODZILLA GRILL FLARE!", snd: "boom", cls: "fire" },
     rampage: { icon: "🦖💥", text: "TITAN RAMPAGE!!!", snd: "boom", cls: "fire", shake: true },
     bass: { icon: "🔊🔊🔊", text: "BASS DROP!", snd: "boom", cls: "bass", shake: true },
@@ -216,6 +230,7 @@ export async function playSpecial(res, api) {
                 case "ladder": await ladder(p); break;
                 case "plinko": await plinko(p); break;
                 case "claw": await claw(p); break;
+                case "bingoline": await bingoLine(p); break;
                 case "panel": api.meter(p.key, p.value, p.hl); await pace(p.hl ? 700 : 250); break;
                 case "tease": msgEl.innerHTML = `<span class="tease">아깝다!! 😱</span>`; break;
             }
@@ -366,28 +381,103 @@ export async function playSpecial(res, api) {
         overlay.append(h("div.plk-wrap", h("div.plk-head", p.title + " · 구슬 3개"), board, slots, tally));
         for (const [i, b] of p.balls.entries()) {
             const go = h("button.btn.gold", `${p.glyph} 구슬 ${i + 1} 떨어뜨리기`);
-            tally.replaceChildren(go);
+            tally.append(go);
             await Promise.race([new Promise(r => go.onclick = r), sleep(5000)]);
             go.remove();
             const ball = h("b.plk-ball", p.glyph);
             board.append(ball);
-            let label = "";
+            let stopPeg = null;
             for (let r = 0; r < b.path.length; r++) {
                 const peg = pegs.find(x => x.r === r && x.c === b.path[r]);
                 if (!peg) continue;
                 const box = board.getBoundingClientRect(), pb = peg.el.getBoundingClientRect();
                 ball.style.left = (pb.left - box.left + pb.width / 2) + "px"; ball.style.top = (pb.top - box.top + pb.height / 2) + "px";
                 const bp = p.bumps.find(x => x.row === r && x.col === b.path[r]);
-                if (bp) { label = bp.label; ball.textContent = `${p.glyph} ${label}`; peg.el.classList.remove("hit"); void peg.el.offsetWidth; peg.el.classList.add("hit"); Sound.bonus(); } else Sound.tick();
+                if (bp && b.stop) { stopPeg = peg.el; await pace(260); break; }
+                Sound.tick();
                 await pace(260);
             }
-            slots.children[b.slot]?.classList.add("hit");
-            Sound.coin();
-            tally.append(h("div.plk-res", `${p.glyph} ${i + 1}: ${p.bottom[b.slot]}${b.mult > 1 ? ` × x${b.mult}` : ""} = ${fmt(b.value)} G${b.tier ? ` + ${b.tier}` : ""}`));
-            await pace(700);
-            ball.remove(); slots.children[b.slot]?.classList.remove("hit");
+            let res;
+            if (b.stop) {
+                // the ball sticks to the bumper and cashes it in on the spot
+                stopPeg.classList.remove("hit"); void stopPeg.offsetWidth; stopPeg.classList.add("hit", "won");
+                ball.classList.add("stuck"); ball.textContent = `${p.glyph} ${b.stop}!`;
+                b.tier ? Sound.bonus() : Sound.cash();
+                api.shake?.(frame);
+                res = `${p.glyph} ${i + 1}: 💥 ${b.stop} 범퍼 즉시 당첨 → ${b.tier ? b.tier + " 잭팟!" : fmt(b.value) + " G"}`;
+            } else {
+                slots.children[b.slot]?.classList.add("hit");
+                Sound.coin();
+                res = `${p.glyph} ${i + 1}: ${p.bottom[b.slot]} = ${fmt(b.value)} G`;
+            }
+            tally.append(h("div.plk-res" + (b.stop ? ".big" : ""), res));
+            await pace(b.stop ? 1200 : 700);
+            ball.remove(); slots.children[b.slot]?.classList.remove("hit"); stopPeg?.classList.remove("won");
         }
         await pace(900);
+        overlay.replaceChildren();
+    }
+
+    // ------------------------------------------------------------ Vampire Bingo: one called line, its bonus coins fire one by one
+    async function bingoLine(p) {
+        const ICON = { cash: "🪙", bat: "🦇", wheel: "🎡", fang: "🦷" };
+        const toks = p.coins.map((c, i) => h("div.bl-tok.k-" + c.k, { style: { "--i": i } }, h("span", ICON[c.k]), h("b", c.v ? fmt(c.v) : c.k === "fang" ? "?" : "")));
+        const tally = h("div.bl-tally", "0");
+        const note = h("div.bl-note", "");
+        const row = h("div.bl-row", toks);
+        overlay.append(h("div.bl-wrap", h("div.bl-head", `🧛 ${p.label}! 🧛`), row, note, tally));
+        Sound.bonus();
+        await pace(700);
+        let run = 0;
+        // 1) cash coins count up
+        for (const [i, c] of p.coins.entries()) {
+            if (!c.v) continue;
+            toks[i].classList.add("pop"); run += c.v; tally.textContent = fmt(run) + " G"; Sound.coin();
+            await pace(260);
+        }
+        // 2) the bat swallows every coin on the line in one go
+        if (p.bat >= 0) {
+            note.textContent = "🦇 BAT SWARM! 줄의 코인이 박쥐에게 모인다!";
+            Sound.whoosh?.();
+            const bt = toks[p.bat], br = bt.getBoundingClientRect();
+            for (const [i, t] of toks.entries()) {
+                if (i === p.bat || !p.coins[i].v) continue;
+                const r = t.getBoundingClientRect();
+                t.style.setProperty("--dx", (br.left - r.left) + "px");
+                t.classList.add("fly");
+            }
+            await pace(700);
+            bt.classList.add("merged"); bt.querySelector("b").textContent = fmt(p.sum);
+            Sound.cash(); api.shake?.(frame);
+            await pace(900);
+        }
+        // 3) wheels pop out and multiply the line
+        for (const w of p.wheels) {
+            toks[w.at].classList.add("pop");
+            note.textContent = "🎡 VAMPIRE WHEEL!";
+            await api.wheelSpin(p.seg, w.idx, s => s, "🧛 VAMPIRE WHEEL 🧛");
+            run = Math.round((run || p.sum) * w.x);
+            toks[w.at].querySelector("b").textContent = "x" + w.x;
+            tally.textContent = `${fmt(run)} G`; tally.classList.remove("boost"); void tally.offsetWidth; tally.classList.add("boost");
+            Sound.bonus();
+            await pace(700);
+        }
+        tally.textContent = fmt(p.total) + " G";
+        // 4) fang coins keep flipping, slowing down, until a jackpot shows
+        for (const fg of p.fangs) {
+            const t = toks[fg.at], face = t.querySelector("b");
+            note.textContent = "🦷 FANG COIN… 무슨 잭팟일까?";
+            t.classList.add("flipping");
+            const seq = ["MINI", "MINOR", "MAJOR", "MINI", "MAJOR", "MINOR", "GRAND", "MINI", "MINOR", "MAJOR"];
+            let d = 70;
+            for (let k = 0; k < 22; k++) { face.textContent = seq[k % seq.length]; Sound.tick(); await sleep(d); d *= 1.13; }
+            face.textContent = fg.tier;
+            t.classList.remove("flipping"); t.classList.add("landed");
+            note.textContent = `🦷 ${fg.tier} JACKPOT · ${fmt(fg.amount)} G!`;
+            Sound.bonus(); api.shake?.(frame);
+            await pace(1100);
+        }
+        await pace(600);
         overlay.replaceChildren();
     }
 
@@ -405,10 +495,10 @@ export async function playSpecial(res, api) {
         arm.style.setProperty("--x", target.offsetLeft + target.offsetWidth / 2 + "px");
         arm.classList.add("down"); Sound.whoosh();
         await pace(900);
-        target.classList.add("grabbed"); target.textContent = LABEL[p.pick] || p.pick;
+        target.classList.add("grabbed"); target.replaceChildren(h("small", LABEL[p.pick] || p.pick), p.prize ? h("b", p.prize) : "");
         arm.classList.remove("down"); arm.classList.add("up"); Sound.bonus();
         await pace(800);
-        res.textContent = `🎉 ${LABEL[p.pick] || p.pick} 공!`;
+        res.textContent = `🎉 ${LABEL[p.pick] || p.pick} 공!${p.prize ? " → " + p.prize : ""}`;
         await pace(1100);
         overlay.replaceChildren();
     }
@@ -500,6 +590,11 @@ export function buildPanel(cfg, state = {}) {
         const env = (g, k) => { const fill = h("i.env-fill"); const e = h("div.env", h("b", g), fill); custom(k, v => { fill.style.height = Math.min(100, v) + "%"; e.classList.toggle("full", v >= 100); }); return e; };
         el.append(h("div.tp-envs", env("福", "fu"), h("span.vs", "PAY DAY 💸"), env("到", "dao")));
     } else if (E === "sp_jokers") el.append(h("div.tp-cards", Array.from({ length: 5 }, (_, i) => h("i.tcard", { style: { "--i": i } }, "🂠"))));
+    else if (E === "sp_cathedral") aura("🔔", "CATHEDRAL OF WINGS · 24 SHARDS", "🕊️");
+    else if (E === "sp_velvet") aura("🎩", "THE VELVET TABLE · VIP VAULT", "💎");
+    else if (E === "sp_astro") aura("🛸", "ASTRO-DINER 5099 · 20 WINDOWS", "🍔");
+    else if (E === "sp_lilypad") aura("🐸", "LILYPAD LEAP · 19 PADS", "🪷");
+    else if (E === "sp_gridlock") aura("🚦", "GRIDLOCK RUSH HOUR · 4-WAY", "🚕");
     else if (E === "sp_coinclaw") el.append(h("div.tp-claw", h("span.tc-arm", "🦾"), h("div.tc-balls", ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓"].map((b, i) => h("i", { style: { "--i": i } }, b))), h("span.tc-spark", "✨")));
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
