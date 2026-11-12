@@ -297,7 +297,8 @@ export const SLOTS = [
                 coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR", "MAXI", "MAJOR"], w: [26, 26, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }
             },
             rcatch: {
-                size: 5, start: 4, lives: 3, land: 0.14, wCoin: 74, wLotus: 18, wFrog: 8, // 3x5 board, net 2x2→3x5 (tuned to the old ~27x average) mult: [[2, 45], [3, 30], [4, 15], [5, 10]],
+                // 3x5 board, net 2x2 → 3x5 (land / lotus tuned to the old ~27x average)
+                size: 5, start: 4, lives: 3, land: 0.14, wCoin: 74, wLotus: 18, wFrog: 8, mult: [[2, 45], [3, 30], [4, 15], [5, 10]],
                 coin: { v: ["0.5", "1", "2", "3", "5", "8", "10", "MINI", "MINOR", "MAXI", "MAJOR"], w: [26, 26, 18, 12, 8, 4, 2, 1.2, 0.35, 0.08, 0.02] }
             },
             rpick: {
