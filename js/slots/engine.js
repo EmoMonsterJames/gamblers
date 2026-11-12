@@ -9,7 +9,7 @@
 // explain the result. That keeps bonus frequency exact and lets the
 // screen tease near-misses on purpose.
 // =====================================================================
-import { JACKPOT_RANK } from "../data/catalog.js";
+import { JACKPOT_RANK, boostChance } from "../data/catalog.js";
 import { specialSpin } from "./specialEngine.js";
 import { P_POINTS, pointCount, setPointBet } from "./points.js";
 export { P_POINTS };
@@ -1128,6 +1128,11 @@ function monkeySpin(cfg, ctx) {
 export function spinWithLuck(cfg, ctx) {
     let r = spin(cfg, ctx);
     const luck = ctx.luck || {};
+    // 🎰 슬롯 보너스 UP item (30 s): up to 50% (low bet) … 20% (top bet) that this spin is a bonus
+    if (luck.boost && !r.bonus && rand() < boostChance(ctx.bet, cfg.bets)) {
+        for (let k = 0; k < 400; k++) { const r2 = spin(cfg, { ...ctx, luck: {} }); if (r2.bonus) { r = r2; r.boosted = true; break; } }
+        if (r.boosted) return r;
+    }
     if (!r.bonus && luck.bonus > 0 && rand() < luck.bonus) {
         const r2 = spin(cfg, { ...ctx, luck: {} });
         if (r2.bonus) { r = r2; r.lucky = "bonus"; }

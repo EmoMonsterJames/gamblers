@@ -307,3 +307,13 @@
 /* 8-row boards (Supernova / Total Eclipse): orbs & pods sized by the row height so they stay inside their cell */
 .cabinet.sp-tall .sym.orb > span { width: auto; height: 84%; max-width: 92%; font-size: calc(var(--cell) * .34); }
 .sitem .have.warn { color: #fca5a5; font-weight: 700; }
+
+/* Hold & Spin respin (Gift): coins rolling past an empty cell until its column stops */
+.sym.sym-empty { overflow: hidden; }
+.sp-roll { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.sp-roll::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0009, transparent 30%, transparent 70%, #0009); }
+.sp-roll-strip { display: flex; flex-direction: column; animation: spRoll .32s linear infinite; }
+.sp-roll-strip span { height: calc(var(--cell) * .55); display: grid; place-items: center; font-size: calc(var(--cell) * .42); filter: blur(1.2px) brightness(.9); opacity: .85; }
+.sp-roll.slow .sp-roll-strip { animation-duration: .8s !important; }
+.sp-roll.slow .sp-roll-strip span { filter: none; }
+@keyframes spRoll { from { transform: translateY(calc(var(--cell) * -1.1)); } to { transform: translateY(0); } }

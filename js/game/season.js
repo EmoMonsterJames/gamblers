@@ -4,7 +4,7 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, ALPHABET, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, SHOP_LIMIT, passIdOf, cardId } from "../data/catalog.js";
+import { MISSIONS, ALPHABET, ALL_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
 import { shuffle, pick } from "../core/util.js";
 import { sandboxNextTurn } from "./sandbox.js";
 
@@ -26,6 +26,25 @@ export function selectionPool() {
     const s = S();
     const taken = new Set(s.roster);
     return Store.players.filter(p => !taken.has(p.id));
+}
+// players of the previous season are drawn again with only 20% of the normal weight
+export const REPICK_WEIGHT = 0.2;
+export function prevSeasonPlayers() {
+    const n = S()?.number || 0;
+    return new Set(Store.results.filter(r => r.season === n - 1).map(r => r.playerId));
+}
+export function pickForSelection(pool) {
+    const prev = prevSeasonPlayers();
+    const w = p => prev.has(p.id) ? REPICK_WEIGHT : 1;
+    let r = Math.random() * pool.reduce((a, p) => a + w(p), 0);
+    for (const p of pool) { r -= w(p); if (r <= 0) return p; }
+    return pool[pool.length - 1];
+}
+// n players in weighted draw order (SKIP button)
+export function pickManyForSelection(pool, n) {
+    const left = [...pool], out = [];
+    while (left.length && out.length < n) { const p = pickForSelection(left); out.push(p); left.splice(left.indexOf(p), 1); }
+    return out;
 }
 export function addToRoster(pid) {
     const s = S();
@@ -338,22 +357,59 @@ export function npcMaps() {
 }
 export const npcActive = locId => npcMaps().includes(locId);
 
+// 🎫 NPC 공격 Block 권: charges left (opened tickets) + unopened tickets in the bag
+const BLOCK_ITEMS = () => ITEMS.filter(i => i.npcBlock).sort((a, b) => a.npcBlock - b.npcBlock);
+export const npcBlocksLeft = ps => (ps.npcBlock || 0) + BLOCK_ITEMS().reduce((a, i) => a + (ps.items[i.id] || 0) * i.npcBlock, 0);
+function useNpcBlock(ps) {
+    if (!(ps.npcBlock > 0)) {
+        const t = BLOCK_ITEMS().find(i => ps.items[i.id] > 0); // smallest ticket first
+        if (!t) return false;
+        ps.items[t.id]--; ps.npcBlock = (ps.npcBlock || 0) + t.npcBlock;
+    }
+    ps.npcBlock--;
+    return true;
+}
+
 export function npcHit(pid, npc, move) {
     const s = S(), ps = s.ps[pid];
     const rnd = ([a, b]) => Math.round((a + Math.random() * (b - a)) / 100) * 100;
     const out = { npc: npc.id, move };
-    if (move.steal) {
+    if (npcHarmful(move) && useNpcBlock(ps)) {
+        out.blocked = true; out.left = npcBlocksLeft(ps);
+        log(`🎫 ${name(pid)} NPC 공격 Block! (${npc.emoji} ${npc.name} · 남은 Block ${out.left}회)`);
+        Store.saveSeason(true);
+        return out;
+    }
+    if (move.idle) out.idle = move.idle;
+    else if (move.hope) out.hope = HOPE_MESSAGES[Math.floor(Math.random() * HOPE_MESSAGES.length)];
+    else if (move.gift) { ps.items[move.gift] = (ps.items[move.gift] || 0) + 1; out.gift = move.gift; }
+    else if (move.shop) out.shop = true;
+    else if (move.copy) {
+        // the robot copies one of the player's weapons and uses it on them
+        const own = ps.weapons.filter(w => !isDeadWeapon(w));
+        if (!own.length) out.none = true;
+        else {
+            const w = WEAPON_BY_ID[own[Math.floor(Math.random() * own.length)]];
+            out.weapon = w.id; out.copied = true;
+            const dmg = w.type === "attack" ? w.atk : w.type === "magic" ? [5, 10, 20][Math.floor(Math.random() * 3)] : 0;
+            if (dmg) { const before = ps.hp; ps.hp = Math.max(1, ps.hp - dmg); out.hp = ps.hp - before; }
+        }
+    }
+    else if (move.steal) {
         const g = rnd(move.steal);
         if (ps.money >= g) { ps.money -= g; out.gold = -g; } else out.none = true; // too poor to rob
     } else if (move.give) { const g = rnd(move.give); ps.money += g; out.gold = g; }
     else if (move.hp) { const before = ps.hp; ps.hp = Math.max(1, Math.min(CONFIG.START_HP, ps.hp + move.hp)); out.hp = ps.hp - before; }
     else if (move.nomove) {
-        const ix = ps.weapons.findIndex(w => w !== "no_move");
+        const ix = ps.weapons.findIndex(w => !isDeadWeapon(w));
         if (ix >= 0) { out.weapon = ps.weapons[ix]; ps.weapons[ix] = "no_move"; } else out.none = true;
     } else if (move.kill) { out.kill = true; }
     // mission stats: who hit the player during their turn and what it did
     if (s.turn?.pid === pid) (s.turn.stats.npc ||= []).push({ npc: npc.id, hp: !!move.hp, gold: out.gold > 0 });
-    log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${out.kill ? "즉사!" : out.none ? "효과 없음" : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주"}`);
+    const what = out.kill ? "즉사!" : out.none ? "효과 없음" : out.idle ? out.idle : out.hope ? `"${out.hope}"` : out.gift ? `${ITEM_BY_ID[out.gift]?.name} 선물` : out.shop ? "보따리상점 OPEN"
+        : out.copied ? `${WEAPON_BY_ID[out.weapon]?.name} 복사 공격${out.hp ? ` HP ${out.hp}` : " (효과 없음)"}`
+        : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주";
+    log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${what}`);
     if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`);
     else Store.saveSeason(true);
     return out;
@@ -472,6 +528,50 @@ export function usePassTeleport(itemId) {
     setLocation(it.loc, { teleport: true });
     return true;
 }
+
+// 🗺️ 랜덤 맵권: straight to one random map among every map the player may enter, in every region they may pick
+export function randomMapPool(pid) {
+    const cur = S().turn?.loc;
+    return availableRegions(pid).flatMap(r => regionStatus(pid, r).locs).filter(l => l.id !== cur);
+}
+export function useRandomMap() {
+    const s = S(), t = s.turn, ps = s.ps[t.pid];
+    if (!(ps.items.map_random > 0)) return null;
+    const pool = randomMapPool(t.pid);
+    if (!pool.length) return null;
+    const loc = pool[Math.floor(Math.random() * pool.length)];
+    ps.items.map_random--;
+    log(`🗺️ ${name(t.pid)} 랜덤 맵권 사용 → ${loc.name}!`);
+    t.region = loc.region; t.npc = null;
+    setLocation(loc.id, { teleport: true });
+    return loc;
+}
+
+// ❓ 랜덤알파벳권 / 슈퍼랜덤알파벳권 → one alphabet card
+export function useLetterBox(pid, itemId) {
+    const ps = S().ps[pid];
+    if (!(ps.items[itemId] > 0)) return null;
+    const pool = ITEM_BY_ID[itemId]?.superLetter ? ALPHABET : ALL_LETTERS;
+    const L = pool[Math.floor(Math.random() * pool.length)];
+    ps.items[itemId]--;
+    ps.items[cardId(L)] = (ps.items[cardId(L)] || 0) + 1;
+    log(`❓ ${name(pid)} ${ITEM_BY_ID[itemId].name} → ${L}`);
+    Store.saveSeason();
+    return L;
+}
+
+// 🎰/🃏 30 s boosters (wall clock): t.boost = { slot: until, casino: until }
+export function useBoost(kind) {
+    const s = S(), t = s.turn, ps = s.ps[t?.pid];
+    const id = kind === "slot" ? "slot_boost" : "casino_boost";
+    if (!t || !(ps.items[id] > 0)) return false;
+    ps.items[id]--;
+    (t.boost ||= {})[kind] = Date.now() + BOOST_SECONDS * 1000;
+    log(`${kind === "slot" ? "🎰" : "🃏"} ${name(t.pid)} ${ITEM_BY_ID[id].name} 사용! (${BOOST_SECONDS}초)`);
+    Store.saveSeason();
+    return true;
+}
+export const boostLeft = kind => { const u = S()?.turn?.boost?.[kind]; return u ? Math.max(0, Math.ceil((u - Date.now()) / 1000)) : 0; };
 
 // Record one slot spin / casino play for the current turn
 export function recordPlay(kind, bet, win, points, extra = {}) {
@@ -615,6 +715,20 @@ function judge() {
         for (const pid of live) if (s.results[pid]) s.results[pid].pass = !cands.includes(pid);
     } else cands = live.filter(pid => !s.results[pid]?.pass);
     s.allPassed = cands.length === 0;
+    // ⭐ special frame / special frame effect: each gives 10% (both 20%) to be let off the candidate
+    // list — only while there are more than 4 candidates. The player moves to the "success" column.
+    s.exempt = [];
+    for (const pid of shuffle(cands)) {
+        if (cands.length <= 4) break;
+        const d = Store.getDecor?.(pid) || {};
+        const f = isSpecialFrame(d.frame), e = isSpecialEffect(d.effect);
+        if (!(f || e) || Math.random() >= (f ? 0.1 : 0) + (e ? 0.1 : 0)) continue;
+        const why = f && e ? "특수프레임·특수프레임효과" : f ? "특수프레임" : "특수프레임효과";
+        cands = cands.filter(x => x !== pid);
+        s.results[pid] = { ...(s.results[pid] || { stats: {} }), pass: true, exempt: why };
+        s.exempt.push({ pid, why });
+        log(`⭐ ${name(pid)}은(는) ${why}으로 인해 탈락후보에서 면제되었다!`);
+    }
     if (!cands.length) {
         // everybody passed: the 3 lowest earners of the round become candidates
         const net = pid => { const st = s.results[pid]?.stats || {}; return (st.slotNet || 0) + (st.casinoNet || 0); };

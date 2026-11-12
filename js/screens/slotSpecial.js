@@ -49,6 +49,44 @@ export async function playSpecial(res, api) {
         await countUp(winEl, from, run, 450);
     };
     const clearHl = () => api.reelsBox.querySelectorAll(".hit,.dim,.sp-morph,.sp-smash").forEach(e => e.classList.remove("hit", "dim", "sp-morph", "sp-smash"));
+    // Hold & Spin respin: coins roll past the empty cells, then the columns stop
+    // one by one (left → right); a new coin only shows when its column stops.
+    async function rollEmpties(p) {
+        const added = new Set((p.cells || []).map(([c, r]) => c + "," + r));
+        const cols = p.grid.length, rowsN = p.grid[0]?.length || 3;
+        const rolls = [];
+        for (let c = 0; c < cols; c++) for (let r = 0; r < rowsN; r++) {
+            const el = cellsEl(c, r);
+            if (!el || !el.classList.contains("sym-empty")) continue;
+            const strip = h("div.sp-roll-strip", { style: { animationDuration: (0.28 + Math.random() * 0.12) + "s" } },
+                ...Array.from({ length: 6 }, (_, i) => h("span", i % 2 ? "" : "🪙")));
+            const roll = h("div.sp-roll", strip);
+            el.append(roll);
+            rolls.push({ c, r, el, roll });
+        }
+        let found = 0;
+        await pace(500);
+        for (let c = 0; c < cols; c++) {
+            const mine = rolls.filter(x => x.c === c);
+            if (!mine.length) continue;
+            // tension: the last columns slow down when nothing has landed yet
+            const late = c >= cols - 2 && !found;
+            if (late) mine.forEach(x => x.roll.classList.add("slow"));
+            await pace(late ? 520 : 240);
+            for (const x of mine) {
+                x.roll.remove();
+                if (added.has(x.c + "," + x.r)) {
+                    x.el.className = "sym s-GC pop"; x.el.dataset.s = "GC";
+                    x.el.replaceChildren(h("span", "🪙"));
+                    found++; Sound.coin();
+                }
+            }
+            Sound.tick();
+        }
+        api.showGrid(p.grid);
+        for (const [c, r] of p.cells || []) cellsEl(c, r)?.classList.add("pop");
+        await pace(found ? 600 : 400);
+    }
     const setRows = n => { api.reelsBox.style.setProperty("--rows", n); cabinet.classList.toggle("sp-tall", n > 5); };
     try {
         for (let i = 0; i < res.phases.length; i++) {
@@ -65,6 +103,7 @@ export async function playSpecial(res, api) {
                     break;
                 }
                 case "show": case "land": {
+                    if (p.roll) { await rollEmpties(p); break; }
                     api.showGrid(p.grid);
                     const cells = p.pop || p.cells || [];
                     for (const [c, r] of cells) cellsEl(c, r)?.classList.add("pop");

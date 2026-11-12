@@ -4,6 +4,7 @@ import { particles } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK, attackCount } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
+import { frameDeco } from "./frames.js";
 
 export function displayName(p) { return p ? (p.name_ko || p.player_name) : "?"; }
 
@@ -12,9 +13,18 @@ export function avatar(pid, size = 64, { effect = true, frame = true, cls = "" }
     const p = Store.player(pid);
     const d = Store.getDecor(pid);
     const fr = frame && d.frame ? FRAME_BY_ID[d.frame] : null;
-    const el = h("div.avatar" + (fr ? "." + fr.cls : "") + (cls ? "." + cls : ""), { style: { width: size + "px", height: size + "px" }, title: p?.player_name || "" },
+    const el = h("div.avatar" + (fr ? "." + fr.cls : "") + (fr?.deco ? ".fr-has-deco" : "") + (cls ? "." + cls : ""), { style: { width: size + "px", height: size + "px", ...(fr?.deco ? { fontSize: size + "px" } : {}) }, title: p?.player_name || "" },
         h("img", { src: p?.profile_image || "", alt: p?.player_name || "", loading: "lazy", draggable: "false" }));
+    const deco = frameDeco(fr, p?.profile_image);
+    if (deco) el.append(deco);
     if (effect && d.effect && PEFFECT_BY_ID[d.effect]) el.append(particles(PEFFECT_BY_ID[d.effect].fx, Math.max(0.6, size / 110)));
+    return el;
+}
+// frame preview for shops / inventory (a smiley instead of a player)
+export function framePreview(fr, size = 64) {
+    const el = h("div.avatar.preview." + fr.cls + (fr.deco ? ".fr-has-deco" : ""), { style: { width: size + "px", height: size + "px", ...(fr.deco ? { fontSize: size + "px" } : {}) } }, h("div.fr-dummy", "🙂"));
+    const deco = frameDeco(fr, null);
+    if (deco) el.append(deco);
     return el;
 }
 
@@ -82,7 +92,8 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
 }
 export function weaponChip(id) {
     const w = WEAPON_BY_ID[id] || BASIC_ATTACK;
-    const stat = w.type === "attack" ? `ATK ${w.atk} · ACC ${w.acc}` : w.type === "block" ? `방어 · ACC ${w.acc}` : w.type === "magic" ? `랜덤 마법 · ACC ${w.acc}` : w.type === "nomove" ? "아무 효과 없음" : `수면 · ACC ${w.acc}`;
+    const stat = w.type === "attack" ? `ATK ${w.atk} · ACC ${w.acc}` : w.type === "block" ? `방어 · ACC ${w.acc}` : w.type === "magic" ? `랜덤 마법 · ACC ${w.acc}` : w.type === "nomove" ? "아무 효과 없음"
+        : w.type === "spray" ? `스프레이 · ACC ${w.acc}` : w.type === "copy" ? `상대 무기 복사 · ACC ${w.acc}` : w.type === "surprise" ? `${w.choose ? "골라서 " : ""}바꿔치기 · 1회용` : `수면 · ACC ${w.acc}`;
     return h("span.wchip" + (w.rare ? ".rare" : ""), { title: stat }, h("i", w.emoji), w.name, h("small", stat));
 }
 function itemsLine(ps) {

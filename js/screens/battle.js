@@ -6,9 +6,9 @@
 // =====================================================================
 import { h, sleep, pick, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
-import { confetti, banner, shake } from "../core/fx.js";
+import { confetti, banner, shake, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { WEAPON_BY_ID, BASIC_ATTACK } from "../data/catalog.js";
+import { WEAPON_BY_ID, BASIC_ATTACK, isDeadWeapon } from "../data/catalog.js";
 import { S, log, name } from "../game/season.js";
 import { avatar, petView, weaponChip, displayName } from "../ui/profile.js";
 import { CONFIG } from "../config.js";
@@ -78,26 +78,15 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             const hit = Math.random() * 100 < accNow;
             if (atk.sprayed > 0) { atk.sprayed--; status(atk); }
             await animate(w, atk, def, hit);
-            if (w.type === "nomove") {
-                say(`🫥 ${name(atk.pid)}은(는) 아무것도 하지 않았다… (No Move)`, "muted"); floating(atk, "…", "miss");
-            } else if (w.type === "block") {
-                if (hit) { atk.shield = true; say(`🛡️ 방어 태세! 다음 공격을 막는다`, "ok"); } else say("방어 실패…", "muted");
-            } else if (!hit) {
-                say("…빗나감! MISS", "muted"); floating(def, "MISS", "miss"); Sound.miss();
-            } else if (def.shield) {
-                def.shield = false; say(`🛡️ ${name(def.pid)}이(가) 공격을 막았다!`, "ok"); floating(def, "BLOCK!", "block"); Sound.stop();
-            } else if (w.type === "sleep") {
-                def.sleep = 1 + Math.floor(Math.random() * 3);
-                say(`💤 ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
-            } else if (w.type === "spray") {
-                // never stacks: a second spray only refreshes the 3 turns
-                const again = def.sprayed > 0;
-                def.sprayed = w.turns || 3; def.sprayDown = w.accDown || 10;
-                say(again ? `🧴 ${name(def.pid)}에게 또 스프레이! (중첩 없음 · ${def.sprayed}턴으로 갱신)` : `🧴 ${name(def.pid)}의 눈에 스프레이! ${def.sprayed}턴 동안 명중률 -${def.sprayDown}%`, "bad");
-                floating(def, `ACC -${def.sprayDown}%`, "sleep");
-            } else if (w.type === "magic") {
-                await castMagic(atk, def);
-            } else damage(def, w.atk);
+            if (w.type === "copy" && hit) {
+                // 📋 복사: one random weapon of the opponent, used against them (its own effect, no second accuracy roll)
+                const pool = def.ps.weapons.filter(x => !isDeadWeapon(x) && WEAPON_BY_ID[x]?.type !== "copy" && WEAPON_BY_ID[x]?.type !== "surprise");
+                const cw = pool.length ? WEAPON_BY_ID[pick(pool)] : BASIC_ATTACK;
+                say(`📋 ${name(def.pid)}의 ${cw.emoji} ${cw.name}을(를) 복사했다!`, "ok"); floating(atk, `COPY ${cw.emoji}`, "block");
+                await W(350);
+                await animate(cw, atk, def, true);
+                await resolve(cw, atk, def, true, wid);
+            } else await resolve(w, atk, def, hit, wid);
             status(atk); status(def);
             atk.el.classList.remove("acting");
             await W(650);
@@ -116,6 +105,74 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
         onWin(winner.pid, loser.pid);
     }
 
+    // what a weapon does once it is used (wid = the weapon id that was in the attacker's arsenal)
+    async function resolve(w, atk, def, hit, wid) {
+        if (w.type === "nomove") {
+            say(`${w.emoji} ${name(atk.pid)}은(는) 아무것도 하지 않았다… (${w.name})`, "muted"); floating(atk, "…", "miss");
+        } else if (w.type === "block") {
+            if (hit) { atk.shield = true; say(`🛡️ 방어 태세! 다음 공격을 막는다`, "ok"); } else say("방어 실패…", "muted");
+        } else if (w.type === "surprise") {
+            await surprise(w, atk, def, wid);
+        } else if (!hit) {
+            say("…빗나감! MISS", "muted"); floating(def, "MISS", "miss"); Sound.miss();
+        } else if (def.shield) {
+            def.shield = false; say(`🛡️ ${name(def.pid)}이(가) 공격을 막았다!`, "ok"); floating(def, "BLOCK!", "block"); Sound.stop();
+        } else if (w.type === "sleep") {
+            putToSleep(def, 1 + Math.floor(Math.random() * 3), "💤");
+        } else if (w.type === "spray") {
+            // never stacks: a second spray only refreshes the 3 turns
+            const again = def.sprayed > 0;
+            def.sprayed = w.turns || 3; def.sprayDown = w.accDown || 10;
+            say(again ? `🧴 ${name(def.pid)}에게 또 스프레이! (중첩 없음 · ${def.sprayed}턴으로 갱신)` : `🧴 ${name(def.pid)}의 눈에 스프레이! ${def.sprayed}턴 동안 명중률 -${def.sprayDown}%`, "bad");
+            floating(def, `ACC -${def.sprayDown}%`, "sleep");
+        } else if (w.type === "magic") {
+            await castMagic(atk, def);
+        } else if (w.type === "copy") {
+            say("📋 복사할 무기가 없다…", "muted");
+        } else damage(def, w.atk);
+    }
+    // every sleep (flute, magic, copies of them): a sleeping fighter's sleep is never extended
+    function putToSleep(def, turns, icon) {
+        if (def.sleep > 0) {
+            say(`${icon} ${name(def.pid)}은(는) 이미 잠들어 있다! (수면 턴은 늘어나지 않음 · ${def.sleep}턴 남음)`, "muted");
+            floating(def, "ZZZ", "miss");
+            return;
+        }
+        def.sleep = turns;
+        say(`${icon} ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
+    }
+    // 🎁 서프라이즈 / 🎉 빅서프라이즈 (1 use): swap places with one of the opponent's weapons — for good.
+    // The opponent gets "You Got Suprised!" (does nothing). Big = the attacker chooses which weapon.
+    async function surprise(w, atk, def, wid) {
+        const ix = atk.ps.weapons.indexOf(wid);
+        const pool = def.ps.weapons.map((x, i) => [x, i]).filter(([x]) => !isDeadWeapon(x));
+        if (!pool.length) {
+            if (ix >= 0) atk.ps.weapons.splice(ix, 1);
+            say(`${w.emoji} ${name(def.pid)}에게 바꿔치기할 무기가 없다… (${w.name} 소멸)`, "muted");
+        } else {
+            const [took, di] = w.choose ? await chooseWeapon(atk, def, pool) : pick(pool);
+            def.ps.weapons[di] = "got_surprised";
+            if (ix >= 0) atk.ps.weapons[ix] = took; else atk.ps.weapons.push(took);
+            const tw = WEAPON_BY_ID[took];
+            const card = h("div.magic-card.surprise", h("span", w.emoji), h("b", "You Got Suprised!"), h("small", `${tw?.emoji || ""} ${tw?.name || took} → ${name(atk.pid)}`));
+            fxLayer.append(card); Sound.bonus(); confetti(30, ["🎁", "🎉", "😜"]);
+            await W(1300); card.remove();
+            floating(def, "SURPRISED!", "sleep");
+            say(`${w.emoji} ${w.name}! ${name(atk.pid)}이(가) ${name(def.pid)}의 ${tw?.emoji || ""} ${tw?.name || took}을(를) 빼앗아 영원히 간직한다! (${name(def.pid)}에게는 😜 You Got Suprised!)`, "bad");
+            log(`${w.emoji} ${name(atk.pid)}의 ${w.name}: ${name(def.pid)}의 ${tw?.name || took} 획득 → ${name(def.pid)}에게는 You Got Suprised!`);
+        }
+        for (const f of [atk, def]) f.el.closest(".fside").querySelector(".wlist").replaceChildren(...(f.ps.weapons.length ? f.ps.weapons.map(weaponChip) : [weaponChip("basic")]));
+        Store.saveSeason();
+    }
+    function chooseWeapon(atk, def, pool) {
+        return new Promise(res => {
+            const m = modal(h("div.surprise-pick",
+                h("p", `🎉 ${name(atk.pid)}의 빅서프라이즈! ${name(def.pid)}의 무기 중 가져올 무기를 고르세요.`),
+                h("div.wlist", pool.map(([x, i]) => h("button.wbtn", { onclick: () => { m.close(); res([x, i]); } }, weaponChip(x))))),
+                { title: "🎉 빅서프라이즈", closable: false });
+        });
+    }
+
     function damage(def, atk) {
         def.hp -= atk; setHp(def);
         floating(def, `-${atk}`, "dmg"); Sound.hit(); shake(def.el, "hit-shake");
@@ -124,7 +181,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
     }
     // 🪄 마법: one random spell. Turning a weapon into No Move is permanent (it stays in the arsenal).
     async function castMagic(atk, def) {
-        const swappable = def.ps.weapons.map((w, i) => [w, i]).filter(([w]) => w !== "no_move");
+        const swappable = def.ps.weapons.map((w, i) => [w, i]).filter(([w]) => !isDeadWeapon(w));
         const spells = MAGIC_SPELLS.filter(s => s.id !== "swap" || swappable.length);
         const sp = pick(spells.flatMap(s => Array(s.w).fill(s)));
         const card = h("div.magic-card", h("span", sp.icon), h("b", sp.name));
@@ -139,8 +196,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             log(`🪄 ${name(atk.pid)}의 마법: ${name(def.pid)}의 ${WEAPON_BY_ID[wid]?.name || wid} → No Move`);
             Store.saveSeason();
         } else if (sp.id === "sleep") {
-            def.sleep = 1 + Math.floor(Math.random() * 2);
-            say(`🪄 수면 마법! ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
+            putToSleep(def, 1 + Math.floor(Math.random() * 2), "🪄 수면 마법!");
         } else damage(def, sp.atk);
     }
 
@@ -190,6 +246,21 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
                 await W(700); break;
             }
             case "coin": { const p = proj("🪙", "spin"); await fly(p, target, 400, "scale(1.4)"); Sound.coin(); p.remove(); break; }
+            case "rocket": {
+                const p = proj(dir > 0 ? "🤜" : "🤛", "rocketfist"); p.dataset.trail = "🔥";
+                await fly(p, target, 520, "scale(1.9)");
+                if (hit) { Sound.boom(); shake(arena, "big-shake"); }
+                p.remove(); break;
+            }
+            case "copy": {
+                const c = proj("📋", "glow"); await fly(c, { x: D.x, y: D.y - 70 }, 450, "scale(1.3)");
+                await fly(c, { x: A.x, y: A.y - 60 }, 400, "scale(1)"); c.remove(); break;
+            }
+            case "surprise": {
+                const g = proj("🎁", "huge"); await fly(g, target, 600, "scale(1.8) rotate(20deg)");
+                if (hit) { const b = h("div.proj.pow", "🎉"); b.style.left = target.x + "px"; b.style.top = target.y + "px"; fxLayer.append(b); Sound.boom(); await W(400); b.remove(); }
+                g.remove(); break;
+            }
             case "shield": {
                 const sh = h("div.proj.shield", "🛡️"); sh.style.left = A.x + dir * 70 + "px"; sh.style.top = A.y + "px"; fxLayer.append(sh);
                 await W(700); sh.remove(); break;

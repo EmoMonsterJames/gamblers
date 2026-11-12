@@ -8,7 +8,8 @@ import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { confirmBox, confetti, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET } from "../data/catalog.js";
+import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry } from "../data/catalog.js";
+import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";
 
@@ -193,40 +194,89 @@ export function scheduleNpc(remaining) {
     const n = 1 + Math.floor(Math.random() * 3);
     return Array.from({ length: n }, () => 20 + Math.floor(Math.random() * (remaining - 40))).sort((a, b) => b - a);
 }
-const NPC_FX = { steal: "💸", give: "💰", hp: "💥", heal: "💖", curse: "🗯️", kill: "☠️", nomove: "🪄" };
+const NPC_FX = { steal: "💸", give: "💰", hp: "💥", heal: "💖", curse: "🗯️", kill: "☠️", nomove: "🪄", idle: "💤", hope: "🌈", gift: "🎁", shop: "🧳", copy: "📋" };
+const alignBadge = n => { const a = NPC_ALIGN[npcAlign(n)]; return h("span.npc-align." + a.cls, a.label); };
 export async function npcAttack(pid) {
     const npc = NPCS[Math.floor(Math.random() * NPCS.length)];
     const move = npc.moves[Math.floor(Math.random() * npc.moves.length)];
-    const kind = move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove" : "curse";
-    const art = h("div.npc-art", { style: { "--c": npc.color } }, h("span.npc-body", npc.emoji), h("span.npc-weapon", npc.art), h("small", npc.name));
+    const kind = move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove"
+        : move.idle ? "idle" : move.hope ? "hope" : move.gift ? "gift" : move.shop ? "shop" : move.copy ? "copy" : "curse";
+    const friendly = ["give", "heal", "idle", "hope", "gift", "shop"].includes(kind);
+    const art = h("div.npc-art", { style: { "--c": npc.color } }, h("span.npc-body", npc.emoji), h("span.npc-weapon", npc.art), h("small", npc.name, " ", alignBadge(npc)));
     const target = h("div.npc-target", avatar(pid, 120, { effect: false }));
     const say = h("div.npc-say", `${npc.emoji} ${npc.name}이(가) 나타났다!`);
     const fxl = h("div.npc-fx");
     const res = h("div.npc-res");
     const box = h("div.npc-pop.k-" + kind, h("div.npc-arena", art, fxl, target), say, res);
-    const m = modal(box, { title: "⚠️ NPC 습격!", closable: false });
-    Sound.boom();
+    const m = modal(box, { title: friendly ? "✨ NPC 등장!" : "⚠️ NPC 습격!", closable: false });
+    friendly ? Sound.bonus() : Sound.boom();
     await sleep(1100);
     // the NPC lunges and its weapon flies at the player
     art.classList.add("lunge");
-    const proj = h("span.npc-proj", kind === "curse" ? "🗯️" : kind === "give" || kind === "heal" ? "✨" : npc.art);
+    const proj = h("span.npc-proj", kind === "curse" ? "🗯️" : friendly ? "✨" : npc.art);
     fxl.append(proj);
     Sound.whoosh();
     await sleep(650);
     proj.remove();
     const out = G.npcHit(pid, npc, move);
-    fxl.append(h("span.npc-burst", NPC_FX[kind] || "💥"));
-    if (kind === "hp" || kind === "kill" || kind === "steal") target.classList.add("hurt");
-    if (kind === "kill") { Sound.boom(); target.classList.add("dead"); } else if (kind === "give" || kind === "heal") Sound.cash(); else Sound.hit();
-    say.textContent = kind === "curse" ? `${npc.emoji} "${CURSES[Math.floor(Math.random() * CURSES.length)]}"` : `${npc.emoji} ${npc.name}의 공격!`;
-    res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.none ? (kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : "무기가 없어 아무 일도 없었다") :
-        out.gold ? (out.gold > 0 ? `💰 +${fmt(out.gold)}G 받았다!` : `💸 ${fmt(-out.gold)}G 뺏겼다!`) :
-        out.hp != null ? (out.hp >= 0 ? `💖 HP +${out.hp}` : `💥 HP ${out.hp}`) :
-        out.weapon ? `🪄 ${WEAPON_BY_ID[out.weapon]?.name || out.weapon} → 🫥 No Move` : "…저주만 퍼붓고 사라졌다"));
-    box.append(h("button.btn.gold.big", { onclick: () => m.close() }, "확인"));
-    setTimeout(() => m.close(), 7000);
+    if (out.blocked) {
+        fxl.append(h("span.npc-burst", "🛡️"));
+        Sound.stop();
+        say.textContent = `${npc.emoji} ${npc.name}의 공격!`;
+        res.replaceChildren(h("b", `🎫 NPC 공격 Block 권 발동! 공격을 막았다 (남은 Block ${out.left}회)`));
+    } else {
+        fxl.append(h("span.npc-burst", NPC_FX[kind] || "💥"));
+        if (kind === "hp" || kind === "kill" || kind === "steal" || (kind === "copy" && out.hp)) target.classList.add("hurt");
+        if (kind === "kill") { Sound.boom(); target.classList.add("dead"); } else if (kind === "give" || kind === "heal" || kind === "gift") Sound.cash(); else if (friendly) Sound.bonus(); else Sound.hit();
+        say.textContent = kind === "curse" ? `${npc.emoji} "${CURSES[Math.floor(Math.random() * CURSES.length)]}"` : kind === "hope" ? `${npc.emoji} "${out.hope}"` : friendly ? `${npc.emoji} ${npc.name}` : `${npc.emoji} ${npc.name}의 공격!`;
+        res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.none ? (kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : kind === "copy" ? "복사할 무기가 없어 아무 일도 없었다" : "무기가 없어 아무 일도 없었다") :
+            out.idle ? (out.idle === "애교부리기" ? "🐹 애교를 부리고 갔다… 귀여워!" : "🤖 No Move — 아무것도 하지 않았다") :
+            out.hope ? "🌈 희망의 메세지를 전해 주고 떠났다" :
+            out.gift ? `🎁 ${ITEM_BY_ID[out.gift]?.name || out.gift} 선물을 받았다! (가방에 들어감)` :
+            out.shop ? "🧳 보따리상점 OPEN! 싸게 팔아요~" :
+            out.copied ? `📋 내 무기 ${WEAPON_BY_ID[out.weapon]?.emoji || ""} ${WEAPON_BY_ID[out.weapon]?.name}을(를) 복사해서 공격! ${out.hp ? `💥 HP ${out.hp}` : "(배틀 전용 무기라 효과 없음)"}` :
+            out.gold ? (out.gold > 0 ? `💰 +${fmt(out.gold)}G 받았다!` : `💸 ${fmt(-out.gold)}G 뺏겼다!`) :
+            out.hp != null ? (out.hp >= 0 ? `💖 HP +${out.hp}` : `💥 HP ${out.hp}`) :
+            out.weapon ? `🪄 ${WEAPON_BY_ID[out.weapon]?.name || out.weapon} → 🫥 No Move` : "…저주만 퍼붓고 사라졌다"));
+    }
+    box.append(h("button.btn.gold.big", { onclick: () => m.close() }, out.shop ? "🧳 상점 보기" : "확인"));
+    if (!out.shop) setTimeout(() => m.close(), 7000);
     await m.closed;
+    if (out.shop) await peddlerShop(pid);
     return out;
+}
+
+// ------------------------------------------------------------------ 🧳 보따리상점 (peddler NPC)
+// 5 random goods from PEDDLER_STOCK, cheap. One purchase per player per season.
+export async function peddlerShop(pid) {
+    const ps = G.S().ps[pid];
+    const stock = [...PEDDLER_STOCK].sort(() => Math.random() - 0.5).slice(0, 5);
+    const done = !!ps.peddlerBought;
+    const grid = h("div.shop-grid");
+    const m = modal(h("div.peddler",
+        h("p.muted", done ? "🧳 이번 시즌에 이미 보따리상점에서 구매했습니다 (플레이어당 1회). 구경만 하세요~" : "🧳 보따리상인이 아무거나 5개를 싸게 팝니다! 플레이어당 딱 1번만 살 수 있어요."),
+        h("p.wallet", `💰 ${fmt(ps.money)} G · 💎 ${fmt(ps.points)} P`),
+        grid, h("div.row.center", h("button.btn.ghost", { onclick: () => m.close() }, "그냥 가기"))), { title: "🧳 보따리상점 OPEN", wide: true });
+    const render = () => grid.replaceChildren(...stock.map(it => {
+        const e = catalogEntry(it.cat, it.id);
+        if (!e) return null;
+        const cost = { pts: it.pts || 0, gold: it.gold || 0 };
+        const ok = !ps.peddlerBought && canPay(ps, cost);
+        return h("div.sitem" + (e.rare || e.kind === "special" ? ".rare" : ""),
+            h("div.sitem-art", shopArt(it.cat, e)), h("div.sitem-name", e.name), h("div.sitem-desc", shopDesc(it.cat, e)),
+            h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: async () => {
+                if (ps.peddlerBought || !canPay(ps, cost)) return;
+                if (!(await checkGoods(ps, it.cat, it.id, e))) return;
+                pay(ps, cost); giveGoods(pid, it.cat, it.id);
+                ps.peddlerBought = true;
+                G.log(`🧳 ${G.name(pid)} 보따리상점에서 ${e.name} 구매`);
+                Store.saveSeason(true);
+                Sound.coin(); confetti(30, ["🧳", "✨"]);
+                render();
+            } }, priceLabel(cost)));
+    }));
+    render();
+    await m.closed;
 }
 
 // ------------------------------------------------------------------ 👹 NPC info (map popup)
@@ -235,7 +285,12 @@ const moveText = m => m.steal ? `💸 골드 강탈 ${fmt(m.steal[0])}~${fmt(m.s
     : m.hp ? (m.hp > 0 ? `💖 HP +${m.hp} 회복` : `💥 HP ${m.hp} 공격`)
     : m.curse ? "🗯️ 저주 (말뿐, 피해 없음)"
     : m.kill ? "☠️ 즉사 — 바로 탈락!"
-    : m.nomove ? "🪄 무기 1개를 No Move로 바꿈" : "?";
+    : m.nomove ? "🪄 무기 1개를 No Move로 바꿈"
+    : m.idle ? (m.idle === "애교부리기" ? "🐹 애교부리기 (공격하지 않음)" : "🫥 No Move (공격하지 않음)")
+    : m.copy ? "📋 COPY — 플레이어의 무기를 복사해서 공격"
+    : m.hope ? "🌈 희망의 메세지 (\"잘될거에요\" · \"대박나세요\" · \"우승할거에요\")"
+    : m.gift ? `🎁 ${ITEM_BY_ID[m.gift]?.name || m.gift} 선물`
+    : m.shop ? "🧳 보따리상점 OPEN (랜덤 5개 할인 판매 · 플레이어당 1회 구매)" : "?";
 // loc: the map · active: NPCs are out on this map this round (season only)
 export function npcInfo(loc, { active = null } = {}) {
     const mapP = Math.round(G.npcMapChance(loc) * 100);
@@ -246,10 +301,12 @@ export function npcInfo(loc, { active = null } = {}) {
             h("ul.npc-rules",
                 h("li", `NPC는 모든 맵에 나오지 않고, 라운드마다 무작위로 정해진 맵에만 나타납니다. 이 맵이 뽑힐 확률: `, h("b", mapP + "%")),
                 h("li", "NPC가 있는 맵에서 플레이하면 턴마다 ", h("b", "40~70%"), " 확률로 습격을 받고, 습격은 플레이 중 무작위 시점에 ", h("b", "1~3회"), " 일어납니다."),
-                h("li", "습격마다 아래 NPC 6명 중 1명이 같은 확률(", h("b", pct(1 / NPCS.length)), ")로 나오고, 그 NPC의 기술 중 하나를 같은 확률로 씁니다."))),
+                h("li", `습격마다 아래 NPC ${NPCS.length}명 중 1명이 같은 확률(`, h("b", pct(1 / NPCS.length)), ")로 나오고, 그 NPC의 기술 중 하나를 같은 확률로 씁니다."),
+                h("li", "NPC 종류: ", alignBadge({ align: "evil", moves: [] }), " 공격만 함 · ", alignBadge({ align: "neutral", moves: [] }), " 공격도 하고 돕기도 함 · ", alignBadge({ align: "good", moves: [] }), " 돕기만 함"),
+                h("li", "🎫 NPC 공격 Block 권(일반 상점)이 있으면 해로운 공격을 자동으로 막아 줍니다."))),
         h("div.npc-cards", NPCS.map(n => h("div.npc-card", { style: { "--c": n.color } },
-            h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name), h("small", `무기: ${n.art} · 등장 ${pct(1 / NPCS.length)}`))),
-            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 ? ".good" : ""), h("span", moveText(m)), h("small", pct(1 / n.moves.length))))),
+            h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / NPCS.length)}`))),
+            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop ? ".good" : ""), h("span", moveText(m)), h("small", pct(1 / n.moves.length))))),
             h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / NPCS.length)} × 기술별 확률`))))),
         { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
 }

@@ -11,7 +11,7 @@
 import { Store } from "../core/store.js";
 import {
     PETS, PET_EFFECTS, WEAPONS, FRAMES, PROFILE_EFFECTS, ITEMS, SHOPS, LOCATIONS,
-    PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET
+    PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET, EXTRA_LETTERS, letterSale, cardId
 } from "./catalog.js";
 
 export const CATS = {
@@ -41,7 +41,8 @@ const ORIGINAL = Object.fromEntries(Object.entries(CATS).map(([k, c]) => [k, c.l
 // default sale info from SHOPS
 const BASE_SALE = {};
 // (alt entries = a second shop selling the same thing, e.g. alphabet cards in the point shop)
-for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) if (!it.alt) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price };
+// gold: second price of 포인트+골드 상점 goods · locs: goods sold at one fixed map only
+for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) if (!it.alt) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price, gold: it.gold || 0, locs: it.locs || null };
 
 const conf = () => Store.catalog || {};
 
@@ -69,7 +70,8 @@ export function saleOf(cat, id) {
     return {
         shop: ed.shop !== undefined ? ed.shop : base.shop,
         price: ed.price != null && ed.price !== "" ? +ed.price : base.price,
-        locs: ed.locs || null,       // null = every location that has this shop
+        gold: base.gold || 0,
+        locs: ed.locs || base.locs || null,       // null = every location that has this shop
         off: !!ed.off,
         cur: SHOPS[ed.shop !== undefined ? ed.shop : base.shop]?.cur || "G"
     };
@@ -83,7 +85,7 @@ export function shopItems(shopId, locId) {
             if (s.off || s.shop !== shopId || !s.price) continue;
             if (s.locs && locId && !s.locs.includes(locId)) continue;
             if (!s.locs && e.letter && !cardSoldHere(shopId, e.letter, locId)) continue; // alphabet cards: only at their maps
-            out.push({ cat, id: e.id, price: s.price });
+            out.push({ cat, id: e.id, price: s.price, gold: s.gold || 0 });
         }
     }
     return out;
@@ -114,11 +116,13 @@ function seeded(str) { let h = 2166136261; for (const c of str) { h ^= c.charCod
 export function discountItems(locId, seed = "") {
     const rnd = seeded(`${locId}|${seed}`);
     const pool = ["general", "weapon", "pet", "decor"].flatMap(sid => shopItems(sid).map(it => ({ ...it, from: sid })))
-        .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)));
+        .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)) && !saleOf(it.cat, it.id).locs); // one-map goods (new frames/effects) stay at their map
     const pickN = (list, n) => { const a = [...list]; const out = []; while (a.length && out.length < n) out.push(a.splice(Math.floor(rnd() * a.length), 1)[0]); return out; };
     const byCat = c => pool.filter(it => it.cat === c);
     const chosen = [...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)];
-    return chosen.map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.round(it.price * (100 - off) / 100 / 100) * 100, was: it.price, off }; });
+    // + the 알파벳권 whose discount home is this map
+    const letters = cardsAt(locId).filter(c => c.shop === "discount").map(c => ({ cat: "item", id: cardId(c.letter), price: letterSale(c.letter).price }));
+    return [...chosen, ...letters].map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.max(100, Math.round(it.price * (100 - off) / 100 / 100) * 100), was: it.price, off }; });
 }
 
 // ---------------------------------------------------------------- alphabet cards
@@ -148,6 +152,29 @@ export function cardHomes() {
             }
             homes[`${shop}:${L}`] = out;
         }
+    }
+    // 알파벳권 (the other 18 letters): 3 maps each, spread over different regions
+    // gold letters → 2 general shops + 1 discount shop · H, Q → 3 point shops
+    const rnd2 = seeded("gamblers-alphabet-extra");
+    const load = id => Object.values(homes).filter(ids => ids.includes(id)).length;
+    const pickMaps = (shop, n, regions) => {
+        const maps = live.filter(l => shop === "discount" ? l.discount : locationShops(l).includes(shop));
+        const out = [];
+        for (let k = 0; k < n; k++) {
+            let cand = maps.filter(l => !out.includes(l.id) && !regions.has(l.region));
+            if (!cand.length) cand = maps.filter(l => !out.includes(l.id));
+            if (!cand.length) break;
+            const min = Math.min(...cand.map(l => load(l.id)));
+            cand = cand.filter(l => load(l.id) === min); // least-loaded maps first
+            const l = cand[Math.floor(rnd2() * cand.length)];
+            regions.add(l.region); out.push(l.id);
+        }
+        return out;
+    };
+    for (const L of EXTRA_LETTERS) {
+        const regions = new Set();
+        if (letterSale(L).shop === "point") homes[`point:${L}`] = pickMaps("point", 3, regions);
+        else { homes[`general:${L}`] = pickMaps("general", 2, regions); homes[`discount:${L}`] = pickMaps("discount", 1, regions); }
     }
     cardCache = { key, homes };
     return homes;

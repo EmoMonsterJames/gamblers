@@ -820,7 +820,7 @@ function giftHold(cfg, ctx, phases) {
         for (let c = 0; c < C; c++) for (let r = 0; r < Rn; r++) if (!board.has(key(c, r)) && R() < 0.075) { const cn = coin(); board.set(key(c, r), cn); added.push([c, r]); }
         lives = added.length ? 3 : lives - 1;
         phases.push({ t: "hud", text: `RESPINS ${lives}` });
-        phases.push({ t: "land", grid: gridOf(), cells: added, ms: added.length ? 1100 : 850 });
+        phases.push({ t: "land", grid: gridOf(), cells: added, roll: true }); // coins roll past, columns stop one by one
         // a gift coin collects every coin on the board so far
         for (const [c, r] of added) {
             const o = board.get(key(c, r));

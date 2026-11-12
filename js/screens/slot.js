@@ -452,7 +452,8 @@ export function openSlot(cfg, ctx) {
     // ------------------------------------------------------------ alphabet cards (G·A·M·B·L·E·R·S)
     // During a season a letter sometimes appears on the reels → card for the bag.
     async function alphabetDrop() {
-        if (!ctx.gainCard || Math.random() >= (ctx.cardRate ?? 0.008)) return;
+        const rate = typeof ctx.cardRate === "function" ? ctx.cardRate(bet, cfg.bets) : (ctx.cardRate ?? 0.0004);
+        if (!ctx.gainCard || Math.random() >= rate) return;
         const L = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
         const cells = egg ? [] : Array.from({ length: reelsN }, (_, c) => Array.from({ length: rows }, (_, r) => cellsEl(c, r))).flat().filter(Boolean);
         const cell = cells.length ? cells[Math.floor(Math.random() * cells.length)] : cabinet;
@@ -514,6 +515,7 @@ export function openSlot(cfg, ctx) {
         winEl.textContent = fmt(res.total);
         refresh();
         if (res.points) { floatText(reelsBox, `+${res.points} P`, "pts"); Sound.coin(); }
+        if (res.boosted) floatText(cabinet, "🎰 보너스 UP 아이템 발동!", "lucky");
         if (res.lucky && (res.lucky === "bonus" || res.total > 0)) {
             const credit = showPetHelp(ctx.luck, res.lucky, res.total);
             if (credit) { floatText(cabinet, res.lucky === "bonus" ? `🐾 ${credit.name} 보너스 도움!` : `🐾 ${credit.name} 덕분!`, "lucky"); ctx.petHelp?.(res.lucky, res.total, credit); }

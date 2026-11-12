@@ -8,12 +8,21 @@ import { Sound } from "./sound.js";
 export function particles(def, scale = 1) {
     const layer = h("div.fx-layer.fx-" + def.mode + (def.cls ? "." + def.cls : ""));
     if (def.mode === "aurora") { layer.append(h("div.fx-aurora")); return layer; }
+    if (def.mode === "rainbow") { layer.append(h("div.fx-rainbow-arc"), h("span.fx-rb-cloud.l", "☁️"), h("span.fx-rb-cloud.r", "☁️")); return layer; }
     if (def.mode === "flood") layer.append(h("div.fx-water"));
+    if (def.mode === "thunder") layer.append(h("div.fx-flash"), h("span.fx-cloud", "🌩️"));
+    if (def.mode === "tnt") layer.append(h("span.fx-dyn", "🧨", h("i.fx-fuse", "✨")), h("span.fx-boom", "💥"));
+    if (def.mode === "koipond") layer.append(h("div.fx-pond"));
+    if (def.mode === "monggi") {
+        // colourful rabbit / circle blobs with eyes and the '( - )' wrinkle
+        for (let i = 0; i < (def.n || 6); i++) layer.append(h("span.fx-mg" + (i % 2 ? ".bun" : ".ball"), { style: { "--i": i, "--hue": (i * 57) % 360, "--x": `${4 + (i * 17) % 80}%`, "--y": `${6 + (i * 29) % 72}%`, "--d": `${(i * 0.7).toFixed(1)}s`, fontSize: `${(def.size || 9) * scale}px` } }, h("b.mg-face", def.chars[0])));
+        return layer;
+    }
     const n = def.n || 6;
     for (let i = 0; i < n; i++) {
         const ch = def.chars[i % def.chars.length];
         const s = h("span.fx-p", ch);
-        const dur = { orbit: 6, swoop: 4, flyby: 5, halo: 3, wave: 1.6, twinkle: 2.2, jump: 1.4, fountain: 1.8, firework: 2.4, rain: 2.6, rise: 3, float: 4, flood: 3 }[def.mode] || 3;
+        const dur = { orbit: 6, swoop: 4, flyby: 5, halo: 3, wave: 1.6, twinkle: 2.2, jump: 1.4, fountain: 1.8, firework: 2.4, rain: 2.6, rise: 3, float: 4, flood: 3, buzz: 2.2, hands: 2.4, thunder: 2.8, tnt: 3.2, koipond: 2, chicks: 3.6 }[def.mode] || 3;
         s.style.cssText = `--i:${i};--n:${n};--x:${Math.random() * 100}%;--y:${Math.random() * 100}%;` +
             `--d:${(def.mode === "orbit" || def.mode === "wave" ? (i / n) * dur : Math.random() * dur).toFixed(2)}s;` +
             `--t:${(dur * (0.8 + Math.random() * 0.4)).toFixed(2)}s;--a:${Math.round(i * 360 / n)}deg;` +

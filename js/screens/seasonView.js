@@ -11,7 +11,8 @@ import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { TIERS, MISSIONS, ITEM_BY_ID, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
 import { sandboxTools, exitSandbox } from "../game/sandbox.js";
-const CARD_RATE = 0.008;       // alphabet card chance per slot spin (rare: under 1%)
+// alphabet card (G·A·M·B·L·E·R·S) chance per slot spin: 0.04% at the top bet down to 0.01% at the lowest
+const CARD_RATE = (bet, bets) => { const l = [...new Set(bets || [bet])].sort((a, b) => a - b); const i = Math.max(0, l.findIndex(b => b >= bet)); return 0.0001 + 0.0003 * (l.length > 1 ? i / (l.length - 1) : 0); };
 const CASINO_CARD_RATE = 0.01; // per casino play
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
@@ -22,6 +23,7 @@ import { worldMap, regionMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
+import { spellingView } from "./spelling.js";
 import { locationShops } from "../data/catalogAdmin.js";
 import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo } from "./corners.js";
 import { battleView } from "./battle.js";
@@ -109,7 +111,7 @@ function selectStage(s) {
     const spinBtn = h("button.btn.gold.huge", { onclick: async () => {
         if (spinning || G.rosterFull()) return;
         spinning = true; spinBtn.disabled = skipBtn.disabled = true;
-        const p = pick(G.selectionPool());
+        const p = G.pickForSelection(G.selectionPool());
         await machine.spin(p.id, G.selectionPool(), { tense: true });
         G.addToRoster(p.id);
         await reveal(p.id);
@@ -119,13 +121,14 @@ function selectStage(s) {
     const skipBtn = h("button.btn.ghost.big", { onclick: async () => {
         if (spinning) return;
         const left = CONFIG.SEASON_SIZE - s.roster.length;
-        for (const p of shuffle(G.selectionPool()).slice(0, left)) G.addToRoster(p.id);
+        for (const p of G.pickManyForSelection(G.selectionPool(), left)) G.addToRoster(p.id);
         Sound.bonus(); confetti(60);
         render();
     } }, "⏭ SKIP (나머지 즉시 선발)");
     const full = G.rosterFull();
     return h("div.select-stage",
         h("h2.stage-title", "🎰 시즌 참가자 선발 🎰", h("small", `${s.roster.length} / ${CONFIG.SEASON_SIZE}`)),
+        G.prevSeasonPlayers().size ? h("p.muted.center", `지난 시즌 참가자는 다시 뽑힐 확률이 ${Math.round(G.REPICK_WEIGHT * 100)}%로 낮아집니다 (연속 출전 방지)`) : null,
         machine.el,
         full ? h("div.row.center", h("button.btn.gold.huge", { onclick: () => { G.startRound(); render(); } }, "▶ 라운드 1 시작")) : h("div.row.center", spinBtn, skipBtn),
         grid);
@@ -251,9 +254,15 @@ function regionStage(s) {
         if (!(await confirmBox(`${it.name}을(를) 사용해 ${loc.emoji} ${loc.name}(으)로 바로 이동할까요?`))) return;
         if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); render(); }
     } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`))) : null;
+    const randomRow = ps.items.map_random > 0 ? h("div.pass-row", h("b", "🗺️ 랜덤 맵권:"), h("button.btn.small.gold", { onclick: async () => {
+        if (!(await confirmBox("랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 바로 이동할까요?"))) return;
+        const loc = G.useRandomMap();
+        if (!loc) return toast("이동할 수 있는 맵이 없습니다", "warn");
+        s.turn.running = true; Sound.bonus(); await banner(`🗺️ ${loc.emoji} ${loc.name}`, 1400, "loc"); render();
+    } }, `🗺️ 랜덤 맵으로 이동 ×${ps.items.map_random}`)) : null;
     return h("div.map-stage",
         h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${Store.player(pid).country} · 선택 가능한 지역 ${avail.length}곳`)), btn),
-        passRow,
+        passRow, randomRow,
         rmap.el,
         h("p.muted.center", "☁️ 하늘나라 = 🪽 날개 · 🪐 우주 = 🧑‍🚀 우주복 · 🌊 심해 = 🤿 산소통이 있어야 뽑힐 수 있어요 (입장 시 소모 · 일반 상점)"));
 }
@@ -311,7 +320,9 @@ function locationStage(s) {
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
             h("div.stat", h("small", "이번 턴 포인트"), h("b", String(t.stats.points))),
-            h("div.stat", h("small", "보너스 / 잭팟"), h("b", `${t.stats.bonus} / ${t.stats.jackpot || "-"}`))].filter(Boolean));
+            h("div.stat", h("small", "보너스 / 잭팟"), h("b", `${t.stats.bonus} / ${t.stats.jackpot || "-"}`)),
+            G.boostLeft("slot") ? h("div.stat.boost", h("small", "🎰 슬롯 보너스 UP"), h("b", `${G.boostLeft("slot")}초`)) : null,
+            G.boostLeft("casino") ? h("div.stat.boost", h("small", "🃏 카지노 상금 UP"), h("b", `${G.boostLeft("casino")}초`)) : null].filter(Boolean));
     };
     updateHud();
 
@@ -319,7 +330,9 @@ function locationStage(s) {
     const endBtn = h("button.btn.red.small", { onclick: async () => { if (await confirmBox("턴을 종료할까요?")) finishTurn(); } }, "⏹ 턴 종료");
 
     const ctx = kind => ({
-        pid, luck,
+        pid,
+        // pet luck + the 30 s booster item (boost: true while it runs)
+        get luck() { return { ...luck, boost: G.boostLeft(kind) > 0 }; },
         money: () => G.playMoney(pid),
         canPlay: () => t.remaining <= 0 ? { ok: false, why: "⏰ 시간 종료!" } : !t.running ? { ok: false, why: "⏸ 일시정지 중입니다" }
             : G.playsLeft(pid, kind) <= 0 ? { ok: false, why: kind === "slot" ? "이번 라운드 슬롯 스핀 횟수를 모두 썼습니다 (추가권: 일반 상점)" : "이번 라운드 카지노게임 횟수를 모두 썼습니다 (추가권: 일반 상점)" }
@@ -350,7 +363,7 @@ function locationStage(s) {
     // tabs
     const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
-        ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []),
+        ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     let currentTab = "games";
     const tabBar = h("div.tabs");
@@ -371,12 +384,15 @@ function locationStage(s) {
             onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${r}`, "ok"); updateHud(); } },
             onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
             onChange: () => side.replaceChildren(sideCard()),
-            onPass: id => movePass(id)
+            onPass: id => movePass(id),
+            onBoost: kind => { if (G.useBoost(kind)) { Sound.bonus(); toast(kind === "slot" ? "🎰 30초 동안 슬롯 보너스 확률 UP!" : "🃏 30초 동안 카지노 상금 확률 UP!", "ok"); updateHud(); } },
+            onRandomMap: () => moveRandom()
         });
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
+        else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
@@ -402,6 +418,20 @@ function locationStage(s) {
         gameLayer?.remove(); gameLayer = null;
         Sound.bonus();
         await banner(`🎟️ ${to.emoji} ${to.name}`, 1400, "loc");
+        render();
+    }
+    async function moveRandom() {
+        if (moving) return;
+        if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
+        if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.`, "이동하기", "취소"))) return;
+        moving = true;
+        const to = G.useRandomMap();
+        if (!to) { moving = false; return toast("이동할 수 있는 맵이 없습니다", "warn"); }
+        clearInterval(timer);
+        gameLayer?.remove(); gameLayer = null;
+        Sound.bonus();
+        await banner(`🗺️ ${to.emoji} ${to.name}`, 1400, "loc");
         render();
     }
     const passBtns = G.passesOf(pid).filter(it => it.loc !== loc.id);
@@ -500,8 +530,9 @@ function judgeStage(s) {
     return h("div.judge-stage",
         h("h2.stage-title", `ROUND ${s.round} 결과`),
         s.allPassed ? h("div.notice", "모두 미션 성공! 이번 라운드 손익 하위 3명이 탈락 후보가 됩니다.") : null,
+        ...(s.exempt || []).map(x => h("div.notice.exempt", avatar(x.pid, 40, { effect: false }), h("span", `⭐ ${displayName(Store.player(x.pid))}은(는) ${x.why}으로 인해 탈락후보에서 면제되었다!`))),
         h("div.judge-cols",
-            h("div.jcol.ok", h("h3", `✅ 성공 ${passed.length}`), h("div.jlist", passed.map(pid => miniPlayer(pid, s.ps[pid])))),
+            h("div.jcol.ok", h("h3", `✅ 성공 ${passed.length}`), h("div.jlist", passed.map(pid => miniPlayer(pid, s.ps[pid], s.results[pid]?.exempt ? h("span.exempt-tag", { title: `${s.results[pid].exempt}으로 인해 면제` }, "⭐ 면제") : null)))),
             h("div.jcol.bad", h("h3", `❌ 실패 ${failed.length}`), h("div.jlist", failed.map(pid => miniPlayer(pid, s.ps[pid]))))),
         h("h3.center", `⚖️ 탈락 후보 ${s.candidates.length}명`),
         h("div.cand-row", s.candidates.map(pid => h("div.cand-card", avatar(pid, 80), h("small", displayName(Store.player(pid)))))),

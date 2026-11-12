@@ -9,6 +9,7 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { NEW_MAPS } from "./regions.js";
+import { boostChance } from "./catalog.js";
 
 const BETS = [100, 500, 1000, 5000, 10000];
 const HIGH = [1000, 5000, 10000, 30000];
@@ -169,6 +170,13 @@ export function playCasino(g, bet, luck = {}, choice) {
         entry = roll(t);
         if (entry.m === 0 && luck.win > 0 && Math.random() < luck.win / Math.max(0.05, 1 - pWin)) {
             const e2 = roll(t); if (e2.m > 0) entry = { ...e2, lucky: true };
+        }
+    }
+    // 🃏 카지노게임 상금 UP item (30 s): a losing play turns into a win with up to 50% (low bet) … 20% (top bet)
+    if (luck.boost && !(entry.m > 0) && Math.random() < boostChance(bet, g.bets)) {
+        for (let k = 0; k < 200; k++) {
+            const e2 = g.kind === "roulette" ? (Math.random() < g.rtp / (ROULETTE[choice] || 1.9) ? { m: ROULETTE[choice] || 1.9, colour: choice } : null) : roll(withLose(g));
+            if (e2 && e2.m > 0) { entry = { ...e2, boosted: true }; break; }
         }
     }
     const payout = Math.min(CONFIG.CASINO_MAX_WIN, Math.round(bet * entry.m));

@@ -49,6 +49,7 @@ export function openCasino(g, ctx) {
         refresh();
         if (res.payout > 0) {
             msg.innerHTML = `<span class="win">WIN ×${res.mult} → +${fmt(res.payout)} G</span>`;
+            if (res.entry.boosted) msg.append(h("span.lucky", " 🃏 상금 UP 아이템 발동!"));
             if (res.entry.lucky) { const credit = showPetHelp(ctx.luck, "win", res.payout); if (credit) { msg.append(h("span.lucky", ` 🐾 ${credit.name} 덕분!`)); ctx.petHelp?.("win", res.payout, credit); } }
             Sound.win();
             const top = res.mult >= topMult(g);
