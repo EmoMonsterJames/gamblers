@@ -9,24 +9,26 @@ import { Sound } from "../core/sound.js";
 import { toast, confetti, banner, confirmBox, modal, bigWin } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS, LOANS } from "../data/catalog.js";
+import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
+const CARD_RATE = 0.2; // alphabet card chance per slot spin / casino play
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
 import * as G from "../game/season.js";
 import { avatar, playerCard, miniPlayer, displayName, petView, weaponChip } from "../ui/profile.js";
 import { reelMachine } from "../ui/reelpick.js";
-import { worldMap } from "../ui/map.js";
+import { worldMap, regionMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
 import { locationShops } from "../data/catalogAdmin.js";
-import { earnView, begView } from "./corners.js";
+import { earnView, begView, jobView, npcAttack, scheduleNpc } from "./corners.js";
 import { battleView } from "./battle.js";
 
 let root = null, timer = null;
 
 export function seasonScreen() {
     root = h("div.season");
+    if (G.S()) G.grantJoinBonus(); // 200,000G join bonus, also for players who joined earlier
     render();
     return root;
 }
@@ -125,7 +127,7 @@ async function reveal(pid) {
 function missionStage(s) {
     const tier = G.tierForRound();
     const ms = G.missionsForTier(tier);
-    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️" }[m.type]), h("div.mc-text", m.text)));
+    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉" }[m.type] || "📜"), h("div.mc-text", m.text)));
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
@@ -171,29 +173,97 @@ function preTurn(s) {
         h("h2.stage-title", `${s.turnIdx + 1}번째 플레이어`),
         playerCard(pid, ps),
         h("div.row.center",
-            h("button.btn.gold.huge", { onclick: () => { G.startTurn(); render(); } }, "🗺️ 턴 시작 — 장소 뽑기"),
+            h("button.btn.gold.huge", { onclick: () => { G.startTurn(); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
             h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
 }
 
+// Step 1: region roulette (or a map pass straight to a map). Step 2: map roulette inside the region.
 function mapStage(s) {
     const pid = s.turn.pid;
-    const acc = G.accessibleLocations(pid);
-    const locked = new Set(LOCATIONS.filter(l => !acc.includes(l)).map(l => l.id));
-    const map = worldMap({ locked });
+    if (!s.turn.region) return regionStage(s);
+    const region = REGION_BY_ID[s.turn.region];
+    const acc = G.accessibleLocations(pid, region.id);
+    const inRegion = LOCATIONS.filter(l => l.region === region.id && !l.off);
+    const locked = new Set(inRegion.filter(l => !acc.includes(l)).map(l => l.id));
+    const map = worldMap({ locked, region: region.id });
+    const tried = new Set(); // maps that refused entry this turn
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
-        const target = pick(acc);
-        await map.roulette(acc, target.id);
-        await banner(`${target.emoji} ${target.name}`, 1600, "loc");
-        G.setLocation(target.id);
-        s.turn.running = true;
+        let pool = acc.filter(l => !tried.has(l.id));
+        while (pool.length) {
+            const target = pick(pool);
+            await map.roulette(pool, target.id);
+            await banner(`${target.emoji} ${target.name}`, 1400, "loc");
+            const ok = await entryCheck(pid, target, pool.length > 1);
+            if (ok) {
+                G.setLocation(target.id);
+                s.turn.running = true;
+                render();
+                return;
+            }
+            tried.add(target.id);
+            map.el.querySelector(`.pin[data-id="${target.id}"]`)?.classList.add("locked");
+            map.el.querySelector(".pin.chosen")?.classList.remove("chosen");
+            pool = acc.filter(l => !tried.has(l.id));
+        }
+        // every map in the region refused: back to the region roulette
+        toast("이 지역의 모든 카지노가 입장을 거절했습니다… 지역을 다시 뽑아요", "warn", 3500);
+        s.turn.region = null; Store.saveSeason();
         render();
-    } }, "🎯 장소 룰렛 돌리기");
+    } }, `🎯 ${region.name} 맵 룰렛`);
     return h("div.map-stage",
-        h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${Store.player(pid).country} · 입장 가능 ${acc.length}곳`)), btn),
+        h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${region.emoji} ${region.name} · 입장 가능 ${acc.length}곳`)), btn),
         map.el,
-        h("p.muted.center", "회색 핀은 입장 불가(포인트 부족 / 국적 전용 — 출입권이 있으면 입장 가능)"));
+        h("p.muted.center", "회색 핀은 입장 불가 (포인트 부족 / 국적 전용 — 맵권이 있으면 입장) · 💰 입장료 맵은 들어갈 때 차감 · 🎲 랜덤 입장 맵은 거절당하면 다른 맵을 다시 뽑습니다"));
+}
+function regionStage(s) {
+    const pid = s.turn.pid, ps = s.ps[pid];
+    const avail = G.availableRegions(pid);
+    const rmap = regionMap({ status: r => G.regionStatus(pid, r) });
+    const passes = G.passesOf(pid);
+    let done = false;
+    const btn = h("button.btn.gold.huge", { onclick: async () => {
+        if (done || !avail.length) return; done = true; btn.disabled = true;
+        const target = pick(avail);
+        await rmap.roulette(avail, target.id);
+        await banner(`${target.emoji} ${target.name}`, 1500, "loc");
+        G.enterRegion(target.id);
+        render();
+    } }, "🌍 지역 룰렛 돌리기");
+    const passRow = passes.length ? h("div.pass-row", h("b", "🎟️ 맵권 사용 → 바로 이동:"), passes.map(it => h("button.btn.small.gold", { onclick: async () => {
+        const loc = LOC_BY_ID[it.loc];
+        if (!(await confirmBox(`${it.name}을(를) 사용해 ${loc.emoji} ${loc.name}(으)로 바로 이동할까요?`))) return;
+        if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); render(); }
+    } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`))) : null;
+    return h("div.map-stage",
+        h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${Store.player(pid).country} · 선택 가능한 지역 ${avail.length}곳`)), btn),
+        passRow,
+        rmap.el,
+        h("p.muted.center", "☁️ 하늘나라 = 🪽 날개 · 🪐 우주 = 🧑‍🚀 우주복 · 🌊 심해 = 🤿 산소통이 있어야 뽑힐 수 있어요 (입장 시 소모 · 일반 상점)"));
+}
+// random-entry maps: the bouncer flips a coin. A refused player may spend any alphabet card to force it.
+async function entryCheck(pid, loc, canRetry) {
+    const ce = G.canEnter(pid, loc);
+    if (!ce.random) {
+        if (ce.fee) toast(`💰 입장료 ${fmt(ce.fee)}G`, "info");
+        if (ce.feePts) toast(`💎 입장료 ${ce.feePts}P`, "info");
+        return true;
+    }
+    const roll = G.rollEntry(pid, loc);
+    const cards = G.cardsOf(pid);
+    const box = h("div.entry-check" + (roll.allowed ? ".yes" : ".no"),
+        h("div.bouncer", roll.allowed ? "🙆" : "🙅"),
+        h("h2", roll.allowed ? "입장 허가!" : "입장 거절!"),
+        h("p", roll.allowed ? `${loc.emoji} ${loc.name}에 들어갈 수 있습니다` : `${loc.emoji} ${loc.name}의 문지기가 막아섰다…${canRetry ? " 다른 카지노를 다시 뽑습니다." : ""}`));
+    let forced = false;
+    const m = modal(box, { title: "🎲 랜덤 입장", closable: false });
+    const close = h("button.btn.gold.big", { onclick: () => m.close() }, roll.allowed ? "들어가기 ▶" : canRetry ? "다른 맵 뽑기 ▶" : "확인");
+    const cardBtns = !roll.allowed && cards.length ? h("div.pass-row", h("small", "🔤 알파벳 카드 1장으로 강제 입장:"), cards.map(L => h("button.btn.small", { onclick: () => { if (G.useCardForEntry(pid, L)) { forced = true; m.close(); } } }, `카드 ${L}`))) : null;
+    box.append(cardBtns || "", close);
+    roll.allowed ? Sound.fanfare() : Sound.lose();
+    await m.closed;
+    return roll.allowed || forced;
 }
 
 // ---------------------------------------------------------------- location (the actual turn)
@@ -242,8 +312,16 @@ function locationStage(s) {
         left: () => G.playsLeft(pid, kind),
         record(bet, win, points, extra = {}) {
             if (extra.pending) { G.spendBet(pid, kind, bet); updateHud(); return; }
-            if (extra.settle) { ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, extra); updateHud(); }
+            if (extra.settle) {
+                ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, extra); updateHud();
+                // casino games can drop an alphabet card too (slots show theirs on the reels)
+                if (kind === "casino" && Math.random() < CARD_RATE) { const L = pick(ALPHABET); G.gainCard(pid, L); toast(`🔤 알파벳 카드 ${L} 획득!`, "ok"); }
+            }
         },
+        // slots: a letter on the reels → card (season play only)
+        gainCard: kind === "slot" ? L => { G.gainCard(pid, L); updateHud(); } : null,
+        cardRate: CARD_RATE,
+        petHelp: (what, amount, credit) => { G.notePetHelp(pid, what, amount, credit); side.replaceChildren(sideCard()); },
         close() { gameLayer?.remove(); gameLayer = null; tabBody(currentTab); }
     });
     function openGame(kind, id) {
@@ -255,7 +333,10 @@ function locationStage(s) {
     }
 
     // tabs
-    const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]), ...(loc.earn ? [["earn", "💪 돈벌기"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
+    const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
+        ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
+        ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []),
+        ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -277,7 +358,8 @@ function locationStage(s) {
             onChange: () => side.replaceChildren(sideCard())
         });
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
-        else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); });
+        else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
+        else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
@@ -287,9 +369,26 @@ function locationStage(s) {
         h("div.ls-name", displayName(Store.player(pid))),
         h("div.ls-pet", ps.pet ? petView(ps.pet, ps.petEffect, 90) : h("div.muted", "펫 없음")),
         h("div.luck", `🍀 승률 +${luck.pct}%`, luck.bonusPct ? h("span", ` · 보너스 +${luck.bonusPct}%`) : null),
+        ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
         ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
     const side = h("div.loc-side", sideCard());
     tabBody("games");
+
+    // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
+    if (loc.npc && !t.npc) { t.npc = scheduleNpc(t.remaining); Store.saveSeason(); }
+    let npcBusy = false;
+    async function npcCheck() {
+        if (npcBusy || !t.npc?.length || t.remaining > t.npc[0]) return;
+        if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
+        npcBusy = true;
+        t.npc.shift();
+        const was = t.running; t.running = false; updateHud();
+        const out = await npcAttack(pid);
+        npcBusy = false;
+        if (out?.kill) { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); return; }
+        t.running = was; updateHud(); side.replaceChildren(sideCard());
+        Store.saveSeason();
+    }
 
     // timer loop
     let saveTick = 0;
@@ -300,6 +399,7 @@ function locationStage(s) {
         if (t.remaining <= 10 && t.remaining > 0) Sound.tick();
         if (++saveTick % 5 === 0) Store.saveLocal();
         updateHud();
+        npcCheck();
         if (t.remaining <= 0) timeUp();
     }, 1000);
 
@@ -315,6 +415,9 @@ function locationStage(s) {
     async function finishTurn() {
         if (finishing) return; finishing = true;
         clearInterval(timer);
+        // card missions: a holder decides now whether to spend the card
+        if (s.mission.type === "card" && !t.stats.cardUsed && ps.items["card_" + s.mission.letter] > 0
+            && await confirmBox(`🔤 알파벳 카드 ${s.mission.letter}를 갖고 있습니다.\n이번 라운드에 사용할까요? (사용하면 미션 통과 · 카드는 사라집니다)`, "사용하기", "아끼기")) G.useMissionCard();
         const met = t.ticket || G.missionMet(s.mission, t.stats);
         gameLayer?.remove(); gameLayer = null;
         const m = modal(h("div.turn-result" + (met ? ".ok" : ".bad"),
@@ -335,7 +438,7 @@ function locationStage(s) {
 
     return h("div.location", { style: { "--loc": loc.color } },
         h("div.loc-head",
-            h("div.loc-name", h("span", loc.emoji), h("b", loc.name)),
+            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), loc.npc ? h("span.npc-warn", { title: "이 맵에서는 플레이 중 NPC가 갑자기 나타날 수 있습니다" }, "⚠️ NPC 출몰") : null),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
         hud,

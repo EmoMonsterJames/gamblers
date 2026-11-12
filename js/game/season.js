@@ -4,10 +4,11 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, JACKPOT_RANK, LOCATIONS, PET_BY_ID, PETFX_BY_ID, LOANS } from "../data/catalog.js";
+import { MISSIONS, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, SHOP_LIMIT, passIdOf, cardId } from "../data/catalog.js";
 import { shuffle } from "../core/util.js";
 
 export const S = () => Store.season;
+const JOIN_BONUS = () => CONFIG.SEASON_JOIN_BONUS ?? 200000;
 
 export function newSeason() {
     const number = (Store.seasonCount || 0) + 1;
@@ -30,9 +31,27 @@ export function addToRoster(pid) {
     const s = S();
     if (s.roster.includes(pid) || s.roster.length >= CONFIG.SEASON_SIZE) return;
     s.roster.push(pid);
-    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
+    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
     log(`🎰 ${name(pid)} 참가 확정!`);
+    // gold won outside a season (survival corner) comes along
+    const w = Store.wallets?.[pid] || 0;
+    if (w > 0) { s.ps[pid].money += w; delete Store.wallets[pid]; Store.saveWallets(); log(`👛 ${name(pid)} 시즌 밖에서 번 ${w.toLocaleString()}G 합류`); }
+    grantJoinBonus();
     Store.saveSeason();
+}
+// every player gets the join bonus once per season (players who joined
+// before this rule existed get it the next time the season screen opens)
+export function grantJoinBonus() {
+    const s = S(); if (!s) return false;
+    let any = false;
+    for (const pid of s.roster) {
+        const ps = s.ps[pid];
+        if (ps.joinBonus || ps.out) continue;
+        ps.joinBonus = true; ps.money += JOIN_BONUS(); any = true;
+        log(`🎁 ${name(pid)} 시즌 참가 보너스 +${JOIN_BONUS().toLocaleString()}G`);
+    }
+    if (any) Store.saveSeason(true);
+    return any;
 }
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
@@ -85,6 +104,18 @@ export function spendBet(pid, kind, bet) {
     (ps.use ||= { slot: 0, casino: 0 })[kind] = (ps.use[kind] || 0) + 1;
 }
 export const playMoney = pid => { const ps = S().ps[pid]; return ps.money + (ps.loanGold || 0); };
+
+// ---------------------------------------------------------------- shop limits (per round)
+export function buysLeft(pid, shopId) {
+    const s = S(), ps = s.ps[pid];
+    const b = ps.buys?.round === s.round ? ps.buys : {};
+    return (SHOP_LIMIT[shopId] ?? 1) - (b[shopId] || 0);
+}
+export function noteBuy(pid, shopId) {
+    const s = S(), ps = s.ps[pid];
+    if (ps.buys?.round !== s.round) ps.buys = { round: s.round };
+    ps.buys[shopId] = (ps.buys[shopId] || 0) + 1;
+}
 
 // ---------------------------------------------------------------- loans
 export function loanStatus(pid) {
@@ -158,18 +189,49 @@ export function setMission(m) {
     Store.saveSeason(true);
 }
 
+// ---------------------------------------------------------------- groups used by battle / rank missions
+const itemCount = ps => Object.values(ps.items || {}).reduce((a, n) => a + Math.max(0, n || 0), 0);
+const hasPetGear = pid => { const ps = S().ps[pid]; return !!(ps.pet || ps.petEffect); };
+const hasFrameGear = pid => { const d = Store.getDecor?.(pid) || {}; return !!(d.frame || d.effect); };
+const METRIC = {
+    money: pid => S().ps[pid].money, points: pid => S().ps[pid].points, hp: pid => S().ps[pid].hp,
+    weapons: pid => S().ps[pid].weapons.length, maps: pid => (S().ps[pid].visited || []).length,
+    items: pid => itemCount(S().ps[pid]), spins: pid => S().ps[pid].totals.spins,
+    net: pid => S().ps[pid].totals.slotNet + S().ps[pid].totals.casinoNet
+};
+// players at the extreme of a metric (ties included), widened until there are `min` of them
+function extremeGroup(list, metric, dir = 1, min = 2) {
+    const f = METRIC[metric];
+    const sorted = [...list].sort((a, b) => dir * (f(a) - f(b)));
+    if (!sorted.length) return [];
+    let k = 1;
+    while (k < sorted.length && f(sorted[k]) === f(sorted[0])) k++;
+    while (k < Math.min(min, sorted.length)) { const v = f(sorted[k]); while (k < sorted.length && f(sorted[k]) === v) k++; }
+    return sorted.slice(0, k);
+}
+const exactTwo = (list, metric, dir) => [...list].sort((a, b) => dir * (METRIC[metric](a) - METRIC[metric](b))).slice(0, 2);
+
 // ---------------------------------------------------------------- battle missions
 export const rosterNo = pid => S().roster.indexOf(pid) + 1; // 1..20, the selection order
 const BATTLE_GROUP = 4; // "the poorest / richest …" = the bottom / top 4
 function battlePair(rule) {
     const s = S(), live = alive();
     const by = (key, dir) => [...live].sort((a, b) => dir * (s.ps[a][key] - s.ps[b][key])).slice(0, Math.min(BATTLE_GROUP, live.length));
-    let pool = {
-        even: live.filter(p => rosterNo(p) % 2 === 0),
-        odd: live.filter(p => rosterNo(p) % 2 === 1),
-        poor: by("money", 1), rich: by("money", -1),
-        lowpts: by("points", 1), highpts: by("points", -1)
-    }[rule] || live;
+    const rules = {
+        even: () => live.filter(p => rosterNo(p) % 2 === 0),
+        odd: () => live.filter(p => rosterNo(p) % 2 === 1),
+        poor: () => by("money", 1), rich: () => by("money", -1),
+        lowpts: () => by("points", 1), highpts: () => by("points", -1),
+        // exactly two
+        poor2: () => exactTwo(live, "money", 1), rich2: () => exactTwo(live, "money", -1),
+        lowpts2: () => exactTwo(live, "points", 1), highpts2: () => exactTwo(live, "points", -1),
+        netlow2: () => exactTwo(live, "net", 1), fewspins2: () => exactTwo(live, "spins", 1),
+        // groups
+        nopet: () => live.filter(p => !hasPetGear(p)), noframe: () => live.filter(p => !hasFrameGear(p)),
+        fewweapons: () => extremeGroup(live, "weapons", 1), lowhp: () => extremeGroup(live, "hp", 1), highhp: () => extremeGroup(live, "hp", -1),
+        fewmaps: () => extremeGroup(live, "maps", 1), fewitems: () => extremeGroup(live, "items", 1)
+    };
+    let pool = rules[rule]?.() || live;
     if (pool.length < 2) pool = live;
     const pair = shuffle(pool).slice(0, 2);
     // richer one attacks first (tie → more points)
@@ -204,7 +266,7 @@ export function useHpItem(pid, itemId, amount) {
     return ps.hp - before;
 }
 
-// ---------------------------------------------------------------- money-making corner / begging
+// ---------------------------------------------------------------- money-making corner / begging / jobs
 export const EARN_PER_SEASON = 2;
 export const earnLeft = pid => EARN_PER_SEASON - (S().ps[pid].earnUsed || 0);
 export function payEarn(pid, kind, gold, extra = {}) {
@@ -220,8 +282,68 @@ export function payBeg(pid, gold) {
     const s = S(), ps = s.ps[pid];
     ps.begRound = s.round;
     ps.money += gold;
+    if (s.turn?.pid === pid) s.turn.stats.beg = (s.turn.stats.beg || 0) + gold;
     log(`🥺 ${name(pid)} 구걸 +${gold.toLocaleString()}G`);
     Store.saveSeason(true);
+}
+// job corner: once per turn, the job's time comes off the turn timer
+export const canWork = pid => S().turn?.pid === pid && !S().turn.worked;
+export function payJob(pid, career, gold, card = null) {
+    const s = S(), ps = s.ps[pid], t = s.turn;
+    if (t) { t.worked = true; t.remaining = Math.max(0, t.remaining - career.cut); t.stats.job = (t.stats.job || 0) + gold; }
+    ps.money += gold;
+    if (card) ps.items[cardId(card)] = (ps.items[cardId(card)] || 0) + 1;
+    log(`💼 ${name(pid)} ${career.name} 알바 ${card ? `→ 알파벳 카드 ${card}` : `+${gold.toLocaleString()}G`} (-${Math.round(career.cut / 60)}분)`);
+    Store.saveSeason(true);
+}
+// alphabet cards dropped by slot reels
+export function gainCard(pid, letter) {
+    const ps = S().ps[pid];
+    ps.items[cardId(letter)] = (ps.items[cardId(letter)] || 0) + 1;
+    log(`🔤 ${name(pid)} 알파벳 카드 ${letter} 획득`);
+    Store.saveSeason();
+}
+
+// ---------------------------------------------------------------- NPC corner
+// apply one NPC move to the current player; returns what happened
+export function npcHit(pid, npc, move) {
+    const s = S(), ps = s.ps[pid];
+    const rnd = ([a, b]) => Math.round((a + Math.random() * (b - a)) / 100) * 100;
+    const out = { npc: npc.id, move };
+    if (move.steal) {
+        const g = rnd(move.steal);
+        if (ps.money >= g) { ps.money -= g; out.gold = -g; } else out.none = true; // too poor to rob
+    } else if (move.give) { const g = rnd(move.give); ps.money += g; out.gold = g; }
+    else if (move.hp) { const before = ps.hp; ps.hp = Math.max(1, Math.min(CONFIG.START_HP, ps.hp + move.hp)); out.hp = ps.hp - before; }
+    else if (move.nomove) {
+        const ix = ps.weapons.findIndex(w => w !== "no_move");
+        if (ix >= 0) { out.weapon = ps.weapons[ix]; ps.weapons[ix] = "no_move"; } else out.none = true;
+    } else if (move.kill) { out.kill = true; }
+    log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${out.kill ? "즉사!" : out.none ? "효과 없음" : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주"}`);
+    if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`);
+    else Store.saveSeason(true);
+    return out;
+}
+// death outside the judge (reaper): out at once, the turn is over
+export function killPlayer(pid, why) {
+    const s = S();
+    if (s.ps[pid].out) return;
+    const rank = alive().length;
+    Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
+    s.history.push({ round: s.round, npcDeath: true, eliminated: pid, rank, why });
+    log(`☠️ ${name(pid)} ${why} (${rank}위)`);
+    if (s.turn?.pid === pid) {
+        s.results[pid] = { stats: s.turn.stats, pass: false, dead: true, loc: s.turn.loc };
+        s.turn = null;
+        s.turnIdx++;
+        advanceTurn();
+    }
+    Store.saveSeason(true);
+}
+function advanceTurn() {
+    const s = S();
+    while (s.turnIdx < s.order.length && s.ps[s.order[s.turnIdx]].out) s.turnIdx++;
+    if (s.turnIdx >= s.order.length) judge();
 }
 
 // ---------------------------------------------------------------- turns
@@ -229,31 +351,89 @@ export const currentPid = () => S().order[S().turnIdx];
 export function startTurn() {
     const s = S();
     const pid = currentPid();
-    s.turn = { pid, loc: null, remaining: CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0 } };
+    s.turn = { pid, loc: null, region: null, remaining: CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false } };
     Store.saveSeason();
     return s.turn;
 }
+
+// ---- regions: region roulette → map roulette inside it
+export function regionStatus(pid, region) {
+    const ps = S().ps[pid];
+    if (region.off) return { ok: false, why: "닫힘" };
+    const locs = LOCATIONS.filter(l => l.region === region.id && !l.off);
+    if (!locs.length) return { ok: false, why: "맵 없음" };
+    if (region.need && !(ps.items[region.need] > 0)) return { ok: false, why: `${ITEM_BY_ID[region.need]?.name || region.need} 필요`, need: region.need };
+    const acc = locs.filter(l => canEnter(pid, l).ok);
+    if (!acc.length) return { ok: false, why: "입장 가능한 맵 없음" };
+    return { ok: true, locs: acc };
+}
+export const availableRegions = pid => REGIONS.filter(r => regionStatus(pid, r).ok);
+export function enterRegion(regionId) {
+    const s = S(), t = s.turn, ps = s.ps[t.pid];
+    const r = REGIONS.find(x => x.id === regionId);
+    t.region = regionId;
+    if (r.need && ps.items[r.need] > 0) { ps.items[r.need]--; log(`${ITEM_BY_ID[r.need]?.emoji || "🎒"} ${name(t.pid)} ${ITEM_BY_ID[r.need]?.name} 사용 → ${r.name}`); }
+    else log(`${r.emoji} ${name(t.pid)} → ${r.name}`);
+    Store.saveSeason();
+}
 export function canEnter(pid, loc) {
     const ps = S().ps[pid], p = Store.player(pid);
+    if (loc.off) return { ok: false, why: "닫힘" };
     const r = loc.req;
     if (!r) return { ok: true };
     if (r.points != null) return ps.points >= r.points ? { ok: true } : { ok: false, why: `${r.points}P 이상 필요` };
     if (r.country) {
         if (p.country === r.country) return { ok: true };
-        if ((ps.items[r.pass] || 0) > 0) return { ok: true, pass: r.pass };
+        const pass = r.pass || passIdOf(loc);
+        if ((ps.items[pass] || 0) > 0) return { ok: true, pass };
         return { ok: false, why: `${r.country} 국적 전용` };
     }
+    if (r.fee) return playMoney(pid) >= r.fee ? { ok: true, fee: r.fee } : { ok: false, why: `입장료 ${r.fee.toLocaleString()}G` };
+    if (r.feePts) return ps.points >= r.feePts ? { ok: true, feePts: r.feePts } : { ok: false, why: `입장료 ${r.feePts}P` };
+    if (r.random) return { ok: true, random: !(r.races || []).includes(p.ethnicity) };
     return { ok: true };
 }
-export function accessibleLocations(pid) { return LOCATIONS.filter(l => canEnter(pid, l).ok); }
-export function setLocation(locId) {
-    const s = S(), t = s.turn;
+export function accessibleLocations(pid, regionId = null) { return LOCATIONS.filter(l => (!regionId || l.region === regionId) && canEnter(pid, l).ok); }
+// random-entry maps: the bouncer decides (Ghost / Invisible walk into Ghost Casino)
+export function rollEntry(pid, loc) {
+    const ce = canEnter(pid, loc);
+    if (!ce.random) return { allowed: true };
+    return { allowed: Math.random() < 0.5 };
+}
+export const cardsOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => k.startsWith("card_") && n > 0).map(([k]) => k.slice(5));
+export function useCardForEntry(pid, letter) {
+    const ps = S().ps[pid];
+    if (!(ps.items[cardId(letter)] > 0)) return false;
+    ps.items[cardId(letter)]--;
+    log(`🔤 ${name(pid)} 알파벳 카드 ${letter}로 강제 입장!`);
+    Store.saveSeason();
+    return true;
+}
+export function setLocation(locId, { teleport = false } = {}) {
+    const s = S(), t = s.turn, ps = s.ps[t.pid];
     t.loc = locId;
-    const loc = LOCATIONS.find(l => l.id === locId);
-    const ce = canEnter(t.pid, loc);
-    if (ce.pass) { s.ps[t.pid].items[ce.pass]--; log(`🎟️ ${name(t.pid)} 출입권 사용`); }
+    const loc = LOC_BY_ID[locId];
+    t.region ||= loc.region;
+    if (!teleport) {
+        const ce = canEnter(t.pid, loc);
+        if (ce.pass) { ps.items[ce.pass]--; log(`🎟️ ${name(t.pid)} 출입권 사용`); }
+        if (ce.fee) { const fromLoan = Math.min(ps.loanGold || 0, ce.fee); ps.loanGold = (ps.loanGold || 0) - fromLoan; ps.money -= ce.fee - fromLoan; log(`💰 ${name(t.pid)} 입장료 ${ce.fee.toLocaleString()}G`); }
+        if (ce.feePts) { ps.points -= ce.feePts; log(`💎 ${name(t.pid)} 입장료 ${ce.feePts}P`); }
+    }
+    if (!(ps.visited ||= []).includes(locId)) ps.visited.push(locId);
     log(`🗺️ ${name(t.pid)} → ${loc.name}`);
     Store.saveSeason();
+}
+// map pass: skip both roulettes and go straight to that map
+export const passesOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => n > 0 && ITEM_BY_ID[k]?.loc && LOC_BY_ID[ITEM_BY_ID[k].loc] && !LOC_BY_ID[ITEM_BY_ID[k].loc].off).map(([k]) => ITEM_BY_ID[k]);
+export function usePassTeleport(itemId) {
+    const s = S(), t = s.turn, ps = s.ps[t.pid];
+    const it = ITEM_BY_ID[itemId];
+    if (!it?.loc || !(ps.items[itemId] > 0)) return false;
+    ps.items[itemId]--;
+    log(`🎟️ ${name(t.pid)} ${it.name} 사용 → 순간이동!`);
+    setLocation(it.loc, { teleport: true });
+    return true;
 }
 
 // Record one slot spin / casino play for the current turn
@@ -264,7 +444,12 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     ps.money += win - (extra.free ? 0 : bet);
     ps.points += points;
     const net = win - (extra.free ? 0 : bet);
-    if (kind === "slot") { t.stats.slotNet += net; t.stats.spins++; ps.totals.slotNet += net; ps.totals.spins++; }
+    if (kind === "slot") {
+        t.stats.slotNet += net; t.stats.spins++; ps.totals.slotNet += net; ps.totals.spins++;
+        if (win > 0) t.stats.slotWins = (t.stats.slotWins || 0) + 1; // a whole bonus round is one win
+        t.stats.five = (t.stats.five || 0) + (extra.five ? 1 : 0);
+        if (extra.freeSpin) t.stats.freeSpins = (t.stats.freeSpins || 0) + 1;
+    }
     else { t.stats.casinoNet += net; t.stats.plays++; ps.totals.casinoNet += net; ps.totals.plays++; }
     t.stats.points += points; ps.totals.points += points;
     if (extra.bonus) t.stats.bonus++;
@@ -272,6 +457,13 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     Store.saveSeason();
 }
 
+function hasThing(pid, what) {
+    if (what === "pet") return !!S().ps[pid].pet;
+    if (what === "gear") return hasPetGear(pid) || hasFrameGear(pid);
+    return true;
+}
+// missions decided by the judge, not by playing (shown as "판정 대기")
+export const judgedMission = m => m && (m.type === "rank");
 export function missionMet(m, st) {
     if (!m || !st) return false;
     switch (m.type) {
@@ -280,18 +472,38 @@ export function missionMet(m, st) {
         case "casino_net": return st.casinoNet >= m.v;
         case "points": return st.points >= m.v;
         case "jackpot": return !!st.jackpot && JACKPOT_RANK[st.jackpot] >= JACKPOT_RANK[m.min];
+        case "combo": return st.casinoNet >= m.c && st.slotNet >= m.s;
+        case "five": return (st.five || 0) >= m.v;
+        case "freespin": return (st.freeSpins || 0) >= m.v;
+        case "slot_wins": return (st.slotWins || 0) >= m.v;
+        case "beg_max": return (st.beg || 0) > m.v;
+        case "job_min": return (st.job || 0) >= m.v;
+        case "card": return !!st.cardUsed;
+        case "has": return st.pid != null && hasThing(st.pid, m.what);
+        case "rank": return true;
     }
     return false;
 }
 export function missionProgress(m, st) {
     if (!m || !st) return { cur: 0, goal: 1, label: "" };
+    const met = missionMet(m, st);
     switch (m.type) {
         case "bonus": return { cur: Math.min(1, st.bonus), goal: 1, label: st.bonus ? "보너스 달성!" : "보너스 0회" };
         case "slot_net": return { cur: st.slotNet, goal: m.v, label: `${Math.round(st.slotNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "casino_net": return { cur: st.casinoNet, goal: m.v, label: `${Math.round(st.casinoNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "points": return { cur: st.points, goal: m.v, label: `${st.points} / ${m.v} P` };
-        case "jackpot": return { cur: missionMet(m, st) ? 1 : 0, goal: 1, label: st.jackpot ? `최고 잭팟: ${st.jackpot}` : "잭팟 없음" };
+        case "jackpot": return { cur: met ? 1 : 0, goal: 1, label: st.jackpot ? `최고 잭팟: ${st.jackpot}` : "잭팟 없음" };
+        case "combo": return { cur: (Math.min(1, Math.max(0, st.casinoNet) / m.c) + Math.min(1, Math.max(0, st.slotNet) / m.s)) / 2, goal: 1, label: `🃏 ${Math.round(st.casinoNet).toLocaleString()}/${m.c.toLocaleString()} · 🎰 ${Math.round(st.slotNet).toLocaleString()}/${m.s.toLocaleString()} G` };
+        case "five": return { cur: st.five || 0, goal: m.v, label: `5 of a kind ${st.five || 0} / ${m.v}` };
+        case "freespin": return { cur: st.freeSpins || 0, goal: m.v, label: `무료스핀 ${st.freeSpins || 0} / ${m.v}` };
+        case "slot_wins": return { cur: st.slotWins || 0, goal: m.v, label: `WIN ${st.slotWins || 0} / ${m.v}` };
+        case "beg_max": return { cur: st.beg || 0, goal: m.v + 1, label: `구걸 ${(st.beg || 0).toLocaleString()}G (${m.v.toLocaleString()}G 넘으면 안전)` };
+        case "job_min": return { cur: st.job || 0, goal: m.v, label: `직업 ${(st.job || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
+        case "card": return { cur: met ? 1 : 0, goal: 1, label: met ? `카드 ${m.letter} 사용!` : `카드 ${m.letter}: 턴 종료 때 사용 여부를 묻습니다` };
+        case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? "보유 중 — 안전" : m.what === "pet" ? "펫 없음 (상점에서 구매 가능)" : "펫·펫효과·프레임·효과 없음" };
+        case "rank": return { cur: 0, goal: 1, label: "라운드 끝에 판정" };
     }
+    return { cur: 0, goal: 1, label: "" };
 }
 export function useMissionPass() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
@@ -301,15 +513,24 @@ export function useMissionPass() {
     Store.saveSeason();
     return true;
 }
+// card missions: holders decide at the end of their turn whether to spend the card
+export function useMissionCard() {
+    const s = S(), t = s.turn, ps = s.ps[t.pid], m = s.mission;
+    if (m?.type !== "card" || !(ps.items[cardId(m.letter)] > 0)) return false;
+    ps.items[cardId(m.letter)]--; t.stats.cardUsed = true;
+    log(`🔤 ${name(t.pid)} 알파벳 카드 ${m.letter} 사용 → 미션 통과`);
+    Store.saveSeason();
+    return true;
+}
 export function endTurn() {
     const s = S(), t = s.turn;
     if (!t) return;
     const pass = t.ticket || missionMet(s.mission, t.stats);
     s.results[t.pid] = { stats: t.stats, pass, ticket: t.ticket, loc: t.loc };
-    log(`${pass ? "✅" : "❌"} ${name(t.pid)} 턴 종료 — 미션 ${pass ? "성공" : "실패"}`);
+    log(`${pass ? "✅" : "❌"} ${name(t.pid)} 턴 종료 — ${judgedMission(s.mission) ? "판정 대기" : `미션 ${pass ? "성공" : "실패"}`}`);
     s.turn = null;
     s.turnIdx++;
-    if (s.turnIdx >= s.order.length) judge();
+    advanceTurn();
     Store.saveSeason(true);
 }
 export function skipTurnOf(pid) { // player who can't play (e.g. admin skip) counts as fail
@@ -320,13 +541,22 @@ export function skipTurnOf(pid) { // player who can't play (e.g. admin skip) cou
 // ---------------------------------------------------------------- judging
 function judge() {
     const s = S();
+    if (alive().length <= CONFIG.FINALISTS) { s.status = "final"; return; }
     s.status = "judge";
-    let cands = s.order.filter(pid => !s.results[pid]?.pass);
+    const live = s.order.filter(pid => !s.ps[pid].out);
+    const m = s.mission;
+    let cands;
+    if (m?.type === "rank") {
+        // fewest season slot plays (ties) — "…and the least gold" narrows that group to its 2 poorest
+        const g = extremeGroup(live, "spins", 1, m.rule === "fewspins_poor" ? 2 : 1);
+        cands = m.rule === "fewspins_poor" ? [...g].sort((a, b) => s.ps[a].money - s.ps[b].money).slice(0, 2) : g;
+        for (const pid of live) if (s.results[pid]) s.results[pid].pass = !cands.includes(pid);
+    } else cands = live.filter(pid => !s.results[pid]?.pass);
     s.allPassed = cands.length === 0;
     if (!cands.length) {
         // everybody passed: the 3 lowest earners of the round become candidates
-        const net = pid => { const st = s.results[pid].stats; return st.slotNet + st.casinoNet; };
-        cands = [...s.order].sort((a, b) => net(a) - net(b)).slice(0, Math.min(3, s.order.length - 1));
+        const net = pid => { const st = s.results[pid]?.stats || {}; return (st.slotNet || 0) + (st.casinoNet || 0); };
+        cands = [...live].sort((a, b) => net(a) - net(b)).slice(0, Math.min(3, live.length - 1));
     }
     s.candidates = cands;
     log(`⚖️ 탈락 후보 ${cands.length}명: ${cands.map(name).join(", ")}`);
@@ -368,8 +598,21 @@ export function luckOf(pid) {
     const pet = ps.pet ? PET_BY_ID[ps.pet] : null;
     const fx = ps.petEffect ? PETFX_BY_ID[ps.petEffect] : null;
     let win = 0, bonus = 0;
-    if (pet) { win += pet.boost; if (pet.kind === "special") bonus += pet.boost; }
-    if (fx && pet) { win += fx.boost; if (fx.kind === "special") bonus += fx.boost; }
+    // sources: who gets the credit when luck changes a result (ui/petHelp.js)
+    const sources = [];
+    if (pet) { win += pet.boost; if (pet.kind === "special") bonus += pet.boost; sources.push({ kind: "pet", id: pet.id, name: pet.name, emoji: pet.art?.a || "🐾", special: pet.kind === "special", boost: pet.boost }); }
+    if (fx && pet) { win += fx.boost; if (fx.kind === "special") bonus += fx.boost; sources.push({ kind: "fx", id: fx.id, name: fx.name, emoji: "✨", special: fx.kind === "special", boost: fx.boost }); }
     win = Math.min(30, win); bonus = Math.min(30, bonus);
-    return { win: win / 100, bonus: bonus / 100, pct: win, bonusPct: bonus };
+    return { win: win / 100, bonus: bonus / 100, pct: win, bonusPct: bonus, pid, pet: ps.pet || null, petEffect: ps.petEffect || null, sources };
+}
+
+// pet / effect helped: what = "win" | "bonus"; counted on the player for the season
+export function notePetHelp(pid, what, amount, credit) {
+    const s = S(), ps = s?.ps[pid];
+    if (!ps) return;
+    const ph = (ps.petHelp ||= { win: 0, bonus: 0, gold: 0 });
+    ph[what] = (ph[what] || 0) + 1;
+    ph.gold += Math.max(0, amount || 0);
+    if (what === "bonus" && credit) log(`🐾 ${Store.player(pid)?.name_ko || "플레이어"}의 ${credit.kind === "pet" ? "펫" : "펫효과"} '${credit.name}'이(가) 보너스를 터뜨려 줬다!`);
+    Store.saveSeason();
 }

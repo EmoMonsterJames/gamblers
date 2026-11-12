@@ -3,32 +3,35 @@ import { h, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, modal, confetti } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { SHOPS, catalogEntry, WEAPON_BY_ID, PET_BY_ID, PETFX_BY_ID } from "../data/catalog.js";
+import { SHOPS, catalogEntry, WEAPON_BY_ID, PET_BY_ID, PETFX_BY_ID, SHOP_LIMIT, ITEMS, ITEM_BY_ID, REGION_ITEMS } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
-import { S, log, name } from "../game/season.js";
+import { S, log, name, buysLeft, noteBuy } from "../game/season.js";
 import { petView, weaponChip } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
-import { shopItems } from "../data/catalogAdmin.js";
+import { shopItems, altItems, discountItems } from "../data/catalogAdmin.js";
 
 export function shopView(shopId, pid, locId, onChange) {
     const shop = SHOPS[shopId];
     const ps = S().ps[pid];
     const wrap = h("div.shop.shop-" + shopId);
+    // discount shop: a seeded handful per map per round; other shops: their list + second-shop listings
+    const list = () => shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : [...shopItems(shopId, locId), ...altItems(shopId)];
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
-            h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : `💰 ${fmt(ps.money)} G`)),
-            h("div.shop-grid", shopItems(shopId, locId).map(it => {
+            h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.limit" + (buysLeft(pid, shopId) <= 0 ? ".none" : ""), `이번 라운드 구매 ${Math.max(0, buysLeft(pid, shopId))} / ${SHOP_LIMIT[shopId] ?? 1}`), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : `💰 ${fmt(ps.money)} G`)),
+            h("div.shop-grid", list().map(it => {
                 const e = catalogEntry(it.cat, it.id);
                 if (!e) return null;
                 const owned = (it.cat === "pet" && ps.pet === it.id) || (it.cat === "effect" && ps.petEffect === it.id)
                     || (it.cat === "frame" && d.ownedFrames.includes(it.id)) || (it.cat === "peffect" && d.ownedEffects.includes(it.id));
                 const have = it.cat === "weapon" ? ps.weapons.filter(w => w === it.id).length : it.cat === "item" ? (ps.items[it.id] || 0) : 0;
-                const afford = (shop.cur === "P" ? ps.points : ps.money) >= it.price;
+                const afford = (shop.cur === "P" ? ps.points : ps.money) >= it.price && buysLeft(pid, shopId) > 0;
                 return h("div.sitem" + (e.rare || e.kind === "special" ? ".rare" : "") + (owned ? ".owned" : ""),
                     h("div.sitem-art", art(it.cat, e)),
                     h("div.sitem-name", e.name),
                     h("div.sitem-desc", desc(it.cat, e)),
+                    it.off ? h("div.sitem-sale", h("s", fmt(it.was)), ` -${it.off}%`) : null,
                     have ? h("small.have", `보유 ${have}`) : null,
                     h("button.btn.small" + (afford && !owned ? ".gold" : ".ghost"), { disabled: owned || !afford, onclick: () => buy(it, e) },
                         owned ? "보유중" : `${fmt(it.price)} ${shop.cur}`));
@@ -37,6 +40,7 @@ export function shopView(shopId, pid, locId, onChange) {
     async function buy(it, e) {
         const cur = shop.cur;
         const bal = cur === "P" ? ps.points : ps.money;
+        if (buysLeft(pid, shopId) <= 0) return toast(`${shop.name}은(는) 라운드당 ${SHOP_LIMIT[shopId] ?? 1}번만 살 수 있어요`, "warn");
         if (bal < it.price) return toast("잔액이 부족합니다", "warn");
         if (it.cat === "weapon" && ps.weapons.length >= CONFIG.MAX_WEAPONS) return toast(`무기는 최대 ${CONFIG.MAX_WEAPONS}개! 무기삭제권으로 먼저 비워주세요`, "warn");
         if (it.cat === "pet" && ps.pet) {
@@ -47,6 +51,7 @@ export function shopView(shopId, pid, locId, onChange) {
         if (it.cat === "effect" && !ps.pet) toast("펫이 있어야 펫효과가 적용됩니다 (효과는 보관됩니다)", "warn", 3500);
         if (it.cat === "effect" && ps.petEffect && !(await confirmBox(`이미 펫효과(${PETFX_BY_ID[ps.petEffect].name})가 있습니다. 교체할까요?`))) return;
         if (cur === "P") ps.points -= it.price; else ps.money -= it.price;
+        noteBuy(pid, shopId);
         const d = Store.getDecor(pid);
         switch (it.cat) {
             case "item": ps.items[it.id] = (ps.items[it.id] || 0) + 1; break;
@@ -78,7 +83,7 @@ function art(cat, e) {
 function desc(cat, e) {
     if (cat === "pet") return `${e.kind === "special" ? "특수펫 · 승률+보너스" : "일반펫 · 승률"} +${e.boost}%`;
     if (cat === "effect") return `${e.kind === "special" ? "특수펫효과 · 승률+보너스" : "일반펫효과 · 승률"} +${e.boost}%`;
-    if (cat === "weapon") return e.type === "attack" ? `ATK ${e.atk} / ACC ${e.acc}` : e.type === "block" ? `공격 1회 방어 / ACC ${e.acc}` : e.type === "magic" ? `랜덤 마법: 상대 무기 1개를 No Move로 · ATK 5/10/20 · 1~2턴 수면 / ACC ${e.acc}` : e.type === "nomove" ? "ATK 0 · 아무 일도 일어나지 않음" : `상대 1~3턴 수면 / ACC ${e.acc}`;
+    if (cat === "weapon") return e.type === "attack" ? `ATK ${e.atk} / ACC ${e.acc}` : e.type === "block" ? `공격 1회 방어 / ACC ${e.acc}` : e.type === "magic" ? `랜덤 마법: 상대 무기 1개를 No Move로 · ATK 5/10/20 · 1~2턴 수면 / ACC ${e.acc}` : e.type === "nomove" ? "ATK 0 · 아무 일도 일어나지 않음" : e.type === "spray" ? `상대 무기 명중률 -${e.accDown || 10}% · ${e.turns || 3}턴 (중첩 없음) / ACC ${e.acc}` : `상대 1~3턴 수면 / ACC ${e.acc}`;
     if (cat === "frame" || cat === "peffect") return "장식용 (스킬 없음)";
     return e.desc || "";
 }
@@ -99,7 +104,9 @@ export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChan
                 itemBtn("hp_10", "🧪 HP +10", () => onHp?.("hp_10", 10)),
                 itemBtn("hp_50", "💊 HP +50", () => onHp?.("hp_50", 50)),
                 itemBtn("hp_full", "❤️‍🩹 HP 전체 회복", () => onHp?.("hp_full", 999)),
-                ...["pass_emo", "pass_poly", "pass_ground", "pass_foggy", "pass_mj", "pass_dung"].filter(k => ps.items[k] > 0).map(k => h("span.wchip", `🎟️ ${catalogEntry("item", k).name} ×${ps.items[k]}`)),
+                ...Object.keys(ps.items).filter(k => ps.items[k] > 0 && ITEM_BY_ID[k]?.loc).map(k => h("span.wchip", { title: "턴 시작 때 이 맵으로 바로 이동 / 국적 전용 맵 입장" }, `🎟️ ${ITEM_BY_ID[k].name} ×${ps.items[k]}`)),
+                ...REGION_ITEMS.filter(r => ps.items[r.id] > 0).map(r => h("span.wchip", { title: "지역 룰렛에서 이 지역을 고를 수 있게 해 줍니다 (입장 시 소모)" }, `${r.emoji} ${r.name} ×${ps.items[r.id]}`)),
+                ...Object.keys(ps.items).filter(k => ps.items[k] > 0 && k.startsWith("card_")).map(k => h("span.wchip.abc", { title: "알파벳 카드 — 미션 · 랜덤 입장 맵 강제 입장에 1번 사용" }, `🔤 ${k.slice(5)} ×${ps.items[k]}`)),
                 ps.items.pet_swap > 0 ? h("span.wchip", { title: "펫 상점에서 다른 펫을 살 때 자동으로 사용됩니다" }, `🔁 펫 교체권 ×${ps.items.pet_swap}`) : null),
             h("h4", `⚔️ 무기 (${ps.weapons.length}/${CONFIG.MAX_WEAPONS})`, ps.items.weapon_del > 0 ? h("small.muted", ` · 무기삭제권 ${ps.items.weapon_del}장 — 무기를 클릭해 삭제`) : null),
             h("div.wlist", ps.weapons.length ? ps.weapons.map((w, i) => h("button.wbtn", { onclick: () => delWeapon(i) }, weaponChip(w))) : h("span.muted", "무기 없음 (기본 공격 ATK 5 / ACC 30)")),

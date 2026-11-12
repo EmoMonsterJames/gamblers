@@ -8,17 +8,20 @@ import { h, sleep, fmt, pick, shuffle, countUp } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, bigWin, banner, floatText, confetti, shake, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { spinWithLuck, P_POINTS, bestJackpot, MONKEY_WHEEL, MM_KEYS, CASCADE_FG } from "../slots/engine.js";
+import { spinWithLuck, jackpotValue, P_POINTS, bestJackpot, MONKEY_WHEEL, MM_KEYS, CASCADE_FG } from "../slots/engine.js";
 import { BRAND_LOGO } from "../slots/configs.js";
-import { JACKPOT_RANK } from "../data/catalog.js";
+import { JACKPOT_RANK, ALPHABET } from "../data/catalog.js";
+import { playSpecial, buildPanel } from "./slotSpecial.js";
 import { jackpotButton } from "../ui/jackpotList.js";
+import { showPetHelp } from "../ui/petHelp.js";
 
-const TIER_ORDER = ["GRAND", "MAJOR", "MONKEY", "MAXI", "MINOR", "MINI"];
+const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "MAJOR", "MONKEY", "MAXI", "MINOR", "MINI"];
 
 export function openSlot(cfg, ctx) {
     const classic = cfg.engine === "classic";
     const mk = cfg.engine === "monkey"; // Monkey Drop: money tree
     const egg = cfg.engine === "egg";   // Crack or Not: no reels, tap the egg
+    const special = !!cfg.engine?.startsWith("sp_"); // the 7 special machines (slotSpecial.js)
     const MMK = cfg.meter && MM_KEYS[cfg.meter.kind] || null; // multi meters: [[key, sym], …]
     let bet = cfg.bets.find(b => b <= ctx.money()) || cfg.bets[0];
     let busy = false, auto = 0, turbo = false, closed = false;
@@ -26,12 +29,13 @@ export function openSlot(cfg, ctx) {
 
     // ------------------------------------------------------------ symbols
     function symEl(key) {
+        if (special && key === "_") return h("div.sym.sym-empty", { "data-s": "_" });
         const def = (cfg.look && cfg.look[key]) || (key === "W" ? cfg.wild : null) || cfg.syms?.[key] || (key === "P" ? { e: "P", cls: "sym-p" } : { e: key });
         const cls = ["sym", "s-" + key.replace(/[^\w]/g, "_")];
         if (def.card) cls.push("sym-card", "card-" + key);
         if (def.cls) cls.push(def.cls);
         if (key === "W" || key === "MW") cls.push("sym-wild");
-        if (["F", "C", "B", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "BG", "WH", "7", "D", "N", "PK", "MT"].includes(key)) cls.push("sym-special");
+        if (["F", "C", "B", "M", "M1", "M2", "M3", "M4", "M5", "R", "X", "BG", "WH", "7", "D", "N", "PK", "MT", "MS", "SW", "SU", "MO", "SB", "SK", "RB", "DS", "BL", "BP"].includes(key)) cls.push("sym-special");
         if (key === "P") cls.push("sym-p");
         const el = h("div." + cls.join("."), { "data-s": key });
         if (def.img) el.append(h("img", { src: def.img, alt: def.name || key, draggable: "false" }));
@@ -53,6 +57,7 @@ export function openSlot(cfg, ctx) {
     const meterEl = h("div.meter-zone");
     const reelEls = Array.from({ length: reelsN }, () => h("div.reel", h("div.strip")));
     const reelsBox = h("div.reels" + (classic ? ".classic" : ""), { style: { "--rows": rows } }, reelEls, classic ? h("div.payline") : null);
+    if (special) { reelsBox.classList.add("sp-reels", "spr-" + reelsN); reelsBox.style.gridTemplateColumns = `repeat(${reelsN}, 1fr)`; }
     const overlay = h("div.slot-overlay");
     const spinBtn = h("button.spin-btn", { onclick: () => doSpin() }, egg ? "TAP!" : "SPIN");
     const autoBtn = h("button.btn.ghost.small", { onclick: () => { auto = auto ? 0 : 25; autoBtn.classList.toggle("on", !!auto); autoBtn.textContent = auto ? `AUTO ${auto}` : "AUTO"; if (auto && !busy) doSpin(); } }, "AUTO");
@@ -100,7 +105,7 @@ export function openSlot(cfg, ctx) {
         if (cfg.jpText) { jpBar.replaceChildren(h("div.jp.classic-jp", cfg.jpText)); return; }
         if (!cfg.jp) { jpBar.replaceChildren(h("div.jp.classic-jp", "MAX WIN x20 WHEEL · 7 FREE GAMES · MONEY MATCH")); return; }
         const pool = Store.pool(cfg.id);
-        jpBar.replaceChildren(...TIER_ORDER.filter(t => cfg.jp[t]).map(t => h("div.jp.jp-" + t.toLowerCase(), h("small", t), h("b", fmt(cfg.jp[t].x ? cfg.jp[t].x * bet : pool[t])))));
+        jpBar.replaceChildren(...TIER_ORDER.filter(t => cfg.jp[t]).map(t => h("div.jp.jp-" + t.toLowerCase(), h("small", t), h("b", fmt(jackpotValue(cfg, t, bet, pool))))));
     }
 
     // ------------------------------------------------------------ meters
@@ -115,6 +120,7 @@ export function openSlot(cfg, ctx) {
     function bumpEl(el) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
     function renderMeter(st = Store.machine(cfg.id)) {
         if (treeEl) return renderTree();
+        if (special) return;
         if (cfg.engine === "cascade") return renderCascadeLadder(0);
         const M = cfg.meter;
         if (!M || M.off) { meterEl.replaceChildren(); meterDom = null; return; }
@@ -434,6 +440,32 @@ export function openSlot(cfg, ctx) {
     function highlight(cells, cls = "hit") { for (const [c, r] of cells) cellsEl(c, r)?.classList.add(cls); }
     function clearHighlights() { reelsBox.querySelectorAll(".hit,.dim,.pop,.ptsglow").forEach(e => e.classList.remove("hit", "dim", "pop", "ptsglow")); }
 
+    // ------------------------------------------------------------ special machines (slotSpecial.js)
+    const spPanel = special ? buildPanel(cfg, Store.machine(cfg.id)) : null;
+    if (spPanel) meterEl.append(spPanel.el);
+    const spApi = special ? {
+        cfg, get bet() { return bet; }, turbo: () => turbo, Sound, overlay, msgEl, winEl, cabinet, frame, reelsBox,
+        animateReels, showGrid, setReel, cellsEl, highlight, banner, bigWin, wheelSpin, playPick, fly, floatText, shake, confetti,
+        meter: (k, v, m) => spPanel?.set(k, v, m)
+    } : null;
+
+    // ------------------------------------------------------------ alphabet cards (G·A·M·B·L·E·R·S)
+    // During a season a letter sometimes appears on the reels → card for the bag.
+    async function alphabetDrop() {
+        if (!ctx.gainCard || Math.random() >= (ctx.cardRate ?? 0.2)) return;
+        const L = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+        const cells = egg ? [] : Array.from({ length: reelsN }, (_, c) => Array.from({ length: rows }, (_, r) => cellsEl(c, r))).flat().filter(Boolean);
+        const cell = cells.length ? cells[Math.floor(Math.random() * cells.length)] : cabinet;
+        const badge = h("b.abc-card", L);
+        cell.append(badge);
+        Sound.bonus();
+        await sleep(turbo ? 350 : 800);
+        await fly(cell, moneyEl, h("b.abc-card.flying", L), { arc: -60 });
+        badge.remove();
+        ctx.gainCard(L);
+        floatText(cabinet, `🔤 알파벳 카드 ${L} 획득!`, "lucky");
+    }
+
     // ------------------------------------------------------------ spin
     async function doSpin() {
         if (busy || closed) return;
@@ -453,10 +485,20 @@ export function openSlot(cfg, ctx) {
         try {
             if (classic) total = await playClassic(res);
             else if (egg) total = await playEgg(res);
+            else if (special) {
+                if (res.omen && cfg.omens) await slotOmen(cfg.omens[res.omen - 1]);
+                const o = await playSpecial(res, spApi);
+                // interactive bonuses (Top Offer / Food Critic) decide the real payout
+                res.total = o.total;
+                res.features = [...res.features.filter(f => f.type !== "jp"), ...(o.jpWins.length ? [{ type: "jp", jpWins: o.jpWins, total: 0 }] : [])];
+                res.jackpots = o.jpWins.map(j => j.tier);
+                total = o.total;
+            }
             else total = await playVideo(res);
         } catch (e) { console.error(e); }
         Store.setMachine(cfg.id, res.state, ctx.pid);
         renderMeter();
+        await alphabetDrop();
         // progressive jackpot payouts reset the pool
         for (const f of res.features) {
             const tiers = f.jpWins ? f.jpWins : f.type === "pick" ? [{ tier: f.tier, amount: f.amount }] : f.type === "wheel" && f.jp ? [{ tier: f.jp, amount: f.amount }] : [];
@@ -465,11 +507,17 @@ export function openSlot(cfg, ctx) {
                 if ((JACKPOT_RANK[j.tier] || 0) >= 3) Store.logJackpot(cfg.id, j.tier, ctx.pid, j.amount, { serverLogged: !!cfg.jp?.[j.tier] && !cfg.jp[j.tier].x });
             }
         }
-        ctx.record(0, res.total, res.points, { settle: true, bet, bonus: res.bonus, jackpots: res.jackpots });
+        // mission stats: 5-of-a-kind lines, free-spin entries (a whole bonus counts as one win)
+        const five = res.fiveKind ?? (res.base?.lines || []).filter(l => l.n >= 5).length;
+        const freeSpin = res.freeSpin ?? res.features.some(f => ["free", "grow", "cfree", "bfree"].includes(f.type));
+        ctx.record(0, res.total, res.points, { settle: true, bet, bonus: res.bonus, jackpots: res.jackpots, five, freeSpin });
         winEl.textContent = fmt(res.total);
         refresh();
         if (res.points) { floatText(reelsBox, `+${res.points} P`, "pts"); Sound.coin(); }
-        if (res.lucky) floatText(cabinet, res.lucky === "bonus" ? "🍀 펫이 보너스를 불렀다!" : "🍀 펫 행운!", "lucky");
+        if (res.lucky && (res.lucky === "bonus" || res.total > 0)) {
+            const credit = showPetHelp(ctx.luck, res.lucky, res.total);
+            if (credit) { floatText(cabinet, res.lucky === "bonus" ? `🐾 ${credit.name} 보너스 도움!` : `🐾 ${credit.name} 덕분!`, "lucky"); ctx.petHelp?.(res.lucky, res.total, credit); }
+        }
         const jp = bestJackpot(res.jackpots);
         if (res.total >= bet * 15 && !jp) await bigWin(res.total, bet);
         busy = false; cabinet.classList.remove("busy"); spinBtn.disabled = false;
@@ -772,6 +820,36 @@ export function openSlot(cfg, ctx) {
         if (!o) return;
         await sleep(200);
         const rnd = Math.random;
+        // the special machines' omens map onto the shared effects below
+        const MAP = {
+            smoke: { fx: "wind", chars: ["💨", "☁️", "💨", "🌫️"] }, notes: { fx: "rain", chars: ["🎵", "🎶", "🎧"] },
+            turntable: { fx: "burst", icon: "💿", chars: ["🎵", "⚡", "🎶"] }, sun: { fx: "burst", icon: "☀️", chars: ["✨", "🔆", "⭐"] },
+            moon: { fx: "burst", icon: "🌙", chars: ["✨", "⭐", "🌌"] }, sunmoon: { fx: "burst", icon: "🌗", chars: ["☀️", "🌙", "✨"] },
+            hamsters: { fx: "pop", chars: ["🐹", "🐹", "🧑‍🚀", "🐹"] }, meteors: { fx: "rain", chars: ["☄️", "🌠", "☄️"] },
+            explosion: { fx: "burst", icon: "💥", chars: ["💥", "🔥", "✨"], shake: true }, elements: { fx: "pop", chars: ["木", "火", "土", "金", "水"] },
+            horn: { fx: "burst", icon: "📯", chars: ["🎉", "🎊", "✨"] }, balloons: { fx: "pop", chars: ["🎈", "🎈", "🎀", "🎈"] }
+        };
+        if (MAP[o.fx]) {
+            const m = MAP[o.fx];
+            if (o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
+            if (m.shake) { frame.classList.add("omen-shake"); setTimeout(() => frame.classList.remove("omen-shake"), 1100); }
+            if (m.fx === "pop") {
+                const l = h("div.omen-pop", Array.from({ length: 14 }, (_, i) => h("i", { style: { left: 4 + rnd() * 90 + "%", top: 10 + rnd() * 75 + "%", "--d": (i * 0.08) + "s", "--r": (rnd() * 40 - 20) + "deg" } }, m.chars[i % m.chars.length])));
+                cabinet.append(l); for (let i = 0; i < 5; i++) setTimeout(() => Sound.click(), i * 140); await sleep(1800); l.remove();
+                return;
+            }
+            o = { ...m, text: null };
+        }
+        if (o.fx === "siren") {
+            const t = h("div.omen-text", o.text || "🚨 WEE-OO WEE-OO 🚨");
+            cabinet.classList.add("omen-siren"); cabinet.append(t);
+            for (let i = 0; i < 4; i++) setTimeout(() => Sound.tease(), i * 400);
+            await sleep(1800); cabinet.classList.remove("omen-siren"); t.remove();
+            return;
+        }
+        if (o.fx === "shake" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1500); }
+        if (o.fx === "wind" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
+        if (o.fx === "wind" && !o.chars) o = { ...o, chars: ["🍃", "🌫️", "〰️"] };
         if (o.fx === "text") { const t = h("div.omen-text", o.text); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
         if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); await sleep(1100); frame.classList.remove("omen-shake"); }
         if (o.fx === "rain") {

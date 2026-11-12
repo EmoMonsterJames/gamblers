@@ -54,7 +54,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
     const W = ms => sleep(ms / speed);
     const say = (txt, cls = "") => { logEl.prepend(h("div" + (cls ? "." + cls : ""), txt)); };
     const setHp = f => { f.hpI.style.width = Math.max(0, f.hp) / CONFIG.START_HP * 100 + "%"; f.hpT.textContent = `${Math.max(0, f.hp)} / ${CONFIG.START_HP}`; f.hpI.classList.toggle("low", f.hp <= 30); };
-    const status = f => { const st = f.el.querySelector(".f-status"); st.replaceChildren(f.shield ? h("span", "🛡️") : "", f.sleep ? h("span.zz", `💤${f.sleep}`) : ""); };
+    const status = f => { const st = f.el.querySelector(".f-status"); st.replaceChildren(f.shield ? h("span", "🛡️") : "", f.sleep ? h("span.zz", `💤${f.sleep}`) : "", f.sprayed > 0 ? h("span.sprayed", `🧴${f.sprayed}`) : ""); };
 
     async function run() {
         if (started) return; started = true; startBtn.remove();
@@ -74,7 +74,9 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             const w = WEAPON_BY_ID[wid] || BASIC_ATTACK;
             atk.el.classList.add("acting");
             say(`${w.emoji} ${name(atk.pid)}의 ${w.name}!`);
-            const hit = Math.random() * 100 < w.acc;
+            const accNow = Math.max(0, w.acc - (atk.sprayed > 0 ? (atk.sprayDown || 10) : 0));
+            const hit = Math.random() * 100 < accNow;
+            if (atk.sprayed > 0) { atk.sprayed--; status(atk); }
             await animate(w, atk, def, hit);
             if (w.type === "nomove") {
                 say(`🫥 ${name(atk.pid)}은(는) 아무것도 하지 않았다… (No Move)`, "muted"); floating(atk, "…", "miss");
@@ -87,6 +89,12 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
             } else if (w.type === "sleep") {
                 def.sleep = 1 + Math.floor(Math.random() * 3);
                 say(`💤 ${name(def.pid)}이(가) ${def.sleep}턴 동안 잠들었다!`, "bad"); floating(def, "SLEEP", "sleep");
+            } else if (w.type === "spray") {
+                // never stacks: a second spray only refreshes the 3 turns
+                const again = def.sprayed > 0;
+                def.sprayed = w.turns || 3; def.sprayDown = w.accDown || 10;
+                say(again ? `🧴 ${name(def.pid)}에게 또 스프레이! (중첩 없음 · ${def.sprayed}턴으로 갱신)` : `🧴 ${name(def.pid)}의 눈에 스프레이! ${def.sprayed}턴 동안 명중률 -${def.sprayDown}%`, "bad");
+                floating(def, `ACC -${def.sprayDown}%`, "sleep");
             } else if (w.type === "magic") {
                 await castMagic(atk, def);
             } else damage(def, w.atk);
@@ -205,6 +213,13 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
                 await W(380);
                 for (let i = 0; i < 9; i++) { const s = proj(["✨", "⭐", "💫"][i % 3], "spin"); fly(s, { x: target.x + (Math.random() - .5) * 80, y: target.y + (Math.random() - .5) * 80 }, 520).then(() => s.remove()); await W(55); }
                 await W(450); wand.remove(); break;
+            }
+            case "spray": {
+                const can = proj("🧴", "glow"); can.style.left = A.x + dir * 40 + "px";
+                can.animate([{ transform: "translate(-50%,-50%) rotate(0)" }, { transform: `translate(-50%,-50%) rotate(${dir * 25}deg) scale(1.3)` }], { duration: 300 / speed, fill: "forwards" });
+                for (let i = 0; i < 14; i++) { const m = proj(["💨", "🌫️", "·"][i % 3], "mist"); m.style.left = A.x + dir * 60 + "px"; fly(m, { x: target.x + (Math.random() - .5) * 50, y: target.y - 10 + (Math.random() - .5) * 50 }, 520).then(() => m.remove()); await W(40); }
+                if (hit) { const c = h("div.proj.spray-cloud", "🌫️"); c.style.left = target.x + "px"; c.style.top = target.y + "px"; fxLayer.append(c); await W(650); c.remove(); }
+                await W(200); can.remove(); break;
             }
             case "nomove": {
                 const q = h("div.proj", "🫥"); q.style.left = A.x + "px"; q.style.top = A.y - 70 + "px"; fxLayer.append(q);

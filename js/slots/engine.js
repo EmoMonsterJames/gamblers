@@ -10,6 +10,7 @@
 // screen tease near-misses on purpose.
 // =====================================================================
 import { JACKPOT_RANK } from "../data/catalog.js";
+import { specialSpin } from "./specialEngine.js";
 
 export const CARD_SYMS = ["A", "K", "Q", "J", "T"];
 const rand = Math.random;
@@ -26,6 +27,7 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = ri(i + 
 export function jackpotValue(cfg, tier, bet, pool) {
     const j = cfg.jp?.[tier];
     if (!j) return 0;
+    if (j.sum) return Object.keys(cfg.jp).filter(t => !cfg.jp[t].sum).reduce((s, t) => s + jackpotValue(cfg, t, bet, pool), 0);
     if (j.x) return j.x * bet;                       // fixed tiers (MINI/MINOR/MAXI)
     return Math.round(pool?.[tier] ?? j.seed ?? 0);  // progressive (MAJOR/GRAND)
 }
@@ -278,6 +280,7 @@ export function spin(cfg, ctx) {
     if (cfg.engine === "catmouse") return catMouseSpin(cfg, ctx);
     if (cfg.engine === "cascade") return cascadeSpin(cfg, ctx);
     if (cfg.engine === "egg") return eggSpin(cfg, ctx);
+    if (cfg.engine?.startsWith("sp_")) return specialSpin(cfg, ctx);
     const { bet } = ctx;
     const state = structuredClone(ctx.state || {});
     const F = cfg.features || {};
@@ -1125,8 +1128,11 @@ export function spinWithLuck(cfg, ctx) {
     }
     if (r.total === 0 && luck.win > 0 && rand() < luck.win / 0.7) {
         const r2 = spin(cfg, { ...ctx, luck: {} });
-        if (r2.total > 0) { r = r2; r.lucky = "win"; }
+        if (r2.total > 0) { r = r2; r.lucky = r2.bonus ? "bonus" : "win"; }
     }
+    // a bonus that came from the pet-raised probability (boost = 1 + luck.bonus):
+    // the pet's share of it is luck.bonus / (1 + luck.bonus) — label only, no payout change
+    if (!r.lucky && r.bonus && luck.bonus > 0 && rand() < luck.bonus / (1 + luck.bonus)) r.lucky = "bonus";
     return r;
 }
 

@@ -20,5 +20,6 @@ export const CONFIG = {
     ROUND_CASINO_PLAYS: 5,    // casino games per player per round
     ROUND_SLOT_SPINS: 100,    // paid slot spins per player per round (free spins do not count)
     LOAN_MIN_ALIVE: 6,        // loans are closed once 5 or fewer players are alive
-    LOAN_MAX_GOLD: 10000      // only players holding this much gold or less may borrow
+    LOAN_MAX_GOLD: 10000,     // only players holding this much gold or less may borrow
+    SEASON_JOIN_BONUS: 200000 // extra gold every player gets once per season (on top of START_MONEY)
 };

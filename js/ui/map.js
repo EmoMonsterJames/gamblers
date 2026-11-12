@@ -1,7 +1,7 @@
 // World map with every casino pin + the "where do I play?" roulette.
 import { h, sleep, shuffle } from "../core/util.js";
 import { Sound } from "../core/sound.js";
-import { LOCATIONS } from "../data/catalog.js";
+import { LOCATIONS, REGIONS } from "../data/catalog.js";
 
 const ISLANDS = `
 <defs>
@@ -37,13 +37,28 @@ const ISLANDS = `
 <g fill="#ffffff22"><circle cx="560" cy="180" r="3"/><circle cx="410" cy="300" r="2"/><circle cx="650" cy="260" r="3"/></g>
 <g font-size="30"><text x="680" y="560">⛵</text><text x="560" y="40">🐋</text><text x="20" y="200">🦑</text><text x="960" y="580">🏝️</text></g>`;
 
-export function worldMap({ onPick = null, locked = new Set(), small = false } = {}) {
-    const svg = `<svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" class="map-svg">${ISLANDS}</svg>`;
-    const pins = LOCATIONS.map(l => h("button.pin" + (locked.has(l.id) ? ".locked" : ""), {
+// themed backdrops for the new regions (Casino Land 1 keeps the island map)
+const REGION_BG = {
+    sky: { bg: "linear-gradient(180deg,#7dd3fc,#e0f2fe 70%,#fff)", deco: ["☁️", "☁️", "🕊️", "🌤️", "☁️", "🪽"] },
+    space: { bg: "radial-gradient(circle at 30% 30%,#312e81,#020617 70%)", deco: ["🪐", "⭐", "🌙", "☄️", "✨", "🛰️"] },
+    cl2: { bg: "linear-gradient(180deg,#1e1b4b,#4c1d95 60%,#0f172a)", deco: ["🎰", "🏙️", "💡", "🎲", "🃏", "💰"] },
+    fantasy: { bg: "linear-gradient(180deg,#f9a8d4,#a78bfa 50%,#1e1b4b)", deco: ["🏰", "🦄", "🌈", "✨", "🍄", "🐉"] },
+    under: { bg: "radial-gradient(circle at 50% 20%,#78350f,#0c0a09 75%)", deco: ["⛏️", "🪨", "💎", "🕯️", "🦇", "🔥"] },
+    spooky: { bg: "radial-gradient(circle at 70% 15%,#fef3c7 0 5%,#4c1d95 20%,#020617 80%)", deco: ["🦇", "🕸️", "🎃", "🌕", "👻", "🪦"] },
+    deepsea: { bg: "linear-gradient(180deg,#0369a1,#082f49 50%,#020617)", deco: ["🫧", "🐠", "🪸", "🐙", "🦈", "🫧"] },
+    arctic: { bg: "linear-gradient(180deg,#e0f2fe,#7dd3fc 60%,#0c4a6e)", deco: ["❄️", "🧊", "🐧", "🐻‍❄️", "⛄", "❄️"] }
+};
+const reqLabel = r => !r ? null : r.points ? `${r.points}P+` : r.country ? "국적" : r.fee ? `${r.fee.toLocaleString()}G` : r.feePts ? `${r.feePts}P 입장료` : r.random ? "랜덤 입장" : null;
+
+export function worldMap({ onPick = null, locked = new Set(), small = false, region = "cl1" } = {}) {
+    const R = REGION_BG[region];
+    const svg = R ? "" : `<svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" class="map-svg">${ISLANDS}</svg>`;
+    const pins = LOCATIONS.filter(l => (l.region || "cl1") === region && !l.off).map(l => h("button.pin" + (locked.has(l.id) ? ".locked" : ""), {
         style: { left: l.x + "%", top: l.y + "%", "--c": l.color }, "data-id": l.id,
         onclick: onPick ? () => onPick(l) : null, title: l.name
-    }, h("span.pin-ico", l.emoji), h("span.pin-name", l.name), l.req ? h("span.pin-req", l.req.points ? `${l.req.points}P+` : "국적") : null));
-    const el = h("div.world" + (small ? ".small" : ""), { html: svg }, ...pins);
+    }, h("span.pin-ico", l.emoji), h("span.pin-name", l.name), reqLabel(l.req) ? h("span.pin-req", reqLabel(l.req)) : null));
+    const deco = R ? h("div.region-deco", R.deco.map((d, i) => h("i", { style: { left: 6 + i * 16 + "%", top: (i % 2 ? 70 : 12) + "%", "--d": i * 0.7 + "s" } }, d))) : null;
+    const el = h("div.world" + (small ? ".small" : "") + (R ? ".region-world.rw-" + region : ""), R ? { style: { background: R.bg } } : { html: svg }, deco, ...pins);
     return {
         el,
         async roulette(candidates, targetId) {
@@ -65,6 +80,40 @@ export function worldMap({ onPick = null, locked = new Set(), small = false } = 
             }
             cur.classList.remove("hot");
             cur.classList.add("chosen");
+            Sound.win();
+            el.classList.remove("rouletting");
+            await sleep(900);
+        }
+    };
+}
+
+// Region selector: one big tile per region, same roulette API as the map.
+export function regionMap({ status = () => ({ ok: true }) } = {}) {
+    const tiles = REGIONS.filter(r => !r.off).map(r => {
+        const st = status(r);
+        const bg = REGION_BG[r.id]?.bg || "linear-gradient(135deg,#166534,#14532d)";
+        return h("div.rtile" + (st.ok ? "" : ".locked"), { "data-id": r.id, style: { "--c": r.color, background: bg } },
+            h("div.rt-emoji", r.emoji), h("b", r.name), h("small", r.en), !st.ok ? h("span.rt-why", "🔒 " + st.why) : null);
+    });
+    const el = h("div.region-grid", tiles);
+    return {
+        el,
+        async roulette(candidates, targetId) {
+            const ids = candidates.map(r => r.id);
+            const byId = id => el.querySelector(`.rtile[data-id="${id}"]`);
+            el.classList.add("rouletting");
+            let order = shuffle(ids), gap = 80, cur = null;
+            const total = 20 + Math.floor(Math.random() * 6);
+            for (let i = 0; i < total; i++) {
+                const id = i === total - 1 ? targetId : order[i % order.length];
+                cur?.classList.remove("hot");
+                cur = byId(id); cur.classList.add("hot");
+                Sound.tick();
+                await sleep(gap);
+                gap = i > total - 7 ? gap * 1.35 : gap * 1.06;
+                if (i % order.length === order.length - 1) order = shuffle(ids);
+            }
+            cur.classList.remove("hot"); cur.classList.add("chosen");
             Sound.win();
             el.classList.remove("rouletting");
             await sleep(900);

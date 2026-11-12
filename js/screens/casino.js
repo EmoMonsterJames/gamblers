@@ -9,6 +9,7 @@ import { toast, bigWin, floatText, confetti, shake } from "../core/fx.js";
 import { playCasino, gameRtp, topMult } from "../data/casino.js";
 import { Store } from "../core/store.js";
 import { jackpotButton } from "../ui/jackpotList.js";
+import { showPetHelp } from "../ui/petHelp.js";
 
 export function openCasino(g, ctx) {
     let bet = g.bets.find(b => b <= ctx.money()) || g.bets[0];
@@ -47,7 +48,8 @@ export function openCasino(g, ctx) {
         ctx.record(0, res.payout, res.points, { settle: true, bet });
         refresh();
         if (res.payout > 0) {
-            msg.innerHTML = `<span class="win">WIN ×${res.mult} → +${fmt(res.payout)} G</span>${res.entry.lucky ? ' <span class="lucky">🍀 펫 행운!</span>' : ""}`;
+            msg.innerHTML = `<span class="win">WIN ×${res.mult} → +${fmt(res.payout)} G</span>`;
+            if (res.entry.lucky) { const credit = showPetHelp(ctx.luck, "win", res.payout); if (credit) { msg.append(h("span.lucky", ` 🐾 ${credit.name} 덕분!`)); ctx.petHelp?.("win", res.payout, credit); } }
             Sound.win();
             const top = res.mult >= topMult(g);
             if (top) Store.logJackpot(g.id, "JACKPOT", ctx.pid, res.payout);

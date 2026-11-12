@@ -135,6 +135,70 @@ const SONGS = {
             const LEAD = { 48: 74, 50: 72, 52: 71, 54: 67, 56: 69, 60: 71, 62: 72 };
             if (LEAD[s]) bgmVoice(a, out, t, { freq: midi(LEAD[s]), type: "square", dur: len * 1.8, vol: 0.025, cut: 4000, cutEnd: 1500, attack: 0.01 });
         }
+    },
+    // Monster Kitchen: shamisen + taiko street-stall jam, 132 BPM (A minor pentatonic, sizzling hats)
+    kitchen_taiko: {
+        bpm: 132, steps: 32,
+        play(a, out, s, t, len) {
+            if ([0, 3, 6, 8, 16, 19, 22, 24, 28].includes(s)) taiko(a, out, t, s % 8 === 0 ? 0.55 : 0.36);
+            if (s % 2 === 1) bgmNoise(a, out, t, { dur: 0.04, vol: 0.05, hp: 6500 }); // grill sizzle
+            if (s === 14 || s === 30) bgmNoise(a, out, t, { dur: 0.2, vol: 0.12, hp: 1000 });
+            const SHAM = { 0: 69, 1: 72, 2: 74, 4: 76, 5: 74, 6: 72, 8: 69, 10: 67, 12: 69, 16: 81, 17: 79, 18: 76, 20: 74, 22: 76, 24: 72, 26: 74, 28: 69, 30: 67, 31: 69 };
+            if (SHAM[s] != null) {
+                bgmVoice(a, out, t, { freq: midi(SHAM[s] - 12), type: "sawtooth", dur: len * 1.2, vol: 0.06, cut: 5000, cutEnd: 600, attack: 0.002 });
+                bgmVoice(a, out, t, { freq: midi(SHAM[s]), type: "triangle", dur: len * 0.5, vol: 0.02, cut: 7000, cutEnd: 2000, attack: 0.002 });
+            }
+            if (s % 8 === 0) bgmVoice(a, out, t, { freq: midi([45, 45, 43, 40][s >> 3]), type: "triangle", dur: len * 6, vol: 0.12, cut: 700, cutEnd: 200, attack: 0.01 });
+            if (s === 15 || s === 31) bgmVoice(a, out, t, { freq: midi(76), type: "square", dur: len * 1.2, vol: 0.02, cut: 2400, cutEnd: 800 }); // "hai!"
+        }
+    },
+    // Sol & Umbra: orchestral brass fanfare + Chinese percussion (gong, woodblock), 104 BPM (D minor – B♭ – C – A)
+    celestial_brass: {
+        bpm: 104, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (s === 0) { bgmNoise(a, out, t, { dur: 1.6, vol: 0.12, hp: 300 }); bgmVoice(a, out, t, { freq: 98, type: "sine", dur: 1.8, vol: 0.12, cut: 900, cutEnd: 200 }); } // gong
+            if (st === 0 || st === 10) taiko(a, out, t, 0.45);
+            if (st % 4 === 2) bgmVoice(a, out, t, { freq: 1200, type: "square", dur: 0.03, vol: 0.04, cut: 4000, cutEnd: 2000, attack: 0.001 }); // woodblock
+            if (st === 6 || st === 14) bgmNoise(a, out, t, { dur: 0.12, vol: 0.06, hp: 4000 }); // cymbal
+            const CH = [[50, 53, 57, 62], [46, 50, 53, 58], [48, 52, 55, 60], [45, 49, 52, 57]][bar];
+            if (st === 0 || st === 8) for (const n of CH) for (const dt of [-6, 6]) bgmVoice(a, out, t, { freq: midi(n), type: "sawtooth", dur: len * 7, vol: 0.016, cut: 1800, cutEnd: 600, detune: dt, attack: 0.06 }); // brass pads
+            if (st % 4 === 0) bgmVoice(a, out, t, { freq: midi(CH[0] - 12), type: "triangle", dur: len * 3.5, vol: 0.16, cut: 800, cutEnd: 200 });
+            const FAN = { 0: 74, 3: 74, 4: 77, 6: 81, 8: 79, 12: 77, 16: 74, 20: 72, 24: 70, 28: 69, 32: 72, 35: 72, 36: 76, 38: 79, 40: 81, 44: 79, 48: 77, 52: 76, 56: 73, 60: 69 };
+            if (FAN[s]) for (const dt of [-8, 8]) bgmVoice(a, out, t, { freq: midi(FAN[s]), type: "sawtooth", dur: len * 3, vol: 0.022, cut: 3000, cutEnd: 1200, detune: dt, attack: 0.03 });
+        }
+    },
+    // 4 Pillars: tropical steel drum + ukulele strums + ocean waves, 100 BPM (C – Am – F – G)
+    tropical_steel: {
+        bpm: 100, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (st === 0 || st === 10) kick(a, out, t, 0.3);
+            if (st % 4 === 2) bgmNoise(a, out, t, { dur: 0.05, vol: 0.06, hp: 5000 }); // shaker
+            if (s === 0 || s === 32) bgmNoise(a, out, t, { dur: 2.2, vol: 0.05, hp: 400 }); // waves
+            const CH = [[60, 64, 67, 72], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67]][bar];
+            if ([0, 3, 6, 8, 11, 14].includes(st)) CH.forEach((n, i) => bgmVoice(a, out, t + i * 0.012, { freq: midi(n), type: "triangle", dur: len * 1.5, vol: 0.03, cut: 4000, cutEnd: 1500, attack: 0.002 })); // ukulele strum
+            if (st % 8 === 0) bgmVoice(a, out, t, { freq: midi(CH[0] - 24), type: "sine", dur: len * 6, vol: 0.18, cut: 600, cutEnd: 200 });
+            const PAN = { 0: 76, 2: 79, 4: 84, 6: 79, 8: 81, 10: 79, 12: 76, 14: 74, 18: 72, 20: 76, 22: 81, 24: 79, 28: 76, 34: 77, 36: 81, 38: 84, 40: 81, 44: 77, 48: 79, 50: 83, 52: 86, 54: 83, 56: 79, 60: 74 };
+            if (PAN[s]) { bgmVoice(a, out, t, { freq: midi(PAN[s]), type: "sine", dur: len * 2.4, vol: 0.06, cut: 8000, cutEnd: 3000, attack: 0.002 }); bgmVoice(a, out, t, { freq: midi(PAN[s]) * 2.76, type: "sine", dur: len * 0.8, vol: 0.012, cut: 9000, cutEnd: 4000, attack: 0.002 }); }
+        }
+    },
+    // Chrono-Heist: 70s big-band swing with walking bass, brass hits and bells, 130 BPM (Fm – B♭m – C7 – Fm)
+    bigband_swing: {
+        bpm: 130, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            const sw = st % 4 === 2 ? len * 0.35 : 0;
+            if (st % 4 === 0 || st % 4 === 2) bgmNoise(a, out, t + sw, { dur: st % 4 ? 0.05 : 0.14, vol: 0.05, hp: 8000 }); // ride
+            if (st === 4 || st === 12) bgmNoise(a, out, t, { dur: 0.1, vol: 0.09, hp: 2000 });
+            if (st === 0 || st === 14) kick(a, out, t, 0.3);
+            const WALK = [[41, 44, 48, 46], [46, 49, 53, 51], [48, 52, 55, 46], [41, 43, 44, 40]][bar];
+            if (st % 4 === 0) bgmVoice(a, out, t, { freq: midi(WALK[st / 4] - 12), type: "triangle", dur: len * 3.4, vol: 0.2, cut: 900, cutEnd: 250 });
+            const CH = [[65, 68, 72, 75], [65, 70, 73, 77], [64, 67, 70, 72], [65, 68, 72, 75]][bar];
+            if (st === 3 || st === 10) for (const n of CH) for (const dt of [-8, 8]) bgmVoice(a, out, t + sw, { freq: midi(n - 12), type: "sawtooth", dur: len * 1.3, vol: 0.02, cut: 3400, cutEnd: 900, detune: dt, attack: 0.01 }); // brass hits
+            if (bar === 3 && st === 12) for (const n of [77, 80, 84]) bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len * 4, vol: 0.02, cut: 4000, cutEnd: 1200, attack: 0.02 });
+            if (st === 15) bgmVoice(a, out, t, { freq: midi(96), type: "sine", dur: 0.5, vol: 0.04, cut: 9000, cutEnd: 6000 }); // bell
+        }
     }
 };
 function taiko(a, out, t, vol = 0.5) {

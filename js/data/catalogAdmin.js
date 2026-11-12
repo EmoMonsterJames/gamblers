@@ -31,7 +31,7 @@ export const STAT_FIELDS = {
     frame: ["name"],
     peffect: ["name"]
 };
-export const WEAPON_ANIMS = ["punch", "shield", "tongue", "kick", "drop", "ghost", "ko", "orb", "sleep", "coin", "thunder", "fire", "storm", "magic", "nomove"];
+export const WEAPON_ANIMS = ["punch", "shield", "tongue", "kick", "drop", "ghost", "ko", "orb", "sleep", "coin", "thunder", "fire", "storm", "magic", "nomove", "spray"];
 export const PET_ANIMS = ["bounce", "wobble", "wag", "hop", "walk", "fly", "prance"];
 export const FX_MODES = ["float", "twinkle", "orbit", "wave", "rise", "jump", "rain", "fountain", "swoop", "firework"];
 export const FRAME_STYLES = ["fr-silver", "fr-gold", "fr-neon", "fr-ice", "fr-fire", "fr-rainbow", "fr-bulbs", "fr-diamond", "fr-dragon", "fr-galaxy"];
@@ -40,7 +40,8 @@ export const FRAME_STYLES = ["fr-silver", "fr-gold", "fr-neon", "fr-ice", "fr-fi
 const ORIGINAL = Object.fromEntries(Object.entries(CATS).map(([k, c]) => [k, c.list.map(e => structuredClone(e))]));
 // default sale info from SHOPS
 const BASE_SALE = {};
-for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price };
+// (alt entries = a second shop selling the same thing, e.g. alphabet cards in the point shop)
+for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) if (!it.alt) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price };
 
 const conf = () => Store.catalog || {};
 
@@ -102,3 +103,19 @@ export function locationShops(loc) {
 }
 
 export function locationsWithShop(shopId) { return LOCATIONS.filter(l => locationShops(l).includes(shopId)); }
+
+// second-shop listings (alt: true in SHOPS) are added as they are
+export function altItems(shopId) { return (SHOPS[shopId]?.list || []).filter(it => it.alt && !saleOf(it.cat, it.id).off).map(it => ({ cat: it.cat, id: it.id, price: it.price })); }
+
+// ---------------------------------------------------------------- discount shop
+// A different handful of gold-shop goods every round at every map, 10~20% off.
+function seeded(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }
+export function discountItems(locId, seed = "") {
+    const rnd = seeded(`${locId}|${seed}`);
+    const pool = ["general", "weapon", "pet", "decor"].flatMap(sid => shopItems(sid).map(it => ({ ...it, from: sid })))
+        .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)));
+    const pickN = (list, n) => { const a = [...list]; const out = []; while (a.length && out.length < n) out.push(a.splice(Math.floor(rnd() * a.length), 1)[0]); return out; };
+    const byCat = c => pool.filter(it => it.cat === c);
+    const chosen = [...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)];
+    return chosen.map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.round(it.price * (100 - off) / 100 / 100) * 100, was: it.price, off }; });
+}

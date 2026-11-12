@@ -11,18 +11,22 @@ import { homePage, playersPage, hallPage, mapPage, practicePage, guidePage, admi
 import { adminCatalogPage } from "./screens/adminCatalog.js";
 import { slotGenPage } from "./screens/slotGen.js";
 import { adminPlayersPage } from "./screens/adminPlayers.js";
+import { slotdexPage } from "./screens/slotdex.js";
+import { adminMapsPage } from "./screens/adminMaps.js";
+import { applyMaps } from "./data/mapAdmin.js";
 
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
-    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage
+    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage
 };
 
 function nav(active) {
     const link = (id, label) => h("a" + (active === id ? ".on" : ""), { href: "#/" + id }, label);
     return h("nav.topnav",
         h("a.brand", { href: "#/" }, h("span", "🎰"), "GAMBLERS"),
-        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("hall", "명예의 전당"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
+        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
         h("div.navright",
             h("span.mode" + (Store.cloud ? (Store.user ? ".cloud" : ".ro") : ".local"), Store.cloud ? (Store.user ? "☁ 저장중" : "☁ 읽기전용") : "💾 로컬"),
             h("button.icon-btn", { onclick: e => { e.currentTarget.textContent = Sound.toggle() ? "🔇" : "🔊"; }, title: "사운드" }, Sound.muted ? "🔇" : "🔊")));
@@ -43,6 +47,7 @@ function route() {
     await Store.init();
     applyCatalog();
     applyGames();
+    applyMaps();
     document.getElementById("boot")?.remove();
     window.addEventListener("hashchange", route);
     document.addEventListener("auth", () => route());

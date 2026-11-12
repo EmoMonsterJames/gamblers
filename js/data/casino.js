@@ -8,6 +8,7 @@
 //   table: [{ m: multiplier, w: weight, label }]   (lose entry is added)
 // =====================================================================
 import { CONFIG } from "../config.js";
+import { NEW_MAPS } from "./regions.js";
 
 const BETS = [100, 500, 1000, 5000, 10000];
 const HIGH = [1000, 5000, 10000, 30000];
@@ -81,6 +82,27 @@ export const CASINO_GAMES = [
       desc: "동네 주사위 한 판!",
       table: [{ m: 1.5, w: 20, d: "sum7" }, { m: 2.5, w: 11, d: "double" }, { m: 6, w: 3, d: "highdouble" }, { m: 20, w: 0.6, d: "66" }] }
 ];
+
+// ---------------- region maps: one generated game per map (data/regions.js)
+const KIND_TABLE = {
+    wheel: () => [{ m: 1.5, w: 26 }, { m: 2, w: 14 }, { m: 3, w: 7 }, { m: 5, w: 3 }, { m: 10, w: 1 }, { m: 25, w: 0.3 }],
+    pick: g => g.n >= 5 ? [{ m: 3, w: 20 }, { m: 8, w: 2.5 }, { m: 30, w: 0.25 }] : g.n === 4 ? [{ m: 2, w: 26 }, { m: 4, w: 6 }, { m: 12, w: 1 }, { m: 40, w: 0.12 }] : [{ m: 2, w: 28 }, { m: 5, w: 4 }, { m: 25, w: 0.3 }],
+    coinflip: () => [{ m: 1.9, w: 46 }, { m: 10, w: 0.35, edge: true }],
+    dice: () => [{ m: 1.5, w: 20, d: "sum7" }, { m: 3, w: 10, d: "double" }, { m: 8, w: 2.5, d: "highdouble" }, { m: 30, w: 0.4, d: "66" }],
+    hilo: () => [{ m: 1.9, w: 45 }, { m: 10, w: 0.3, joker: true }],
+    scratch: g => [1.2, 2, 4, 10, 40].map((m, i) => ({ m, w: [18, 10, 4, 1, 0.15][i], s: g.syms[i] })),
+    gacha: () => [{ m: 1, w: 26, c: "#8b5a2b", n: "브론즈" }, { m: 2, w: 13, c: "#cbd5e1", n: "실버" }, { m: 5, w: 3.5, c: "#facc15", n: "골드" }, { m: 15, w: 0.8, c: "#a78bfa", n: "퍼플" }, { m: 50, w: 0.15, c: "#f43f5e", n: "레전드" }],
+    lottery: () => [{ m: 1, w: 22, k: 2 }, { m: 5, w: 3, k: 3 }, { m: 40, w: 0.2, k: 4 }, { m: 300, w: 0.008, k: 5 }]
+};
+for (const m of NEW_MAPS) {
+    const c = m.casino;
+    const g = { id: "rc_" + m.id, name: c.name, kind: c.kind, icon: c.icon, rtp: [0.86, 0.87, 0.88, 0.89][m.id.length % 4], bets: BETS, desc: c.desc, region: m.region };
+    if (c.kind === "pick") Object.assign(g, { n: c.n, closed: c.closed, prize: c.prize, miss: c.miss });
+    if (c.kind === "scratch") g.syms = c.syms;
+    if (c.kind === "plinko") g.buckets = [25, 5, 2, 1.2, 0, 0, 0, 1.2, 2, 5, 25];
+    else g.table = KIND_TABLE[c.kind](c);
+    CASINO_GAMES.push(g);
+}
 
 // --------------------------------------------------------- RTP solving
 // Roulette: each colour is solved separately (p = rtp / multiplier).

@@ -4,7 +4,7 @@ import { toast, modal, confirmBox } from "../core/fx.js";
 import { Sound } from "../core/sound.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { LOCATIONS, SHOPS, MISSIONS, TIERS, PETS, PET_EFFECTS, WEAPONS, FRAME_BY_ID, PEFFECT_BY_ID } from "../data/catalog.js";
+import { LOCATIONS, SHOPS, MISSIONS, TIERS, PETS, PET_EFFECTS, WEAPONS, FRAME_BY_ID, PEFFECT_BY_ID, REGIONS, REGION_BY_ID, ITEM_BY_ID, earnKinds } from "../data/catalog.js";
 import { CASINO_GAMES, CASINO_BY_ID, gameRtp } from "../data/casino.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { avatar, playerCard, displayName, petView, weaponChip } from "../ui/profile.js";
@@ -79,17 +79,36 @@ export function hallPage() {
 }
 
 // ------------------------------------------------------------ map
+const reqText = r => !r ? "누구나 입장 가능"
+    : r.points != null ? `🔒 ${r.points} 포인트 이상 보유 시 입장`
+    : r.country ? `🔒 ${r.country} 국적 전용 (맵권으로 입장 가능)`
+    : r.fee != null ? `💰 입장료 ${fmt(r.fee)}G`
+    : r.feePts != null ? `💎 입장료 ${r.feePts}P`
+    : r.random ? `🎲 랜덤 입장 (50%)${r.races?.length ? ` · ${r.races.join(", ")} 종족은 프리패스` : ""}` : "누구나 입장 가능";
+const EARN_NAME = { blood: "헌혈", labor: "노동", poop: "똥", sell: "팔기", music: "음악 감상", survival: "서바이벌" };
+
 export function mapPage() {
+    let region = REGIONS.find(r => !r.off)?.id || "cl1";
     const info = h("div.loc-info", h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
-    const map = worldMap({ onPick: l => {
-        info.replaceChildren(
-            h("h3", l.emoji, " ", l.name),
-            h("p", l.req ? (l.req.points ? `🔒 ${l.req.points} 포인트 이상 보유 시 입장` : `🔒 ${l.req.country} 국적 전용 (출입권으로 입장 가능)`) : "누구나 입장 가능"),
-            h("h4", "슬롯"), h("ul", l.slots.filter(id => !SLOT_BY_ID[id].off).map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
-            h("h4", "카지노 게임"), h("ul", l.casino.filter(id => !CASINO_BY_ID[id].off).map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
-            h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))));
-    } });
-    return h("div.page", h("h2.page-title", "🗺️ 월드 맵"), h("div.map-page", map.el, info));
+    const tabs = h("div.tabs.region-tabs"), holder = h("div.map-holder");
+    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k]), ...(l.npc ? ["⚠️ NPC 출몰"] : [])];
+    const pick = l => info.replaceChildren(
+        h("h3", l.emoji, " ", l.name),
+        h("p", reqText(l.req)),
+        h("h4", "슬롯"), h("ul", (l.slots || []).filter(id => SLOT_BY_ID[id] && !SLOT_BY_ID[id].off).map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
+        h("h4", "카지노 게임"), h("ul", (l.casino || []).filter(id => CASINO_BY_ID[id] && !CASINO_BY_ID[id].off).map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
+        h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))),
+        ...(corners(l).length ? [h("h4", "코너"), h("ul", corners(l).map(c => h("li", c)))] : []));
+    const draw = () => {
+        const R = REGION_BY_ID[region];
+        tabs.replaceChildren(...REGIONS.filter(r => !r.off).map(r => h("button.tab" + (r.id === region ? ".on" : ""), { onclick: () => { region = r.id; draw(); } }, `${r.emoji} ${r.name}`)));
+        holder.replaceChildren(
+            ...(R?.need ? [h("p.notice", `${R.emoji} ${R.name}에 들어가려면 ${ITEM_BY_ID[R.need]?.emoji || ""} ${ITEM_BY_ID[R.need]?.name || R.need}이(가) 필요합니다 (입장 시 소모).`)] : []),
+            worldMap({ region, onPick: pick }).el);
+        info.replaceChildren(h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
+    };
+    draw();
+    return h("div.page", h("h2.page-title", "🗺️ 월드 맵"), tabs, h("div.map-page", holder, info));
 }
 
 // ------------------------------------------------------------ practice room
@@ -123,7 +142,12 @@ export function guidePage() {
         h("div.guide-sec", h("h3", "진행"), h("ol",
             h("li", "관리자가 SPIN을 눌러 등록된 플레이어 중 20명을 슬롯 릴로 선발합니다 (SKIP = 즉시 20명)."),
             h("li", "라운드마다 공통 미션이 랜덤으로 뽑힙니다. 탈락자가 늘수록 미션 난이도가 최하 → 최상으로 올라갑니다."),
-            h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 지도 룰렛으로 플레이할 카지노가 정해집니다.`),
+            h("li", `시즌에 참가할 때마다 시즌 머니 ${fmt(CONFIG.SEASON_JOIN_BONUS)}G를 받습니다.`),
+            h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 먼저 지역 룰렛(하늘나라·우주·카지노 랜드 1/2·판타지·지하세계·스푸키·심해·북극)을 돌리고, 그 지역 안에서 맵 룰렛으로 카지노가 정해집니다. 하늘나라·우주·심해는 날개·우주복·산소통이 있어야 하며 입장 시 소모됩니다.`),
+            h("li", "맵마다 입장 조건이 있습니다: 국적 전용 · 랜덤 입장(거절되면 다른 맵을 다시 뽑음) · 입장료(G/P) · 포인트 보유. 맵권을 쓰면 룰렛 없이 그 맵으로 바로 순간이동합니다 (하늘·우주 50,000G, 나머지 45,000G)."),
+            h("li", "슬롯 스핀·카지노 플레이마다 약 20% 확률로 알파벳 카드(G·A·M·B·L·E·R·S)를 얻습니다. 카드 미션과 맵 입장에 1회 사용할 수 있습니다."),
+            h("li", "맵에 따라 직업 코너·돈벌기(음악·서바이벌 포함)·구걸·할인 상점이 있고, NPC가 출몰하는 맵에서는 플레이 중 NPC가 갑자기 습격할 수 있습니다."),
+            h("li", "상점은 라운드당 구매 제한이 있습니다: 무기 1 · 아이템 5 · 펫/프레임 1 · 그 외 1."),
             h("li", "미션에 실패한 플레이어들이 탈락 후보가 되고, 탈락 릴로 한 명이 탈락합니다 (모두 성공 시 손익 하위 3명이 후보)."),
             h("li", `라운드마다 플레이어당 슬롯 ${CONFIG.ROUND_SLOT_SPINS}회 · 카지노게임 ${CONFIG.ROUND_CASINO_PLAYS}회까지 (일반 상점의 추가권으로 늘릴 수 있음). 무료 스핀은 횟수에 포함되지 않습니다.`),
             h("li", "보유 골드가 10,000G 이하가 되면 대출(럭키대부 10%/라운드·5라운드, 크레이지대부 20%/라운드·3라운드)을 받을 수 있습니다. 대출금은 게임에만 쓸 수 있고, 기한 안에 못 갚으면 다음 라운드에 사망! 생존자 5명 이하에서는 대출 불가."),
@@ -150,6 +174,7 @@ export function adminPage() {
         h("div.admin-card", h("h3", "🧑‍🤝‍🧑 플레이어 관리"), h("p.muted", `플레이어 정보 수정, 새 플레이어 생성, 활성/비활성 전환 (현재 ${Store.players.length}명 활성).`), h("a.btn.gold", { href: "#/admin-players" }, "관리하기")),
         h("div.admin-card", h("h3", "🛒 상품·상점 관리"), h("p.muted", "무기·아이템·펫·펫효과·프레임·프레임효과의 능력치, 판매 상점, 가격, 판매 카지노를 조정하고 새 상품을 추가합니다."), h("a.btn.gold", { href: "#/admin-catalog" }, "관리하기")),
         h("div.admin-card", h("h3", "🎰 슬롯·카지노게임 관리"), h("p.muted", "슬롯머신의 RTP(배당 배율)·보너스 확률 조정, 보너스 삭제, RTP 시뮬레이션, 카지노게임 RTP·노출 여부·최대 당첨금을 관리합니다."), h("a.btn.gold", { href: "#/admin-games" }, "관리하기")),
+        h("div.admin-card", h("h3", "🌍 지역·맵 관리"), h("p.muted", "지역·맵 켜기/끄기, 이름·입장 조건·소속 지역 변경, 맵별 슬롯/카지노 게임 배치와 코너(직업·구걸·할인·NPC·돈벌기)를 관리합니다."), h("a.btn.gold", { href: "#/admin-maps" }, "관리하기")),
         h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),
         h("div.admin-card", h("h3", "턴 시간"),
             h("p.muted", "기본 10분(600초). 리허설용으로 줄일 수 있습니다 (이 브라우저에만 적용)."),

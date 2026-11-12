@@ -9,7 +9,10 @@ import { Sound } from "../core/sound.js";
 import { toast, confirmBox, confetti, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { catalogEntry, WEAPON_BY_ID } from "../data/catalog.js";
+import { catalogEntry, WEAPON_BY_ID, earnKinds } from "../data/catalog.js";
+import { musicCorner, survivalCorner, jobView as jobView2, scheduleNpc, npcAttack } from "./corners2.js";
+export { scheduleNpc, npcAttack };
+export const jobView = (pid, turn, onChange) => jobView2(pid, turn, onChange, payout);
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";
 
@@ -19,10 +22,12 @@ const JOBS = [
     { id: "blood", icon: "🩸", name: "헌혈", desc: "HP 10~30을 기부하고 10,000~50,000G를 받습니다." },
     { id: "labor", icon: "⏳", name: "시간노동", desc: "10초 동안 아무것도 못 하고 일한 뒤 100~1,000G를 받습니다." },
     { id: "poop", icon: "💩", name: "똥 뿌리기", desc: "10초 동안 똥을 맞으며 버티면 100~1,000G를 받습니다." },
-    { id: "sell", icon: "🏷️", name: "아이템팔기", desc: "아이템이나 무기 하나를 팔고 100~10,000G를 받습니다 (비싼 물건이라고 더 받지는 않음)." }
+    { id: "sell", icon: "🏷️", name: "아이템팔기", desc: "아이템이나 무기 하나를 팔고 100~10,000G를 받습니다 (비싼 물건이라고 더 받지는 않음)." },
+    { id: "music", icon: "🎧", name: "음악 감상", desc: "랜덤 음악의 랜덤 구간을 30초 동안 듣고 100~5,000G를 받습니다 (30초는 플레이 시간에 포함)." },
+    { id: "survival", icon: "🏝️", name: "서바이벌", desc: "나 + 시즌 밖 플레이어 9명 → 후보 3명 → 최종 1명이 1,000~5,000G! (시즌 밖 우승자는 다음 시즌 참가 때 그 돈을 가져감)" },
 ];
 
-export function earnView(pid, onChange) {
+export function earnView(pid, onChange, { loc = null, turn = null } = {}) {
     const ps = G.S().ps[pid];
     const left = G.earnLeft(pid);
     let busy = false;
@@ -31,18 +36,21 @@ export function earnView(pid, onChange) {
         if (G.earnLeft(pid) <= 0) return toast(`돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지입니다`, "warn");
         busy = true;
         try {
-            const r = await JOBS_RUN[job.id](pid, ps);
-            if (r) { G.payEarn(pid, job.name, r.gold, r.extra); await payout(pid, r.gold, r.msg); onChange(); }
+            const r = await JOBS_RUN[job.id](pid, ps, turn);
+            if (r?.lost) { G.payEarn(pid, job.name, 0); await payout(pid, 0, r.msg); onChange(); }
+            else if (r) { G.payEarn(pid, job.name, r.gold, r.extra); await payout(pid, r.gold, r.msg); onChange(); }
         } finally { busy = false; }
     };
     return h("div.earn-view",
         h("p.notice", `💪 돈벌기는 시즌당 아무거나 ${G.EARN_PER_SEASON}번까지! 남은 횟수: ${Math.max(0, left)}회 · 현재 HP ${ps.hp}`),
-        h("div.earn-grid", JOBS.map(job => h("div.earn-card.j-" + job.id,
+        h("div.earn-grid", JOBS.filter(j => !loc || earnKinds(loc).includes(j.id)).map(job => h("div.earn-card.j-" + job.id,
             h("div.ec-ico", job.icon), h("b", job.name), h("p.muted", job.desc),
             h("button.btn" + (left > 0 ? ".gold" : ".ghost"), { disabled: left <= 0, onclick: () => run(job) }, left > 0 ? "하기" : "횟수 소진")))));
 }
 
 const JOBS_RUN = {
+    music: (pid, ps, turn) => musicCorner(pid, turn),
+    survival: pid => survivalCorner(pid),
     async blood(pid, ps) {
         if (ps.hp <= 10) { toast("HP가 너무 낮아 헌혈할 수 없습니다 (HP 11 이상 필요)", "warn"); return null; }
         let give = randStep(10, 30, 1);

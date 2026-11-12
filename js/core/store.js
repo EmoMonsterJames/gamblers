@@ -28,6 +28,8 @@ export const Store = {
     jpLog: [],       // [{ game, tier, playerId, amount, season, at }] MAXI+ jackpots
     catalog: {},     // admin overrides for shop items: see data/catalogAdmin.js
     games: {},       // admin overrides for slots / casino games: see data/gameAdmin.js
+    maps: {},        // admin overrides for regions / maps: see data/mapAdmin.js
+    wallets: {},     // pid -> gold won outside a season (survival corner), added when they join one
     season: null,    // current season object (see game/season.js)
     seasonCount: 0,
     _saveTimer: null,
@@ -46,6 +48,8 @@ export const Store = {
         this.jpLog = L.jpLog || [];
         this.catalog = L.catalog || {};
         this.games = L.games || {};
+        this.maps = L.maps || {};
+        this.wallets = L.wallets || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -62,6 +66,7 @@ export const Store = {
                 sb.auth.onAuthStateChange((_e, s) => { this.user = s?.user || null; document.dispatchEvent(new Event("auth")); });
                 await this.pull();
                 this.mode = "cloud";
+                if (this.user) this.seedJackpotRows(); // rows for newly added slots
             } catch (e) {
                 console.warn("Supabase unavailable, running locally", e);
                 toast("Supabase 연결 실패 — 로컬 모드로 실행합니다", "warn");
@@ -90,6 +95,10 @@ export const Store = {
         if (cat) this.catalog = cat.value || {};
         const gm = settings.find(r => r.key === "games");
         if (gm) this.games = gm.value || {};
+        const mp = settings.find(r => r.key === "maps");
+        if (mp) this.maps = mp.value || {};
+        const wl = settings.find(r => r.key === "wallets");
+        if (wl) this.wallets = wl.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -99,7 +108,7 @@ export const Store = {
 
     saveLocal() {
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, playerEdits: this.playerEdits }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, playerEdits: this.playerEdits }));
         } catch (e) { console.warn(e); }
     },
 
@@ -136,14 +145,28 @@ export const Store = {
                 }
                 toast(`플레이어 ${rows.length}명을 Supabase에 등록했습니다`, "ok");
             }
-            const jrows = [];
-            for (const g of SLOTS) for (const [tier, j] of Object.entries(g.jp || {})) {
-                if (j.x) continue;
-                jrows.push({ game: g.id, tier, amount: this.jackpots[g.id]?.[tier] ?? j.seed, seed: j.seed, rate: g.progressive === false ? 0 : (j.rate || 0), cap: j.cap ?? null });
-            }
-            const { error } = await sb.from("slot_jackpots").upsert(jrows, { onConflict: "game,tier", ignoreDuplicates: true });
-            if (error) throw error;
+            await this.seedJackpotRows(true);
         } catch (e) { console.error(e); toast("초기 데이터 업로드 실패: " + (e.message || e), "error"); }
+    },
+    async seedJackpotRows(throwErr = false) {
+        const jrows = [];
+        for (const g of SLOTS) for (const [tier, j] of Object.entries(g.jp || {})) {
+            if (j.x || j.sum) continue;
+            jrows.push({ game: g.id, tier, amount: this.jackpots[g.id]?.[tier] ?? j.seed, seed: j.seed, rate: g.progressive === false ? 0 : (j.rate || 0), cap: j.cap ?? null });
+        }
+        for (let i = 0; i < jrows.length; i += 200) {
+            const { error } = await sb.from("slot_jackpots").upsert(jrows.slice(i, i + 200), { onConflict: "game,tier", ignoreDuplicates: true });
+            if (error) { if (throwErr) throw error; console.warn(error); return; }
+        }
+    },
+    async saveMaps(maps) {
+        this.maps = maps;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "maps", value: maps, updated_at: new Date().toISOString() }));
+    },
+    async saveWallets() {
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "wallets", value: this.wallets, updated_at: new Date().toISOString() }));
     },
     async logout() { await sb?.auth.signOut(); this.user = null; },
 
@@ -216,7 +239,7 @@ export const Store = {
         for (const g of SLOTS) {
             if (!g.jp) continue;
             const row = this.jackpots[g.id] ||= {};
-            for (const [tier, j] of Object.entries(g.jp)) if (!j.x && row[tier] == null) row[tier] = j.seed;
+            for (const [tier, j] of Object.entries(g.jp)) if (!j.x && !j.sum && row[tier] == null) row[tier] = j.seed;
         }
     },
     pool(gameId) { return this.jackpots[gameId] || {}; },
@@ -239,6 +262,10 @@ export const Store = {
     async hitJackpot(cfg, tier, pid, amount) {
         const j = cfg.jp?.[tier];
         if (!j || j.x) return;
+        if (j.sum) { // MEGA = every progressive tier at once → reset them all
+            for (const [t, jj] of Object.entries(cfg.jp)) if (!jj.x && !jj.sum) await this.hitJackpot(cfg, t, pid, this.jackpots[cfg.id]?.[t] ?? jj.seed);
+            return;
+        }
         await this.flushJackpots();
         this.jackpots[cfg.id][tier] = j.seed;
         this.saveLocal();
@@ -255,7 +282,7 @@ export const Store = {
         if (!serverLogged) this.write(sb => sb.from("jackpot_hits").insert({ game, tier, player_id: pid, amount, season_number: season }));
     },
     jackpotWinners(game) {
-        const R = { MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5, JACKPOT: 3 };
+        const R = { MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5, MEGA: 6, VAULT: 6, JACKPOT: 3 };
         return this.jpLog.filter(r => r.game === game && r.playerId != null && (R[r.tier] || 0) >= 3).sort((a, b) => String(b.at).localeCompare(String(a.at)));
     },
 

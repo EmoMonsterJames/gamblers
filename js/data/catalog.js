@@ -4,13 +4,17 @@
 // screen reads from these lists.
 // =====================================================================
 
+import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS } from "./regions.js";
+export { REGIONS, REGION_ITEMS };
+export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
+
 // ---------------------------------------------------------------- missions
 // type: bonus | slot_net | casino_net | points | jackpot | battle
 // battle rule: random | even | odd (roster number) | poor | rich (money) | lowpts | highpts (points)
 //   — two players fight, the loser is eliminated, the winner keeps their damaged HP
 // jackpot `min` is the lowest tier that counts (MINI < MINOR < MAXI < MAJOR < GRAND)
 export const TIERS = ["최하", "하", "중", "상", "최상"];
-export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5 };
+export const JACKPOT_RANK = { MINI: 1, MINOR: 2, MAXI: 3, EGG: 3, MONKEY: 3.5, MAJOR: 4, GRAND: 5, MEGA: 6, VAULT: 6 };
 
 export const MISSIONS = [
     // 최하
@@ -48,8 +52,54 @@ export const MISSIONS = [
     { id: "t4_casino", tier: 4, type: "casino_net", v: 100000, text: "카지노게임으로 100,000G 이상 벌기" },
     { id: "t4_points", tier: 4, type: "points",     v: 100,    text: "100 포인트 이상 획득하기" },
     { id: "t4_battle", tier: 4, type: "battle", rule: "random", text: "⚔️ 랜덤 2인 배틀" },
-    { id: "t4_battle_highpts", tier: 4, type: "battle", rule: "highpts", text: "⚔️ 포인트가 가장 많은 사람들 중 랜덤 2인 배틀" }
+    { id: "t4_battle_highpts", tier: 4, type: "battle", rule: "highpts", text: "⚔️ 포인트가 가장 많은 사람들 중 랜덤 2인 배틀" },
+
+    // ---- added missions ------------------------------------------------
+    // combo: casino_net ≥ c AND slot_net ≥ s · slot_wins: winning spins (a bonus = 1 win)
+    // five: spins with a 5-of-a-kind · freespin: free-spin bonus entries
+    // beg_max: round begging total ≤ v → candidate · job_min: round job pay < v → candidate
+    // card: players without that alphabet card (or who keep it) are candidates
+    // has: players without the thing are candidates · rank: a group is drawn by rule
+    { id: "n0_combo", tier: 0, type: "combo", c: 100, s: 1000, text: "카지노 게임으로 100G 이상, 슬롯 게임으로 1,000G 이상 얻기" },
+    { id: "n0_five1", tier: 0, type: "five", v: 1, text: "슬롯 게임에서 5 of a kind 1번 이상 달성하기" },
+    { id: "n0_free", tier: 0, type: "freespin", v: 1, text: "무료스핀(Free Spin) 보너스 1회 진입하기" },
+    { id: "n0_beg", tier: 0, type: "beg_max", v: 500, text: "구걸로 번 돈이 500G 이하인 플레이어 중 한 명 탈락" },
+    { id: "n1_combo", tier: 1, type: "combo", c: 300, s: 3000, text: "카지노 게임으로 300G 이상, 슬롯 게임으로 3,000G 이상 얻기" },
+    { id: "n1_wins", tier: 1, type: "slot_wins", v: 30, text: "슬롯 게임 Win 횟수 30번 이상 달성하기 (보너스는 1 Win)" },
+    { id: "n1_pet", tier: 1, type: "has", what: "pet", text: "펫 없는 플레이어 한 명 탈락" },
+    { id: "n1_card_G", tier: 1, type: "card", letter: "G", text: "알파벳 카드 G 없는 플레이어 탈락" },
+    { id: "n1_card_A", tier: 1, type: "card", letter: "A", text: "알파벳 카드 A 없는 플레이어 탈락" },
+    { id: "n1_b_poor2", tier: 1, type: "battle", rule: "poor2", text: "⚔️ 가장 돈이 적은 사람 두 명 배틀로 1명 탈락" },
+    { id: "n1_b_nopet", tier: 1, type: "battle", rule: "nopet", text: "⚔️ 펫 또는 펫 효과를 보유하지 않은 후보들 중 랜덤 2인 배틀" },
+    { id: "n1_b_weap", tier: 1, type: "battle", rule: "fewweapons", text: "⚔️ 무기 보유 개수가 가장 적은 사람 중 랜덤 2인 배틀" },
+    { id: "n1_b_lowhp", tier: 1, type: "battle", rule: "lowhp", text: "⚔️ HP가 가장 적은 후보들 중 랜덤 2인 배틀" },
+    { id: "n2_five3", tier: 2, type: "five", v: 3, text: "슬롯 게임에서 5 of a kind 3번 이상 달성하기" },
+    { id: "n2_job", tier: 2, type: "job_min", v: 20000, text: "직업으로 20,000G 이상 벌지 못한 플레이어 중 한 명 탈락" },
+    { id: "n2_card_M", tier: 2, type: "card", letter: "M", text: "알파벳 카드 M 없는 플레이어 탈락" },
+    { id: "n2_card_B", tier: 2, type: "card", letter: "B", text: "알파벳 카드 B 없는 플레이어 탈락" },
+    { id: "n2_b_lowpts2", tier: 2, type: "battle", rule: "lowpts2", text: "⚔️ 가장 포인트가 적은 사람 두 명 배틀로 1명 탈락" },
+    { id: "n2_b_noframe", tier: 2, type: "battle", rule: "noframe", text: "⚔️ 프레임 또는 프레임 효과를 보유하지 않은 후보들 중 랜덤 2인 배틀" },
+    { id: "n2_b_maps", tier: 2, type: "battle", rule: "fewmaps", text: "⚔️ 가장 적은 수의 맵을 방문한 사람 중 랜덤 2인 배틀" },
+    { id: "n2_b_items", tier: 2, type: "battle", rule: "fewitems", text: "⚔️ Bag에 소유한 아이템이 가장 적은 후보들 중 랜덤 2인 배틀" },
+    { id: "n2_b_spins2", tier: 2, type: "battle", rule: "fewspins2", text: "⚔️ 시즌 전체 슬롯 플레이 횟수가 가장 적은 최하위 2인 랜덤 배틀" },
+    { id: "n2_r_spins", tier: 2, type: "rank", rule: "fewspins", text: "시즌 전체 슬롯 플레이 횟수가 가장 적은 사람 중에서 랜덤 탈락" },
+    { id: "n3_five5", tier: 3, type: "five", v: 5, text: "슬롯 게임에서 5 of a kind 5번 이상 달성하기" },
+    { id: "n3_card_L", tier: 3, type: "card", letter: "L", text: "알파벳 카드 L 없는 플레이어 탈락" },
+    { id: "n3_card_E", tier: 3, type: "card", letter: "E", text: "알파벳 카드 E 없는 플레이어 탈락" },
+    { id: "n3_b_rich2", tier: 3, type: "battle", rule: "rich2", text: "⚔️ 가장 돈이 많은 사람 두 명 배틀로 1명 탈락" },
+    { id: "n3_b_net2", tier: 3, type: "battle", rule: "netlow2", text: "⚔️ 카지노+슬롯 손익 순위 최하위 2인 배틀" },
+    { id: "n3_b_highhp", tier: 3, type: "battle", rule: "highhp", text: "⚔️ HP가 가장 많은 후보들 중 랜덤 2인 배틀" },
+    { id: "n3_r_poor", tier: 3, type: "rank", rule: "fewspins_poor", text: "슬롯 플레이 횟수가 가장 적으면서 보유한 골드가 가장 적은 사람 랜덤 탈락" },
+    { id: "n3_nogear", tier: 3, type: "has", what: "gear", text: "펫, 펫 효과, 프레임, 프레임 효과를 보유하지 않은 후보들 중에서 랜덤 탈락" },
+    { id: "n4_card_R", tier: 4, type: "card", letter: "R", text: "알파벳 카드 R 없는 플레이어 탈락" },
+    { id: "n4_card_S", tier: 4, type: "card", letter: "S", text: "알파벳 카드 S 없는 플레이어 탈락" },
+    { id: "n4_b_highpts2", tier: 4, type: "battle", rule: "highpts2", text: "⚔️ 가장 포인트가 많은 사람 두 명 배틀로 1명 탈락" }
 ];
+
+// alphabet cards (G A M B L E R S): dropped by slot reels, sold in the shops,
+// used up by card missions and to force a refused random entry
+export const ALPHABET = ["G", "A", "M", "B", "L", "E", "R", "S"];
+export const cardId = l => "card_" + l;
 
 // ---------------------------------------------------------------- pets
 // art: emoji layers rendered by ui/pets.js. `boost` is in percent.
@@ -121,6 +171,8 @@ export const WEAPONS = [
     { id: "gold_storm", name: "황금 동전 폭풍",  emoji: "🌪️", type: "attack", atk: 25, acc: 90, anim: "storm", rare: true },
     // magic: one of five random spells on a hit (see battle.js MAGIC_SPELLS)
     { id: "magic",      name: "마법",            emoji: "🪄", type: "magic",  atk: 0,  acc: 80, anim: "magic" },
+    // spray: the target's weapon accuracy is −10% for their next 3 turns (never stacks)
+    { id: "spray",      name: "스프레이",        emoji: "🧴", type: "spray",  atk: 0,  acc: 80, anim: "spray", turns: 3, accDown: 10 },
     // not for sale — what a magic spell turns an opponent's weapon into
     { id: "no_move",    name: "No Move",         emoji: "🫥", type: "nomove", atk: 0,  acc: 100, anim: "nomove", hidden: true }
 ];
@@ -168,7 +220,9 @@ export const ITEMS = [
     { id: "pass_ground", name: "Ground Town Casino 출입권",  emoji: "🎟️", loc: "ground" },
     { id: "pass_foggy",  name: "Foggy Nation Casino 출입권", emoji: "🎟️", loc: "foggy" },
     { id: "pass_mj",     name: "MJ World Casino 출입권",     emoji: "🎟️", loc: "mj" },
-    { id: "pass_dung",   name: "Dung Town Casino 출입권",    emoji: "🎟️", loc: "dungtown" }
+    { id: "pass_dung",   name: "Dung Town Casino 출입권",    emoji: "🎟️", loc: "dungtown" },
+    ...REGION_ITEMS.map(r => ({ id: r.id, name: r.name, emoji: r.emoji, desc: r.desc, region: r.region })),
+    ...ALPHABET.map(l => ({ id: cardId(l), name: `알파벳 카드 ${l}`, emoji: "🔤", letter: l, desc: "미션·맵 입장에 1번 쓰고 사라집니다." }))
 ];
 
 // ---------------------------------------------------------------- shops
@@ -178,7 +232,7 @@ const petPriceG = { 5: 45000, 10: 90000, 15: 160000 };
 const specialPetPriceG = { 5: 80000, 10: 150000 };
 const fxPriceG = { 5: 30000, 10: 65000, 15: 120000 };
 const specialFxPriceG = { 5: 60000, 10: 120000 };
-const weaponPriceG = { magic: 500000, punch: 12000, guard: 25000, tongue: 28000, kick: 12000, rock: 45000, ghost_punch: 65000, ko_punch: 55000, holo_ball: 80000, sleep_flute: 70000, coin_throw: 30000 };
+const weaponPriceG = { spray: 35000, magic: 500000, punch: 12000, guard: 25000, tongue: 28000, kick: 12000, rock: 45000, ghost_punch: 65000, ko_punch: 55000, holo_ball: 80000, sleep_flute: 70000, coin_throw: 30000 };
 
 export const SHOPS = {
     general: {
@@ -192,7 +246,9 @@ export const SHOPS = {
             { cat: "item", id: "hp_10", price: 10000 },
             { cat: "item", id: "hp_50", price: 45000 },
             { cat: "item", id: "hp_full", price: 95000 },
-            ...["pass_emo", "pass_poly", "pass_ground", "pass_foggy", "pass_mj", "pass_dung"].map(id => ({ cat: "item", id, price: 45000 }))
+            ...REGION_ITEMS.map(r => ({ cat: "item", id: r.id, price: r.price })),
+            ...ALPHABET.map(l => ({ cat: "item", id: cardId(l), price: 50000 }))
+            // map passes are appended below LOCATIONS (one per map)
         ]
     },
     pet: {
@@ -223,10 +279,16 @@ export const SHOPS = {
             ...PET_EFFECTS.filter(e => e.kind === "special" && e.boost === 15).map(e => ({ cat: "effect", id: e.id, price: 110 })),
             ...WEAPONS.filter(w => w.rare).map(w => ({ cat: "weapon", id: w.id, price: { thunder: 70, dragon_breath: 90, gold_storm: 80 }[w.id] })),
             ...FRAMES.filter(f => f.rare).map(f => ({ cat: "frame", id: f.id, price: 60 })),
-            ...PROFILE_EFFECTS.filter(f => f.rare).map(f => ({ cat: "peffect", id: f.id, price: 50 }))
+            ...PROFILE_EFFECTS.filter(f => f.rare).map(f => ({ cat: "peffect", id: f.id, price: 50 })),
+            ...ALPHABET.map(l => ({ cat: "item", id: cardId(l), price: 300, alt: true }))
         ]
-    }
+    },
+    // 10~20% off a rotating handful of G-shop goods (see discountItems() in data/catalogAdmin.js)
+    discount: { name: "디스카운트 상점", icon: "🏷️", cur: "G", list: [] }
 };
+// per-round purchase limits by shop (아이템 상점 5회 · 무기/펫·프레임/기타 1회)
+export const SHOP_LIMIT = { general: 5, weapon: 1, pet: 1, decor: 1, point: 1, discount: 1 };
+export const SHOP_LIMIT_LABEL = { general: "아이템 상점", weapon: "무기 상점", pet: "펫 상점", decor: "프레임/효과 상점", point: "포인트 상점", discount: "디스카운트 상점" };
 
 // ---------------------------------------------------------------- map
 // x/y are percentages on the world map. req: points (have at least) or
@@ -260,7 +322,61 @@ export const LOCATIONS = [
       slots: ["dragon_hoard", "crack_or_not"], casino: ["dungtown_dice"] }
 ];
 
+// every original map lives in Casino Land 1; then the new regions' maps
+for (const l of LOCATIONS) Object.assign(l, { region: "cl1" }, CL1_PATCH[l.id] || {});
+for (const m of NEW_MAPS) {
+    const { slot, casino, ...loc } = m;
+    LOCATIONS.push({ ...loc, slots: ["rs_" + m.id], casino: ["rc_" + m.id] });
+}
+// the 7 special slots
+const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: "foggy", neon_cadets: "twins", four_pillars: "mj", gift: "balloon", chrono_heist: "oink" };
+for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id === lid)?.slots.push(sid);
+
+// earn corners: `earn: true` (old saves) = the classic four
+export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival"];
+export const earnKinds = loc => !loc?.earn ? [] : Array.isArray(loc.earn) ? loc.earn : ["blood", "labor", "poop", "sell"];
+
+// map passes: one per map. A pass lets its holder in (nationals-only maps)
+// AND teleports straight to that map when used at the start of a turn.
+export const passIdOf = loc => loc.req?.pass || "pass_" + loc.id;
+export const passPrice = loc => (loc.region === "sky" || loc.region === "space") ? 50000 : 45000;
+for (const l of LOCATIONS) {
+    const id = passIdOf(l);
+    const ex = ITEMS.find(i => i.id === id);
+    if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
+    else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 턴 시작 시 이 맵으로 바로 이동합니다 (국적 전용 맵 입장 가능)." });
+    SHOPS.general.list.push({ cat: "item", id, price: passPrice(l) });
+}
+export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
+
 export const COUNTRIES = ["Emo World", "Polynesia", "Ground Town", "Foggy Nation", "MJ World", "Dung Town"];
+
+// ---------------------------------------------------------------- jobs (직업 코너)
+// cut = seconds taken off the turn timer. Pay is skewed low (high pay is rare).
+export const CAREERS = [
+    { id: "cleaner",   name: "카지노 청소부",  emoji: "🧹", cut: 180, min: 10000, max: 30000 },
+    { id: "dungsweep", name: "똥쓸이",          emoji: "💩", cut: 180, min: 5000,  max: 20000 },
+    { id: "hotel",     name: "호텔 카운터",     emoji: "🛎️", cut: 300, min: 20000, max: 40000 },
+    { id: "secretary", name: "형용형근 비서",   emoji: "💼", cut: 480, min: 20000, max: 100000, card: 0.15 },
+    { id: "cashier",   name: "카지노 캐셔",     emoji: "💵", cut: 180, min: 3000,  max: 10000 },
+    { id: "statue",    name: "동상알바",        emoji: "🗽", cut: 240, min: 10000, max: 25000 },
+    { id: "volunteer", name: "봉사활동알바",    emoji: "🤝", cut: 180, min: 1000,  max: 6000 }
+];
+
+// ---------------------------------------------------------------- NPCs (NPC 코너)
+// A visit has a 40~70% chance of 1~3 NPC attacks at random moments.
+// Every attack picks one of the NPC's moves at random.
+//   steal: [min,max] gold taken (nothing if the player has less) · give: gold
+//   hp: ±HP · curse: just insults · kill: instant death · nomove: weapon → No Move
+export const NPCS = [
+    { id: "beggar",  name: "거지",       emoji: "🧎", art: "🥣", color: "#a16207", moves: [{ steal: [500, 1000] }, { hp: -5 }, { hp: -10 }] },
+    { id: "angel",   name: "엔젤",       emoji: "👼", art: "✨", color: "#fde68a", moves: [{ give: [500, 1000] }, { hp: 5 }, { hp: 10 }] },
+    { id: "samurai", name: "사무라이",   emoji: "🥷", art: "⚔️", color: "#dc2626", moves: [{ hp: -5 }, { hp: -10 }, { hp: -15 }] },
+    { id: "granny",  name: "할머니",     emoji: "👵", art: "🦯", color: "#a78bfa", moves: [{ steal: [100, 500] }, { hp: -5 }, { curse: true }] },
+    { id: "reaper",  name: "죽음의 사신", emoji: "💀", art: "🪦", color: "#0f172a", moves: [{ steal: [1000, 5000] }, { hp: -10 }, { hp: -15 }, { hp: -20 }, { hp: -30 }, { hp: -50 }, { kill: true }] },
+    { id: "wizard",  name: "마법사",     emoji: "🧙", art: "🪄", color: "#7c3aed", moves: [{ steal: [500, 3000] }, { give: [500, 3000] }, { hp: -10 }, { hp: -15 }, { hp: -20 }, { nomove: true }] }
+];
+export const CURSES = ["저주받아라!", "죽어라!", "돈 다 날려라!", "평생 꽝만 나와라!", "잭팟은 꿈도 꾸지 마라!", "네 펫이 도망갈 거다!", "다음 스핀은 무조건 꽝이다!", "가진 돈 전부 잃을 거다!"];
 
 // ---------------------------------------------------------------- lookups
 export const byId = list => Object.fromEntries(list.map(x => [x.id, x]));

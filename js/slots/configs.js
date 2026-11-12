@@ -1,3 +1,5 @@
+import { NEW_MAPS } from "../data/regions.js";
+import { SPECIAL_SLOTS } from "./specialConfigs.js";
 // =====================================================================
 // Slot machine definitions (one per casino, no duplicates).
 // Symbols: e = emoji, img = image path. pay = [3,4,5 of a kind] in bet
@@ -375,6 +377,39 @@ export const SLOTS = [
         tests: [["mm:red", "🟥 빨간 상자 (무료게임)"], ["mm:rainbow", "🌈 레인보우 상자 (무료게임+WILD)"], ["mm:yellow", "🟨 노란 상자 (WILD 뿌리기)"], ["mm:red+yellow", "빨강 + 노랑 동시"], ["pick", "🔑 MATCH 3 잭팟"], ["wheel", "🎡 LUCKY WHEEL"]]
     })
 ];
+// ------------------------------------------------ region maps: one generated slot per map
+// Each template copies the feature set + reel weights of a calibrated machine,
+// so the RTP is the same as that machine's (px copied as well).
+const TPL = {
+    pearl:  { px: 2.2,  label: "FREE 3개 = 10 무료스핀(x2) · 코인 6개 = Hold & Spin", wildW: [0, 4, 4, 4, 0], wildFree: [0, 6, 6, 6, 0],
+              look: sp => ({ F: { img: "images/slots/free-games.svg" }, C: { e: sp, name: "Coin" } }),
+              features: () => ({ free: { p: 0.0075, spins: 10, mult: 2 }, hold: { p: 0.0095, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 } }) },
+    rabbit: { px: 2.25, label: "FREE 3개 = 8 무료스핀(와일드 릴) · 잭팟 심볼 3개 = 잭팟 픽", wildW: [0, 4, 4, 4, 0],
+              look: sp => ({ F: { img: "images/slots/free-games.svg" }, X: { e: sp, name: "Jackpot" } }),
+              features: n => ({ free: { p: 0.008, spins: 8, mult: 1, wildReels: 0.3 }, pick: { p: 0.005, sym: true, title: `${n} PICK`, tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 0.3 } } }) },
+    ant:    { px: 2.13, label: "코인 6개 = Hold & Spin · 잭팟 심볼 3개 = 잭팟 픽", wildW: [0, 4, 4, 4, 0],
+              look: sp => ({ C: { e: sp, name: "Coin" }, X: { e: "👑", name: "Jackpot" } }),
+              features: n => ({ hold: { p: 0.0095, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 }, pick: { p: 0.0045, sym: true, title: `${n} TREASURE`, tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 0.3 } } }) },
+    ghost:  { px: 2.8,  label: "휠 심볼 3개 = 보너스 휠 · FREE 3개 = 10 무료스핀", wildW: [0, 4, 4, 4, 0], wildFree: [0, 6, 6, 6, 0],
+              look: sp => ({ F: { img: "images/slots/free-games.svg" }, R: { e: sp, name: "Wheel" } }),
+              features: () => ({ free: { p: 0.0075, spins: 10, mult: 1 }, wheel: { p: 0.008, sym: true, seg: ["5", "MINI", "8", "15", "5", "MINOR", "10", "30", "6", "MAJOR", "12", "20"], w: [16, 5, 12, 6, 16, 2.5, 10, 2, 14, 0.25, 9, 4] } }) },
+    dragon: { px: 2.37, label: "코인 6개 = Hold & Spin · FREE 3개 = 8 무료스핀(x2) · 잭팟 심볼 3개 = 잭팟 픽", wildW: [0, 4, 4, 4, 0], wildFree: [0, 6, 6, 6, 0],
+              look: sp => ({ F: { img: "images/slots/free-games.svg" }, C: { e: "🔴", name: "Pearl" }, X: { e: sp, name: "Jackpot" } }),
+              features: n => ({ free: { p: 0.006, spins: 8, mult: 2 }, hold: { p: 0.007, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 }, pick: { p: 0.0035, sym: true, title: `${n} PICK`, tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 0.3 } } }) }
+};
+for (const m of NEW_MAPS) {
+    const s = m.slot, t = TPL[s.tpl];
+    SLOTS.push(video({
+        id: "rs_" + m.id, name: s.name, brand: s.brand, progressive: true, region: m.region,
+        desc: `${m.name}의 대표 슬롯! ${t.label}.`,
+        theme: { bg: `linear-gradient(180deg,${s.bg[0]},${s.bg[1]})`, accent: s.acc, glow: s.acc, font: s.font || "'Lilita One', sans-serif" },
+        highs: s.hi.map(e => ({ e })), lows: s.lo.map(e => ({ e })),
+        wild: { e: s.wild, name: "WILD", w: t.wildW, ...(t.wildFree ? { wFree: t.wildFree } : {}) },
+        look: t.look(s.sp), features: t.features(s.name.toUpperCase()), px: t.px
+    }));
+}
+SLOTS.push(...SPECIAL_SLOTS);
+
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.
 const PX = {
