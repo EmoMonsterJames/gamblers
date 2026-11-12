@@ -452,7 +452,7 @@ export function openSlot(cfg, ctx) {
     // ------------------------------------------------------------ alphabet cards (G·A·M·B·L·E·R·S)
     // During a season a letter sometimes appears on the reels → card for the bag.
     async function alphabetDrop() {
-        if (!ctx.gainCard || Math.random() >= (ctx.cardRate ?? 0.2)) return;
+        if (!ctx.gainCard || Math.random() >= (ctx.cardRate ?? 0.008)) return;
         const L = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
         const cells = egg ? [] : Array.from({ length: reelsN }, (_, c) => Array.from({ length: rows }, (_, r) => cellsEl(c, r))).flat().filter(Boolean);
         const cell = cells.length ? cells[Math.floor(Math.random() * cells.length)] : cabinet;

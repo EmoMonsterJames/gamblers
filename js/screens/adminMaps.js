@@ -90,7 +90,9 @@ export function adminMapsPage() {
                 h("label.cf", h("small", "입장 조건"), h("div.row", h("select", { onchange: ev => setReq(ev.target.value) }, REQS.map(([v, t]) => h("option", { value: v, selected: rk === v }, t))), reqVal))),
             chipPicker(l.slots || [], SLOTS, SLOT_BY_ID, "슬롯머신", ids => { e.slots = ids; dirty(); draw(); }),
             chipPicker(l.casino || [], CASINO_GAMES, CASINO_BY_ID, "카지노 게임", ids => { e.casino = ids; dirty(); draw(); }),
-            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("npc", "⚠️ NPC 출몰")),
+            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"),
+                h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
+                    [["rand", "랜덤 (라운드당 15%)"], ["hot", "랜덤·자주 (35%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "돈벌기 코너:"), EARN_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: earn.includes(k), onchange: ev => {
                 const next = new Set(earnKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);

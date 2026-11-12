@@ -83,6 +83,9 @@ export const Store = {
         ]);
         if (players?.length) {
             this.setPlayers(players);
+            // handler "BOTH" → split 50:50 into JAMES / DYLAN (saved once an admin is logged in)
+            const fixed = this.allPlayers.filter(p => p._handlerFixed);
+            if (fixed.length && this.user) for (const p of fixed) this.write(sb => sb.from("players").update({ handler: p.handler }).eq("id", p.id));
             for (const p of players) this.decor[p.id] = { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] };
         }
         this.hall = hall.map(r => ({ season: r.season_number, playerId: r.player_id, snapshot: r.snapshot, at: r.crowned_at })).sort((a, b) => b.season - a.season);
@@ -98,7 +101,7 @@ export const Store = {
         const mp = settings.find(r => r.key === "maps");
         if (mp) this.maps = mp.value || {};
         const wl = settings.find(r => r.key === "wallets");
-        if (wl) this.wallets = wl.value || {};
+        this.wallets = wl?.value || {}; // cloud is the source of truth (a reset leaves no row)
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -174,6 +177,13 @@ export const Store = {
     player(id) { return this.allPlayers.find(p => p.id === +id); },
     setPlayers(list) {
         this.allPlayers = [...list].sort((a, b) => a.id - b.id);
+        let n = 0;
+        this.allPlayers = this.allPlayers.map(p => {
+            const up = String(p.handler || "").trim().toUpperCase();
+            if (up === "BOTH") return { ...p, handler: n++ % 2 ? "DYLAN" : "JAMES", _handlerFixed: true };
+            if ((up === "JAMES" || up === "DYLAN") && p.handler !== up) return { ...p, handler: up, _handlerFixed: true };
+            return p;
+        });
         this.players = this.allPlayers.filter(p => p.is_active !== false);
     },
     nextPlayerId() { return Math.max(0, ...this.allPlayers.map(p => p.id)) + 1; },

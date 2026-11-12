@@ -179,3 +179,28 @@ export async function npcAttack(pid) {
     await m.closed;
     return out;
 }
+
+// ------------------------------------------------------------------ 👹 NPC info (map popup)
+const moveText = m => m.steal ? `💸 골드 강탈 ${fmt(m.steal[0])}~${fmt(m.steal[1])}G (가진 돈이 부족하면 실패)`
+    : m.give ? `💰 골드 선물 ${fmt(m.give[0])}~${fmt(m.give[1])}G`
+    : m.hp ? (m.hp > 0 ? `💖 HP +${m.hp} 회복` : `💥 HP ${m.hp} 공격`)
+    : m.curse ? "🗯️ 저주 (말뿐, 피해 없음)"
+    : m.kill ? "☠️ 즉사 — 바로 탈락!"
+    : m.nomove ? "🪄 무기 1개를 No Move로 바꿈" : "?";
+// loc: the map · active: NPCs are out on this map this round (season only)
+export function npcInfo(loc, { active = null } = {}) {
+    const mapP = Math.round(G.npcMapChance(loc) * 100);
+    const pct = x => (Math.round(x * 1000) / 10) + "%";
+    modal(h("div.npc-info",
+        h("div.npc-info-head",
+            active == null ? null : h("p" + (active ? ".notice.warn" : ".notice"), active ? "⚠️ 이번 라운드에 이 맵에는 NPC가 출몰합니다!" : "🛡️ 이번 라운드에 이 맵에는 NPC가 나오지 않습니다."),
+            h("ul.npc-rules",
+                h("li", `NPC는 모든 맵에 나오지 않고, 라운드마다 무작위로 정해진 맵에만 나타납니다. 이 맵이 뽑힐 확률: `, h("b", mapP + "%")),
+                h("li", "NPC가 있는 맵에서 플레이하면 턴마다 ", h("b", "40~70%"), " 확률로 습격을 받고, 습격은 플레이 중 무작위 시점에 ", h("b", "1~3회"), " 일어납니다."),
+                h("li", "습격마다 아래 NPC 6명 중 1명이 같은 확률(", h("b", pct(1 / NPCS.length)), ")로 나오고, 그 NPC의 기술 중 하나를 같은 확률로 씁니다."))),
+        h("div.npc-cards", NPCS.map(n => h("div.npc-card", { style: { "--c": n.color } },
+            h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name), h("small", `무기: ${n.art} · 등장 ${pct(1 / NPCS.length)}`))),
+            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 ? ".good" : ""), h("span", moveText(m)), h("small", pct(1 / n.moves.length))))),
+            h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / NPCS.length)} × 기술별 확률`))))),
+        { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
+}

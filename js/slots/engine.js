@@ -11,6 +11,8 @@
 // =====================================================================
 import { JACKPOT_RANK } from "../data/catalog.js";
 import { specialSpin } from "./specialEngine.js";
+import { P_POINTS, pointCount, setPointBet } from "./points.js";
+export { P_POINTS };
 
 export const CARD_SYMS = ["A", "K", "Q", "J", "T"];
 const rand = Math.random;
@@ -121,11 +123,9 @@ export function evalWays(cfg, grid, bet, mult = 1, wildReels = []) {
 }
 
 // ------------------------------------------------------------ points (P icon)
-const P_COUNT = [[0, 90], [1, 6.5], [2, 2.2], [3, 0.9], [4, 0.3], [5, 0.1]];
-export const P_POINTS = [0, 1, 3, 6, 10, 20];
+// chance and count scale with the bet: see slots/points.js
 function addPoints(grid, cfg) {
-    if (cfg.noPoints) return 0;
-    const n = pickW(P_COUNT);
+    const n = pointCount(cfg, rand);
     if (n) inject(grid, "P", n, { distinctReels: n <= grid.length });
     return P_POINTS[Math.min(n, 5)];
 }
@@ -275,6 +275,7 @@ function freeBonus(cfg, bet, spins, opts = {}) {
 // ------------------------------------------------------------ main spin
 // ctx: { bet, state, luck:{win,bonus}, pool:{MAJOR,GRAND} }
 export function spin(cfg, ctx) {
+    setPointBet(ctx.bet);
     if (cfg.engine === "classic") return classicSpin(cfg, ctx);
     if (cfg.engine === "monkey") return monkeySpin(cfg, ctx);
     if (cfg.engine === "catmouse") return catMouseSpin(cfg, ctx);
@@ -908,7 +909,7 @@ function eggSpin(cfg, ctx) {
         state.crack = 0;
     } else state.crack = Math.min(E.max, before + add);
     const tease = !doBreak && rand() < 0.07;
-    const points = rand() < 0.1 ? P_POINTS[pickW([[1, 70], [2, 22], [3, 8]])] : 0;
+    const points = P_POINTS[pointCount(cfg, rand, 3)];
     return settle(cfg, ctx, { grid: null, base: { win: 0, lines: [] }, done, points, state, extra: { egg: { before, after: state.crack, add, tease }, anticipation: tease ? [0] : [] } });
 }
 
@@ -1194,8 +1195,8 @@ function classicSpin(cfg, ctx) {
     const lineWin = teaseSym ? classicPay(cfg, line, bet) : win;
     // points
     let points = 0;
-    if (rand() < 0.16) {
-        const n = pickW([[1, 70], [2, 22], [3, 8]]);
+    const n = pointCount(cfg, rand, 3);
+    if (n) {
         for (let i = 0; i < n; i++) { const c = ri(3); const rr = [0, 2][ri(2)]; window[c][rr] = "P"; }
         points = P_POINTS[n] || 0;
     }

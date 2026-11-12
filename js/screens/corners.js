@@ -12,6 +12,7 @@ import { CONFIG } from "../config.js";
 import { catalogEntry, WEAPON_BY_ID, earnKinds } from "../data/catalog.js";
 import { musicCorner, survivalCorner, jobView as jobView2, scheduleNpc, npcAttack } from "./corners2.js";
 export { scheduleNpc, npcAttack };
+export { npcInfo } from "./corners2.js";
 export const jobView = (pid, turn, onChange) => jobView2(pid, turn, onChange, payout);
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";

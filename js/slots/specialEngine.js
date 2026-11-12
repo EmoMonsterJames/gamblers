@@ -24,8 +24,8 @@ function pickW(pairs) { let s = 0; for (const p of pairs) s += p[1]; let r = R()
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = ri(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const clone = g => g.map(c => [...c]);
 const key = (c, r) => c + "," + r;
-const P_COUNT = [[0, 90], [1, 6.5], [2, 2.2], [3, 0.9], [4, 0.3], [5, 0.1]];
-const P_POINTS = [0, 1, 3, 6, 10, 20];
+import { P_POINTS, pointCount } from "./points.js";
+let ptCfg = null; // slot being spun (for the bet-scaled P chance)
 
 // ------------------------------------------------------------ jackpots
 const TIERS = ["MINI", "MINOR", "MAXI", "MAJOR", "GRAND"];
@@ -72,7 +72,7 @@ function inject(grid, sym, n, { distinct = true, avoid = null } = {}) {
     }
     return cells;
 }
-function addPoints(grid) { const n = pickW(P_COUNT); if (n) inject(grid, "P", n, { distinct: n <= grid.length }); return P_POINTS[Math.min(n, 5)]; }
+function addPoints(grid) { const n = pointCount(ptCfg, R); if (n) inject(grid, "P", n, { distinct: n <= grid.length }); return P_POINTS[Math.min(n, 5)]; }
 const count = (grid, s) => grid.reduce((a, col) => a + col.filter(x => x === s).length, 0);
 function teaseFor(grid, syms, need = 3) {
     const out = [];
@@ -143,6 +143,7 @@ function finish(cfg, ctx, o) {
 }
 
 export function specialSpin(cfg, ctx) {
+    ptCfg = cfg;
     const fn = { sp_kitchen: kitchen, sp_dj: dj, sp_orb: orbSlot, sp_pod: orbSlot, sp_pillars: pillars, sp_gift: gift, sp_heist: heist }[cfg.engine];
     return fn(cfg, ctx);
 }

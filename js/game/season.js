@@ -8,7 +8,6 @@ import { MISSIONS, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, L
 import { shuffle } from "../core/util.js";
 
 export const S = () => Store.season;
-const JOIN_BONUS = () => CONFIG.SEASON_JOIN_BONUS ?? 200000;
 
 export function newSeason() {
     const number = (Store.seasonCount || 0) + 1;
@@ -36,22 +35,7 @@ export function addToRoster(pid) {
     // gold won outside a season (survival corner) comes along
     const w = Store.wallets?.[pid] || 0;
     if (w > 0) { s.ps[pid].money += w; delete Store.wallets[pid]; Store.saveWallets(); log(`👛 ${name(pid)} 시즌 밖에서 번 ${w.toLocaleString()}G 합류`); }
-    grantJoinBonus();
     Store.saveSeason();
-}
-// every player gets the join bonus once per season (players who joined
-// before this rule existed get it the next time the season screen opens)
-export function grantJoinBonus() {
-    const s = S(); if (!s) return false;
-    let any = false;
-    for (const pid of s.roster) {
-        const ps = s.ps[pid];
-        if (ps.joinBonus || ps.out) continue;
-        ps.joinBonus = true; ps.money += JOIN_BONUS(); any = true;
-        log(`🎁 ${name(pid)} 시즌 참가 보너스 +${JOIN_BONUS().toLocaleString()}G`);
-    }
-    if (any) Store.saveSeason(true);
-    return any;
 }
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
@@ -306,6 +290,23 @@ export function gainCard(pid, letter) {
 
 // ---------------------------------------------------------------- NPC corner
 // apply one NPC move to the current player; returns what happened
+// NPCs show up on RANDOM maps: every round a fresh set of maps is rolled.
+// loc.npc: "always" | "never" | true (haunted: 35%/round) | else 15%/round
+export function npcMapChance(loc) {
+    if (!loc || loc.npc === "never") return 0;
+    if (loc.npc === "always") return 1;
+    return loc.npc ? 0.35 : 0.15;
+}
+export function npcMaps() {
+    const s = S(); if (!s) return [];
+    if (!s.npc || s.npc.round !== s.round) {
+        s.npc = { round: s.round, maps: LOCATIONS.filter(l => !l.off && Math.random() < npcMapChance(l)).map(l => l.id) };
+        Store.saveSeason();
+    }
+    return s.npc.maps;
+}
+export const npcActive = locId => npcMaps().includes(locId);
+
 export function npcHit(pid, npc, move) {
     const s = S(), ps = s.ps[pid];
     const rnd = ([a, b]) => Math.round((a + Math.random() * (b - a)) / 100) * 100;

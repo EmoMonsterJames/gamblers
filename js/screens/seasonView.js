@@ -10,7 +10,8 @@ import { toast, confetti, banner, confirmBox, modal, bigWin } from "../core/fx.j
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
-const CARD_RATE = 0.2; // alphabet card chance per slot spin / casino play
+const CARD_RATE = 0.008;       // alphabet card chance per slot spin (rare: under 1%)
+const CASINO_CARD_RATE = 0.01; // per casino play
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
 import * as G from "../game/season.js";
@@ -21,14 +22,13 @@ import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
 import { locationShops } from "../data/catalogAdmin.js";
-import { earnView, begView, jobView, npcAttack, scheduleNpc } from "./corners.js";
+import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo } from "./corners.js";
 import { battleView } from "./battle.js";
 
 let root = null, timer = null;
 
 export function seasonScreen() {
     root = h("div.season");
-    if (G.S()) G.grantJoinBonus(); // 200,000G join bonus, also for players who joined earlier
     render();
     return root;
 }
@@ -286,7 +286,7 @@ function locationStage(s) {
             h("div.mp-bar", h("i", { style: { width: Math.max(0, Math.min(100, pr.cur / pr.goal * 100)) + "%" } })),
             h("small", t.ticket ? "미션완료권 사용됨" : pr.label));
         progEl.classList.toggle("met", met);
-        hud.replaceChildren(
+        hud.replaceChildren(...[
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
             ps.loanGold > 0 || ps.loan ? h("div.stat.loan", h("small", "대출된 골드 (게임 전용)"), h("b", fmt(ps.loanGold || 0) + " G")) : null,
             ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
@@ -295,8 +295,8 @@ function locationStage(s) {
             h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
-            h("div.stat", h("small", "이번 턴 포인트"), h("b", t.stats.points)),
-            h("div.stat", h("small", "보너스 / 잭팟"), h("b", `${t.stats.bonus} / ${t.stats.jackpot || "-"}`)));
+            h("div.stat", h("small", "이번 턴 포인트"), h("b", String(t.stats.points))),
+            h("div.stat", h("small", "보너스 / 잭팟"), h("b", `${t.stats.bonus} / ${t.stats.jackpot || "-"}`))].filter(Boolean));
     };
     updateHud();
 
@@ -315,7 +315,7 @@ function locationStage(s) {
             if (extra.settle) {
                 ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, extra); updateHud();
                 // casino games can drop an alphabet card too (slots show theirs on the reels)
-                if (kind === "casino" && Math.random() < CARD_RATE) { const L = pick(ALPHABET); G.gainCard(pid, L); toast(`🔤 알파벳 카드 ${L} 획득!`, "ok"); }
+                if (kind === "casino" && Math.random() < CASINO_CARD_RATE) { const L = pick(ALPHABET); G.gainCard(pid, L); toast(`🔤 알파벳 카드 ${L} 획득!`, "ok"); }
             }
         },
         // slots: a letter on the reels → card (season play only)
@@ -375,7 +375,8 @@ function locationStage(s) {
     tabBody("games");
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
-    if (loc.npc && !t.npc) { t.npc = scheduleNpc(t.remaining); Store.saveSeason(); }
+    const npcHere = G.npcActive(loc.id);
+    if (npcHere && !t.npc) { t.npc = scheduleNpc(t.remaining); Store.saveSeason(); }
     let npcBusy = false;
     async function npcCheck() {
         if (npcBusy || !t.npc?.length || t.remaining > t.npc[0]) return;
@@ -438,7 +439,7 @@ function locationStage(s) {
 
     return h("div.location", { style: { "--loc": loc.color } },
         h("div.loc-head",
-            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), loc.npc ? h("span.npc-warn", { title: "이 맵에서는 플레이 중 NPC가 갑자기 나타날 수 있습니다" }, "⚠️ NPC 출몰") : null),
+            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰 · 정보") : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ NPC 없음 · 정보")),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
         hud,

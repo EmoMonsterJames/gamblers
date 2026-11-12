@@ -33,7 +33,7 @@ export function adminCatalogPage() {
         Store.catalog = saved; applyCatalog();
         body.replaceChildren(
             h("div.cat-table", h("div.cat-row.head", h("span", ""), h("span", "능력치"), h("span", "판매 상점 / 가격"), h("span", "판매 장소"), h("span", "")), rows),
-            CATS[cat].custom ? addForm(cat) : null);
+            ...(CATS[cat].custom ? [addForm(cat)] : []));
     }
     function row(c, e) {
         const ed = edit(c, e.id);

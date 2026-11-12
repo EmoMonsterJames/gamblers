@@ -12,6 +12,8 @@ import { worldMap } from "../ui/map.js";
 import { openSlot } from "./slot.js";
 import { openCasino } from "./casino.js";
 import { locationShops } from "../data/catalogAdmin.js";
+import { npcMapChance } from "../game/season.js";
+import { npcInfo } from "./corners2.js";
 
 // ------------------------------------------------------------ home
 export function homePage() {
@@ -91,10 +93,11 @@ export function mapPage() {
     let region = REGIONS.find(r => !r.off)?.id || "cl1";
     const info = h("div.loc-info", h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
     const tabs = h("div.tabs.region-tabs"), holder = h("div.map-holder");
-    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k]), ...(l.npc ? ["⚠️ NPC 출몰"] : [])];
+    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k])];
     const pick = l => info.replaceChildren(
         h("h3", l.emoji, " ", l.name),
         h("p", reqText(l.req)),
+        h("p.npc-line", `👹 NPC 출몰 확률 (라운드마다 무작위): ${Math.round(npcMapChance(l) * 100)}% `, h("button.btn.small.ghost", { onclick: () => npcInfo(l) }, "NPC 정보")),
         h("h4", "슬롯"), h("ul", (l.slots || []).filter(id => SLOT_BY_ID[id] && !SLOT_BY_ID[id].off).map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
         h("h4", "카지노 게임"), h("ul", (l.casino || []).filter(id => CASINO_BY_ID[id] && !CASINO_BY_ID[id].off).map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
         h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))),
@@ -142,10 +145,10 @@ export function guidePage() {
         h("div.guide-sec", h("h3", "진행"), h("ol",
             h("li", "관리자가 SPIN을 눌러 등록된 플레이어 중 20명을 슬롯 릴로 선발합니다 (SKIP = 즉시 20명)."),
             h("li", "라운드마다 공통 미션이 랜덤으로 뽑힙니다. 탈락자가 늘수록 미션 난이도가 최하 → 최상으로 올라갑니다."),
-            h("li", `시즌에 참가할 때마다 시즌 머니 ${fmt(CONFIG.SEASON_JOIN_BONUS)}G를 받습니다.`),
+            h("li", `시즌이 시작될 때 참가자 전원이 시작 금액 ${fmt(CONFIG.START_MONEY)}G를 한 번 받습니다 (라운드마다 지급되지 않음).`),
             h("li", `생존자 전원이 차례대로 ${CONFIG.TURN_SECONDS / 60}분씩 플레이합니다. 턴 시작 시 먼저 지역 룰렛(하늘나라·우주·카지노 랜드 1/2·판타지·지하세계·스푸키·심해·북극)을 돌리고, 그 지역 안에서 맵 룰렛으로 카지노가 정해집니다. 하늘나라·우주·심해는 날개·우주복·산소통이 있어야 하며 입장 시 소모됩니다.`),
             h("li", "맵마다 입장 조건이 있습니다: 국적 전용 · 랜덤 입장(거절되면 다른 맵을 다시 뽑음) · 입장료(G/P) · 포인트 보유. 맵권을 쓰면 룰렛 없이 그 맵으로 바로 순간이동합니다 (하늘·우주 50,000G, 나머지 45,000G)."),
-            h("li", "슬롯 스핀·카지노 플레이마다 약 20% 확률로 알파벳 카드(G·A·M·B·L·E·R·S)를 얻습니다. 카드 미션과 맵 입장에 1회 사용할 수 있습니다."),
+            h("li", "슬롯 스핀·카지노 플레이마다 아주 낮은 확률(슬롯 약 0.8%, 카지노 약 1%)로 알파벳 카드(G·A·M·B·L·E·R·S)를 얻습니다. 카드 미션과 맵 입장에 1회 사용할 수 있습니다."),
             h("li", "맵에 따라 직업 코너·돈벌기(음악·서바이벌 포함)·구걸·할인 상점이 있고, NPC가 출몰하는 맵에서는 플레이 중 NPC가 갑자기 습격할 수 있습니다."),
             h("li", "상점은 라운드당 구매 제한이 있습니다: 무기 1 · 아이템 5 · 펫/프레임 1 · 그 외 1."),
             h("li", "미션에 실패한 플레이어들이 탈락 후보가 되고, 탈락 릴로 한 명이 탈락합니다 (모두 성공 시 손익 하위 3명이 후보)."),
@@ -157,7 +160,7 @@ export function guidePage() {
             h("p.muted", "일반펫·일반효과: 돈을 딸 확률만 +5~15%. 특수펫·특수효과: 돈을 딸 확률 + 보너스 확률까지. 펫+효과 합산 최대 +30%. 효과는 펫이 있을 때만 적용."),
             h("div.pet-grid", PETS.map(p => h("div.pet-cell", petView(p.id, null, 60), h("small", p.name), h("b", `${p.kind === "special" ? "특수" : "일반"} +${p.boost}%`))))),
         h("div.guide-sec", h("h3", "무기 (최대 6개, 배틀 시 랜덤 사용)"), h("div.wlist", WEAPONS.map(w => weaponChip(w.id)), weaponChip("basic"))),
-        h("div.guide-sec", h("h3", "포인트"), h("p", "슬롯의 P 아이콘(개수에 따라 1/3/6/10/20P)과 카지노 게임(랜덤 1~10P)으로 획득. 포인트 미션, Twins Wins(100P)·Dung Dung(50P) 입장, 포인트 상점에서 사용합니다.")));
+        h("div.guide-sec", h("h3", "포인트"), h("p", "슬롯의 P 아이콘(개수에 따라 1/3/6/10/20P — 최저 베팅 약 1.5%, 최고 베팅 약 5%로 베팅이 높을수록 잘 나옴)과 카지노 게임(랜덤 1~10P)으로 획득. 포인트 미션, Twins Wins(100P)·Dung Dung(50P) 입장, 포인트 상점에서 사용합니다.")));
 }
 
 // ------------------------------------------------------------ admin

@@ -230,3 +230,19 @@
 @keyframes ph-out { to { opacity: 0; transform: translateY(-20px) scale(.9); } }
 @keyframes ph-hop { 50% { transform: translateY(-8px) rotate(-6deg); } }
 @keyframes ph-glow { from { box-shadow: 0 0 6px #fde047; } to { box-shadow: 0 0 22px #fde047, 0 0 4px #fff inset; } }
+
+/* ---------- NPC info ---------- */
+.npc-warn { cursor: pointer; }
+.npc-safe { margin-left: 8px; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: rgba(74,222,128,.15); border: 1px solid #4ade80; color: #bbf7d0; cursor: pointer; }
+.npc-rules { margin: 6px 0 12px; padding-left: 18px; line-height: 1.6; font-size: 14px; }
+.npc-info .notice.warn { border-color: #f87171; background: rgba(248,113,113,.15); }
+.npc-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.npc-card { border: 2px solid var(--c); border-radius: 14px; padding: 10px 12px; background: color-mix(in srgb, var(--c) 14%, #0b0b14); }
+.npc-card-head { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+.npc-card-head small { display: block; opacity: .8; }
+.npc-card-ico { font-size: 34px; }
+.npc-card ul { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.npc-card li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 6px; border-radius: 6px; background: rgba(0,0,0,.25); }
+.npc-card li.good { color: #86efac; }
+.npc-card li.deadly { color: #fca5a5; font-weight: 700; }
+.npc-card li small { opacity: .8; white-space: nowrap; }
