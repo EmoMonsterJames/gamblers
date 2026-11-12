@@ -22,7 +22,7 @@ export function shopView(shopId, pid, locId, onChange) {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
             h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.limit" + (buysLeft(pid, shopId) <= 0 ? ".none" : ""), `이번 라운드 구매 ${Math.max(0, buysLeft(pid, shopId))} / ${SHOP_LIMIT[shopId] ?? 1}`), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : shop.cur === "PG" ? `💎 ${fmt(ps.points)} P · 💰 ${fmt(ps.money)} G` : `💰 ${fmt(ps.money)} G`)),
-            shopId === "pointgold" ? h("p.muted.shop-note", "💠 포인트와 골드를 함께 내는 상점입니다. ⭐ 특수프레임 / 특수프레임효과는 이 상점에서만 팔아요 — 맵마다 상품이 하나씩 다릅니다.") : null,
+            shopId === "pointgold" ? h("p.muted.shop-note", "💠 포인트와 골드를 함께 내는 상점입니다. ⭐ 특수프레임 / 특수프레임효과는 이 상점에서만 팔아요 — 맵마다 상품이 하나씩 다릅니다.") : "",
             h("div.shop-grid", list().map(it => {
                 const e = catalogEntry(it.cat, it.id);
                 if (!e) return null;

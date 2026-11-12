@@ -17,7 +17,16 @@ export const REGIONS = [
     { id: "under",    name: "지하세계",      en: "UNDERWORLD",    emoji: "⛏️", color: "#b45309" },
     { id: "spooky",   name: "스푸키 랜드",   en: "SPOOKY LAND",   emoji: "🎃", color: "#fb923c" },
     { id: "deepsea",  name: "심해",          en: "DEEP SEA",      emoji: "🐙", color: "#0ea5e9", need: "oxygen" },
-    { id: "arctic",   name: "북극",          en: "NORTH POLE",    emoji: "🧊", color: "#bae6fd" }
+    { id: "arctic",   name: "북극",          en: "NORTH POLE",    emoji: "🧊", color: "#bae6fd" },
+    // ---- 6 rule regions
+    //   fallback: refused / unpaid entry → straight to this map (no re-roll)
+    //   needAny:  the region can only be picked while holding one of these (not used up)
+    { id: "randomland", name: "랜덤랜드",          en: "RANDOM LAND",     emoji: "🎲", color: "#f59e0b", fallback: "plaza" },
+    { id: "richland",   name: "리치랜드",          en: "RICH LAND",       emoji: "💰", color: "#eab308", fallback: "beggar_shelter" },
+    { id: "noslot",     name: "No Slot 랜드",      en: "NO SLOT LAND",    emoji: "🃏", color: "#22c55e" },
+    { id: "nocasino",   name: "No Casino Game 랜드", en: "NO CASINO LAND", emoji: "🎰", color: "#ef4444" },
+    { id: "npcland",    name: "NPC 랜드",          en: "NPC LAND",        emoji: "👹", color: "#7c3aed" },
+    { id: "combo",      name: "콤보랜드",          en: "COMBO LAND",      emoji: "🧩", color: "#14b8a6", needAny: ["wings", "space_suit", "oxygen"] }
 ];
 
 // x / y = % on the region map. req: { country, pass } | { points } |
@@ -163,8 +172,156 @@ export const NEW_MAPS = [
       casino: { name: "Snowball Pick", kind: "pick", icon: "⛄", desc: "눈덩이 4개 중 하나를 깨라!", n: 4, closed: "⚪", prize: "💎", miss: "❄️" } },
     { id: "penguin_casino", region: "arctic", name: "Penguin Casino", emoji: "🐧", color: "#38bdf8", x: 46, y: 70, shops: ["general", "decor"], req: { random: true }, npc: true,
       slot: { name: "Penguin Party", brand: "Rabbit-Gaming", tpl: "pearl", hi: ["🐧", "🐟", "🎉"], lo: ["❄️", "🧊"], wild: "🐧", sp: "🪙", bg: ["#0284c7", "#082f49"], acc: "#38bdf8" },
-      casino: { name: "Penguin Slide", kind: "plinko", icon: "🐧", desc: "펭귄 미끄럼 플링코! 양 끝 x25" } }
+      casino: { name: "Penguin Slide", kind: "plinko", icon: "🐧", desc: "펭귄 미끄럼 플링코! 양 끝 x25" } },
+
+    // =========================================================== 🎲 랜덤랜드
+    // every map but 중앙광장 is a coin-flip door; refused → 중앙광장
+    { id: "random_casino", region: "randomland", name: "Random Casino", emoji: "🎲", color: "#f59e0b", x: 20, y: 26, shops: ["general", "weapon"], req: { random: true }, job: true,
+      slots: [sl("Random Riches", "Classic Gaming", "ghost", "🎲 🃏 🎰", "❓ 🔀", "🤪", "🔮", "#b45309", "#1c0a02", "#fbbf24")],
+      casinos: [cg("wheel", "Random Wheel", "🔀", "아무거나 걸리는 랜덤 휠! 최대 x30"), cg("dice", "Chaos Dice", "🎲", "혼돈의 주사위 한 판!")] },
+    { id: "odd_casino", region: "randomland", name: "Odd Casino", emoji: "🦄", color: "#a3e635", x: 50, y: 14, shops: ["general", "pet", "decor"], req: { random: true },
+      slots: [sl("Odd Fellows", "HYHG GAMING", "ant", "🦄 🐙 🦩", "🧦 🥨", "👽", "🪙", "#4d7c0f", "#0c1402", "#bef264")],
+      casinos: [cg("pick", "Odd One Out", "🧦", "짝 없는 양말 4개 중 하나!", { n: 4, closed: "🧦", prize: "💰", miss: "🧦" }), cg("coinflip", "Odd or Even", "🪙", "홀? 짝? 맞히면 x1.9")] },
+    { id: "possibility", region: "randomland", name: "Possibility Town", emoji: "🔮", color: "#c084fc", x: 80, y: 26, shops: ["general", "point"], req: { random: true }, earn: ["guess", "music"],
+      slots: [sl("Infinite Possibility", "CLOVER-TECH", "rabbit", "🔮 🌠 🗝️", "✨ 🌀", "♾️", "🌕", "#6b21a8", "#12021f", "#d8b4fe")],
+      casinos: [cg("gacha", "Chance Capsule", "💊", "가능성 캡슐 뽑기! 레전드 x50"), cg("hilo", "Maybe Hi-Lo", "🔮", "될까? 안 될까? 하이로우")] },
+    { id: "rtp_town", region: "randomland", name: "RTP Town", emoji: "📊", color: "#38bdf8", x: 22, y: 64, shops: ["general", "weapon", "pet"], req: { random: true }, discount: true,
+      slots: [sl("Return to Player", "IPEX", "pearl", "📊 💹 🧮", "📉 📈", "💯", "🪙", "#0369a1", "#020617", "#7dd3fc")],
+      casinos: [cg("plinko", "Percent Plinko", "📊", "확률 플링코! 양 끝 x25"), cg("scratch", "Stat Scratch", "🧮", "통계 스크래치! 100% 3개 x40", { syms: ["📉", "📈", "🧮", "💹", "💯"] })] },
+    { id: "plaza", region: "randomland", name: "중앙광장", emoji: "⛲", color: "#e2e8f0", x: 52, y: 50, shops: ["general", "pet", "decor", "point"], earn: ["music", "sell", "labor"], beg: true,
+      slots: [sl("Fountain Fortune", "CLOUD GAMING", "rabbit", "⛲ 🕊️ 🎠", "🪙 🎈", "🗿", "🌕", "#64748b", "#0f172a", "#e2e8f0")],
+      casinos: [cg("pick", "Fountain Coins", "⛲", "분수 속 동전 3개 중 행운의 동전은?", { n: 3, closed: "⛲", prize: "🪙", miss: "💧" }), cg("lottery", "Plaza Lotto", "🎱", "광장 로또! 5개 다 맞히면 x300")] },
+    { id: "crazy_casino", region: "randomland", name: "Crazy Casino", emoji: "🤪", color: "#f43f5e", x: 80, y: 66, shops: ["general", "weapon"], req: { random: true }, crazy: true, npc: true,
+      slots: [sl("Crazy Time Bomb", "DAEBAK", "dragon", "🤪 💣 🌀", "⏰ 🧨", "🤡", "👁️", "#be123c", "#1f0510", "#fb7185", "'Creepster', cursive")],
+      casinos: [cg("wheel", "Crazy Wheel", "🌀", "미친 듯이 도는 휠! 최대 x30"), cg("plinko", "Madness Plinko", "🤪", "광기의 플링코! 양 끝 x25")] },
+    { id: "space_center", region: "randomland", name: "Space Center", emoji: "🛰️", color: "#818cf8", x: 50, y: 84, shops: ["general", "weapon", "point"], req: { random: true, gear: ["space_suit"], passGear: ["oxygen"] }, job: true,
+      slots: [sl("Launch Countdown", "BLK", "pearl", "🛰️ 🚀 👩‍🚀", "🔧 📡", "🌍", "🛸", "#3730a3", "#020617", "#a5b4fc")],
+      casinos: [cg("dice", "Countdown Dice", "🚀", "카운트다운 주사위! 6-6 발사 x30"), cg("scratch", "Mission Control Scratch", "📡", "관제 스크래치! 로켓 3개 x40", { syms: ["🔧", "📡", "🛰️", "👩‍🚀", "🚀"] })] },
+
+    // =========================================================== 💰 리치랜드
+    // every map but 거지쉼터 asks an entry fee (always asked) — refuse / can't pay → 거지쉼터
+    { id: "riches", region: "richland", name: "Riches to Riches", emoji: "💸", color: "#facc15", x: 20, y: 26, shops: ["general", "weapon", "point"], req: { fee: 10000, ask: true }, job: true,
+      slots: [sl("Riches to Riches", "Scrooge-Slots", "dragon", "💸 💰 🏦", "🪙 💵", "🤑", "👁️", "#a16207", "#1c1002", "#fde047", "'Rye', serif")],
+      casinos: [cg("wheel", "Money Wheel", "💸", "돈다발 휠! 최대 x30"), cg("hilo", "Banker Hi-Lo", "🏦", "은행가의 하이로우")] },
+    { id: "wealthy", region: "richland", name: "Wealthy Casino", emoji: "🎩", color: "#fbbf24", x: 50, y: 14, shops: ["general", "decor", "pet"], req: { fee: 5000, ask: true }, discount: true,
+      slots: [sl("Top Hat Treasury", "CLOVER-TECH", "rabbit", "🎩 🍾 🛥️", "🥂 🚬", "💎", "🌕", "#854d0e", "#140c02", "#fcd34d")],
+      casinos: [cg("pick", "Champagne Pick", "🍾", "샴페인 4병 중 황금 코르크는?", { n: 4, closed: "🍾", prize: "🥇", miss: "🫧" }), cg("dice", "Wealthy Dice", "🎲", "부자들의 주사위!")] },
+    { id: "highroller", region: "richland", name: "High-Roller Town", emoji: "🎲", color: "#dc2626", x: 80, y: 26, shops: ["general", "weapon"], req: { fee: 8000, ask: true },
+      slots: [sl("High Roller Heat", "YG GAMING", "pearl", "🎲 🃏 🥃", "🚬 🎱", "🔥", "💰", "#991b1b", "#140202", "#f87171")],
+      casinos: [cg("coinflip", "Big Bet Flip", "🪙", "한 방 코인플립! x1.9"), cg("lottery", "Roller Lotto", "🎱", "하이롤러 로또! 5개 다 맞히면 x300")] },
+    { id: "beggar_shelter", region: "richland", name: "거지쉼터", emoji: "🥣", color: "#a8a29e", x: 22, y: 64, shops: ["general", "pet"], earn: ["labor", "sell", "poop", "survival"], beg: true,
+      slots: [sl("Empty Pockets", "Classic Gaming", "ant", "🥣 🧥 🪑", "🍞 🪙", "🍀", "🥫", "#57534e", "#0c0a09", "#d6d3d1")],
+      casinos: [cg("scratch", "Lucky Can Scratch", "🥫", "깡통 스크래치! 네잎클로버 3개 x40", { syms: ["🍞", "🥫", "🧥", "🪙", "🍀"] }), cg("coinflip", "Last Coin Flip", "🪙", "마지막 동전을 던져라! x1.9")] },
+    { id: "highlimit", region: "richland", name: "High-Limit Casino", emoji: "💳", color: "#6366f1", x: 52, y: 50, shops: ["general", "point", "weapon"], req: { feePts: 50, ask: true },
+      slots: [sl("Black Card", "BLK", "ghost", "💳 🖤 💼", "🔑 🍸", "👑", "🔮", "#1e1b4b", "#000", "#a5b4fc")],
+      casinos: [cg("hilo", "VIP Hi-Lo", "💳", "VIP 하이로우! 조커 x10"), cg("wheel", "Platinum Wheel", "💿", "플래티넘 휠! 최대 x30")] },
+    { id: "goldbar", region: "richland", name: "Gold Bar Town", emoji: "🪙", color: "#f59e0b", x: 80, y: 66, shops: ["general", "decor"], req: { fee: 10000, ask: true }, earn: ["labor", "sell"],
+      slots: [sl("Gold Bar Stack", "IPEX", "ant", "🪙 ⚱️ 🏺", "⛏️ 🧱", "🌟", "🪙", "#b45309", "#1c0a02", "#fcd34d")],
+      casinos: [cg("plinko", "Gold Bar Plinko", "🧱", "금괴 플링코! 양 끝 x25"), cg("pick", "Vault Pick", "🔐", "금고 3개 중 금괴가 든 금고는?", { n: 3, closed: "🔐", prize: "🪙", miss: "🕸️" })] },
+    { id: "diamond_casino", region: "richland", name: "Diamond Casino", emoji: "💎", color: "#67e8f9", x: 50, y: 84, shops: ["general", "point", "pet"], req: { feePts: 100, ask: true },
+      slots: [sl("Diamond Dynasty", "CLOUD GAMING", "dragon", "💎 💍 👑", "💠 🔹", "✨", "👁️", "#0e7490", "#021014", "#a5f3fc")],
+      casinos: [cg("gacha", "Gem Gacha", "💎", "보석 캡슐 뽑기! 레전드 x50"), cg("scratch", "Diamond Scratch", "💍", "다이아 스크래치! 다이아 3개 x40", { syms: ["🔹", "💠", "💍", "👑", "💎"] })] },
+
+    // =========================================================== 🃏 No Slot 랜드 (casino games only — 4 each)
+    { id: "noslot_casino", region: "noslot", name: "No Slot Casino", emoji: "🚫", color: "#22c55e", x: 24, y: 30, shops: ["general", "weapon", "point"], job: true,
+      slots: [],
+      casinos: [cg("wheel", "No-Reel Wheel", "🎡", "릴은 없다! 휠만 있다! 최대 x30"), cg("hilo", "Green Table Hi-Lo", "🃏", "그린 테이블 하이로우"), cg("dice", "Felt Dice", "🎲", "펠트 위의 주사위!"), cg("lottery", "Ball Draw Lotto", "🎱", "추첨 로또! 5개 다 맞히면 x300")] },
+    { id: "games_only", region: "noslot", name: "Casino Games Only Town", emoji: "🎯", color: "#16a34a", x: 74, y: 26, shops: ["general", "pet", "decor"], discount: true, earn: ["guess", "music"],
+      slots: [],
+      casinos: [cg("pick", "Card Shark Pick", "🦈", "카드 5장 중 에이스를 찾아라!", { n: 5, closed: "🂠", prize: "🂡", miss: "🃏" }), cg("coinflip", "Table Flip", "🪙", "테이블 위 동전 던지기! x1.9"), cg("plinko", "Chip Drop", "🔴", "칩 떨어뜨리기! 양 끝 x25"), cg("scratch", "Chip Scratch", "🟢", "칩 스크래치! 블랙칩 3개 x40", { syms: ["⚪", "🔴", "🔵", "🟢", "⚫"] })] },
+    { id: "weird_casino", region: "noslot", name: "Weird Casino", emoji: "👁️", color: "#a855f7", x: 30, y: 72, shops: ["general", "decor"], npc: true,
+      slots: [],
+      casinos: [cg("gacha", "Weird Capsule", "🥚", "이상한 캡슐! 뭐가 나올지 모름"), cg("pick", "Which Eye?", "👁️", "눈알 4개 중 진짜 보석은?", { n: 4, closed: "👁️", prize: "💎", miss: "🫠" }), cg("wheel", "Wobbly Wheel", "🌀", "흐물흐물 휠! 최대 x30"), cg("hilo", "Upside-Down Hi-Lo", "🙃", "거꾸로 하이로우?!")] },
+    { id: "picky", region: "noslot", name: "Picky Town", emoji: "🧐", color: "#84cc16", x: 72, y: 70, shops: ["general", "weapon", "pet"], req: { random: true },
+      slots: [],
+      casinos: [cg("pick", "Picky Pick", "🧐", "까다롭게 하나만 골라라! (3개 중)", { n: 3, closed: "🎁", prize: "💰", miss: "🥦" }), cg("dice", "Picky Dice", "🎲", "까다로운 주사위!"), cg("coinflip", "Fussy Flip", "🪙", "깐깐한 동전 던지기! x1.9"), cg("lottery", "Choosy Lotto", "🎱", "골라 골라 로또! x300")] },
+
+    // =========================================================== 🎰 No Casino Game 랜드 (slots only — 2 each)
+    { id: "noc_casino", region: "nocasino", name: "No Casino Game Casino", emoji: "🎰", color: "#ef4444", x: 24, y: 30, shops: ["general", "weapon", "point"], job: true,
+      slots: [sl("Reels Forever", "Classic Gaming", "pearl", "🎰 🍒 🔔", "🍋 🍇", "7️⃣", "💰", "#b91c1c", "#1e0505", "#fca5a5"),
+              sl("Triple Bar Blast", "Scrooge-Slots", "dragon", "💰 🔔 💎", "🍒 🍋", "⭐", "👁️", "#7f1d1d", "#0a0101", "#facc15", "'Rye', serif")],
+      casinos: [] },
+    { id: "slots_only", region: "nocasino", name: "Slots Only Town", emoji: "🍒", color: "#f97316", x: 74, y: 26, shops: ["general", "pet", "decor"], discount: true, earn: ["music", "labor"],
+      slots: [sl("Cherry Town", "HYHG GAMING", "rabbit", "🍒 🍓 🍉", "🍋 🍊", "🍬", "🌕", "#c2410c", "#200a02", "#fdba74"),
+              sl("Neon Fruit Night", "DAEBAK", "ant", "🍍 🥝 🍇", "🍌 🍑", "🌃", "🍒", "#9d174d", "#0f0310", "#f9a8d4")] ,
+      casinos: [] },
+    { id: "redblue", region: "nocasino", name: "Red & Blue Casino", emoji: "🟥", color: "#3b82f6", x: 30, y: 72, shops: ["general", "weapon"], npc: true,
+      slots: [sl("Red Fire", "YG GAMING", "dragon", "🔴 🔥 🐉", "🌶️ 🍎", "❤️‍🔥", "👁️", "#b91c1c", "#1a0202", "#f87171"),
+              sl("Blue Ice", "CLOUD GAMING", "ghost", "🔵 🧊 🐳", "💧 🫐", "💙", "🔮", "#1d4ed8", "#020617", "#93c5fd")],
+      casinos: [] },
+    { id: "ocean_town", region: "nocasino", name: "Ocean Town", emoji: "🌊", color: "#06b6d4", x: 72, y: 70, shops: ["general", "pet", "point"], req: { gear: ["oxygen"] },
+      slots: [sl("Ocean Breeze", "IPEX", "pearl", "🐬 🐳 🐠", "🐚 🦀", "🌊", "🪙", "#0e7490", "#021014", "#67e8f9"),
+              sl("Coral Kingdom", "Rabbit-Gaming", "rabbit", "🪸 🧜 🐢", "🦐 🐟", "🔱", "🌕", "#0f766e", "#011513", "#5eead4")],
+      casinos: [] },
+
+    // =========================================================== 👹 NPC 랜드 (NPCs show up 100%)
+    { id: "colosseum", region: "npcland", name: "Colosseum Casino", emoji: "🏛️", color: "#d97706", x: 18, y: 24, shops: ["general", "weapon", "point"], npc: "always", job: true,
+      slots: [sl("Gladiator Gold", "Scrooge-Slots", "dragon", "🏛️ ⚔️ 🦁", "🛡️ 🏺", "🗡️", "👁️", "#92400e", "#140802", "#fbbf24", "'Rye', serif")],
+      casinos: [cg("dice", "Arena Dice", "⚔️", "검투사의 주사위!"), cg("pick", "Lion's Gate", "🦁", "문 3개 중 사자가 없는 문은?", { n: 3, closed: "🚪", prize: "💰", miss: "🦁" })] },
+    { id: "npc_town", region: "npcland", name: "NPC Town", emoji: "🧑‍🤝‍🧑", color: "#a78bfa", x: 44, y: 16, shops: ["general", "pet", "decor"], npc: "always", earn: ["labor", "music"],
+      slots: [sl("Townsfolk Fortune", "Rabbit-Gaming", "rabbit", "👵 🧙 🥷", "🤖 🐹", "👼", "🌕", "#5b21b6", "#0e0420", "#c4b5fd")],
+      casinos: [cg("gacha", "NPC Gacha", "🎎", "NPC 피규어 뽑기! 레전드 x50"), cg("hilo", "Townhall Hi-Lo", "🏘️", "마을회관 하이로우")] },
+    { id: "sky_tower", region: "npcland", name: "Sky Tower", emoji: "🗼", color: "#38bdf8", x: 72, y: 20, shops: ["general", "weapon"], npc: "always", req: { gear: ["wings"] },
+      slots: [sl("Tower Top", "CLOUD GAMING", "pearl", "🗼 🦅 🌤️", "☁️ 🪁", "🪽", "💰", "#0369a1", "#020617", "#bae6fd")],
+      casinos: [cg("plinko", "Tower Drop", "🗼", "타워 꼭대기에서 떨어뜨려라! 양 끝 x25"), cg("coinflip", "Wind Flip", "🌬️", "바람 동전 던지기! x1.9")] },
+    { id: "death_casino", region: "npcland", name: "Death Casino", emoji: "💀", color: "#0f172a", x: 88, y: 48, shops: ["general", "weapon", "point"], npc: "always", npcOnly: "reaper",
+      slots: [sl("Last Breath", "BLK", "ghost", "💀 ⚰️ 🪦", "🕯️ 🦴", "☠️", "🔮", "#1e293b", "#000", "#94a3b8", "'Creepster', cursive")],
+      casinos: [cg("wheel", "Wheel of Fate", "☠️", "운명의 휠… 최대 x30"), cg("scratch", "Grave Scratch", "🪦", "무덤 스크래치! 해골 3개 x40", { syms: ["🦴", "🕯️", "⚰️", "🪦", "💀"] })] },
+    { id: "evil_town", region: "npcland", name: "Evil Town", emoji: "😈", color: "#dc2626", x: 22, y: 62, shops: ["general", "weapon"], npc: "always", evil: 10,
+      slots: [sl("Evil Empire", "DAEBAK", "dragon", "😈 🔱 🔥", "🩸 🕷️", "👿", "👁️", "#7f1d1d", "#0a0101", "#ef4444", "'Creepster', cursive")],
+      casinos: [cg("dice", "Devil's Dice", "😈", "악마의 주사위! 6-6 이면 x30"), cg("pick", "Cursed Chests", "🧰", "저주받은 상자 4개 중 하나!", { n: 4, closed: "🧰", prize: "💰", miss: "👿" })] },
+    { id: "nightmare", region: "npcland", name: "Nightmare Casino", emoji: "😱", color: "#4c1d95", x: 50, y: 50, shops: ["general", "decor", "point"], npc: "always",
+      slots: [sl("Bad Dream", "BLK", "ghost", "😱 🕷️ 🌑", "🦇 🕸️", "👹", "🔮", "#3b0764", "#05000a", "#c084fc", "'Creepster', cursive")],
+      casinos: [cg("hilo", "Sleepless Hi-Lo", "🌑", "잠 못 드는 하이로우"), cg("gacha", "Nightmare Capsule", "😱", "악몽 캡슐 뽑기! 레전드 x50")] },
+    { id: "donation", region: "npcland", name: "Donation Casino", emoji: "🎁", color: "#f472b6", x: 74, y: 74, shops: ["general", "pet", "decor"], npc: "always", donation: true, earn: ["labor", "survival"],
+      slots: [sl("Giving Hearts", "CLOVER-TECH", "rabbit", "🎁 💝 🤝", "🧸 🍪", "😇", "🌕", "#be185d", "#1f0410", "#f9a8d4")],
+      casinos: [cg("pick", "Charity Box", "📦", "기부함 4개 중 행운의 상자는?", { n: 4, closed: "📦", prize: "💝", miss: "🧸" }), cg("lottery", "Charity Lotto", "🎟️", "자선 로또! 5개 다 맞히면 x300")] },
+    { id: "npc_casino", region: "npcland", name: "NPC Casino", emoji: "🤖", color: "#64748b", x: 40, y: 84, shops: ["general", "weapon", "pet"], npc: "always", discount: true,
+      slots: [sl("NPC Showdown", "IPEX", "ant", "🤖 🐊 🧳", "🐹 👼", "💀", "🎫", "#334155", "#020617", "#cbd5e1")],
+      casinos: [cg("wheel", "NPC Roulette Wheel", "🎡", "누가 나올까 NPC 휠! 최대 x30"), cg("coinflip", "Robot Flip", "🤖", "로봇 동전 던지기! x1.9")] },
+
+    // =========================================================== 🧩 콤보랜드 (needs wings / space suit / oxygen — any one)
+    { id: "sky_bridge", region: "combo", name: "Sky Bridge", emoji: "🌉", color: "#7dd3fc", x: 18, y: 24, shops: ["general", "weapon"], req: { gear: ["wings"] },
+      slots: [sl("Bridge in the Clouds", "CLOUD GAMING", "pearl", "🌉 🦢 🌤️", "☁️ 🪶", "🪽", "💰", "#0284c7", "#082f49", "#bae6fd")],
+      casinos: [cg("coinflip", "Bridge Toss", "🌉", "다리 위 동전 던지기! x1.9"), cg("wheel", "Cloud Bridge Wheel", "🌤️", "구름다리 휠! 최대 x30")] },
+    { id: "rocketship", region: "combo", name: "Rocketship", emoji: "🚀", color: "#a78bfa", x: 44, y: 16, shops: ["general", "point"], req: { gear: ["space_suit"] }, job: true,
+      slots: [sl("Rocket Fuel", "BLK", "dragon", "🚀 👨‍🚀 🛸", "🌙 ⛽", "🔥", "👁️", "#4338ca", "#020617", "#c7d2fe")],
+      casinos: [cg("plinko", "Booster Drop", "🚀", "부스터 플링코! 양 끝 x25"), cg("dice", "Orbit Dice", "🪐", "궤도 주사위!")] },
+    { id: "island", region: "combo", name: "Island", emoji: "🏝️", color: "#fbbf24", x: 72, y: 20, shops: ["general", "pet", "decor"], earn: ["survival", "labor", "music"], beg: true,
+      slots: [sl("Island Paradise", "HYHG GAMING", "ant", "🏝️ 🥥 🦜", "🐚 🍹", "🌴", "🥥", "#0d9488", "#011513", "#fde68a")],
+      casinos: [cg("pick", "Coconut Pick", "🥥", "코코넛 4개 중 보물은?", { n: 4, closed: "🥥", prize: "💎", miss: "🦀" }), cg("scratch", "Sandy Scratch", "🏝️", "모래 스크래치! 보물상자 3개 x40", { syms: ["🐚", "🦀", "🍹", "🦜", "💰"] })] },
+    { id: "deep_ocean", region: "combo", name: "Deep Ocean", emoji: "🐋", color: "#0369a1", x: 88, y: 48, shops: ["general", "weapon", "point"], req: { gear: ["oxygen"] }, npc: true,
+      slots: [sl("Leviathan", "IPEX", "dragon", "🐋 🦑 🦈", "🐡 🫧", "🔱", "👁️", "#075985", "#00060f", "#7dd3fc")],
+      casinos: [cg("gacha", "Pearl Capsule", "🦪", "진주 캡슐 뽑기! 레전드 x50"), cg("hilo", "Pressure Hi-Lo", "🫧", "수압 하이로우")] },
+    { id: "star_sky", region: "combo", name: "Star Sky", emoji: "🌠", color: "#fde047", x: 22, y: 62, shops: ["general", "decor", "point"], req: { gear: ["wings", "space_suit"] },
+      slots: [sl("Shooting Stars", "CLOVER-TECH", "rabbit", "🌠 ⭐ 🪽", "✨ 🌙", "🌟", "🌕", "#1e1b4b", "#000", "#fde047")],
+      casinos: [cg("scratch", "Wish Scratch", "🌠", "소원 스크래치! 별똥별 3개 x40", { syms: ["✨", "🌙", "⭐", "🪐", "🌠"] }), cg("wheel", "Constellation Wheel", "✨", "별자리 휠! 최대 x30")] },
+    { id: "space_lake", region: "combo", name: "Space Lake", emoji: "🪐", color: "#22d3ee", x: 50, y: 50, shops: ["general", "pet", "weapon"], req: { gear: ["space_suit", "oxygen"] },
+      slots: [sl("Galactic Lake", "YG GAMING", "pearl", "🪐 🐙 🛸", "🫧 🌑", "🌌", "💰", "#155e75", "#020617", "#67e8f9")],
+      casinos: [cg("pick", "Alien Fishing", "🎣", "외계 호수 낚시! 낚싯대 3개 중 하나", { n: 3, closed: "🎣", prize: "👽", miss: "🫧" }), cg("lottery", "Galaxy Lotto", "🌌", "은하 로또! 5개 다 맞히면 x300")] },
+    { id: "sky_pond", region: "combo", name: "Sky Pond", emoji: "🦆", color: "#5eead4", x: 74, y: 74, shops: ["general", "decor"], req: { gear: ["wings", "oxygen"] },
+      slots: [sl("Floating Pond", "Rabbit-Gaming", "ant", "🦆 🪷 🐟", "💧 ☁️", "🌈", "🪙", "#0f766e", "#022c22", "#99f6e4")],
+      casinos: [cg("coinflip", "Pond Skip", "🪨", "물수제비 동전! x1.9"), cg("plinko", "Raindrop Plinko", "💧", "빗방울 플링코! 양 끝 x25")] },
+    { id: "combo_town", region: "combo", name: "Combo Town", emoji: "🧩", color: "#14b8a6", x: 40, y: 84, shops: ["general", "weapon", "point", "pet"], req: { gear: ["wings", "space_suit", "oxygen"] }, job: true, discount: true,
+      slots: [sl("Triple Combo", "Scrooge-Slots", "dragon", "🧩 🪽 🤿", "🧑‍🚀 🔗", "💥", "👁️", "#115e59", "#011513", "#5eead4")],
+      casinos: [cg("dice", "Combo Dice", "🧩", "콤보 주사위! 더블이면 대박"), cg("gacha", "Combo Capsule", "🔗", "콤보 캡슐 뽑기! 레전드 x50")] }
 ];
+
+// the 6 rule regions added last — their slots / casino games get their own odds
+export const RULE_REGIONS = ["randomland", "richland", "noslot", "nocasino", "npcland", "combo"];
+// stable 0..1 number per id (odds that never change between page loads)
+export function seed01(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
+
+// compact builders for the region maps above
+function sl(name, brand, tpl, hi, lo, wild, sp, bg0, bg1, acc, font) {
+    return { name, brand, tpl, hi: hi.split(" "), lo: lo.split(" "), wild, sp, bg: [bg0, bg1], acc, ...(font ? { font } : {}) };
+}
+function cg(kind, name, icon, desc, extra = {}) { return { kind, name, icon, desc, ...extra }; }
+// every region map's slot / casino-game list (old maps: one of each; new ones: slots[] / casinos[])
+export const mapSlots = m => m.slots || (m.slot ? [m.slot] : []);
+export const mapCasinos = m => m.casinos || (m.casino ? [m.casino] : []);
+export const slotIdOf = (m, i) => "rs_" + m.id + (i ? "_" + (i + 1) : "");
+export const casinoIdOf = (m, i) => "rc_" + m.id + (i ? "_" + (i + 1) : "");
 
 // extra corners / region for the original Casino Land 1 maps
 export const CL1_PATCH = {

@@ -8,7 +8,7 @@
 //   table: [{ m: multiplier, w: weight, label }]   (lose entry is added)
 // =====================================================================
 import { CONFIG } from "../config.js";
-import { NEW_MAPS } from "./regions.js";
+import { NEW_MAPS, mapCasinos, casinoIdOf, RULE_REGIONS, seed01 } from "./regions.js";
 import { boostChance } from "./catalog.js";
 
 const BETS = [100, 500, 1000, 5000, 10000];
@@ -95,9 +95,12 @@ const KIND_TABLE = {
     gacha: () => [{ m: 1, w: 26, c: "#8b5a2b", n: "브론즈" }, { m: 2, w: 13, c: "#cbd5e1", n: "실버" }, { m: 5, w: 3.5, c: "#facc15", n: "골드" }, { m: 15, w: 0.8, c: "#a78bfa", n: "퍼플" }, { m: 50, w: 0.15, c: "#f43f5e", n: "레전드" }],
     lottery: () => [{ m: 1, w: 22, k: 2 }, { m: 5, w: 3, k: 3 }, { m: 40, w: 0.2, k: 4 }, { m: 300, w: 0.008, k: 5 }]
 };
-for (const m of NEW_MAPS) {
-    const c = m.casino;
-    const g = { id: "rc_" + m.id, name: c.name, kind: c.kind, icon: c.icon, rtp: [0.86, 0.87, 0.88, 0.89][m.id.length % 4], bets: BETS, desc: c.desc, region: m.region };
+for (const m of NEW_MAPS) for (const [i, c] of mapCasinos(m).entries()) {
+    const id = casinoIdOf(m, i);
+    // 6 rule regions: games topping out at x300 (lottery) → RTP 86~88%, all others 89.01~91.09% (fixed per game)
+    const rtp = !RULE_REGIONS.includes(m.region) ? [0.86, 0.87, 0.88, 0.89][(m.id.length + i) % 4]
+        : c.kind === "lottery" ? +(0.86 + seed01(id) * 0.02).toFixed(4) : +(0.8901 + seed01(id) * 0.0208).toFixed(4);
+    const g = { id, name: c.name, kind: c.kind, icon: c.icon, rtp, bets: BETS, desc: c.desc, region: m.region };
     if (c.kind === "pick") Object.assign(g, { n: c.n, closed: c.closed, prize: c.prize, miss: c.miss });
     if (c.kind === "scratch") g.syms = c.syms;
     if (c.kind === "plinko") g.buckets = [25, 5, 2, 1.2, 0, 0, 0, 1.2, 2, 5, 25];
@@ -118,12 +121,14 @@ function withLose(g) {
         for (let i = 0; i < n; i++) w.push(binom(n - 1, i));
         // move mass between centre and edges until RTP ≈ target
         const ev = ws => ws.reduce((s, x, i) => s + x * g.buckets[i], 0) / ws.reduce((a, b) => a + b, 0);
-        let k = 1;
-        for (let it = 0; it < 60; it++) {
-            const ws = w.map((x, i) => x * Math.pow(k, Math.abs(i - (n - 1) / 2)));
-            const e = ev(ws);
-            if (Math.abs(e - g.rtp) < 0.0005) break;
-            k *= e > g.rtp ? 0.97 : 1.03;
+        // RTP rises monotonically with k (mass pushed to the x25 edges) → bisect on log k
+        const evK = k => ev(w.map((x, i) => x * Math.pow(k, Math.abs(i - (n - 1) / 2))));
+        let lo = Math.log(0.01), hi = Math.log(100), k = 1;
+        for (let it = 0; it < 80; it++) {
+            const mid = (lo + hi) / 2; k = Math.exp(mid);
+            const e = evK(k);
+            if (Math.abs(e - g.rtp) < 0.00005) break;
+            if (e > g.rtp) hi = mid; else lo = mid;
         }
         t = g.buckets.map((m, i) => ({ m, w: w[i] * Math.pow(k, Math.abs(i - (n - 1) / 2)), bucket: i }));
     } else {

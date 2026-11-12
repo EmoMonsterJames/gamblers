@@ -26,14 +26,20 @@ export function spellingView(pid, loc, onChange) {
     if (!sp) {
         const startBtn = h("button.btn.gold.big", { disabled: playedThisRound, onclick: start }, "▶ START");
         const giveBtn = h("button.btn.ghost.big", { disabled: true, title: "진행 중인 단어가 없습니다" }, "🏳️ 포기");
+        const last = ps.spellLast;
         wrap.append(head,
+            last ? h("div.sb-reveal" + (last.ok ? ".ok" : ".bad"),
+                h("small", last.ok ? "🎉 정답!" : last.gaveUp ? "🏳️ 포기 — 정답 공개" : "❌ 오답 — 정답 공개"),
+                h("div.sb-answer", [...last.w].map(L => letterCard(L, 40))),
+                h("b", `${last.w} (${last.pos})`),
+                last.ok ? h("span", `상금 +${fmt(last.prize)} G`) : last.tried ? h("span.muted", `제출한 답: ${last.tried}`) : "") : "",
             h("ul.sb-rules",
                 h("li", "START를 누르면 단어의 글자 수와 품사(명사 · 형용사 · 동사)가 공개됩니다."),
                 h("li", "가방의 알파벳권(알파벳 카드 포함)을 ", h("b", "순서대로"), " 넣어 단어를 완성하세요. 넣은 알파벳권은 사용됩니다."),
                 h("li", "힌트는 3번까지 — 힌트를 볼 때마다 상금이 줄어듭니다."),
                 h("li", "단어가 길고 어려울수록, 힌트를 안 볼수록 상금이 커집니다 (최대 ", h("b", `${fmt(SPELL_MAX)} G`), ")."),
                 h("li", "틀리거나 포기하면 넣었던 알파벳권은 돌려받지 못합니다. 도전은 라운드당 1회.")),
-            playedThisRound ? h("p.notice", "🐝 이번 라운드에는 이미 도전했습니다. 다음 라운드에 다시 오세요!") : null,
+            playedThisRound ? h("p.notice", "🐝 이번 라운드에는 이미 도전했습니다. 다음 라운드에 다시 오세요!") : "",
             h("div.row.center", startBtn, giveBtn));
         return wrap;
     }
@@ -61,6 +67,7 @@ export function spellingView(pid, loc, onChange) {
 
     function start() {
         if (ps.spell || ps.spellRound === s.round) return;
+        ps.spellLast = null;
         const w = WORDS[Math.floor(Math.random() * WORDS.length)];
         ps.spell = { w: w.w, pos: w.pos, lv: w.lv, h1: w.h1, h3: w.h3, hints: 0, placed: [], round: s.round, loc: loc?.id };
         ps.spellRound = s.round;
@@ -96,6 +103,7 @@ export function spellingView(pid, loc, onChange) {
         const ok = sp.placed.join("") === word;
         if (!(await confirmBox(`${sp.placed.join(" ")}\n이 단어로 제출할까요?${ok ? "" : "\n(틀리면 넣은 알파벳권은 돌려받지 못합니다)"}`, "제출", "취소"))) return;
         ps.spell = null;
+        ps.spellLast = { w: word, pos: sp.pos, ok, prize: ok ? prize : 0, tried: sp.placed.join("") };
         if (ok) {
             ps.money += prize;
             G.log(`🐝 ${G.name(pid)} Spelling Bee 정답! ${word} (+${prize.toLocaleString()}G · 힌트 ${sp.hints}개)`);
@@ -111,8 +119,9 @@ export function spellingView(pid, loc, onChange) {
         onChange();
     }
     async function giveUp() {
-        if (!(await confirmBox(`정말 포기할까요?\n넣었던 알파벳권 ${sp.placed.length}장은 돌려받지 못합니다.\n(정답: 포기하면 공개됩니다)`, "포기하기", "계속하기"))) return;
+        if (!(await confirmBox(`정말 포기할까요?\n넣었던 알파벳권 ${sp.placed.length}장은 돌려받지 못합니다.\n(포기하면 정답이 공개됩니다)`, "포기하기", "계속하기"))) return;
         ps.spell = null;
+        ps.spellLast = { w: word, pos: sp.pos, ok: false, gaveUp: true };
         G.log(`🐝 ${G.name(pid)} Spelling Bee 포기 (정답 ${word})`);
         Store.saveSeason(true);
         toast(`🏳️ 포기했습니다. 정답은 ${word}`, "info", 4500);

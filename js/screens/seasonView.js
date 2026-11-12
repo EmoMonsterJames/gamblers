@@ -209,14 +209,25 @@ function mapStage(s) {
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
         let pool = acc.filter(l => !tried.has(l.id));
+        // 랜덤랜드 / 리치랜드: a refused or unpaid entry goes straight to the region's fallback map
+        const fb = region.fallback && LOC_BY_ID[region.fallback] && !LOC_BY_ID[region.fallback].off ? LOC_BY_ID[region.fallback] : null;
         while (pool.length) {
             const target = pick(pool);
             await map.roulette(pool, target.id);
             await banner(`${target.emoji} ${target.name}`, 1400, "loc");
-            const ok = await entryCheck(pid, target, pool.length > 1);
+            const ok = await entryCheck(pid, target, pool.length > 1, fb && fb.id !== target.id ? fb : null);
             if (ok) {
                 G.setLocation(target.id);
                 s.turn.running = true;
+                await arrive(s, target);
+                render();
+                return;
+            }
+            if (fb && fb.id !== target.id) {
+                G.setLocation(fb.id, { teleport: true });
+                s.turn.running = true;
+                await banner(`${fb.emoji} ${fb.name}`, 1400, "loc");
+                await arrive(s, fb);
                 render();
                 return;
             }
@@ -233,7 +244,71 @@ function mapStage(s) {
     return h("div.map-stage",
         h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${region.emoji} ${region.name} · 입장 가능 ${acc.length}곳`)), btn),
         map.el,
-        h("p.muted.center", "회색 핀은 입장 불가 (포인트 부족 / 국적 전용 — 맵권이 있으면 입장) · 💰 입장료 맵은 들어갈 때 차감 · 🎲 랜덤 입장 맵은 거절당하면 다른 맵을 다시 뽑습니다"));
+        region.fallback ? h("p.notice.center", region.id === "richland"
+            ? `💰 리치랜드: 입장료를 꼭 물어봅니다. 안 내거나 낼 돈·포인트가 부족하면 ${LOC_BY_ID[region.fallback]?.emoji} ${LOC_BY_ID[region.fallback]?.name}(으)로 바로 갑니다.`
+            : `🎲 랜덤랜드: 입장을 거절당하면 ${LOC_BY_ID[region.fallback]?.emoji} ${LOC_BY_ID[region.fallback]?.name}(으)로 바로 갑니다.`) : null,
+        h("p.muted.center", "회색 핀은 입장 불가 (포인트 부족 / 국적 전용 / 필요한 장비 없음 — 맵권이 있으면 입장) · 💰 입장료 맵은 들어갈 때 차감 · 🎲 랜덤 입장 맵은 거절당하면 다른 맵을 다시 뽑습니다 · 🤿🪽🧑‍🚀 장비 맵은 들어갈 때 장비를 사용합니다"));
+}
+
+// ---- passes: does the target map ask for gear / fee / points the player lacks?
+function passBlocked(pid, loc) {
+    const need = G.passNeeds(pid, loc);
+    if (need.ok) return null;
+    return need;
+}
+async function alertBox(title, lines, cls = "") {
+    const m = modal(h("div.alert-box" + (cls ? "." + cls.trim().split(/\s+/).join(".") : ""), ...[].concat(lines).map(t => h("p", t)), h("div.row.center", h("button.btn.gold.big", { onclick: () => m.close() }, "확인"))), { title, closable: false });
+    await m.closed;
+}
+function passConfirmText(it, loc, need) {
+    const r = loc.req || {};
+    return [`${it.name}을(를) 사용해 ${loc.emoji} ${loc.name}(으)로 바로 이동할까요?`,
+        need.gear.length ? `• 사용되는 장비: ${need.gear.map(G.gearName).join(" + ")}` : "",
+        need.fee ? `• 입장료 ${fmt(need.fee)} G를 냅니다` : "", need.feePts ? `• 입장료 ${need.feePts} P를 냅니다` : "",
+        r.random ? "• 랜덤 입장 맵이지만 맵권이 있으면 바로 들어갑니다" : "",
+        loc.crazy ? "⚠️ Crazy Casino: 들어가면 플레이 시간 5분이 바로 차감됩니다!" : "", loc.evil ? `⚠️ Evil Town: HP −${loc.evil} (HP ${loc.evil} 이하면 사망)` : "",
+        loc.donation ? "⚠️ Donation Casino: 아이템 1개를 기부해야 합니다 (없으면 HP −10)" : ""].filter(Boolean).join("\n");
+}
+async function tryPass(pid, it) {
+    const loc = LOC_BY_ID[it.loc];
+    const blocked = passBlocked(pid, loc);
+    if (blocked) { Sound.lose(); await alertBox("🎟️ 맵권을 쓸 수 없습니다", [`${loc.emoji} ${loc.name}에 들어갈 조건이 부족합니다.`, ...blocked.missing], "warn"); return false; }
+    return confirmBox(passConfirmText(it, loc, G.passNeeds(pid, loc)), "이동하기", "취소");
+}
+
+// map rules on arrival. Returns false when the player died (turn over).
+async function arrive(s, loc) {
+    const pid = s.turn?.pid;
+    if (!pid) return false;
+    if (loc.crazy) {
+        const cut = G.crazyCut();
+        if (cut) { Sound.boom(); await alertBox("🤪 CRAZY CASINO 경고!", [`Crazy Casino에 입장하여 플레이 시간 ${Math.round(cut / 60)}분이 바로 차감되었습니다!`, `남은 시간: ${fmtTime(s.turn.remaining)}`, "다른 맵으로 이동해도 남은 플레이 시간은 늘어나지 않습니다. (이 맵에서는 시간 연장권을 팔지 않습니다)"], "warn crazy"); }
+    }
+    if (loc.evil) {
+        const r = G.hpToll(pid, loc.evil, `${loc.emoji} ${loc.name}`);
+        Sound.boom();
+        await alertBox("😈 EVIL TOWN", r.dead ? [`HP가 ${loc.evil} 이하인 상태로 Evil Town에 들어와… 사망했습니다! ☠️`] : [`Evil Town의 저주! HP −${loc.evil}`, `남은 HP ❤ ${r.hp}`], "warn evil");
+        if (r.dead) return false;
+    }
+    if (loc.donation) {
+        const list = G.donatable(pid);
+        if (list.length) {
+            Sound.bonus();
+            await new Promise(res => {
+                const m = modal(h("div.donation",
+                    h("p", "🎁 Donation Casino에 왔다면 아이템 ", h("b", "1개"), "를 꼭 기부해야 합니다 (무기 · 펫 제외). 기부할 아이템을 고르세요."),
+                    h("div.donate-grid", list.map(({ item, n }) => h("button.donate-item", { onclick: () => { G.donate(pid, item.id); m.close(); res(); } },
+                        h("span.di-ico", item.emoji || "🎁"), h("b", item.name), h("small", `×${n}`))))), { title: "🎁 기부하세요", closable: false });
+            });
+            toast("🎁 기부 완료! 따뜻한 마음 감사합니다", "ok");
+        } else {
+            const r = G.hpToll(pid, 10, `${loc.emoji} ${loc.name}`);
+            Sound.boom();
+            await alertBox("🎁 기부할 아이템이 없습니다", r.dead ? ["기부할 아이템도 없고 HP도 10 이하… 사망했습니다! ☠️"] : ["기부 대신 HP −10", `남은 HP ❤ ${r.hp}`], "warn");
+            if (r.dead) return false;
+        }
+    }
+    return true;
 }
 function regionStage(s) {
     const pid = s.turn.pid, ps = s.ps[pid];
@@ -251,43 +326,59 @@ function regionStage(s) {
     } }, "🌍 지역 룰렛 돌리기");
     const passRow = passes.length ? h("div.pass-row", h("b", "🎟️ 맵권 사용 → 바로 이동:"), passes.map(it => h("button.btn.small.gold", { onclick: async () => {
         const loc = LOC_BY_ID[it.loc];
-        if (!(await confirmBox(`${it.name}을(를) 사용해 ${loc.emoji} ${loc.name}(으)로 바로 이동할까요?`))) return;
-        if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); render(); }
-    } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`))) : null;
+        if (!(await tryPass(pid, it))) return;
+        if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); await arrive(s, loc); render(); }
+    } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`, passBlocked(pid, LOC_BY_ID[it.loc]) ? " 🔒" : ""))) : null;
     const randomRow = ps.items.map_random > 0 ? h("div.pass-row", h("b", "🗺️ 랜덤 맵권:"), h("button.btn.small.gold", { onclick: async () => {
         if (!(await confirmBox("랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 바로 이동할까요?"))) return;
         const loc = G.useRandomMap();
         if (!loc) return toast("이동할 수 있는 맵이 없습니다", "warn");
-        s.turn.running = true; Sound.bonus(); await banner(`🗺️ ${loc.emoji} ${loc.name}`, 1400, "loc"); render();
+        s.turn.running = true; Sound.bonus(); await banner(`🗺️ ${loc.emoji} ${loc.name}`, 1400, "loc"); await arrive(s, loc); render();
     } }, `🗺️ 랜덤 맵으로 이동 ×${ps.items.map_random}`)) : null;
     return h("div.map-stage",
         h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${Store.player(pid).country} · 선택 가능한 지역 ${avail.length}곳`)), btn),
         passRow, randomRow,
         rmap.el,
-        h("p.muted.center", "☁️ 하늘나라 = 🪽 날개 · 🪐 우주 = 🧑‍🚀 우주복 · 🌊 심해 = 🤿 산소통이 있어야 뽑힐 수 있어요 (입장 시 소모 · 일반 상점)"));
+        h("p.muted.center", "☁️ 하늘나라 = 🪽 날개 · 🪐 우주 = 🧑‍🚀 우주복 · 🌊 심해 = 🤿 산소통이 있어야 뽑힐 수 있어요 (입장 시 소모 · 일반 상점) · 🧩 콤보랜드 = 셋 중 하나만 있어도 뽑힘 (맵마다 필요한 장비를 입장 시 사용)"));
 }
 // random-entry maps: the bouncer flips a coin. A refused player may spend any alphabet card to force it.
-async function entryCheck(pid, loc, canRetry) {
+// Then an entry fee is ASKED (리치랜드) and gear is confirmed before it is used up.
+// fallback: where a refused player goes (랜덤랜드 / 리치랜드) instead of re-rolling.
+async function entryCheck(pid, loc, canRetry, fallback = null) {
     const ce = G.canEnter(pid, loc);
-    if (!ce.random) {
+    const after = fallback ? ` ${fallback.emoji} ${fallback.name}(으)로 이동합니다.` : canRetry ? " 다른 카지노를 다시 뽑습니다." : "";
+    if (ce.random) {
+        const roll = G.rollEntry(pid, loc);
+        const cards = G.cardsOf(pid);
+        const box = h("div.entry-check" + (roll.allowed ? ".yes" : ".no"),
+            h("div.bouncer", roll.allowed ? "🙆" : "🙅"),
+            h("h2", roll.allowed ? "입장 허가!" : "입장 거절!"),
+            h("p", roll.allowed ? `${loc.emoji} ${loc.name}에 들어갈 수 있습니다` : `${loc.emoji} ${loc.name}의 문지기가 막아섰다…${after}`));
+        let forced = false;
+        const m = modal(box, { title: "🎲 랜덤 입장", closable: false });
+        const close = h("button.btn.gold.big", { onclick: () => m.close() }, roll.allowed ? "들어가기 ▶" : fallback ? `${fallback.name}(으)로 ▶` : canRetry ? "다른 맵 뽑기 ▶" : "확인");
+        const cardBtns = !roll.allowed && cards.length ? h("div.pass-row", h("small", "🔤 알파벳 카드 1장으로 강제 입장:"), cards.map(L => h("button.btn.small", { onclick: () => { if (G.useCardForEntry(pid, L)) { forced = true; m.close(); } } }, `카드 ${L}`))) : null;
+        box.append(cardBtns || "", close);
+        roll.allowed ? Sound.fanfare() : Sound.lose();
+        await m.closed;
+        if (!roll.allowed && !forced) return false;
+    }
+    if (ce.ask) {
+        const what = ce.fee ? `${fmt(ce.fee)} G` : `${ce.feePts} P`;
+        if (ce.short) {
+            Sound.lose();
+            await alertBox("💰 입장료 부족", [`${loc.emoji} ${loc.name}의 입장료는 ${what}입니다.`, `${ce.fee ? "골드" : "포인트"}가 부족해 들어갈 수 없습니다…${after}`], "warn");
+            return false;
+        }
+        if (!(await confirmBox(`${loc.emoji} ${loc.name}의 입장료는 ${what}입니다.\n입장료를 내고 들어갈까요?${fallback ? `\n(안 내면 ${fallback.emoji} ${fallback.name}(으)로 갑니다)` : ""}`, "내고 입장", "안 낸다"))) return false;
+    } else {
         if (ce.fee) toast(`💰 입장료 ${fmt(ce.fee)}G`, "info");
         if (ce.feePts) toast(`💎 입장료 ${ce.feePts}P`, "info");
-        return true;
     }
-    const roll = G.rollEntry(pid, loc);
-    const cards = G.cardsOf(pid);
-    const box = h("div.entry-check" + (roll.allowed ? ".yes" : ".no"),
-        h("div.bouncer", roll.allowed ? "🙆" : "🙅"),
-        h("h2", roll.allowed ? "입장 허가!" : "입장 거절!"),
-        h("p", roll.allowed ? `${loc.emoji} ${loc.name}에 들어갈 수 있습니다` : `${loc.emoji} ${loc.name}의 문지기가 막아섰다…${canRetry ? " 다른 카지노를 다시 뽑습니다." : ""}`));
-    let forced = false;
-    const m = modal(box, { title: "🎲 랜덤 입장", closable: false });
-    const close = h("button.btn.gold.big", { onclick: () => m.close() }, roll.allowed ? "들어가기 ▶" : canRetry ? "다른 맵 뽑기 ▶" : "확인");
-    const cardBtns = !roll.allowed && cards.length ? h("div.pass-row", h("small", "🔤 알파벳 카드 1장으로 강제 입장:"), cards.map(L => h("button.btn.small", { onclick: () => { if (G.useCardForEntry(pid, L)) { forced = true; m.close(); } } }, `카드 ${L}`))) : null;
-    box.append(cardBtns || "", close);
-    roll.allowed ? Sound.fanfare() : Sound.lose();
-    await m.closed;
-    return roll.allowed || forced;
+    if (ce.gear) {
+        if (!(await confirmBox(`${loc.emoji} ${loc.name}에 들어가려면 ${ce.gear.map(G.gearName).join(" + ")}이(가) 필요합니다.\n사용해서 입장할까요? (사용한 장비는 사라집니다)${after ? `\n사용하지 않으면${after}` : ""}`, "사용하고 입장", "사용 안 함"))) return false;
+    }
+    return true;
 }
 
 // ---------------------------------------------------------------- location (the actual turn)
@@ -411,13 +502,16 @@ function locationStage(s) {
         if (!to || moving || to.id === loc.id) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
-        if (!(await confirmBox(`${it.name}을(를) 사용해 지금 바로 ${to.emoji} ${to.name}(으)로 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.`, "이동하기", "취소"))) return;
         moving = true;
-        if (!G.usePassTeleport(itemId)) { moving = false; return; }
+        const was = t.running; t.running = false; updateHud();
+        if (!(await tryPass(pid, it))) { moving = false; t.running = was; updateHud(); return; }
+        if (!G.usePassTeleport(itemId)) { moving = false; t.running = was; return; }
+        t.running = was;
         clearInterval(timer);
         gameLayer?.remove(); gameLayer = null;
         Sound.bonus();
         await banner(`🎟️ ${to.emoji} ${to.name}`, 1400, "loc");
+        await arrive(s, to);
         render();
     }
     async function moveRandom() {
@@ -432,6 +526,7 @@ function locationStage(s) {
         gameLayer?.remove(); gameLayer = null;
         Sound.bonus();
         await banner(`🗺️ ${to.emoji} ${to.name}`, 1400, "loc");
+        await arrive(s, to);
         render();
     }
     const passBtns = G.passesOf(pid).filter(it => it.loc !== loc.id);
@@ -439,7 +534,7 @@ function locationStage(s) {
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
     const npcHere = G.npcActive(loc.id);
-    if (npcHere && !t.npc) { t.npc = scheduleNpc(t.remaining); Store.saveSeason(); }
+    if (npcHere && !t.npc) { t.npc = scheduleNpc(t.remaining, loc.npc === "always"); Store.saveSeason(); }
     let npcBusy = false;
     async function npcCheck() {
         if (npcBusy || !t.npc?.length || t.remaining > t.npc[0]) return;

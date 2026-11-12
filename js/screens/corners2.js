@@ -8,7 +8,7 @@ import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { confirmBox, confetti, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry } from "../data/catalog.js";
+import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry, LOC_BY_ID } from "../data/catalog.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";
@@ -188,16 +188,20 @@ export function jobView(pid, turn, onChange, payout) {
 
 // ------------------------------------------------------------------ 👹 NPC corner
 // remaining-time thresholds (seconds) at which NPCs attack during this turn
-export function scheduleNpc(remaining) {
-    const p = 0.4 + Math.random() * 0.3;
-    if (Math.random() >= p || remaining < 60) return [];
+// force: 👹 NPC 랜드 — at least one NPC always shows up
+export function scheduleNpc(remaining, force = false) {
+    const p = force ? 1 : 0.4 + Math.random() * 0.3;
+    if (Math.random() >= p || remaining < (force ? 30 : 60)) return [];
+    if (force && remaining < 60) return [Math.max(5, Math.floor(remaining / 2))];
     const n = 1 + Math.floor(Math.random() * 3);
     return Array.from({ length: n }, () => 20 + Math.floor(Math.random() * (remaining - 40))).sort((a, b) => b - a);
 }
 const NPC_FX = { steal: "💸", give: "💰", hp: "💥", heal: "💖", curse: "🗯️", kill: "☠️", nomove: "🪄", idle: "💤", hope: "🌈", gift: "🎁", shop: "🧳", copy: "📋" };
 const alignBadge = n => { const a = NPC_ALIGN[npcAlign(n)]; return h("span.npc-align." + a.cls, a.label); };
 export async function npcAttack(pid) {
-    const npc = NPCS[Math.floor(Math.random() * NPCS.length)];
+    // 💀 Death Casino: only the reaper comes
+    const only = LOC_BY_ID[G.S().turn?.loc]?.npcOnly;
+    const npc = (only && NPCS.find(n => n.id === only)) || NPCS[Math.floor(Math.random() * NPCS.length)];
     const move = npc.moves[Math.floor(Math.random() * npc.moves.length)];
     const kind = move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove"
         : move.idle ? "idle" : move.hope ? "hope" : move.gift ? "gift" : move.shop ? "shop" : move.copy ? "copy" : "curse";
@@ -303,6 +307,8 @@ export function npcInfo(loc, { active = null } = {}) {
                 h("li", "NPC가 있는 맵에서 플레이하면 턴마다 ", h("b", "40~70%"), " 확률로 습격을 받고, 습격은 플레이 중 무작위 시점에 ", h("b", "1~3회"), " 일어납니다."),
                 h("li", `습격마다 아래 NPC ${NPCS.length}명 중 1명이 같은 확률(`, h("b", pct(1 / NPCS.length)), ")로 나오고, 그 NPC의 기술 중 하나를 같은 확률로 씁니다."),
                 h("li", "NPC 종류: ", alignBadge({ align: "evil", moves: [] }), " 공격만 함 · ", alignBadge({ align: "neutral", moves: [] }), " 공격도 하고 돕기도 함 · ", alignBadge({ align: "good", moves: [] }), " 돕기만 함"),
+                loc.npc === "always" ? h("li.npc-always", "👹 NPC 랜드의 맵: NPC가 ", h("b", "100%"), " 등장합니다 (턴마다 최소 1회 습격).") : null,
+                loc.npcOnly ? h("li.npc-always", "💀 이 맵에는 ", h("b", NPCS.find(n => n.id === loc.npcOnly)?.name), "만 나타납니다!") : null,
                 h("li", "🎫 NPC 공격 Block 권(일반 상점)이 있으면 해로운 공격을 자동으로 막아 줍니다."))),
         h("div.npc-cards", NPCS.map(n => h("div.npc-card", { style: { "--c": n.color } },
             h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / NPCS.length)}`))),

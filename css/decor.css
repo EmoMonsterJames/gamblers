@@ -306,3 +306,24 @@ button.sb-hint { cursor: pointer; } button.sb-hint:disabled { opacity: .5; curso
 .sb-card:hover:not(:disabled) { background: #ffffff22; transform: translateY(-2px); }
 .sb-card:disabled { opacity: .45; cursor: default; }
 @media (max-width: 560px) { .sb-slot { width: 34px; height: 46px; } .sb-head b { font-size: 18px; } }
+
+/* ---------------------------------------------------------- 6 new regions: map rules */
+@media (min-width: 900px) { .region-grid { grid-template-columns: repeat(5, 1fr); } .region-grid .rtile { min-height: 104px; } .region-grid .rtile .rt-emoji { font-size: 36px; } }
+.alert-box { text-align: center; white-space: pre-line; }
+.alert-box p { margin: 6px 0; }
+.alert-box.warn p:first-child { font-weight: 900; font-size: 17px; }
+.alert-box.crazy p:first-child { color: #fb7185; animation: wobble .8s infinite; }
+.alert-box.evil p:first-child { color: #f87171; }
+.alert-box .row { margin-top: 12px; }
+.donation p { text-align: center; }
+.donate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; max-height: 50vh; overflow: auto; margin-top: 10px; }
+.donate-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border-radius: 12px; border: 1px solid #f9a8d455; background: #f472b614; color: inherit; cursor: pointer; font: inherit; }
+.donate-item:hover { background: #f472b633; transform: translateY(-2px); }
+.donate-item .di-ico { font-size: 28px; }
+.donate-item b { font-size: 12px; line-height: 1.2; text-align: center; }
+.npc-always { color: #fca5a5; }
+.sb-reveal { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; border-radius: 14px; background: #ffffff0d; border: 2px solid #f87171aa; }
+.sb-reveal.ok { border-color: #4ade80; background: #4ade801a; }
+.sb-reveal > small { font-weight: 900; font-size: 14px; }
+.sb-reveal b { font-size: 18px; letter-spacing: .08em; }
+.sb-answer { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }

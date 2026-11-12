@@ -79,10 +79,12 @@ export function saleOf(cat, id) {
 
 export function shopItems(shopId, locId) {
     const out = [];
+    const noTime = locId && LOCATIONS.find(l => l.id === locId)?.crazy; // 🤪 Crazy Casino never sells the +5 min ticket
     for (const cat of Object.keys(CATS)) {
         for (const e of CATS[cat].list) {
             const s = saleOf(cat, e.id);
             if (s.off || s.shop !== shopId || !s.price) continue;
+            if (noTime && e.id === "time_ext") continue;
             if (s.locs && locId && !s.locs.includes(locId)) continue;
             if (!s.locs && e.letter && !cardSoldHere(shopId, e.letter, locId)) continue; // alphabet cards: only at their maps
             out.push({ cat, id: e.id, price: s.price, gold: s.gold || 0 });

@@ -46,9 +46,17 @@ const REGION_BG = {
     under: { bg: "radial-gradient(circle at 50% 20%,#78350f,#0c0a09 75%)", deco: ["⛏️", "🪨", "💎", "🕯️", "🦇", "🔥"] },
     spooky: { bg: "radial-gradient(circle at 70% 15%,#fef3c7 0 5%,#4c1d95 20%,#020617 80%)", deco: ["🦇", "🕸️", "🎃", "🌕", "👻", "🪦"] },
     deepsea: { bg: "linear-gradient(180deg,#0369a1,#082f49 50%,#020617)", deco: ["🫧", "🐠", "🪸", "🐙", "🦈", "🫧"] },
-    arctic: { bg: "linear-gradient(180deg,#e0f2fe,#7dd3fc 60%,#0c4a6e)", deco: ["❄️", "🧊", "🐧", "🐻‍❄️", "⛄", "❄️"] }
+    arctic: { bg: "linear-gradient(180deg,#e0f2fe,#7dd3fc 60%,#0c4a6e)", deco: ["❄️", "🧊", "🐧", "🐻‍❄️", "⛄", "❄️"] },
+    randomland: { bg: "conic-gradient(from 45deg at 50% 50%,#f59e0b,#ec4899,#8b5cf6,#06b6d4,#22c55e,#f59e0b)", deco: ["🎲", "❓", "🔀", "🃏", "🎰", "❔"] },
+    richland: { bg: "radial-gradient(circle at 50% 30%,#fde68a,#b45309 55%,#1c0a02)", deco: ["💰", "💎", "🪙", "🏦", "💸", "👑"] },
+    noslot: { bg: "radial-gradient(circle at 50% 40%,#16a34a,#14532d 60%,#052e16)", deco: ["🃏", "🎲", "🎡", "🚫", "♠️", "🎱"] },
+    nocasino: { bg: "linear-gradient(135deg,#991b1b,#1e3a8a)", deco: ["🎰", "🍒", "7️⃣", "🔔", "🍋", "💎"] },
+    npcland: { bg: "radial-gradient(circle at 50% 20%,#7c3aed,#2e1065 55%,#0b0214)", deco: ["👹", "💀", "🤖", "🐊", "🧳", "🐹"] },
+    combo: { bg: "linear-gradient(180deg,#7dd3fc 0 33%,#312e81 33% 66%,#0369a1 66%)", deco: ["🪽", "🧑‍🚀", "🤿", "🧩", "🏝️", "🌠"] }
 };
-const reqLabel = r => !r ? null : r.points ? `${r.points}P+` : r.country ? "국적" : r.fee ? `${r.fee.toLocaleString()}G` : r.feePts ? `${r.feePts}P 입장료` : r.random ? "랜덤 입장" : null;
+const GEAR_ICON = { wings: "🪽", space_suit: "🧑‍🚀", oxygen: "🤿" };
+const reqLabel = r => !r ? null : [r.gear?.length ? r.gear.map(g => GEAR_ICON[g] || "🎒").join("") : null,
+    r.points ? `${r.points}P+` : r.country ? "국적" : r.fee ? `${r.fee.toLocaleString()}G` : r.feePts ? `${r.feePts}P 입장료` : r.random ? "랜덤 입장" : null].filter(Boolean).join(" ") || null;
 
 export function worldMap({ onPick = null, locked = new Set(), small = false, region = "cl1" } = {}) {
     const R = REGION_BG[region];

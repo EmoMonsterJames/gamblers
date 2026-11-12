@@ -4,7 +4,7 @@
 // screen reads from these lists.
 // =====================================================================
 
-import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS } from "./regions.js";
+import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf } from "./regions.js";
 export { REGIONS, REGION_ITEMS };
 export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
@@ -471,8 +471,8 @@ export const LOCATIONS = [
 // every original map lives in Casino Land 1; then the new regions' maps
 for (const l of LOCATIONS) Object.assign(l, { region: "cl1" }, CL1_PATCH[l.id] || {});
 for (const m of NEW_MAPS) {
-    const { slot, casino, ...loc } = m;
-    LOCATIONS.push({ ...loc, slots: ["rs_" + m.id], casino: ["rc_" + m.id] });
+    const { slot, casino, slots, casinos, ...loc } = m;
+    LOCATIONS.push({ ...loc, slots: mapSlots(m).map((_, i) => slotIdOf(m, i)), casino: mapCasinos(m).map((_, i) => casinoIdOf(m, i)) });
 }
 // the 7 special slots
 const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: "foggy", neon_cadets: "twins", four_pillars: "mj", gift: "balloon", chrono_heist: "oink" };
@@ -485,13 +485,26 @@ export const earnKinds = loc => !loc?.earn ? [] : Array.isArray(loc.earn) ? loc.
 // map passes: one per map. A pass lets its holder in (nationals-only maps)
 // AND teleports straight to that map when used at the start of a turn.
 export const passIdOf = loc => loc.req?.pass || "pass_" + loc.id;
-export const passPrice = loc => (loc.region === "sky" || loc.region === "space") ? 50000 : 45000;
+// Sale: every pass is sold at exactly ONE other map's general shop (no duplicates),
+// each map sells at most 2 passes, spread over the regions; price 45,000~50,000 G.
+const passRnd = (() => { let h = 2166136261; for (const c of "gamblers-map-passes") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
+const passSellers = LOCATIONS.filter(l => l.shops.includes("general"));
+const passLoad = {};
 for (const l of LOCATIONS) {
     const id = passIdOf(l);
     const ex = ITEMS.find(i => i.id === id);
     if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
-    else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 이 맵으로 바로 이동합니다 — 턴 시작 때나 턴 도중 언제든 (남은 시간은 그대로). 국적 전용 맵 입장 가능." });
-    SHOPS.general.list.push({ cat: "item", id, price: passPrice(l) });
+    else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 이 맵으로 바로 이동합니다 — 턴 시작 때나 턴 도중 언제든 (남은 시간은 그대로). 국적 전용 맵 입장 가능. 입장 조건(장비·입장료)이 있는 맵은 그 조건을 갖춰야 이동할 수 있습니다." });
+    // least-loaded sellers first, preferably in another region
+    let cand = passSellers.filter(s => s.id !== l.id && (passLoad[s.id] || 0) < 2);
+    const min = Math.min(...cand.map(s => passLoad[s.id] || 0));
+    cand = cand.filter(s => (passLoad[s.id] || 0) === min);
+    const other = cand.filter(s => s.region !== l.region);
+    if (other.length) cand = other;
+    const seller = cand[Math.floor(passRnd() * cand.length)];
+    if (!seller) continue;
+    passLoad[seller.id] = (passLoad[seller.id] || 0) + 1;
+    SHOPS.general.list.push({ cat: "item", id, price: 45000 + Math.round(passRnd() * 10) * 500, locs: [seller.id] });
 }
 export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
 
@@ -502,7 +515,9 @@ for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) 
 }
 
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions
-export const SPELL_MAPS = ["oink", "gambleables", "cany", "coffin", "blackout", "bubble", "igloo", "zodiac"];
+export const SPELL_MAPS = ["oink", "gambleables", "cany", "coffin", "blackout", "bubble", "igloo", "zodiac",
+    // +10 spread over the other regions (18 maps in all)
+    "lucky", "eastern", "magic", "dungeon", "shipwreck", "plaza", "beggar_shelter", "games_only", "npc_town", "island"];
 for (const id of SPELL_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.spell = true; }
 
 export const COUNTRIES = ["Emo World", "Polynesia", "Ground Town", "Foggy Nation", "MJ World", "Dung Town"];

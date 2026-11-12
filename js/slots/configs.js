@@ -1,4 +1,4 @@
-import { NEW_MAPS } from "../data/regions.js";
+import { NEW_MAPS, mapSlots, slotIdOf, RULE_REGIONS, seed01 } from "../data/regions.js";
 import { SPECIAL_SLOTS } from "./specialConfigs.js";
 // =====================================================================
 // Slot machine definitions (one per casino, no duplicates).
@@ -398,15 +398,33 @@ const TPL = {
               look: sp => ({ F: { img: "images/slots/free-games.svg" }, C: { e: "🔴", name: "Pearl" }, X: { e: sp, name: "Jackpot" } }),
               features: n => ({ free: { p: 0.006, spins: 8, mult: 2 }, hold: { p: 0.007, sym: true, trigger: 6, start: 6, coin: COIN, land: 0.075, lives: 3 }, pick: { p: 0.0035, sym: true, title: `${n} PICK`, tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 0.3 } } }) }
 };
-for (const m of NEW_MAPS) {
-    const s = m.slot, t = TPL[s.tpl];
+// pay scales re-solved by simulation for the rule-region slots (less frequent bonus → higher line pays, RTP kept)
+// (browser sim, 300k spins each at the mid bet, solved for ≈ 89% RTP)
+const RULE_PX = {
+    rs_random_casino: 2.801, rs_odd_casino: 2.476, rs_possibility: 2.47, rs_rtp_town: 2.824, rs_plaza: 2.475, rs_crazy_casino: 3.092, rs_space_center: 2.727,
+    rs_riches: 2.921, rs_wealthy: 2.503, rs_highroller: 2.62, rs_beggar_shelter: 2.59, rs_highlimit: 2.924, rs_goldbar: 2.586, rs_diamond_casino: 2.799,
+    rs_noc_casino: 2.851, rs_noc_casino_2: 2.966, rs_slots_only: 2.368, rs_slots_only_2: 2.353, rs_redblue: 2.796, rs_redblue_2: 2.931, rs_ocean_town: 2.754, rs_ocean_town_2: 2.412,
+    rs_colosseum: 3.066, rs_npc_town: 2.289, rs_sky_tower: 2.802, rs_death_casino: 2.896, rs_evil_town: 2.889, rs_nightmare: 2.971, rs_donation: 2.424, rs_npc_casino: 2.5,
+    rs_sky_bridge: 2.787, rs_rocketship: 3.002, rs_island: 2.776, rs_deep_ocean: 2.915, rs_star_sky: 2.357, rs_space_lake: 2.758, rs_sky_pond: 2.791, rs_combo_town: 2.821
+};
+for (const m of NEW_MAPS) for (const [i, s] of mapSlots(m).entries()) {
+    const t = TPL[s.tpl];
+    const id = slotIdOf(m, i);
+    const features = t.features(s.name.toUpperCase());
+    // 6 rule regions: the bonus features together trigger once every 80~120 spins (fixed per machine)
+    let every = null;
+    if (RULE_REGIONS.includes(m.region)) {
+        every = 80 + Math.round(seed01(id) * 40);
+        const tot = Object.values(features).reduce((a, f) => a + f.p, 0);
+        for (const f of Object.values(features)) f.p *= (1 / every) / tot;
+    }
     SLOTS.push(video({
-        id: "rs_" + m.id, name: s.name, brand: s.brand, progressive: true, region: m.region,
-        desc: `${m.name}의 대표 슬롯! ${t.label}.`,
+        id, name: s.name, brand: s.brand, progressive: true, region: m.region,
+        desc: `${m.name}의 대표 슬롯! ${t.label}.${every ? ` 보너스 약 ${every}스핀에 1번.` : ""}`,
         theme: { bg: `linear-gradient(180deg,${s.bg[0]},${s.bg[1]})`, accent: s.acc, glow: s.acc, font: s.font || "'Lilita One', sans-serif" },
         highs: s.hi.map(e => ({ e })), lows: s.lo.map(e => ({ e })),
         wild: { e: s.wild, name: "WILD", w: t.wildW, ...(t.wildFree ? { wFree: t.wildFree } : {}) },
-        look: t.look(s.sp), features: t.features(s.name.toUpperCase()), px: t.px
+        look: t.look(s.sp), features, px: RULE_PX[id] ?? t.px, ...(every ? { bonusEvery: every } : {})
     }));
 }
 SLOTS.push(...SPECIAL_SLOTS);

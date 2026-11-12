@@ -454,6 +454,7 @@ export function regionStatus(pid, region) {
     const locs = LOCATIONS.filter(l => l.region === region.id && !l.off);
     if (!locs.length) return { ok: false, why: "맵 없음" };
     if (region.need && !(ps.items[region.need] > 0)) return { ok: false, why: `${ITEM_BY_ID[region.need]?.name || region.need} 필요`, need: region.need };
+    if (region.needAny && !region.needAny.some(i => ps.items[i] > 0)) return { ok: false, why: `${region.needAny.map(i => ITEM_BY_ID[i]?.name || i).join(" / ")} 중 하나 필요` };
     const acc = locs.filter(l => canEnter(pid, l).ok);
     if (!acc.length) return { ok: false, why: "입장 가능한 맵 없음" };
     return { ok: true, locs: acc };
@@ -463,26 +464,103 @@ export function enterRegion(regionId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     const r = REGIONS.find(x => x.id === regionId);
     t.region = regionId;
+    // (needAny regions — 콤보랜드 — use nothing here: each map asks for its own gear)
     if (r.need && ps.items[r.need] > 0) { ps.items[r.need]--; log(`${ITEM_BY_ID[r.need]?.emoji || "🎒"} ${name(t.pid)} ${ITEM_BY_ID[r.need]?.name} 사용 → ${r.name}`); }
     else log(`${r.emoji} ${name(t.pid)} → ${r.name}`);
     Store.saveSeason();
 }
+// req: points · country(+pass) · fee / feePts (ask: always asked, can be picked while broke)
+//      random (coin flip at the door) · gear: [items] needed AND used up on entry
 export function canEnter(pid, loc) {
     const ps = S().ps[pid], p = Store.player(pid);
     if (loc.off) return { ok: false, why: "닫힘" };
+    if (loc.crazy && !crazyTimeOk()) return { ok: false, why: "남은 시간 6분 30초 이상 필요" };
     const r = loc.req;
     if (!r) return { ok: true };
-    if (r.points != null) return ps.points >= r.points ? { ok: true } : { ok: false, why: `${r.points}P 이상 필요` };
+    const out = { ok: true };
+    if (r.gear?.length) {
+        const miss = r.gear.filter(g => !(ps.items[g] > 0));
+        if (miss.length) return { ok: false, why: `${miss.map(gearName).join(" · ")} 필요`, missing: miss };
+        out.gear = [...r.gear];
+    }
+    if (r.points != null) return ps.points >= r.points ? out : { ok: false, why: `${r.points}P 이상 필요` };
     if (r.country) {
-        if (p.country === r.country) return { ok: true };
+        if (p.country === r.country) return out;
         const pass = r.pass || passIdOf(loc);
-        if ((ps.items[pass] || 0) > 0) return { ok: true, pass };
+        if ((ps.items[pass] || 0) > 0) return { ...out, pass };
         return { ok: false, why: `${r.country} 국적 전용` };
     }
-    if (r.fee) return playMoney(pid) >= r.fee ? { ok: true, fee: r.fee } : { ok: false, why: `입장료 ${r.fee.toLocaleString()}G` };
-    if (r.feePts) return ps.points >= r.feePts ? { ok: true, feePts: r.feePts } : { ok: false, why: `입장료 ${r.feePts}P` };
-    if (r.random) return { ok: true, random: !(r.races || []).includes(p.ethnicity) };
-    return { ok: true };
+    if (r.fee) {
+        if (r.ask) return { ...out, fee: r.fee, ask: true, short: playMoney(pid) < r.fee };
+        return playMoney(pid) >= r.fee ? { ...out, fee: r.fee } : { ok: false, why: `입장료 ${r.fee.toLocaleString()}G` };
+    }
+    if (r.feePts) {
+        if (r.ask) return { ...out, feePts: r.feePts, ask: true, short: ps.points < r.feePts };
+        return ps.points >= r.feePts ? { ...out, feePts: r.feePts } : { ok: false, why: `입장료 ${r.feePts}P` };
+    }
+    if (r.random) return { ...out, random: !(r.races || []).includes(p.ethnicity) };
+    return out;
+}
+export const gearName = id => `${ITEM_BY_ID[id]?.emoji || ""} ${ITEM_BY_ID[id]?.name || id}`.trim();
+
+// 🎟️ map pass: what the target map still asks for. Random doors are skipped, but
+// gear (incl. the region's wings / suit / tank), points and entry fees are not.
+// → { ok, missing: ["…"], gear: [ids used up], fee, feePts }
+export function passNeeds(pid, loc) {
+    const ps = S().ps[pid], r = loc.req || {};
+    const region = REGIONS.find(x => x.id === loc.region);
+    const gear = [...new Set([...(region?.need ? [region.need] : []), ...(r.passGear || r.gear || [])])];
+    const missing = [];
+    if (loc.crazy && !crazyTimeOk()) missing.push(`플레이 시간이 부족합니다 (남은 시간 ${Math.floor(CRAZY_MIN_LEFT / 60)}분 ${CRAZY_MIN_LEFT % 60}초 이상 필요) → 시간 연장권부터 사용하세요`);
+    for (const g of gear) if (!(ps.items[g] > 0)) missing.push(`${gearName(g)} 부족 → ${ITEM_BY_ID[g]?.name || g}부터 갖추세요`);
+    if (r.points != null && ps.points < r.points) missing.push(`포인트가 부족합니다 (${r.points}P 이상 필요) → 포인트부터 모으세요`);
+    const fee = r.fee || 0, feePts = r.feePts || 0;
+    if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
+    if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
+    return { ok: !missing.length, missing, gear, fee, feePts };
+}
+// pay an entry: gear used up + fee / points
+export function payEntry(pid, { gear = [], fee = 0, feePts = 0 } = {}) {
+    const ps = S().ps[pid];
+    for (const g of gear) if (ps.items[g] > 0) { ps.items[g]--; log(`${ITEM_BY_ID[g]?.emoji || "🎒"} ${name(pid)} ${ITEM_BY_ID[g]?.name} 사용`); }
+    if (fee) { const fromLoan = Math.min(ps.loanGold || 0, fee); ps.loanGold = (ps.loanGold || 0) - fromLoan; ps.money -= fee - fromLoan; log(`💰 ${name(pid)} 입장료 ${fee.toLocaleString()}G`); }
+    if (feePts) { ps.points -= feePts; log(`💎 ${name(pid)} 입장료 ${feePts}P`); }
+    Store.saveSeason();
+}
+
+// ---- map rules that fire on arrival (roulette, map pass or random map ticket)
+// 🤪 Crazy Casino: −5 min once per turn (the clock never comes back) · 😈 Evil Town: HP −10, HP ≤ 10 → dead
+export const CRAZY_CUT = 300;
+// Crazy Casino only opens to a player with at least 6:30 of play time left
+export const CRAZY_MIN_LEFT = 390;
+export function crazyTimeOk() { const t = S()?.turn; return !t || t.remaining >= CRAZY_MIN_LEFT; }
+export function crazyCut() {
+    const t = S().turn;
+    if (!t || t.crazyCut) return 0;
+    t.crazyCut = true;
+    const cut = Math.min(CRAZY_CUT, t.remaining);
+    t.remaining -= cut;
+    log(`🤪 ${name(t.pid)} Crazy Casino 입장 — 플레이 시간 ${Math.round(cut / 60)}분 차감!`);
+    Store.saveSeason();
+    return cut;
+}
+export function hpToll(pid, dmg, place) {
+    const ps = S().ps[pid];
+    if (ps.hp <= dmg) { killPlayer(pid, `${place}에서 사망`); return { dead: true }; }
+    ps.hp -= dmg;
+    log(`💔 ${name(pid)} ${place} HP −${dmg}`);
+    Store.saveSeason(true);
+    return { hp: ps.hp };
+}
+// 🎁 Donation Casino: one bag item (weapons / pets are not in the bag) must be donated
+export const donatable = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => n > 0 && ITEM_BY_ID[k]).map(([k, n]) => ({ item: ITEM_BY_ID[k], n }));
+export function donate(pid, itemId) {
+    const ps = S().ps[pid];
+    if (!(ps.items[itemId] > 0)) return false;
+    ps.items[itemId]--;
+    log(`🎁 ${name(pid)} Donation Casino에 ${ITEM_BY_ID[itemId]?.name} 기부`);
+    Store.saveSeason(true);
+    return true;
 }
 export function accessibleLocations(pid, regionId = null) { return LOCATIONS.filter(l => (!regionId || l.region === regionId) && canEnter(pid, l).ok); }
 // random-entry maps: the bouncer decides (Ghost / Invisible walk into Ghost Casino)
@@ -508,8 +586,7 @@ export function setLocation(locId, { teleport = false } = {}) {
     if (!teleport) {
         const ce = canEnter(t.pid, loc);
         if (ce.pass) { ps.items[ce.pass]--; log(`🎟️ ${name(t.pid)} 출입권 사용`); }
-        if (ce.fee) { const fromLoan = Math.min(ps.loanGold || 0, ce.fee); ps.loanGold = (ps.loanGold || 0) - fromLoan; ps.money -= ce.fee - fromLoan; log(`💰 ${name(t.pid)} 입장료 ${ce.fee.toLocaleString()}G`); }
-        if (ce.feePts) { ps.points -= ce.feePts; log(`💎 ${name(t.pid)} 입장료 ${ce.feePts}P`); }
+        if (ce.ok && !ce.short) payEntry(t.pid, { gear: ce.gear, fee: ce.fee, feePts: ce.feePts });
     }
     if (!(ps.visited ||= []).includes(locId)) ps.visited.push(locId);
     if (!(t.stats.locs ||= []).includes(locId)) t.stats.locs.push(locId);
@@ -522,7 +599,10 @@ export function usePassTeleport(itemId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     const it = ITEM_BY_ID[itemId];
     if (!it?.loc || !(ps.items[itemId] > 0)) return false;
+    const need = passNeeds(t.pid, LOC_BY_ID[it.loc]);
+    if (!need.ok) return false;
     ps.items[itemId]--;
+    payEntry(t.pid, need);
     log(`🎟️ ${name(t.pid)} ${it.name} 사용 → 순간이동!`);
     if (t.loc) { t.region = LOC_BY_ID[it.loc].region; t.npc = null; } // moving mid-turn: new region, the new map rolls its own NPC visits
     setLocation(it.loc, { teleport: true });
@@ -532,7 +612,8 @@ export function usePassTeleport(itemId) {
 // 🗺️ 랜덤 맵권: straight to one random map among every map the player may enter, in every region they may pick
 export function randomMapPool(pid) {
     const cur = S().turn?.loc;
-    return availableRegions(pid).flatMap(r => regionStatus(pid, r).locs).filter(l => l.id !== cur);
+    // maps that ask for gear or an entry fee are left out (the ticket can't ask for them)
+    return availableRegions(pid).flatMap(r => regionStatus(pid, r).locs).filter(l => { const ce = canEnter(pid, l); return l.id !== cur && !ce.gear && !ce.fee && !ce.feePts; });
 }
 export function useRandomMap() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
