@@ -52,7 +52,7 @@ export function openSlot(cfg, ctx) {
     const moneyEl = h("b", fmt(ctx.money()));
     const winEl = h("b.win-amt", "0");
     const betEl = h("b", fmt(bet));
-    const msgEl = h("div.slot-msg", cfg.desc);
+    const msgEl = h("div.slot-msg"); // the description lives in the ⓘ info panel, not under the reels
     const jpBar = h("div.jp-bar");
     const meterEl = h("div.meter-zone");
     const reelEls = Array.from({ length: reelsN }, () => h("div.reel", h("div.strip")));
@@ -510,7 +510,7 @@ export function openSlot(cfg, ctx) {
         // mission stats: 5-of-a-kind lines, free-spin entries (a whole bonus counts as one win)
         const five = res.fiveKind ?? (res.base?.lines || []).filter(l => l.n >= 5).length;
         const freeSpin = res.freeSpin ?? res.features.some(f => ["free", "grow", "cfree", "bfree"].includes(f.type));
-        ctx.record(0, res.total, res.points, { settle: true, bet, bonus: res.bonus, jackpots: res.jackpots, five, freeSpin });
+        ctx.record(0, res.total, res.points, { settle: true, bet, brand: cfg.brand, bonus: res.bonus, jackpots: res.jackpots, five, freeSpin });
         winEl.textContent = fmt(res.total);
         refresh();
         if (res.points) { floatText(reelsBox, `+${res.points} P`, "pts"); Sound.coin(); }
@@ -1376,16 +1376,17 @@ export function openSlot(cfg, ctx) {
     async function playRibbitCatch(f) {
         Sound.bonus();
         await banner("🟡 RIBBIT CATCH · 그물 안의 코인만 잡아라! 🐸", 1700, "bonus");
-        const N = f.size;
-        const board = h("div.hs-board.catch-board", { style: { "--cols": N, "--rows": N } });
+        const NC = f.cols || f.size, NR = f.rows || f.size; // the normal 3x5 board
+        const board = h("div.hs-board.catch-board", { style: { "--cols": NC, "--rows": NR } });
         const cells = {};
-        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const el = h("div.hs-cell"); cells[c + "," + r] = el; board.append(el); }
+        for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) { const el = h("div.hs-cell"); cells[c + "," + r] = el; board.append(el); }
         const multEl = h("b.net-mult");
         const net = h("div.catch-net", h("span.net-frog", "🐸"), multEl);
         board.append(net);
-        const setNet = sq => { net.style.setProperty("--x", sq.x); net.style.setProperty("--y", sq.y); net.style.setProperty("--s", sq.s); net.style.setProperty("--n", N); };
+        const setNet = sq => { for (const [k, v] of Object.entries({ "--x": sq.x, "--y": sq.y, "--w": sq.w ?? sq.s, "--h": sq.h ?? sq.s, "--nc": NC, "--nr": NR })) net.style.setProperty(k, v); };
+        const netName = sq => `${sq.h ?? sq.s}x${sq.w ?? sq.s}`; // rows x cols: 2x2 → 3x3 → 3x4 → 3x5
         const lives = h("div.hs-lives"), sumEl = h("b", "0");
-        overlay.append(h("div.hs-wrap.ribbit-wrap.catch-wrap", holdHud(sumEl, lives), h("small.hs-note", "🪷 연꽃잎 = 그물 확장 (최대 전체) · 🐸 개구리 = 이번 스핀 그물 x2~x5"), board));
+        overlay.append(h("div.hs-wrap.ribbit-wrap.catch-wrap", holdHud(sumEl, lives), h("small.hs-note", "🪷 연꽃잎 = 그물 확장 (2x2 → 3x3 → 3x4 → 3x5 전체) · 🐸 개구리 = 이번 스핀 그물 x2~x5"), board));
         let sum = 0;
         const lock = (l, v) => {
             const el = cells[l.c + "," + l.r];
@@ -1404,7 +1405,7 @@ export function openSlot(cfg, ctx) {
                 const el = cells[l.c + "," + l.r]; el.append(h("div.peek", "🪷")); Sound.bonus();
                 await fly(el, net, "🪷", { arc: -40, dur: 420 }); el.querySelector(".peek")?.remove();
             }
-            if (st.grow) { setNet(st.sq); net.classList.add("grow"); await banner(`🪷 그물 확장! ${st.sq.s}x${st.sq.s}${st.sq.s >= N ? " (전체!)" : ""}`, 1100, "meter"); net.classList.remove("grow"); }
+            if (st.grow) { setNet(st.sq); net.classList.add("grow"); await banner(`🪷 그물 확장! ${netName(st.sq)}${(st.sq.w ?? st.sq.s) >= NC && (st.sq.h ?? st.sq.s) >= NR ? " (전체!)" : ""}`, 1100, "meter"); net.classList.remove("grow"); }
             const fr = st.landed.find(l => l.frog);
             if (fr) {
                 const el = cells[fr.c + "," + fr.r]; el.append(h("div.peek", "🐸"));

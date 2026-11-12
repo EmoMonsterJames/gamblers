@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- test player (admin map simulation only) -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#1e293b"/>
+<g clip-path="url(#cc)">
+  <g stroke="#334155" stroke-width="2">
+    <path d="M0 64H256M0 128H256M0 192H256M64 0V256M128 0V256M192 0V256"/>
+  </g>
+  <rect x="58" y="70" width="140" height="120" rx="26" fill="#94a3b8" stroke="#e2e8f0" stroke-width="6"/>
+  <rect x="78" y="96" width="100" height="44" rx="12" fill="#0f172a"/>
+  <circle cx="104" cy="118" r="10" fill="#22d3ee"/>
+  <circle cx="152" cy="118" r="10" fill="#22d3ee"/>
+  <rect x="100" y="156" width="56" height="10" rx="5" fill="#475569"/>
+  <rect x="122" y="40" width="12" height="32" fill="#e2e8f0"/>
+  <circle cx="128" cy="36" r="12" fill="#facc15"/>
+  <rect x="40" y="200" width="176" height="40" fill="#facc15"/>
+  <text x="128" y="229" font-family="Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle" fill="#0f172a">TEST</text>
+</g>
+<circle cx="128" cy="128" r="124" fill="none" stroke="#facc15" stroke-width="6"/>
+</svg>

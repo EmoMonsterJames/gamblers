@@ -15,6 +15,7 @@ export const CONFIG = {
     TURN_SECONDS: 600,        // 10 minutes per player turn
     EXTEND_SECONDS: 300,      // "+5 min" ticket
     MAX_WEAPONS: 6,
+    MAX_ATTACK_WEAPONS: 4,    // of the 6, at most 4 may be attack (HP-lowering) weapons; the rest must be other kinds
     CASINO_MAX_WIN: 300000,   // biggest single casino-game payout
     CASINO_POINT_CHANCE: 0.12, // chance a casino play also drops 1~10 points
     ROUND_CASINO_PLAYS: 5,    // casino games per player per round

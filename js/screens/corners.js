@@ -10,7 +10,7 @@ import { toast, confirmBox, confetti, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { catalogEntry, WEAPON_BY_ID, earnKinds } from "../data/catalog.js";
-import { musicCorner, survivalCorner, jobView as jobView2, scheduleNpc, npcAttack } from "./corners2.js";
+import { musicCorner, survivalCorner, guessCorner, jobView as jobView2, scheduleNpc, npcAttack } from "./corners2.js";
 export { scheduleNpc, npcAttack };
 export { npcInfo } from "./corners2.js";
 export const jobView = (pid, turn, onChange) => jobView2(pid, turn, onChange, payout);
@@ -26,32 +26,69 @@ const JOBS = [
     { id: "sell", icon: "🏷️", name: "아이템팔기", desc: "아이템이나 무기 하나를 팔고 100~10,000G를 받습니다 (비싼 물건이라고 더 받지는 않음)." },
     { id: "music", icon: "🎧", name: "음악 감상", desc: "랜덤 음악의 랜덤 구간을 30초 동안 듣고 100~5,000G를 받습니다 (30초는 플레이 시간에 포함)." },
     { id: "survival", icon: "🏝️", name: "서바이벌", desc: "나 + 시즌 밖 플레이어 9명 → 후보 3명 → 최종 1명이 1,000~5,000G! (시즌 밖 우승자는 다음 시즌 참가 때 그 돈을 가져감)" },
+    { id: "guess", icon: "❓", name: "플레이어 이름 맞추기", desc: "물음표로 가려진 플레이어를 5지선다로 맞히기. 정보(최대 3개)를 볼수록 상금이 줄어듭니다: 확인 없이 10,000~30,000G · 1개 5,000~20,000G · 2개 2,000~10,000G · 3개 500~1,000G · 오답 0G." },
 ];
 
 export function earnView(pid, onChange, { loc = null, turn = null } = {}) {
     const ps = G.S().ps[pid];
     const left = G.earnLeft(pid);
+    const round = G.S().round;
+    const list = JOBS.filter(j => !loc || earnKinds(loc).includes(j.id));
+    // what the player could actually do right now (no HP to give / nothing to sell → skipped)
+    const can = j => j.id === "blood" ? ps.hp > 10 : j.id === "sell" ? (ps.weapons.length > 0 || Object.values(ps.items || {}).some(n => n > 0)) : true;
+    // the drawn activity stays the same for this map this round (no re-rolling by cancelling)
+    const drawn = () => { const p = ps.earnPick; const j = p && p.round === round && p.loc === (loc?.id || null) ? list.find(x => x.id === p.id) : null; return j && can(j) ? j : null; };
     let busy = false;
+    const wrap = h("div.earn-view");
+    const cards = list.map(job => h("div.earn-card.j-" + job.id, h("div.ec-ico", job.icon), h("b", job.name), h("p.muted", job.desc)));
     const run = async job => {
         if (busy) return;
         if (G.earnLeft(pid) <= 0) return toast(`돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지입니다`, "warn");
         busy = true;
         try {
             const r = await JOBS_RUN[job.id](pid, ps, turn);
+            if (r) delete ps.earnPick; // done: the next one is drawn fresh
             if (r?.lost) { G.payEarn(pid, job.name, 0); await payout(pid, 0, r.msg); onChange(); }
             else if (r) { G.payEarn(pid, job.name, r.gold, r.extra); await payout(pid, r.gold, r.msg); onChange(); }
-        } finally { busy = false; }
+        } finally { busy = false; draw(); }
     };
-    return h("div.earn-view",
-        h("p.notice", `💪 돈벌기는 시즌당 아무거나 ${G.EARN_PER_SEASON}번까지! 남은 횟수: ${Math.max(0, left)}회 · 현재 HP ${ps.hp}`),
-        h("div.earn-grid", JOBS.filter(j => !loc || earnKinds(loc).includes(j.id)).map(job => h("div.earn-card.j-" + job.id,
-            h("div.ec-ico", job.icon), h("b", job.name), h("p.muted", job.desc),
-            h("button.btn" + (left > 0 ? ".gold" : ".ghost"), { disabled: left <= 0, onclick: () => run(job) }, left > 0 ? "하기" : "횟수 소진")))));
+    async function roll() {
+        if (busy) return;
+        if (G.earnLeft(pid) <= 0) return toast(`돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지입니다`, "warn");
+        const pool = list.filter(can);
+        if (!pool.length) return toast("지금 할 수 있는 돈벌기가 없습니다", "warn");
+        busy = true;
+        const target = pool[Math.floor(Math.random() * pool.length)];
+        const hot = i => cards.forEach((c, k) => c.classList.toggle("hot", k === i));
+        const total = 10 + list.indexOf(target) + list.length;
+        for (let k = 0; k <= total; k++) { hot(k === total ? list.indexOf(target) : k % list.length); Sound.tick(); await sleep(45 + k * 7); }
+        cards[list.indexOf(target)].classList.add("chosen");
+        Sound.bonus();
+        ps.earnPick = { round, loc: loc?.id || null, id: target.id };
+        G.S() && Store.saveSeason();
+        await sleep(700);
+        busy = false;
+        run(target);
+    }
+    function draw() {
+        const d = drawn();
+        cards.forEach((c, k) => { c.classList.remove("hot"); c.classList.toggle("chosen", !!d && list[k] === d); c.classList.toggle("off", !can(list[k])); });
+        const n = Math.max(0, G.earnLeft(pid));
+        wrap.replaceChildren(
+            h("p.notice", `💪 돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지! 무엇을 할지는 🎲 랜덤으로 정해집니다. 남은 횟수: ${n}회 · 현재 HP ${ps.hp}`),
+            h("div.row.center", d
+                ? h("button.btn.gold.big", { disabled: n <= 0, onclick: () => run(d) }, `${d.icon} ${d.name} 하기 (뽑힌 돈벌기)`)
+                : h("button.btn.big" + (n > 0 ? ".gold" : ".ghost"), { disabled: n <= 0, onclick: roll }, n > 0 ? "🎲 돈벌기 뽑기" : "횟수 소진")),
+            h("div.earn-grid", cards));
+    }
+    draw();
+    return wrap;
 }
 
 const JOBS_RUN = {
     music: (pid, ps, turn) => musicCorner(pid, turn),
     survival: pid => survivalCorner(pid),
+    guess: pid => guessCorner(pid),
     async blood(pid, ps) {
         if (ps.hp <= 10) { toast("HP가 너무 낮아 헌혈할 수 없습니다 (HP 11 이상 필요)", "warn"); return null; }
         let give = randStep(10, 30, 1);

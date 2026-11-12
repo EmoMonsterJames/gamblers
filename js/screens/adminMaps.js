@@ -12,7 +12,7 @@ import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
 
 const NEEDS = [["", "없음"], ["wings", "🪽 날개"], ["space_suit", "🧑‍🚀 우주복"], ["oxygen", "🤿 산소통"]];
 const REQS = [["", "누구나"], ["points", "포인트 보유"], ["country", "국적 전용"], ["fee", "입장료 (G)"], ["feePts", "입장료 (P)"], ["random", "랜덤 입장"]];
-const EARN_LABEL = { blood: "🩸 헌혈", labor: "⛏️ 노동", poop: "💩 똥", sell: "🛍️ 팔기", music: "🎧 음악", survival: "⚔️ 서바이벌" };
+const EARN_LABEL = { blood: "🩸 헌혈", labor: "⛏️ 노동", poop: "💩 똥", sell: "🛍️ 팔기", music: "🎧 음악", survival: "⚔️ 서바이벌", guess: "❓ 이름 맞추기" };
 const reqKind = r => !r ? "" : r.points != null ? "points" : r.country ? "country" : r.fee != null ? "fee" : r.feePts != null ? "feePts" : r.random ? "random" : "";
 
 export function adminMapsPage() {
@@ -92,7 +92,7 @@ export function adminMapsPage() {
             chipPicker(l.casino || [], CASINO_GAMES, CASINO_BY_ID, "카지노 게임", ids => { e.casino = ids; dirty(); draw(); }),
             h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
-                    [["rand", "랜덤 (라운드당 15%)"], ["hot", "랜덤·자주 (35%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
+                    [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "돈벌기 코너:"), EARN_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: earn.includes(k), onchange: ev => {
                 const next = new Set(earnKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);

@@ -9,7 +9,8 @@ import { Sound } from "../core/sound.js";
 import { toast, confetti, banner, confirmBox, modal, bigWin } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { TIERS, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
+import { TIERS, MISSIONS, ITEM_BY_ID, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
+import { sandboxTools, exitSandbox } from "../game/sandbox.js";
 const CARD_RATE = 0.008;       // alphabet card chance per slot spin (rare: under 1%)
 const CASINO_CARD_RATE = 0.01; // per casino play
 import { CASINO_BY_ID } from "../data/casino.js";
@@ -41,7 +42,21 @@ function render() {
         select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage, battle: battleMissionStage,
         eliminated: eliminatedStage, final: finalStage, done: doneStage
     }[s.status] || (() => h("div", "?"));
-    root.replaceChildren(header(s), h("div.season-body", h("div.stage", stage(s)), sidebar(s)));
+    root.replaceChildren(...(s.sandbox ? [sandboxBar(s)] : []), header(s), h("div.season-body", h("div.stage", stage(s)), sidebar(s)));
+}
+
+// test mode (admin map simulation): helpers + a way out
+function sandboxBar(s) {
+    const tool = (label, fn) => h("button.btn.small.ghost", { onclick: () => { fn(); Sound.coin(); render(); } }, label);
+    const playable = MISSIONS.filter(m => m.type !== "battle" && m.type !== "rank");
+    const sel = h("select", { onchange: e => { const t = s.turn; G.setMission(MISSIONS.find(m => m.id === e.target.value)); s.turn = t; render(); } },
+        [0, 1, 2, 3, 4].map(tr => h("optgroup", { label: `난이도 ${TIERS[tr]}` }, playable.filter(m => m.tier === tr).map(m => h("option", { value: m.id, selected: s.mission?.id === m.id }, m.text)))));
+    return h("div.sandbox-bar",
+        h("b", "🧪 테스트 모드"), h("small", "아무것도 저장되지 않습니다"),
+        tool("💰 +100만G", () => sandboxTools.gold()), tool("💎 +100P", () => sandboxTools.points()), tool("❤️ HP 회복", () => sandboxTools.heal()),
+        tool("⏱️ +10분", () => sandboxTools.time()), tool("👹 이번 라운드 모든 맵 NPC", () => sandboxTools.npcEverywhere()),
+        h("label", "미션 ", sel),
+        h("button.btn.small.red", { onclick: exitSandbox }, "테스트 종료"));
 }
 export function rerender() { if (root && document.body.contains(root)) render(); }
 
@@ -126,8 +141,8 @@ async function reveal(pid) {
 // ------------------------------------------------------------------ mission roulette
 function missionStage(s) {
     const tier = G.tierForRound();
-    const ms = G.missionsForTier(tier);
-    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉" }[m.type] || "📜"), h("div.mc-text", m.text)));
+    const ms = G.missionDeck(tier);
+    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉", bonus_in: "⏱️", brand_win: "🏷️", job_done: "💼", bet_win: "💵", home_map: "🏠", region_map: "🧭", npc_hit: "👼" }[m.type] || "📜"), h("div.mc-text", m.text)));
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
@@ -355,7 +370,8 @@ function locationStage(s) {
             onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } },
             onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${r}`, "ok"); updateHud(); } },
             onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
-            onChange: () => side.replaceChildren(sideCard())
+            onChange: () => side.replaceChildren(sideCard()),
+            onPass: id => movePass(id)
         });
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
@@ -368,10 +384,27 @@ function locationStage(s) {
         avatar(pid, 120),
         h("div.ls-name", displayName(Store.player(pid))),
         h("div.ls-pet", ps.pet ? petView(ps.pet, ps.petEffect, 90) : h("div.muted", "펫 없음")),
-        h("div.luck", `🍀 승률 +${luck.pct}%`, luck.bonusPct ? h("span", ` · 보너스 +${luck.bonusPct}%`) : null),
+        h("div.luck", { title: "착용한 펫·펫효과가 올려 주는 당첨 확률 보너스입니다 (전적이 아닙니다). 펫이 없으면 +0%." }, `🍀 펫 행운: 당첨 확률 +${luck.pct}%`, luck.bonusPct ? h("span", ` · 보너스 +${luck.bonusPct}%`) : null),
         ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
         ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
     const side = h("div.loc-side", sideCard());
+    // map pass during the turn: move right away, the turn clock keeps running
+    let moving = false;
+    async function movePass(itemId) {
+        const it = ITEM_BY_ID[itemId], to = LOC_BY_ID[it?.loc];
+        if (!to || moving || to.id === loc.id) return;
+        if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
+        if (!(await confirmBox(`${it.name}을(를) 사용해 지금 바로 ${to.emoji} ${to.name}(으)로 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.`, "이동하기", "취소"))) return;
+        moving = true;
+        if (!G.usePassTeleport(itemId)) { moving = false; return; }
+        clearInterval(timer);
+        gameLayer?.remove(); gameLayer = null;
+        Sound.bonus();
+        await banner(`🎟️ ${to.emoji} ${to.name}`, 1400, "loc");
+        render();
+    }
+    const passBtns = G.passesOf(pid).filter(it => it.loc !== loc.id);
     tabBody("games");
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
@@ -442,6 +475,7 @@ function locationStage(s) {
             h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰 · 정보") : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ NPC 없음 · 정보")),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
+        ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id) }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`)))] : []),
         hud,
         h("div.loc-wrap", side, h("div.loc-main", tabBar, body)));
 }

@@ -620,31 +620,36 @@ function ribbitSpin(cfg, bet, pool, opts = {}) {
     const jpWins = jpWinsOf(cfg, bet, pool, jackpots);
     return { type: "rspin", reels: R, rows: ROWS, steps, full, coinSum, jackpots, jpWins, total: coinSum + sumOf(jpWins) };
 }
-// Ribbit Catch: a 5x5 board with a 3x3 catch net. Only coins landing inside the
-// net are caught. A lotus leaf grows the net (3 → 4 → 5 = whole board), a frog
-// turns the net into x2~x5 for that one respin.
+// Ribbit Catch: played on the normal 3x5 reel board with a catch net that
+// starts at 2x2. Only coins landing inside the net are caught. Each lotus leaf
+// grows the net one stage (2x2 → 3x3 → 3x4 → 3x5 = whole board); a frog turns
+// the net into x2~x5 for that one respin.
+export const CATCH_STAGES = [[2, 2], [3, 3], [4, 3], [5, 3]]; // [cols, rows]
 function ribbitCatch(cfg, bet, pool, opts = {}) {
-    const h = cfg.features.rcatch, N = h.size;
-    let s = 3, x = ri(N - s + 1), y = ri(N - s + 1);
-    const inSq = (c, r) => c >= x && c < x + s && r >= y && r < y + s;
+    const h = cfg.features.rcatch, C = 5, Rn = 3;
+    let st = 0, [w, hh] = CATCH_STAGES[0], x = ri(C - w + 1), y = ri(Rn - hh + 1);
+    const sq = () => ({ x, y, w, h: hh, s: Math.max(w, hh) });
+    const inSq = (c, r) => c >= x && c < x + w && r >= y && r < y + hh;
     const caught = new Map();
-    const free = () => { const o = []; for (let c = x; c < x + s; c++) for (let r = y; r < y + s; r++) if (!caught.has(c + "," + r)) o.push([c, r]); return o; };
-    const first = shuffle(free()).slice(0, h.start).map(([c, r]) => { const cn = jpCoin(cfg, bet, h.coin); caught.set(c + "," + r, cn); return { c, r, ...cn, in: true }; });
-    const steps = [{ landed: first, sq: { x, y, s }, mult: 1, lives: h.lives, grow: 0 }];
+    const free = () => { const o = []; for (let c = x; c < x + w; c++) for (let r = y; r < y + hh; r++) if (!caught.has(c + "," + r)) o.push([c, r]); return o; };
+    const first = shuffle(free()).slice(0, Math.min(h.start, w * hh - 1)).map(([c, r]) => { const cn = jpCoin(cfg, bet, h.coin); caught.set(c + "," + r, cn); return { c, r, ...cn, in: true }; });
+    const steps = [{ landed: first, sq: sq(), mult: 1, lives: h.lives, grow: 0 }];
     let lives = h.lives, guard = 0;
     const land = opts.land ?? h.land;
-    while (lives > 0 && caught.size < N * N && guard++ < 150) {
+    const last = CATCH_STAGES.length - 1;
+    while (lives > 0 && caught.size < C * Rn && guard++ < 150) {
         const landed = [];
-        for (let c = 0; c < N; c++) for (let r = 0; r < N; r++) {
+        for (let c = 0; c < C; c++) for (let r = 0; r < Rn; r++) {
             if (caught.has(c + "," + r) || rand() >= land) continue;
-            const kind = pickW([["coin", h.wCoin], ["lotus", s < N ? h.wLotus : 0], ["frog", h.wFrog]]);
+            const kind = pickW([["coin", h.wCoin], ["lotus", st < last ? h.wLotus : 0], ["frog", h.wFrog]]);
             landed.push({ c, r, ...(kind === "coin" ? jpCoin(cfg, bet, h.coin) : { [kind]: true }) });
         }
         let grow = 0;
-        for (const l of landed) if (l.lotus && s < N) {
-            const ns = s + 1;
-            x = Math.max(0, Math.min(N - ns, x - ri(2))); y = Math.max(0, Math.min(N - ns, y - ri(2)));
-            s = ns; grow++;
+        for (const l of landed) if (l.lotus && st < last) {
+            st++; [w, hh] = CATCH_STAGES[st];
+            // grow around the old net, staying on the board
+            x = Math.max(0, Math.min(C - w, x - ri(2))); y = Math.max(0, Math.min(Rn - hh, y - ri(2)));
+            grow++;
         }
         const mult = landed.some(l => l.frog) ? pickW(h.mult) : 1;
         let got = 0;
@@ -657,14 +662,14 @@ function ribbitCatch(cfg, bet, pool, opts = {}) {
             caught.set(l.c + "," + l.r, cn); got++;
         }
         if (got) lives = h.lives; else lives--;
-        steps.push({ landed, sq: { x, y, s }, mult, lives, grow });
+        steps.push({ landed, sq: sq(), mult, lives, grow });
     }
-    const full = caught.size >= N * N;
+    const full = caught.size >= C * Rn;
     const jackpots = [...caught.values()].filter(c => c.jp).map(c => c.jp);
     if (full) jackpots.push(gateTier(cfg, "GRAND", bet));
     const coinSum = [...caught.values()].reduce((a, c) => a + (c.v || 0), 0);
     const jpWins = jpWinsOf(cfg, bet, pool, jackpots);
-    return { type: "rcatch", size: N, steps, full, coinSum, jackpots, jpWins, total: coinSum + sumOf(jpWins) };
+    return { type: "rcatch", cols: C, rows: Rn, size: C, steps, full, coinSum, jackpots, jpWins, total: coinSum + sumOf(jpWins) };
 }
 // Ribbit Pick: match 3 lotus leaves (MINI~GRAND or FROG). Three frogs → the
 // frog wheel: a jackpot, Ribbit Catch or Ribbit Spin.

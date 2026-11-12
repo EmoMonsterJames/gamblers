@@ -220,15 +220,15 @@ function bgmStop() {
     try { bgm.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.08); const g = bgm.gain; setTimeout(() => g.disconnect(), 600); } catch { }
     bgm = null;
 }
-function bgmStart(name) {
+function bgmStart(name, vol = 0.5) {
     bgmStop();
     const song = SONGS[name];
     if (!song) return;
     try {
         const a = ac(), gain = a.createGain();
-        gain.gain.value = muted ? 0 : 0.5; gain.connect(a.destination);
+        gain.gain.value = muted ? 0 : vol; gain.connect(a.destination);
         const len = 60 / song.bpm / 4;
-        const b = bgm = { gain, step: 0, next: a.currentTime + 0.1, song, name };
+        const b = bgm = { gain, step: 0, next: a.currentTime + 0.1, song, name, vol };
         b.timer = setInterval(() => {
             if (bgm !== b) return;
             if (b.next < a.currentTime) b.next = a.currentTime + 0.05; // tab was throttled: skip, don't burst
@@ -244,7 +244,7 @@ export const Sound = {
     get muted() { return muted; },
     toggle() {
         muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { }
-        if (bgm) try { bgm.gain.gain.setTargetAtTime(muted ? 0 : 0.5, ctx.currentTime, 0.05); } catch { }
+        if (bgm) try { bgm.gain.gain.setTargetAtTime(muted ? 0 : bgm.vol, ctx.currentTime, 0.05); } catch { }
         return muted;
     },
     bgm: bgmStart, bgmStop,

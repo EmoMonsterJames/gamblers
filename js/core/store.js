@@ -31,6 +31,7 @@ export const Store = {
     maps: {},        // admin overrides for regions / maps: see data/mapAdmin.js
     wallets: {},     // pid -> gold won outside a season (survival corner), added when they join one
     season: null,    // current season object (see game/season.js)
+    sandbox: null,   // test mode: { real } while an admin tries the maps with the test player
     seasonCount: 0,
     _saveTimer: null,
     _jpQueue: {},
@@ -110,12 +111,14 @@ export const Store = {
     },
 
     saveLocal() {
+        if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
             localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, playerEdits: this.playerEdits }));
         } catch (e) { console.warn(e); }
     },
 
     async write(fn) {
+        if (this.sandbox) return;
         if (!this.cloud) return;
         if (!this.user) { if (!this._warned) { toast("관리자 로그인 전이라 클라우드에 저장되지 않습니다 (이 브라우저에만 저장)", "warn", 4000); this._warned = true; } return; }
         try { const r = await fn(sb); if (r?.error) throw r.error; return r?.data; }

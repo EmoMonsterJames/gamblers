@@ -69,7 +69,7 @@ export async function playSpecial(res, api) {
                     const cells = p.pop || p.cells || [];
                     for (const [c, r] of cells) cellsEl(c, r)?.classList.add("pop");
                     if (cells.length) Sound.coin();
-                    await pace(p.t === "land" ? 380 : 300);
+                    await pace(p.ms || (p.t === "land" ? 380 : 300));
                     break;
                 }
                 case "morph": {

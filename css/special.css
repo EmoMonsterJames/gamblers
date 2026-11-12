@@ -246,3 +246,64 @@
 .npc-card li.good { color: #86efac; }
 .npc-card li.deadly { color: #fca5a5; font-weight: 700; }
 .npc-card li small { opacity: .8; white-space: nowrap; }
+
+/* ---- alphabet card icons (ui/letterCard.js) ---- */
+.letter-card { position: relative; display: inline-grid; place-items: center; width: var(--sz); height: calc(var(--sz) * 1.32); border-radius: calc(var(--sz) * .14); background: linear-gradient(150deg, var(--c1), var(--c2)); border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.25); vertical-align: middle; flex: none; }
+.letter-card b { font: 900 calc(var(--sz) * .72) 'Lilita One', sans-serif; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35); line-height: 1; }
+.letter-card .lc-corner { position: absolute; left: 3px; top: 1px; font: 900 calc(var(--sz) * .2) sans-serif; font-style: normal; color: #fff; opacity: .85; }
+.letter-card .lc-corner.br { left: auto; top: auto; right: 3px; bottom: 1px; transform: rotate(180deg); }
+.wchip.abc { display: inline-flex; align-items: center; gap: 4px; }
+.sitem-art .letter-card { margin: 0 auto; }
+
+/* ---- test mode bar (admin map simulation) ---- */
+.sandbox-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; margin-bottom: 8px; border-radius: 12px; background: repeating-linear-gradient(135deg, #422006 0 14px, #3b1d05 14px 28px); border: 2px dashed #facc15; color: #fde68a; }
+.sandbox-bar > b { font-size: 16px; }
+.sandbox-bar label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.sandbox-bar select { max-width: 340px; }
+.admin-sim select { width: 100%; }
+
+/* ---- money-making draw ---- */
+.earn-card { transition: transform .12s, border-color .12s, opacity .2s; }
+.earn-card.hot { border-color: var(--gold); transform: scale(1.05); box-shadow: 0 0 22px #ffcc3366; }
+.earn-card.chosen { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), 0 0 26px #ffcc3388; }
+.earn-card.off { opacity: .45; }
+.earn-view > .row.center { margin: 10px 0 14px; }
+
+/* ---- ❓ guess the player ---- */
+.guess-player { display: flex; flex-direction: column; gap: 14px; }
+.gp-top { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.gp-photo { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, #334155, #0f172a); border: 4px solid var(--gold); overflow: hidden; }
+.gp-photo > span { font: 900 96px 'Lilita One', sans-serif; color: var(--gold); text-shadow: 0 0 20px #ffcc3388; animation: gp-bob 1.6s ease-in-out infinite; }
+.gp-photo.shown { animation: symPop .5s cubic-bezier(.2, 1.8, .4, 1); }
+.gp-side { display: flex; flex-direction: column; gap: 8px; min-width: 220px; }
+.gp-prize { padding: 10px 14px; border-radius: 12px; background: rgba(250,204,21,.12); border: 1px solid var(--gold); text-align: center; }
+.gp-prize small { display: block; opacity: .8; } .gp-prize b { font-size: 22px; color: var(--gold); }
+.gp-table { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+.gp-table li { display: flex; justify-content: space-between; gap: 10px; padding: 2px 4px; opacity: .85; }
+.gp-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.gp-fact { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); color: inherit; font: inherit; text-align: center; cursor: pointer; }
+.gp-fact:disabled { cursor: default; opacity: .5; }
+.gp-fact.open { border-color: #4ade80; background: rgba(74,222,128,.1); cursor: default; }
+.gp-fact small { opacity: .75; }
+.gp-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.gp-opt { display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; border-radius: 12px; background: var(--panel); border: 2px solid var(--line); color: inherit; font: 700 15px inherit; cursor: pointer; }
+.gp-opt small { font-weight: 400; opacity: .7; }
+.gp-opt:hover:not(:disabled) { border-color: var(--gold); }
+.gp-opt.right { border-color: #4ade80; background: rgba(74,222,128,.18); }
+.gp-opt.wrong { border-color: #f87171; background: rgba(248,113,113,.18); }
+@media (max-width: 560px) { .gp-facts { grid-template-columns: 1fr; } }
+
+/* ---- map pass during a turn ---- */
+.pass-row.in-turn { justify-content: flex-start; padding: 6px 10px; border-radius: 10px; background: rgba(250,204,21,.08); border: 1px solid rgba(250,204,21,.35); }
+@keyframes gp-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* Loop Vault laser grid: always fits inside the reel area (no text overlapping the panel above) */
+.laser-wrap { container-type: size; overflow: hidden; gap: 6px; }
+.laser-head { font-size: 15px; line-height: 1.25; max-width: 92%; }
+.laser-tally { font-size: 22px; line-height: 1; }
+.laser-grid { --ln: clamp(30px, calc((100cqh - 96px) / 4.4), 76px); width: auto; grid-template-columns: repeat(4, var(--ln)); gap: calc(var(--ln) * .12); }
+.lnode { width: var(--ln); height: var(--ln); font-size: calc(var(--ln) * .22); }
+
+/* 8-row boards (Supernova / Total Eclipse): orbs & pods sized by the row height so they stay inside their cell */
+.cabinet.sp-tall .sym.orb > span { width: auto; height: 84%; max-width: 92%; font-size: calc(var(--cell) * .34); }
+.sitem .have.warn { color: #fca5a5; font-weight: 700; }

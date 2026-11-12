@@ -42,14 +42,14 @@ export async function musicCorner(pid, turn) {
     if (tr) {
         audio = new Audio("audio/music/" + tr.file);
         audio.muted = Sound.muted;
-        audio.volume = 0.8;
+        audio.volume = 0.2; // a quarter of the old 0.8 — quiet background listening
         await new Promise(res => { audio.addEventListener("loadedmetadata", res, { once: true }); audio.addEventListener("error", res, { once: true }); setTimeout(res, 2500); });
         const d = audio.duration;
         if (isFinite(d) && d > LISTEN + 1) audio.currentTime = Math.random() * (d - LISTEN); // a random 30 s section
         audio.play().catch(() => { });
     } else {
         synth = ["lounge_jazz", "synthwave", "monkey_funk", "tropical_steel", "bigband_swing"][Math.floor(Math.random() * 5)];
-        Sound.bgm(synth);
+        Sound.bgm(synth, 0.125); // a quarter of the normal BGM level
     }
     await sleep(50); bar.firstChild.style.width = "100%";
     for (let i = LISTEN; i > 0; i--) { count.textContent = i; await sleep(1000); }
@@ -58,6 +58,55 @@ export async function musicCorner(pid, turn) {
     if (turn && !turn.running) turn.remaining = Math.max(0, turn.remaining - LISTEN);
     ov.remove();
     return { gold: skewLow(100, 5000, 10), msg: "🎧 좋은 음악이었다!" };
+}
+
+// ------------------------------------------------------------------ ❓ guess the player
+// A hidden profile; up to 3 facts can be opened (each one lowers the prize),
+// then pick the right name out of 5. Wrong = 0 G.
+export const GUESS_PRIZE = [[10000, 30000], [5000, 20000], [2000, 10000], [500, 1000]];
+const GUESS_FIELDS = [["country", "국적"], ["job", "직업"], ["school", "학교"], ["ethnicity", "종족"], ["age_group", "나이대"], ["gender", "성별"], ["preference", "성향"]];
+const GENDER_KO = { male: "남성", female: "여성" };
+const shuffled = a => [...a].sort(() => Math.random() - 0.5);
+export function guessCorner(pid) {
+    const pool = Store.players.filter(p => p.id !== pid);
+    if (pool.length < 5) return Promise.resolve(null);
+    const target = pool[Math.floor(Math.random() * pool.length)];
+    const facts = shuffled(GUESS_FIELDS.filter(([k]) => String(target[k] || "").trim())).slice(0, 3)
+        .map(([k, label]) => ({ label, value: k === "gender" ? (GENDER_KO[target[k]] || target[k]) : target[k] }));
+    const options = shuffled([target, ...shuffled(pool.filter(p => p.id !== target.id)).slice(0, 4)]);
+    let opened = 0, done = false;
+    const range = () => GUESS_PRIZE[Math.min(opened, 3)];
+    const prizeEl = h("div.gp-prize");
+    const factBox = h("div.gp-facts");
+    const photo = h("div.gp-photo", h("span", "?"));
+    const drawPrize = () => prizeEl.replaceChildren(h("small", `정보 ${opened}/3개 확인 · 맞히면`), h("b", `${fmt(range()[0])} ~ ${fmt(range()[1])} G`));
+    const drawFacts = () => factBox.replaceChildren(...facts.map((f, i) => i < opened
+        ? h("div.gp-fact.open", h("small", f.label), h("b", f.value))
+        : h("button.gp-fact", { disabled: i !== opened, onclick: () => { if (done) return; opened++; Sound.click(); drawFacts(); drawPrize(); } },
+            h("small", `정보 ${i + 1}`), h("b", i === opened ? `🔍 ${f.label} 확인하기` : "🔒"))));
+    drawPrize(); drawFacts();
+    return new Promise(resolve => {
+        const answer = async (p, btn) => {
+            if (done) return; done = true;
+            const ok = p.id === target.id;
+            m.box.querySelectorAll(".gp-opt").forEach(b => { b.disabled = true; if (+b.dataset.id === target.id) b.classList.add("right"); });
+            if (!ok) btn.classList.add("wrong");
+            photo.replaceChildren(avatar(target.id, 150, { effect: false }));
+            photo.classList.add("shown");
+            const [lo, hi] = range();
+            const gold = ok ? Math.round((lo + Math.random() * (hi - lo)) / 100) * 100 : 0;
+            ok ? (Sound.bonus(), confetti(40)) : Sound.lose();
+            await sleep(2200);
+            m.close();
+            resolve(ok ? { gold, msg: `❓ 정답! ${displayName(target)} (정보 ${opened}개 확인)` } : { lost: true, msg: `❓ 오답… 정답은 ${displayName(target)}` });
+        };
+        const m = modal(h("div.guess-player",
+            h("p.muted", "물음표 뒤의 플레이어는 누구일까요? 정보는 최대 3개까지 하나씩 볼 수 있지만, 볼 때마다 상금이 줄어듭니다. 준비되면 아래에서 정답을 고르세요."),
+            h("div.gp-top", photo, h("div.gp-side", prizeEl, h("ul.gp-table", GUESS_PRIZE.map(([lo, hi], i) => h("li", h("span", i === 0 ? "확인 없이" : `${i}개 확인`), h("span", `${fmt(lo)}~${fmt(hi)} G`)))))),
+            factBox,
+            h("div.gp-opts", options.map(p => { const b = h("button.gp-opt", { "data-id": String(p.id), onclick: () => answer(p, b) }, displayName(p), h("small", p.player_name && p.name_ko ? p.player_name : "")); return b; }))),
+            { title: "❓ 플레이어 이름 맞추기", closable: false, wide: true });
+    });
 }
 
 // ------------------------------------------------------------------ 🏝️ survival

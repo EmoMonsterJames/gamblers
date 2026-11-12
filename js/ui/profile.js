@@ -2,7 +2,7 @@
 import { h, fmt, esc } from "../core/util.js";
 import { particles } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK } from "../data/catalog.js";
+import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK, attackCount } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 
 export function displayName(p) { return p ? (p.name_ko || p.player_name) : "?"; }
@@ -75,7 +75,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                     h("b", pet.name), h("div.muted", `${pet.kind === "special" ? "특수펫" : "일반펫"} +${pet.boost}%`),
                     pfx ? h("div.muted", `효과: ${pfx.name} +${pfx.boost}%${pfx.kind === "special" ? " (특수)" : ""}`) : null)) : h("div.muted", "없음")),
             h("div.gear-weapons",
-                h("small", `무기 (${ps.weapons.length}/${CONFIG.MAX_WEAPONS})`),
+                h("small", `무기 (${ps.weapons.length}/${CONFIG.MAX_WEAPONS} · 공격 ${attackCount(ps.weapons)}/${CONFIG.MAX_ATTACK_WEAPONS})`),
                 ps.weapons.length ? h("div.wlist", ps.weapons.map(w => weaponChip(w))) : h("div.muted", `없음 — ${BASIC_ATTACK.name} (ATK ${BASIC_ATTACK.atk} / ACC ${BASIC_ATTACK.acc})`)),
             itemsLine(ps)) : null
     );

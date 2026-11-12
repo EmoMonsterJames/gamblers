@@ -758,3 +758,10 @@
 .magic-card { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 30px; border-radius: 20px; background: radial-gradient(circle, #6d28d9, #1e0a3c); border: 4px solid #c4b5fd; box-shadow: 0 0 50px #a855f7; animation: magicIn 1.1s ease-out forwards; }
 .magic-card span { font-size: 60px; } .magic-card b { font-family: var(--display); font-size: 22px; color: #fff; }
 @keyframes magicIn { 0% { transform: translate(-50%, -50%) scale(.2) rotate(-30deg); opacity: 0; } 25% { transform: translate(-50%, -50%) scale(1.15) rotate(4deg); opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+/* Ribbit Catch on the 3x5 board: the net is a rectangle (2x2 → 3x3 → 3x4 → 3x5), drawn light */
+.catch-net {
+  left: calc(var(--x) * (100% + var(--g)) / var(--nc) - 3px); top: calc(var(--y) * (100% + var(--g)) / var(--nr) - 3px);
+  width: calc(var(--w) * (100% + var(--g)) / var(--nc) - var(--g) + 6px); height: calc(var(--h) * (100% + var(--g)) / var(--nr) - var(--g) + 6px);
+  border: 3px solid #facc15; background: #facc1510; box-shadow: inset 0 0 0 1px #facc1555, 0 0 14px #facc1544; }
+.catch-wrap .catch-board .hs-cell:not(.locked) { opacity: .75; }

@@ -93,8 +93,47 @@ export const MISSIONS = [
     { id: "n3_nogear", tier: 3, type: "has", what: "gear", text: "펫, 펫 효과, 프레임, 프레임 효과를 보유하지 않은 후보들 중에서 랜덤 탈락" },
     { id: "n4_card_R", tier: 4, type: "card", letter: "R", text: "알파벳 카드 R 없는 플레이어 탈락" },
     { id: "n4_card_S", tier: 4, type: "card", letter: "S", text: "알파벳 카드 S 없는 플레이어 탈락" },
-    { id: "n4_b_highpts2", tier: 4, type: "battle", rule: "highpts2", text: "⚔️ 가장 포인트가 많은 사람 두 명 배틀로 1명 탈락" }
+    { id: "n4_b_highpts2", tier: 4, type: "battle", rule: "highpts2", text: "⚔️ 가장 포인트가 많은 사람 두 명 배틀로 1명 탈락" },
+
+    // ---- added missions (2) -------------------------------------------
+    // bonus_in: first bonus within v spins of the turn · brand_win: one spin on a slot of that brand wins ≥ v
+    // job_done: work at a job corner once · bet_win: one spin at one of `bets` wins ≥ v
+    // home_map: visit the map of your own nationality · region_map: visit a map in one of `regions`
+    // npc_hit: get hit by that NPC with a move that gives `what` (hp | gold)
+    // card with letter "?": the letter is drawn from G A M B L E R S when the mission is picked
+    { id: "m0_bonus80", tier: 0, type: "bonus_in", v: 80, text: "슬롯게임으로 80번 스핀 안에 보너스 터뜨리기" },
+    { id: "m0_blk", tier: 0, type: "brand_win", brand: "BLK", v: 1000, text: "슬롯 브랜드 BLK 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m0_hyhg", tier: 0, type: "brand_win", brand: "HYHG GAMING", v: 1000, text: "슬롯 브랜드 HYHG Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m0_job", tier: 0, type: "job_done", v: 1, text: "직업 1회 수행하기" },
+    { id: "m0_bet100", tier: 0, type: "bet_win", bets: [100], v: 2000, text: "슬롯게임에서 100G 베팅으로 1회 스핀에 2,000G 이상 벌기" },
+    { id: "m0_card", tier: 0, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+    { id: "m1_bonus60", tier: 1, type: "bonus_in", v: 60, text: "슬롯게임으로 60번 스핀 안에 보너스 터뜨리기" },
+    { id: "m1_home", tier: 1, type: "home_map", text: "플레이어 본인 국적에 맞는 맵 방문하기 (Emo World · MJ World · Polynesia · Ground Town · Foggy Nation · Dung Town)" },
+    { id: "m1_cloud", tier: 1, type: "brand_win", brand: "CLOUD GAMING", v: 1000, text: "슬롯 브랜드 CLOUD GAMING 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m1_ipex", tier: 1, type: "brand_win", brand: "IPEX", v: 1000, text: "슬롯 브랜드 IPEX 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m1_bet200", tier: 1, type: "bet_win", bets: [200, 300], v: 4000, text: "슬롯게임에서 200G 또는 300G 베팅으로 1회 스핀에 4,000G 이상 벌기" },
+    { id: "m1_card", tier: 1, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+    { id: "m2_bonus40", tier: 2, type: "bonus_in", v: 40, text: "슬롯게임으로 40번 스핀 안에 보너스 터뜨리기" },
+    { id: "m2_far", tier: 2, type: "region_map", regions: ["space", "deepsea", "sky"], text: "우주 또는 심해 또는 하늘나라 지역에 있는 카지노 맵 방문하기" },
+    { id: "m2_clover", tier: 2, type: "brand_win", brand: "CLOVER-TECH", v: 1000, text: "슬롯 브랜드 CLOVER TECH 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m2_rabbit", tier: 2, type: "brand_win", brand: "Rabbit-Gaming", v: 1000, text: "슬롯 브랜드 Rabbit Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m2_bet500", tier: 2, type: "bet_win", bets: [500], v: 10000, text: "슬롯게임에서 500G 베팅으로 1회 스핀에 10,000G 이상 벌기" },
+    { id: "m2_card", tier: 2, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+    { id: "m3_bonus20", tier: 3, type: "bonus_in", v: 20, text: "슬롯게임으로 20번 스핀 안에 보너스 터뜨리기" },
+    { id: "m3_angel_hp", tier: 3, type: "npc_hit", npc: "angel", what: "hp", text: "NPC 중에 엔젤한테 공격당하여 HP 채우기" },
+    { id: "m3_classic", tier: 3, type: "brand_win", brand: "Classic Gaming", v: 1000, text: "슬롯 브랜드 Classic Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m3_scrooge", tier: 3, type: "brand_win", brand: "Scrooge-Slots", v: 1000, text: "슬롯 브랜드 Scrooge Slots 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m3_bet1000", tier: 3, type: "bet_win", bets: [1000], v: 30000, text: "슬롯게임에서 1,000G 베팅으로 1회 스핀에 30,000G 이상 벌기" },
+    { id: "m3_card", tier: 3, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+    { id: "m4_bonus1", tier: 4, type: "bonus_in", v: 1, text: "슬롯게임에서 첫 스핀으로 보너스 터뜨리기" },
+    { id: "m4_angel_gold", tier: 4, type: "npc_hit", npc: "angel", what: "gold", text: "NPC 중에 엔젤한테 공격당하여 돈 벌기" },
+    { id: "m4_daebak", tier: 4, type: "brand_win", brand: "DAEBAK", v: 1000, text: "슬롯 브랜드 DAEBAK 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m4_yg", tier: 4, type: "brand_win", brand: "YG GAMING", v: 1000, text: "슬롯 브랜드 YG Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
+    { id: "m4_bet3000", tier: 4, type: "bet_win", bets: [3000], v: 50000, text: "슬롯게임에서 3,000G 베팅으로 1회 스핀에 50,000G 이상 벌기" },
+    { id: "m4_card", tier: 4, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" }
 ];
+// brand names are compared loosely ("CLOVER TECH" = "CLOVER-TECH", "YG Gaming" = "YG GAMING")
+export const brandKey = b => String(b || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 // alphabet cards (G A M B L E R S): dropped by slot reels, sold in the shops,
 // used up by card missions and to force a refused random entry
@@ -333,8 +372,8 @@ const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: 
 for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id === lid)?.slots.push(sid);
 
 // earn corners: `earn: true` (old saves) = the classic four
-export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival"];
-export const earnKinds = loc => !loc?.earn ? [] : Array.isArray(loc.earn) ? loc.earn : ["blood", "labor", "poop", "sell"];
+export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];
+export const earnKinds = loc => !loc?.earn ? [] : Array.isArray(loc.earn) ? loc.earn : ["blood", "labor", "poop", "sell", "guess"];
 
 // map passes: one per map. A pass lets its holder in (nationals-only maps)
 // AND teleports straight to that map when used at the start of a turn.
@@ -344,7 +383,7 @@ for (const l of LOCATIONS) {
     const id = passIdOf(l);
     const ex = ITEMS.find(i => i.id === id);
     if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
-    else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 턴 시작 시 이 맵으로 바로 이동합니다 (국적 전용 맵 입장 가능)." });
+    else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 이 맵으로 바로 이동합니다 — 턴 시작 때나 턴 도중 언제든 (남은 시간은 그대로). 국적 전용 맵 입장 가능." });
     SHOPS.general.list.push({ cat: "item", id, price: passPrice(l) });
 }
 export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
@@ -383,6 +422,9 @@ export const byId = list => Object.fromEntries(list.map(x => [x.id, x]));
 export const PET_BY_ID = byId(PETS);
 export const PETFX_BY_ID = byId(PET_EFFECTS);
 export const WEAPON_BY_ID = byId(WEAPONS);
+// attack weapons = the ones that lower HP (type "attack"); at most CONFIG.MAX_ATTACK_WEAPONS of them
+export const isAttackWeapon = id => WEAPON_BY_ID[id]?.type === "attack";
+export const attackCount = weapons => (weapons || []).filter(isAttackWeapon).length;
 export const FRAME_BY_ID = byId(FRAMES);
 export const PEFFECT_BY_ID = byId(PROFILE_EFFECTS);
 export const ITEM_BY_ID = byId(ITEMS);

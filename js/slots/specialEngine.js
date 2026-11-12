@@ -486,14 +486,17 @@ function lockSpins(cfg, ctx, phases, { pod, spins, rows, respin = false, title, 
     const empties = () => { const e = []; for (let c = 0; c < C; c++) for (let r = 0; r < Rn; r++) if (!board.has(key(c, r))) e.push([c, r]); return e; };
     phases.push({ t: "show", grid: boardGrid(cfg, board, C, Rn), pop: [...board.keys()].map(k => k.split(",").map(Number)) });
     phases.push({ t: "badge", cells: orbBadges(cfg, board, C, Rn) });
+    // respin bonuses: the landing chance fades each respin and there is a hard cap,
+    // so the bonus always ends (Supernova merges free cells, so the board may never fill)
+    const MAX_RESPINS = 20;
     let left = spins, i = 0, guard = 0;
-    while (left > 0 && empties().length && guard++ < 60) {
+    while (left > 0 && empties().length && guard++ < 60 && (!respin || i < MAX_RESPINS)) {
         left--; i++;
-        phases.push({ t: "hud", text: respin ? `RESPINS ${left + 1}` : `SPIN ${i} / ${spins}` });
+        phases.push({ t: "hud", text: respin ? `RESPINS ${Math.min(left + 1, MAX_RESPINS - i + 1)} · ${i}/${MAX_RESPINS}` : `SPIN ${i} / ${spins}` });
         const added = [];
-        const lp = fullTest ? 0.35 : land;
+        const lp = fullTest ? 0.35 : respin ? land * Math.pow(0.8, i - 1) : land;
         for (const [c, r] of empties()) if (R() < lp) { board.set(key(c, r), newOrb(cfg, bet, O.jpOrb)); added.push([c, r]); }
-        if (respin && added.length) left = spins;
+        if (respin && added.length && i < MAX_RESPINS) left = spins;
         phases.push({ t: "land", grid: boardGrid(cfg, board, C, Rn), cells: added });
         // Sol: solar flare arrows bump a run's leading digit · Supernova: x2 meteors
         if (!pod && R() < 0.4 && board.size) {
@@ -505,7 +508,7 @@ function lockSpins(cfg, ctx, phases, { pod, spins, rows, respin = false, title, 
         if (pod) {
             // adjacent pods merge into one Super-Pod (frees the other cells)
             const merged = [];
-            for (const run of runsOf(board, C, Rn)) {
+            for (const run of fullTest ? [] : runsOf(board, C, Rn)) { // MEGA test: no merging so the board can fill
                 if (run.cells.length < 2) continue;
                 const v = run.value;
                 for (const c of run.cells.slice(1)) board.delete(key(c, run.r));
@@ -689,7 +692,7 @@ function daeun(cfg, ctx, phases, fullTest) {
         for (let c = 0; c < C; c++) for (let r = 0; r < Rn; r++) if (!board.has(key(c, r)) && R() < (fullTest ? 0.3 : 0.085)) { board.set(key(c, r), coin()); added.push([c, r]); }
         lives = added.length ? 3 : lives - 1;
         phases.push({ t: "hud", text: `RESPINS ${lives}` });
-        phases.push({ t: "land", grid: gridOf(), cells: added });
+        phases.push({ t: "land", grid: gridOf(), cells: added, ms: added.length ? 1100 : 850 }); // slower respins so each one can be followed
         phases.push({ t: "badge", cells: badges() });
     }
     let fullCols = 0;
@@ -817,7 +820,7 @@ function giftHold(cfg, ctx, phases) {
         for (let c = 0; c < C; c++) for (let r = 0; r < Rn; r++) if (!board.has(key(c, r)) && R() < 0.075) { const cn = coin(); board.set(key(c, r), cn); added.push([c, r]); }
         lives = added.length ? 3 : lives - 1;
         phases.push({ t: "hud", text: `RESPINS ${lives}` });
-        phases.push({ t: "land", grid: gridOf(), cells: added });
+        phases.push({ t: "land", grid: gridOf(), cells: added, ms: added.length ? 1100 : 850 });
         // a gift coin collects every coin on the board so far
         for (const [c, r] of added) {
             const o = board.get(key(c, r));
