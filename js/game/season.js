@@ -134,6 +134,8 @@ export function tierForRound() {
     const eliminated = s.roster.length - alive().length;
     return Math.min(4, Math.floor(eliminated * 5 / total));
 }
+// other modules (bank transfers) run code when a round starts / the season ends
+export const roundHooks = [], seasonEndHooks = [];
 export function startRound() {
     const s = S();
     s.round += 1;
@@ -145,6 +147,7 @@ export function startRound() {
     for (const pid of alive()) { const ps = s.ps[pid]; ps.use = { slot: 0, casino: 0 }; ps.extra = { slot: 0, casino: 0 }; }
     s.loanDeaths = s.round > 1 ? loanRoundTick() : [];
     if (alive().length <= CONFIG.FINALISTS) s.status = "final";
+    for (const f of roundHooks) try { f(s); } catch (e) { console.error(e); }
     Store.saveSeason(true);
 }
 
@@ -198,6 +201,7 @@ export function takeLoan(pid, type, amount) {
     if (!loanStatus(pid).ok || !L.amounts.includes(amount)) return false;
     ps.loanGold = (ps.loanGold || 0) + amount;
     ps.loan = { type, principal: amount, owed: amount, round: s.round, due: s.round + L.rounds - 1 };
+    ps.loansTaken = (ps.loansTaken || 0) + 1;
     log(`🏦 ${name(pid)} ${L.name} ${amount.toLocaleString()}G 대출 (${L.rounds}라운드 안에 상환)`);
     Store.saveSeason(true);
     return true;
@@ -990,6 +994,7 @@ export async function crown(winnerId, snapshot) {
     s.winnerId = winnerId;
     s.endedAt = new Date().toISOString();
     log(`👑 시즌 ${s.number} 우승: ${name(winnerId)}!`);
+    for (const f of seasonEndHooks) try { f(s); } catch (e) { console.error(e); }
     const ranks = Object.fromEntries(s.roster.map(pid => [pid, s.ps[pid].rank]));
     await Store.finishSeason(s, ranks, snapshot);
 }

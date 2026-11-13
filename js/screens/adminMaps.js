@@ -131,7 +131,7 @@ export function adminMapsPage() {
             ...locationShops(l).map(k => `${SHOPS[k].icon} ${SHOPS[k].name}`),
             l.discount && "🏷️ 할인 상점",
             ...earn.map(k => EARN_LABEL[k] || k),
-            l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
+            l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee", l.bank && "🏦 Business Bank", l.bizhub && "🏪 Self-Business",
             ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`),
         ].filter(Boolean);
         const rules = [
@@ -154,7 +154,7 @@ export function adminMapsPage() {
             h("div.am-corners", h("small", `활성 코너 ${corners.length}개:`), corners.length ? corners.map(c => h("span.am-corner", c)) : h("span.muted", "없음"),
                 rules.length ? [h("small", " · 맵 규칙:"), rules.map(c => h("span.am-corner.rule", c))] : null),
             h("div.am-togs", h("small", "상점:"), shopToggles),
-            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"),
+            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "🏅 Honorarium 코너:"), HONOR_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: honorKinds(l).includes(k), onchange: ev => {

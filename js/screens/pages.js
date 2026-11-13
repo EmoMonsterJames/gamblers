@@ -15,6 +15,8 @@ import { locationShops, cardsAt } from "../data/catalogAdmin.js";
 import { npcMapChance } from "../game/season.js";
 import { npcInfo } from "./corners2.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
+import { activeBiz } from "../game/bank.js";
+import { BIZ_TYPES } from "../data/business.js";
 
 // ------------------------------------------------------------ home
 export function homePage() {
@@ -94,7 +96,7 @@ export function mapPage() {
     let region = REGIONS.find(r => !r.off)?.id || "cl1";
     const info = h("div.loc-info", h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
     const tabs = h("div.tabs.region-tabs"), holder = h("div.map-holder");
-    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k]), ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name} (시즌 ${HONOR_KINDS[k].rank === 1 ? "우승" : `TOP ${HONOR_KINDS[k].rank}`} 경력자 전용)`), ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)];
+    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k]), ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name} (시즌 ${HONOR_KINDS[k].rank === 1 ? "우승" : `TOP ${HONOR_KINDS[k].rank}`} 경력자 전용)`), ...(l.bank ? ["🏦 Business Bank (TOP 10 경력자 전용)"] : []), ...(l.bizhub ? ["🏪 Self-Business (TOP 10 경력자 전용)"] : []), ...activeBiz().filter(b => b.loc === l.id).map(b => `${BIZ_TYPES[b.type].emoji} ${BIZ_TYPES[b.type].name} (Owner: ${Store.player(b.owner)?.name_ko || "?"})`), ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)];
     const pick = l => info.replaceChildren(
         h("h3", l.emoji, " ", l.name),
         h("p", reqText(l.req)),
@@ -179,6 +181,7 @@ export function adminPage() {
         h("div.admin-card", h("h3", "🛒 상품·상점 관리"), h("p.muted", "무기·아이템·펫·펫효과·프레임·프레임효과의 능력치, 판매 상점, 가격, 판매 카지노를 조정하고 새 상품을 추가합니다."), h("a.btn.gold", { href: "#/admin-catalog" }, "관리하기")),
         h("div.admin-card", h("h3", "🎰 슬롯·카지노게임 관리"), h("p.muted", "슬롯머신의 RTP(배당 배율)·보너스 확률 조정, 보너스 삭제, RTP 시뮬레이션, 카지노게임 RTP·노출 여부·최대 당첨금을 관리합니다."), h("a.btn.gold", { href: "#/admin-games" }, "관리하기")),
         h("div.admin-card", h("h3", "🌍 지역·맵 관리"), h("p.muted", "지역·맵 켜기/끄기, 이름·입장 조건·소속 지역 변경, 맵별 슬롯/카지노 게임 배치와 코너(직업·구걸·할인·NPC·돈벌기)를 관리합니다."), h("a.btn.gold", { href: "#/admin-maps" }, "관리하기")),
+        h("div.admin-card", h("h3", "🏦 은행 · Self-Business 관리"), h("p.muted", "Business Bank 계좌(코드·Business Gold), 대기 중인 송금, 지금까지 개설된 비즈니스(소유자·위치·매출)를 관리합니다."), h("a.btn.gold", { href: "#/admin-bank" }, "관리하기")),
         h("div.admin-card", h("h3", "📊 리소스 대시보드"), h("p.muted", "Supabase DB·GitHub 저장소·Cloudflare Pages 한도·브라우저 사용량을 한도 대비로 점검하고, 가장 부하가 큰 지표와 과부하 여부를 보여줍니다."), h("a.btn.gold", { href: "#/admin-resources" }, "점검하기")),
         h("div.admin-card", h("h3", "🧪 맵 시뮬레이션"), h("p.muted", "테스트 플레이어로 지역·맵·상점·코너·NPC·미션을 실제처럼 체험합니다. 테스트 중에는 아무것도 저장되지 않습니다."), h("a.btn.gold", { href: "#/admin-sim" }, "체험하기")),
         h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),

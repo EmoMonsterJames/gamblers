@@ -303,7 +303,16 @@ export const ITEMS = [
     { id: "super_letter", name: "슈퍼랜덤알파벳권",   emoji: "❓", superLetter: true, desc: "사용하면 알파벳 카드 G·A·M·B·L·E·R·S 중 하나를 랜덤으로 받습니다." },
     { id: "npc_block1",  name: "NPC 공격 Block 권 (1회)",  emoji: "🎫", npcBlock: 1,  desc: "NPC의 공격(골드 강탈·HP 공격·즉사·무기 봉인 등)을 1회 막아 줍니다. NPC가 공격할 때 자동으로 사용됩니다." },
     { id: "npc_block5",  name: "NPC 공격 Block 권 (5회)",  emoji: "🎫", npcBlock: 5,  desc: "NPC의 공격을 5회 막아 줍니다. NPC가 공격할 때 자동으로 사용됩니다." },
-    { id: "npc_block10", name: "NPC 공격 Block 권 (10회)", emoji: "🎫", npcBlock: 10, desc: "NPC의 공격을 10회 막아 줍니다. NPC가 공격할 때 자동으로 사용됩니다." }
+    { id: "npc_block10", name: "NPC 공격 Block 권 (10회)", emoji: "🎫", npcBlock: 10, desc: "NPC의 공격을 10회 막아 줍니다. NPC가 공격할 때 자동으로 사용됩니다." },
+    // 🏦 Business Bank shop
+    { id: "fast_transfer",  name: "빠른 송금 서비스",   emoji: "⚡", bank: true, desc: "Business Gold 송금 1회를 기다림 없이 바로 입금합니다 (송금 화면에서 넣어서 사용 · 1회용)." },
+    { id: "extra_transfer", name: "추가 송금권",        emoji: "➕", bank: true, desc: "시즌당 1회인 Business Gold 송금을 1번 더 할 수 있습니다 (추가 송금은 시즌당 최대 3회)." },
+    { id: "remote_bank",    name: "Remote 은행 이용권", emoji: "📲", bank: true, desc: "은행이 없는 맵에서도 팝업으로 Business Gold 송금 · 은행 상점을 이용합니다 (계좌 개설 제외 · 1회용)." },
+    // 🏪 Self-Business shop
+    { id: "biz_move",   name: "매물 지역 바꾸기 권",   emoji: "🚚", biz: true, desc: "Owner Admin에서 운영 중인 비즈니스를 다른 오픈 가능 지역/맵으로 1회 옮깁니다 (지역세 별도)." },
+    { id: "biz_trend",  name: "매출 트렌드 보기권",    emoji: "📊", biz: true, desc: "Owner Admin에서 매출 트렌드 대시보드를 30초 동안 봅니다. 리포트는 인벤토리에 저장됩니다." },
+    { id: "biz_remote", name: "Remote Business 관리권", emoji: "🛰️", biz: true, desc: "비즈니스가 있는 맵에 가지 않아도 Owner Admin을 팝업으로 1회 엽니다." },
+    { id: "biz_close",  name: "폐업권",               emoji: "🪧", biz: true, desc: "Owner Admin에서 비즈니스를 폐업합니다. 남은 Business Gold는 소멸되니 먼저 은행에서 송금하세요." }
 ];
 // 30 s boosters: the chance is at most 50% at the lowest bet and shrinks as the bet grows (→ 20% at the top bet)
 export const BOOST_SECONDS = 30;
@@ -536,6 +545,12 @@ export const SPELL_MAPS = ["oink", "gambleables", "cany", "coffin", "blackout", 
     // +10 spread over the other regions (18 maps in all)
     "lucky", "eastern", "magic", "dungeon", "shipwreck", "plaza", "beggar_shelter", "games_only", "npc_town", "island"];
 for (const id of SPELL_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.spell = true; }
+
+// 🏦 Business Bank / 🏪 Self-Business corners (admin can move them in 🌍 지역·맵 관리)
+export const BANK_MAPS = ["highlimit", "highroller", "wealthy", "space_lake", "star_sky", "sky_pond", "dungdung", "downtown", "dungeon", "ghost", "winners", "celebrity", "crazy_casino", "picky", "ocean_town", "npc_town"];
+export const BIZHUB_MAPS = ["riches", "diamond_casino", "goldbar", "sky_tower", "death_casino", "combo_town", "wingers", "spacetown", "shipwreck", "space_center", "western", "twins"];
+for (const id of BANK_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bank = true; }
+for (const id of BIZHUB_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bizhub = true; }
 
 export const COUNTRIES = ["Emo World", "Polynesia", "Ground Town", "Foggy Nation", "MJ World", "Dung Town"];
 

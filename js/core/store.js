@@ -30,6 +30,7 @@ export const Store = {
     games: {},       // admin overrides for slots / casino games: see data/gameAdmin.js
     maps: {},        // admin overrides for regions / maps: see data/mapAdmin.js
     wallets: {},     // pid -> gold won outside a season (survival corner), added when they join one
+    bank: {},        // 🏦 accounts, 🏪 businesses, pending transfers, trend reports: see game/bank.js
     season: null,    // current season object (see game/season.js)
     sandbox: null,   // test mode: { real } while an admin tries the maps with the test player
     seasonCount: 0,
@@ -51,6 +52,7 @@ export const Store = {
         this.games = L.games || {};
         this.maps = L.maps || {};
         this.wallets = L.wallets || {};
+        this.bank = L.bank || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -104,6 +106,8 @@ export const Store = {
         if (mp) this.maps = mp.value || {};
         const wl = settings.find(r => r.key === "wallets");
         this.wallets = wl?.value || {}; // cloud is the source of truth (a reset leaves no row)
+        const bk = settings.find(r => r.key === "bank");
+        this.bank = bk?.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -114,7 +118,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -182,6 +186,10 @@ export const Store = {
     async saveWallets() {
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "wallets", value: this.wallets, updated_at: new Date().toISOString() }));
+    },
+    async saveBank() {
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "bank", value: this.bank, updated_at: new Date().toISOString() }));
     },
     async logout() { await sb?.auth.signOut(); this.user = null; },
 

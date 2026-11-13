@@ -31,6 +31,9 @@ import { honorView } from "./honor.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
 import { clawElimination, winnerCelebration } from "../ui/claw.js";
 import { Activity, activityBusy } from "../core/fx.js";
+import { bankView, remoteBank } from "./bank.js";
+import { bizHubView, bizHubHere, bizTabs, bizView, remoteBiz, reportList } from "./business.js";
+import { account as bankAccount, reportsOf } from "../game/bank.js";
 
 let root = null, timer = null;
 
@@ -425,6 +428,7 @@ function locationStage(s) {
             ps.loanGold > 0 || ps.loan ? h("div.stat.loan", h("small", "대출된 골드 (게임 전용)"), h("b", fmt(ps.loanGold || 0) + " G")) : null,
             ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
             h("div.stat.pts", h("small", "포인트"), h("b", ps.points + " P")),
+            bankAccount(pid) ? h("div.stat.bgold", h("small", `Business Gold · ${bankAccount(pid).code}`), h("b", fmt(bankAccount(pid).bgold) + " BG")) : null,
             h("div.stat", h("small", "HP"), h("b" + (ps.hp < 50 ? ".down" : ""), `❤ ${Math.round(ps.hp * 100) / 100}`)),
             h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
@@ -475,6 +479,7 @@ function locationStage(s) {
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
+        ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     let currentTab = "games";
     const tabBar = h("div.tabs");
@@ -497,7 +502,10 @@ function locationStage(s) {
             onChange: () => side.replaceChildren(sideCard()),
             onPass: id => movePass(id),
             onBoost: kind => { if (G.useBoost(kind)) { Sound.bonus(); toast(kind === "slot" ? "🎰 30초 동안 슬롯 보너스 확률 UP!" : "🃏 30초 동안 카지노 상금 확률 UP!", "ok"); updateHud(); } },
-            onRandomMap: () => moveRandom()
+            onRandomMap: () => moveRandom(),
+            onRemoteBank: () => remoteBank(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
+            onRemoteBiz: () => remoteBiz(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
+            onReports: () => reportList(pid)
         });
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
@@ -505,6 +513,9 @@ function locationStage(s) {
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
         else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
         else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === id) tabBody(id); } });
+        else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }

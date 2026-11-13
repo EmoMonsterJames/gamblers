@@ -11,6 +11,7 @@ import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
 import { shopListing, discountItems } from "../data/catalogAdmin.js";
 import { letterCard, npcTicket } from "../ui/letterCard.js";
+import { reportsOf } from "../game/bank.js";
 
 export function shopView(shopId, pid, locId, onChange) {
     const shop = SHOPS[shopId];
@@ -128,7 +129,7 @@ export function weaponDesc(e) {
 }
 
 // Inventory: use items, delete weapons, switch owned frames/effects
-export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChange, onPass, onBoost, onRandomMap } = {}) {
+export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChange, onPass, onBoost, onRandomMap, onRemoteBank, onRemoteBiz, onReports } = {}) {
     const ps = S().ps[pid];
     const wrap = h("div.inventory");
     const render = () => {
@@ -148,6 +149,10 @@ export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChan
                 onRandomMap ? itemBtn("map_random", "🗺️ 랜덤 맵권 → 지금 이동", () => onRandomMap()) : null,
                 itemBtn("random_letter", "❓ 랜덤알파벳권 열기", () => openLetterBox(pid, "random_letter")),
                 itemBtn("super_letter", "❓ 슈퍼랜덤알파벳권 열기", () => openLetterBox(pid, "super_letter")),
+                onRemoteBank ? itemBtn("remote_bank", "📲 Remote 은행 열기", () => onRemoteBank()) : null,
+                onRemoteBiz ? itemBtn("biz_remote", "🛰️ Remote Business 관리", () => onRemoteBiz()) : null,
+                ...["fast_transfer", "extra_transfer", "biz_move", "biz_trend", "biz_close"].filter(k => ps.items[k] > 0).map(k => h("span.wchip", { title: ITEM_BY_ID[k].desc }, `${ITEM_BY_ID[k].emoji} ${ITEM_BY_ID[k].name} ×${ps.items[k]}`)),
+                onReports && reportsOf(pid).length ? h("button.btn.small.ghost", { onclick: () => onReports() }, `📁 매출 트렌드 리포트 (${reportsOf(pid).length})`) : null,
                 npcBlocksLeft(ps) > 0 ? h("span.wchip.npc-chip", { title: "NPC가 공격하면 자동으로 1회씩 막아 줍니다" }, npcTicket(npcBlocksLeft(ps), 22), ` NPC 공격 Block ${npcBlocksLeft(ps)}회 남음`) : null,
                 // map passes: during a turn they move the player right away (the turn clock keeps running)
                 ...Object.keys(ps.items).filter(k => ps.items[k] > 0 && ITEM_BY_ID[k]?.loc).map(k => onPass && S().turn?.loc !== ITEM_BY_ID[k].loc
