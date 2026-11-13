@@ -521,3 +521,100 @@
 .cabinet.skin-street .reels { background: linear-gradient(#374151, #374151) center / 100% 6px no-repeat, linear-gradient(90deg, #374151, #374151) center / 6px 100% no-repeat, #1f2937; }
 .cabinet.skin-street .reel .sym { background: repeating-linear-gradient(90deg, #4b5563 0 10px, #525c6b 10px 12px); border: 2px dashed #facc1588; border-radius: 6px; }
 .cabinet.skin-street .jp-bar .jp { background: #111; border: 3px solid #facc15; border-radius: 6px; box-shadow: inset 0 0 0 2px #000, 0 0 10px #facc1555; }
+
+/* a bonus spotlight on the cell it comes from (claw n/N, joker +1 spin, strike pin, bowling ball) */
+.reel .sym.sp-focus { z-index: 4; outline: 3px solid #fde047; outline-offset: -3px; box-shadow: 0 0 18px 6px rgba(253, 224, 71, .8); animation: spFocus .5s ease-in-out infinite alternate; }
+@keyframes spFocus { from { transform: scale(1); } to { transform: scale(1.1); } }
+.plk-peg.bump.jp { font-size: 7px; letter-spacing: -.2px; }
+
+/* =====================================================================
+   round 6 machines
+   ===================================================================== */
+/* ⛵ Rotate The Helm! — rainy sea, two rocking ships whose sails rise */
+.tp-sea { position: relative; width: 100%; height: 108px; border-radius: 12px; overflow: hidden; background: linear-gradient(#475569, #1e3a8a 55%, #0c4a6e); display: flex; justify-content: space-around; align-items: flex-end; padding-bottom: 18px; }
+.hl-rain { position: absolute; inset: 0; background: repeating-linear-gradient(105deg, transparent 0 9px, #e0f2fe55 9px 10px); background-size: 40px 40px; animation: hlRain .5s linear infinite; pointer-events: none; }
+@keyframes hlRain { to { background-position: -12px 40px; } }
+.hl-waves { position: absolute; left: -10%; right: -10%; bottom: 0; height: 26px; background: radial-gradient(circle at 20px -6px, transparent 16px, #0369a1 17px) 0 0 / 40px 26px repeat-x; animation: hlWave 3s linear infinite; z-index: 2; }
+@keyframes hlWave { to { transform: translateX(40px); } }
+.hl-ship { position: relative; z-index: 1; width: 120px; height: 84px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; animation: hlRock 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
+.hl-ship.k-sailC { animation-delay: -1.3s; }
+.hl-mast { position: relative; width: 4px; height: 62px; background: #78350f; }
+.hl-sail { position: absolute; left: 4px; bottom: 4px; width: 48px; height: calc(4px + var(--f, 0) * 52px); background: linear-gradient(#f8fafc, #cbd5e1); border-radius: 0 40px 4px 0; box-shadow: 0 0 6px #0006; transition: height 1.4s ease; }
+.hl-hull { width: 112px; height: 22px; background: linear-gradient(#92400e, #451a03); clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%); display: grid; place-items: center; }
+.hl-hull b { font: 900 10px "Lilita One", sans-serif; color: #fde68a; letter-spacing: .5px; }
+.hl-ship.near .hl-sail { background: linear-gradient(#fef9c3, #facc15); }
+.hl-ship.full { animation: hlBurst .35s ease-in-out infinite; }
+.hl-ship.full .hl-sail { background: linear-gradient(#fde047, #f97316); box-shadow: 0 0 18px #facc15; }
+@keyframes hlRock { 0%, 100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(4px); } }
+@keyframes hlBurst { 0%, 100% { transform: rotate(-9deg) scale(1.04); } 50% { transform: rotate(9deg) scale(1.08); } }
+.hl-fish { position: absolute; bottom: 8px; left: calc(22% + var(--i) * 26%); font-size: 18px; z-index: 3; opacity: 0; animation: hlFish 5s ease-in-out infinite; animation-delay: calc(var(--i) * 1.7s); }
+@keyframes hlFish { 0%, 70%, 100% { opacity: 0; transform: translate(0, 0) rotate(0); } 76% { opacity: 1; transform: translate(10px, -46px) rotate(-30deg); } 86% { opacity: 1; transform: translate(26px, -10px) rotate(60deg); } 90% { opacity: 0; } }
+.cabinet.skin-sea .reels { background: linear-gradient(#0c4a6e, #082f49); }
+.cabinet.skin-sea .reel .sym { background: linear-gradient(#e0f2fe22, #0369a155); border: 1px solid #7dd3fc55; border-radius: 10px; }
+.cabinet.skin-sea .jp-bar .jp { background: linear-gradient(#78350f, #451a03); border: 2px solid #fde68a; border-radius: 4px 4px 14px 14px; }
+.cabinet.grow-mode .reels { box-shadow: 0 0 0 3px #facc15, 0 0 24px #facc15aa; }
+
+/* 🧱 Smash The Bricks — construction site, a 5x3 brick wall over 2x2 prize plates */
+.cabinet.skin-brick .reels { background: #1c1917; }
+.cabinet.skin-brick .reel .sym { border-radius: 0; }
+.cabinet.skin-brick .reel .sym.sym-brick { background: linear-gradient(#0000 46%, #57534e 46% 54%, #0000 54%), linear-gradient(90deg, #0000 47%, #57534e 47% 53%, #0000 53%) 0 0 / 100% 50% no-repeat, linear-gradient(#c2410c, #9a3412); box-shadow: inset 0 0 0 2px #7c2d12, inset 0 -4px 0 #0003; }
+.cabinet.skin-brick .reel .sym.sym-brick > span { opacity: 0; }
+.cabinet.skin-brick .reel .sym.sym-rubble { background: radial-gradient(circle at 30% 70%, #78716c 0 6%, #0000 7%), radial-gradient(circle at 70% 60%, #57534e 0 8%, #0000 9%), #292524; }
+.cabinet.skin-brick .reel .sym.sym-tile { overflow: hidden; position: relative; background-size: 200% 200%; }
+.cabinet.skin-brick .reel .sym.sym-tile.q0 { background-position: 0 0; }
+.cabinet.skin-brick .reel .sym.sym-tile.q1 { background-position: 100% 0; }
+.cabinet.skin-brick .reel .sym.sym-tile.q2 { background-position: 0 100%; }
+.cabinet.skin-brick .reel .sym.sym-tile.q3 { background-position: 100% 100%; }
+.cabinet.skin-brick .reel .sym.t-j { background-image: radial-gradient(circle, #fde047, #f59e0b 45%, #b45309); }
+.cabinet.skin-brick .reel .sym.t-c { background-image: radial-gradient(circle, #bbf7d0, #22c55e 50%, #14532d); }
+.cabinet.skin-brick .reel .sym.t-m { background-image: radial-gradient(circle, #ddd6fe, #8b5cf6 50%, #4c1d95); }
+/* the plate label is drawn once across the 2x2 block: each quarter shows its own slice */
+.cabinet.skin-brick .reel .sym.sym-tile .spb.tile { position: absolute; inset: auto; right: auto; bottom: auto; left: 0; top: 0; width: 200%; height: 200%; display: grid; place-items: center; background: none; border: 0; box-shadow: none; padding: 0; margin: 0; transform: none; font: 900 clamp(14px, 5cqmin, 30px) "Lilita One", sans-serif; color: #fff; text-shadow: 0 2px 0 #000, 0 0 10px #000; white-space: nowrap; }
+.cabinet.skin-brick .reel .sym.sym-tile.q1 .spb.tile { left: -100%; }
+.cabinet.skin-brick .reel .sym.sym-tile.q2 .spb.tile { top: -100%; }
+.cabinet.skin-brick .reel .sym.sym-tile.q3 .spb.tile { left: -100%; top: -100%; }
+.cabinet.skin-brick .reel .sym.sym-tile .spb.tile.paid { opacity: .45; }
+.cabinet.skin-brick .reel .sym.sym-tile.t-j .spb.tile { color: #7c2d12; text-shadow: 0 1px 0 #fff8; }
+.cabinet.skin-brick .jp-bar .jp { background: repeating-linear-gradient(135deg, #facc15 0 8px, #1c1917 8px 16px); border: 2px solid #facc15; border-radius: 4px; }
+.cabinet.skin-brick .jp-bar .jp > * { background: #1c1917cc; border-radius: 3px; padding: 0 3px; }
+
+/* 🍒 Classic Mania — chrome & red velvet fruit machine */
+.cabinet.skin-classic .reels { background: linear-gradient(90deg, #d4d4d8, #fafafa 50%, #a1a1aa); border: 6px solid #b91c1c; border-radius: 14px; box-shadow: inset 0 0 18px #0006; }
+.cabinet.skin-classic .reel { background: linear-gradient(#e4e4e7, #fff 50%, #d4d4d8); border-left: 2px solid #71717a; border-right: 2px solid #71717a; }
+.cabinet.skin-classic .reel .sym { background: none; }
+.cabinet.skin-classic .reel .sym.sym-bar > span { font: 900 20px Arial; color: #fff; background: #111; padding: 2px 8px; border-radius: 4px; box-shadow: 0 0 0 2px #facc15; }
+.cabinet.skin-classic .reel .sym.sym-seven > span { font: 900 clamp(30px, 12cqmin, 64px) "Lilita One", sans-serif; color: #dc2626; -webkit-text-stroke: 2px #facc15; }
+.cabinet.skin-classic .reel .sym.sym-word > span { font-size: clamp(10px, 4cqmin, 16px); }
+
+/* 🗝️ The Mimic's Labyrinth — 5x5 stone plates turned into a diamond */
+.cabinet.skin-dungeon .reels { background: radial-gradient(circle, #44403c, #1c1917 75%); width: min(62%, 420px) !important; height: auto !important; aspect-ratio: 1; transform: rotate(45deg) scale(.86); margin: 9% auto !important; }
+.cabinet.skin-dungeon .reel .sym { background: linear-gradient(135deg, #78716c, #44403c); border: 2px solid #292524; border-radius: 4px; box-shadow: inset 0 0 0 2px #a8a29e44, 0 3px 0 #0008; }
+.cabinet.skin-dungeon .reel .sym > span, .cabinet.skin-dungeon .reel .sym > small, .cabinet.skin-dungeon .reel .sym > .spb { rotate: -45deg; }
+.cabinet.skin-dungeon .reel .sym.sym-rune > span { font: 900 clamp(18px, 7cqmin, 36px) serif; color: #38bdf8; text-shadow: 0 0 8px #38bdf8; }
+.cabinet.skin-dungeon .jp-bar .jp { background: linear-gradient(#57534e, #292524); border: 2px solid #fbbf24; border-radius: 4px; box-shadow: 0 0 10px #f9731655; }
+
+/* 📡 Abyssal Trench — round green/gold sonar screen with a sweeping beam */
+.cabinet.skin-sonar .reels { position: relative; background: radial-gradient(circle, #052e16 0 30%, #14532d 30.5% 31%, #052e16 31.5% 60%, #14532d 60.5% 61%, #000 62%); border: 6px solid #ca8a04; border-radius: 50% / 40%; overflow: hidden; }
+.cabinet.skin-sonar .reels::after { content: ""; position: absolute; inset: -40%; background: conic-gradient(from 0deg, #4ade8066, #0000 22%); animation: sonarSweep 3s linear infinite; pointer-events: none; z-index: 2; }
+@keyframes sonarSweep { to { transform: rotate(360deg); } }
+.cabinet.skin-sonar .reel .sym { background: none; filter: drop-shadow(0 0 6px #4ade80); }
+.cabinet.skin-sonar .jp-bar .jp, .cabinet.skin-sonar .jp-text { background: #052e16; border: 2px solid #ca8a04; color: #4ade80; }
+
+/* 🧊 Glacier Fracture — translucent ice floes */
+.cabinet.skin-ice .reels { background: linear-gradient(160deg, #bae6fd, #38bdf8 50%, #0369a1); }
+.cabinet.skin-ice .reel .sym { background: linear-gradient(135deg, #f0f9ffcc, #7dd3fc88); clip-path: polygon(6% 0, 100% 8%, 94% 100%, 0 90%); }
+.cabinet.skin-ice .reel .sym > span { opacity: .82; filter: saturate(.7) drop-shadow(0 0 4px #e0f2fe); }
+
+/* 🧊 Schrödinger's Quantum Cube — holographic 3x3 face */
+.cabinet.skin-cube .reels { background: #020617; border: 2px solid #67e8f9; box-shadow: 0 0 30px #67e8f955, inset 0 0 30px #c084fc33; transform: perspective(700px) rotateY(-10deg) rotateX(8deg); animation: cubeFloat 6s ease-in-out infinite; }
+@keyframes cubeFloat { 50% { transform: perspective(700px) rotateY(10deg) rotateX(-6deg); } }
+.cabinet.skin-cube .reel .sym { background: linear-gradient(135deg, #0e749055, #7c3aed44); border: 1px solid #67e8f9aa; box-shadow: inset 0 0 12px #67e8f955; }
+.cabinet.q-split .reels { box-shadow: -40px 0 0 -10px #c084fc55, 40px 0 0 -10px #67e8f955, 0 0 30px #c084fc; filter: hue-rotate(60deg); }
+
+/* 🏮 Kindness — arched wooden windows of a snowy soup kitchen */
+.cabinet.skin-shelter .reels { background: linear-gradient(#57534e, #44403c); border-top: 10px solid #f8fafc; }
+.cabinet.skin-shelter .reel .sym { background: radial-gradient(circle at 50% 70%, #fde68a, #f59e0b 60%, #78350f); border: 4px solid #78350f; border-radius: 40px 40px 4px 4px; box-shadow: inset 0 0 10px #0008; }
+.cabinet.skin-shelter .jp-bar .jp { background: linear-gradient(#7c2d12, #451a03); border: 2px solid #fde68a; border-radius: 16px 16px 4px 4px; }
+.sp-panel.spp-helm { width: 100%; justify-content: center; }
+.sp-panel.spp-helm .tp-sea { width: min(560px, 100%); height: 124px; flex: 0 1 auto; }
+.hl-ship { width: 150px; height: 100px; } .hl-mast { height: 74px; } .hl-hull { width: 140px; height: 24px; } .hl-sail { width: 60px; height: calc(5px + var(--f, 0) * 62px); }

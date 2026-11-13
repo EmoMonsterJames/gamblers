@@ -7,6 +7,31 @@
 import { h, sleep, fmt, countUp } from "../core/util.js";
 
 const FX = {
+    // ---- round 6 machines
+    sail: { icon: "⛵🪢", text: "SAIL UP!", snd: "whoosh", cls: "potion" },
+    shipgo: { icon: "⛵💨⛵", text: "THE SHIP SETS SAIL!", snd: "boom", cls: "potion", shake: true },
+    flood: { icon: "🌊🐟🌊", text: "SHIPWRECK!", snd: "splash", cls: "potion", shake: true },
+    hammer: { icon: "🔨", text: "", snd: "boom", cls: "fire", shake: true },
+    smashall: { icon: "🔨💥🔨", text: "TOTAL SMASH!!!", snd: "boom", cls: "fire", shake: true },
+    rebuild: { icon: "🧱🏗️🧱", text: "NEW WALL!", snd: "whoosh", cls: "gold" },
+    seven: { icon: "7️⃣7️⃣7️⃣", text: "LUCKY 777 · x7!", snd: "cash", cls: "gold", shake: true },
+    sticky: { icon: "⭐📌", text: "STICKY WILD SPINS!", snd: "bonus", cls: "gold" },
+    spike: { icon: "🗡️🗡️🗡️", text: "SPIKE TRAP PURGE!", snd: "boom", cls: "fire", shake: true },
+    mimic: { icon: "🧰👀🦷", text: "MIMIC AMBUSH!", snd: "boom", cls: "ghost", shake: true },
+    torch: { icon: "🔥🐉🔥", text: "TORCHLIGHT EXPANSION!", snd: "boom", cls: "bolt" },
+    dkey: { icon: "🗝️⛓️", text: "DUNGEON KEY!", snd: "bonus", cls: "gold" },
+    sonar: { icon: "📡〰️〰️", text: "SONAR PULSE OVERCHARGE!", snd: "bonus", cls: "beam" },
+    leviathan: { icon: "🐉🌊", text: "LEVIATHAN WAKE!", snd: "whoosh", cls: "potion", shake: true },
+    vent: { icon: "🫧🌋🫧", text: "THERMAL VENT ERUPTION!", snd: "boom", cls: "fire", shake: true },
+    frost: { icon: "🔨❄️", text: "", snd: "boom", cls: "bolt" },
+    freeze: { icon: "🌬️🧊", text: "FLASH FREEZE!", snd: "whoosh", cls: "bolt", shake: true },
+    aurora: { icon: "🌌💚💜", text: "AURORA BOREALIS!", snd: "bonus", cls: "moon" },
+    superpose: { icon: "⚛️🔀", text: "QUANTUM SUPERPOSITION!", snd: "bonus", cls: "glitch" },
+    parallel: { icon: "🧊🧊", text: "PARALLEL TIMELINE SPLIT!", snd: "boom", cls: "glitch", shake: true },
+    butterfly: { icon: "🦋✨", text: "BUTTERFLY EFFECT!", snd: "whoosh", cls: "glitch" },
+    hearth: { icon: "🔥🏮🔥", text: "HEARTHFIRE WARMTH!", snd: "bonus", cls: "gold" },
+    benefactor: { icon: "🧥👝🪙", text: "GENEROUS BENEFACTOR!", snd: "cash", cls: "gold" },
+    feast: { icon: "🍞🥣🚪", text: "COMMUNITY FEAST!", snd: "boom", cls: "gold", shake: true },
     flock: { icon: "🔔🕊️🕊️🕊️", text: "FLOCK SCATTER!", snd: "whoosh", cls: "gold" },
     halo: { icon: "😇☀️", text: "HALO RESONANCE!", snd: "bonus", cls: "gold", shake: true },
     feather: { icon: "🪶🪶🪶", text: "FEATHER DRIFT RESPIN!", snd: "whoosh", cls: "gold" },
@@ -157,6 +182,7 @@ export async function playSpecial(res, api) {
                 case "show": case "land": {
                     if (p.roll) { await rollEmpties(p); break; }
                     api.showGrid(p.grid);
+                    if (i === 0 && api.onLand) await api.onLand(); // reel-less machines (brick wall) open with a show
                     const cells = p.pop || p.cells || [];
                     for (const [c, r] of cells) cellsEl(c, r)?.classList.add("pop");
                     if (cells.length) Sound.coin();
@@ -230,6 +256,13 @@ export async function playSpecial(res, api) {
                 case "ladder": await ladder(p); break;
                 case "plinko": await plinko(p); break;
                 case "claw": await claw(p); break;
+                case "focus": {
+                    // spotlight the cell(s) a bonus is coming from
+                    api.reelsBox.querySelectorAll(".sp-focus").forEach(e => e.classList.remove("sp-focus"));
+                    for (const [c, r] of p.cells || []) cellsEl(c, r)?.classList.add("sp-focus");
+                    Sound.tick(); await pace(p.ms || 650);
+                    break;
+                }
                 case "bingoline": await bingoLine(p); break;
                 case "panel": api.meter(p.key, p.value, p.hl); await pace(p.hl ? 700 : 250); break;
                 case "tease": msgEl.innerHTML = `<span class="tease">아깝다!! 😱</span>`; break;
@@ -238,7 +271,7 @@ export async function playSpecial(res, api) {
     } finally {
         hud.remove();
         setRows(cfg.rows || 3);
-        api.reelsBox.querySelectorAll(".sp-held,.sp-frozen").forEach(e => e.classList.remove("sp-held", "sp-frozen"));
+        api.reelsBox.querySelectorAll(".sp-held,.sp-frozen,.sp-focus").forEach(e => e.classList.remove("sp-held", "sp-frozen", "sp-focus"));
     }
     return { total: Math.round(run), jpWins };
 
@@ -401,10 +434,10 @@ export async function playSpecial(res, api) {
             if (b.stop) {
                 // the ball sticks to the bumper and cashes it in on the spot
                 stopPeg.classList.remove("hit"); void stopPeg.offsetWidth; stopPeg.classList.add("hit", "won");
-                ball.classList.add("stuck"); ball.textContent = `${p.glyph} ${b.stop}!`;
+                ball.classList.add("stuck"); ball.textContent = b.tier ? `${p.glyph} JACKPOT!` : `${p.glyph} ${b.stop}!`;
                 b.tier ? Sound.bonus() : Sound.cash();
                 api.shake?.(frame);
-                res = `${p.glyph} ${i + 1}: 💥 ${b.stop} 범퍼 즉시 당첨 → ${b.tier ? b.tier + " 잭팟!" : fmt(b.value) + " G"}`;
+                res = b.tier ? `${p.glyph} ${i + 1}: 💥 JACK 범퍼 즉시 당첨 → JACKPOT! ${fmt(b.amount || 0)} G` : `${p.glyph} ${i + 1}: 💥 ${b.stop} 범퍼 즉시 당첨 → ${fmt(b.value)} G`;
             } else {
                 slots.children[b.slot]?.classList.add("hit");
                 Sound.coin();
@@ -488,7 +521,7 @@ export async function playSpecial(res, api) {
         const arm = h("div.claw-arm", h("span", "🦾"));
         const btn = h("button.btn.gold.big", "🕹️ 집게 내리기!");
         const res = h("div.claw-res");
-        overlay.append(h("div.claw-wrap", h("div.claw-head", "🦾 CLAW MACHINE · 버튼을 눌러 공을 뽑아라!"), h("div.claw-box", arm, balls), btn, res));
+        overlay.append(h("div.claw-wrap", h("div.claw-head", p.title || "🦾 CLAW MACHINE · 버튼을 눌러 공을 뽑아라!"), h("div.claw-box", arm, balls), btn, res));
         await Promise.race([new Promise(r => btn.onclick = r), sleep(7000)]);
         btn.remove();
         const target = balls.children[Math.floor(Math.random() * balls.children.length)];
@@ -501,6 +534,7 @@ export async function playSpecial(res, api) {
         res.textContent = `🎉 ${LABEL[p.pick] || p.pick} 공!${p.prize ? " → " + p.prize : ""}`;
         await pace(1100);
         overlay.replaceChildren();
+        api.reelsBox.querySelectorAll(".sp-focus").forEach(e => e.classList.remove("sp-focus"));
     }
 
     // ------------------------------------------------------------ Laser Grid Breach (pick until an alarm)
@@ -595,6 +629,23 @@ export function buildPanel(cfg, state = {}) {
     else if (E === "sp_astro") aura("🛸", "ASTRO-DINER 5099 · 20 WINDOWS", "🍔");
     else if (E === "sp_lilypad") aura("🐸", "LILYPAD LEAP · 19 PADS", "🪷");
     else if (E === "sp_gridlock") aura("🚦", "GRIDLOCK RUSH HOUR · 4-WAY", "🚕");
+    else if (E === "sp_helm") {
+        // two ships rocking on a rainy sea; each sail rises with every ⛵ thrown at it
+        const ship = (label, k) => {
+            const sail = h("i.hl-sail"), s = h("div.hl-ship.k-" + k, h("div.hl-mast", sail), h("div.hl-hull", h("b", label)));
+            custom(k, (v, max) => { const f = Math.max(0, Math.min(1, v / (max || 10))); sail.style.setProperty("--f", f.toFixed(2)); s.classList.toggle("near", f >= 0.7 && f < 1); s.classList.toggle("full", f >= 1); });
+            return s;
+        };
+        el.append(h("div.tp-sea", h("div.hl-rain"), ship("GROW REELS", "sailR"), ship("GROW CASH", "sailC"),
+            h("div.hl-waves"), ...["🐟", "🐠", "🐡"].map((f, i) => h("i.hl-fish", { style: { "--i": i } }, f))));
+    }
+    else if (E === "sp_bricks") aura("🏗️", "SMASH THE BRICKS · 2x2 판을 드러내라!", "🔨");
+    else if (E === "sp_classic") aura("7️⃣", "CLASSIC MANIA · 3 LINES", "🍒");
+    else if (E === "sp_mimic") aura("🔥", "THE MIMIC'S LABYRINTH · 25 PLATES", "🔥");
+    else if (E === "sp_abyss") aura("📡", "DEPTH 10,994 m · SONAR ONLINE", "🐙");
+    else if (E === "sp_glacier") aura("🔨", "GLACIER FRACTURE · 18 FLOES", "🦣");
+    else if (E === "sp_quantum") aura("🐈‍⬛", "|ψ⟩ = α|WIN⟩ + β|LOSE⟩", "⚛️");
+    else if (E === "sp_kindness") aura("🏮", "KINDNESS · SOUP KITCHEN & SANCTUARY", "🥣");
     else if (E === "sp_coinclaw") el.append(h("div.tp-claw", h("span.tc-arm", "🦾"), h("div.tc-balls", ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓"].map((b, i) => h("i", { style: { "--i": i } }, b))), h("span.tc-spark", "✨")));
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
@@ -620,5 +671,6 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_strikes") { set("pins", state.pins ?? 1); set("strikes", state.strikes || 0); }
     if (E === "sp_vampire") set("bingo", state.board || []);
     if (E === "sp_payday") { set("fu", state.fu || 0, 100); set("dao", state.dao || 0, 100); }
+    if (E === "sp_helm") { set("sailR", state.sailR || 0, 10); set("sailC", state.sailC || 0, 10); }
     return { el, set };
 }

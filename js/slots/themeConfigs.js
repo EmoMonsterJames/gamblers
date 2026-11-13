@@ -185,17 +185,17 @@ export const THEME_SLOTS = [
     {
         id: "three_strikes", name: "3 Strikes", brand: "YG GAMING", engine: "sp_strikes", progressive: true,
         jp: { ...PROG(50000, 500000, 2000000), STRIKE: { seed: 150000, rate: 0.006, cap: 800000 } },
-        bets: [100, 200, 300, 500, 800, 1000], reels: 5, rows: 3, maxX: 5000, px: 0.835, fscale: { ball: 0.025 }, jpDown: { STRIKE: 0.99, MAJOR: 0.95 },
-        desc: "볼링장 레인 위 핀이 🎳 아이콘마다 하나씩 쌓여 최대 10개! 🎱 볼링공이 던져지면 쌓인 핀 수만큼 WILD를 뿌리고 핀은 1개로 — 10핀에서 터지면 STRIKE! · STRIKE 3회 = 큰 볼링공 + 10핀 3 STRIKES 홀드앤스핀 (10핀 모두 채우면 3 STRIKES 잭팟) · 🎳 핀 아이콘 6개 = 8x5 볼링핀 홀드앤스핀 (5줄 오픈, 볼링공이 잠긴 줄을 부순다) · SCATTER 3개 = 8 무료스핀",
+        bets: [100, 200, 300, 500, 800, 1000], reels: 5, rows: 3, maxX: 5000, px: 0.78, fscale: { ball: 0.025 }, jpDown: { STRIKE: 0.99, MAJOR: 0.95 },
+        desc: "볼링장 레인 위 핀이 🎳 아이콘마다 하나씩 쌓여 최대 10개! 🎱 볼링공이 던져지면 쌓인 핀 수만큼 WILD를 뿌리고 핀은 1개로 — 10핀에서 터지면 STRIKE! · STRIKE 3회 = 큰 볼링공 + 10핀 3 STRIKES 홀드앤스핀 (10핀 모두 채우면 3 STRIKES 잭팟) · 🎳 핀 아이콘 6개 = 8x5 볼링핀 홀드앤스핀 (5줄 오픈, 🎱 볼링공이 나오면 잠긴 줄이 부서져 사라지고, STRIKE 핀이 나오면 STRIKE 카운트 +1) · SCATTER 3개 = 8 무료스핀",
         theme: { bg: "linear-gradient(180deg,#1e3a8a 0%,#7c2d12 60%,#0c0a09 100%)", accent: "#fde047", glow: "#f472b6", font: "'Lilita One', sans-serif" },
         skin: "lane",
         syms: { ...CARDS, H1: { e: "🏆", name: "Trophy", pay: [0.6, 2, 6] }, H2: { e: "👟", name: "Bowling Shoes", pay: [0.5, 1.5, 4] }, H3: { e: "🧢", name: "Team Cap", pay: [0.4, 1.2, 3] }, H4: { e: "🥤", name: "Soda", pay: [0.3, 1, 2.5] } },
         look: { W: { e: "⭐", name: "WILD" }, ZP: sp("🎳", "Bowling Pin"), ZB: sp("🎱", "Bowling Ball"), ZF: { e: "SCATTER", name: "Scatter", cls: "sym-special sym-word" }, ZC: sp("🎳", "Pin Coin"), ZX: sp("🔒", "Locked Row", "sym-lock") },
         w: { ...CARD_W, H1: 2.5, H2: 3, H3: 3.5, H4: 4, W: [0, 1.4, 1.4, 1.4, 0] },
-        features: { pin: { p: 0.1 }, ball: { p: 0.012 }, free: { p: 0.005, spins: 8, sym: true }, pinhold: { p: 0.0035 } },
+        features: { pin: { p: 0.1 }, ball: { p: 0.012 }, free: { p: 0.005, spins: 8, sym: true }, pinhold: { p: 0.0035 }, strike3: { p: 0 } },
         bgm: "lounge_jazz",
         omens: [LUCKY, { fx: "shake" }, { fx: "burst", icon: "🎱", chars: ["🎳", "💥", "🎳"] }, { fx: "text", text: "STRIKE!!!" }, { fx: "rain", chars: ["🎳", "🎳", "🎳"] }],
-        tests: [["ball", "🎱 볼링공 보너스"], ["pinhold", "🎳 볼링핀 홀드앤스핀"], ["free", "SCATTER 8 무료스핀"]]
+        tests: [["ball", "🎱 볼링공 보너스"], ["pinhold", "🎳 볼링핀 홀드앤스핀"], ["strike3", "🎳🎳🎳 3 STRIKES 홀드앤스핀"], ["free", "SCATTER 8 무료스핀"]]
     },
     // ------------------------------------------------ 12. Vampire Bingo
     {
@@ -217,7 +217,7 @@ export const THEME_SLOTS = [
     {
         id: "pay_day", name: "Pay Day", brand: "IPEX", engine: "sp_payday", progressive: true,
         jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 5000], reels: 5, rows: 3, maxX: 3000, px: 2.12, jpDown: { MAXI: 0.85, MAJOR: 0.6, MINOR: 0.5 },
-        desc: "월급날! 릴에서 던져진 돈이 하얀 돈봉투 두 개(福·到)를 가득 채운다. 福 봉투가 터지면 PLINKO TREE — 🟡 구슬 3개를 떨어뜨려 x2~x5 범퍼에 닿는 순간 그 자리에서 즉시 상금(배수 x2 베팅) · 到 봉투 = 🔴 구슬이 잭팟 범퍼(MINI~MAJOR)에 닿으면 바로 잭팟 · 福到 동시 = 배수 + 잭팟 범퍼 모두! · ✉️ PAYCHECK 3개 = MATCH 3 (그랜드는 여기서만)",
+        desc: "월급날! 릴에서 던져진 돈이 하얀 돈봉투 두 개(福·到)를 가득 채운다. 福 봉투가 터지면 PLINKO TREE — 🟡 구슬 3개를 떨어뜨려 x2~x5 범퍼에 닿는 순간 그 자리에서 즉시 상금(배수 x2 베팅) · 到 봉투 = 🔴 구슬이 JACKPOT 범퍼에 닿으면 바로 잭팟 · 福到 동시 = 배수 + JACKPOT 범퍼 모두! · ✉️ PAYCHECK 3개 = MATCH 3 (그랜드는 여기서만)",
         theme: { bg: "linear-gradient(180deg,#14532d 0%,#166534 40%,#052e16 100%)", accent: "#fde047", glow: "#ef4444", font: "'Lilita One', sans-serif" },
         skin: "money",
         syms: { ...CARDS, H1: { e: "💰", name: "Money Bag", pay: [0.6, 2, 6] }, H2: { e: "💵", name: "Cash Stack", pay: [0.5, 1.5, 4] }, H3: { e: "🧧", name: "Red Envelope", pay: [0.4, 1.2, 3] }, H4: { e: "🪙", name: "Gold Coin", pay: [0.3, 1, 2.5] } },
@@ -248,7 +248,7 @@ export const THEME_SLOTS = [
     {
         id: "coin_claw", name: "Coin Claw", brand: "DAEBAK", engine: "sp_coinclaw", progressive: true,
         jp: PROG(100000, 1000000, 4000000), bets: [1000, 2000, 3000, 4000, 5000], reels: 5, rows: 3, maxX: 3000, px: 2.15,
-        desc: "반짝이는 인형뽑기 기계 안에 물음표 공·휠 공·FREE SPIN 공·잭팟 공이 가득! 🦾 집게 아이콘 3개 = 버튼을 눌러 공 뽑기 — FREE SPIN 공 = 10 무료스핀(최대 50, 무료스핀 중 집게가 또 나오면 계속 뽑기) · 휠 공 = 3x~50x 휠 · ❓ 공 = 2x~30x 상금 · 잭팟 공 = MINI~GRAND · 🟡 상금 공 6개 = 홀드앤스핀 (도중에 집게가 나오면 뽑은 상금으로 교체)",
+        desc: "반짝이는 인형뽑기 기계 안에 물음표 공·휠 공·FREE SPIN 공·잭팟 공이 가득! 🦾 집게 아이콘 3개 = 버튼을 눌러 공 뽑기 — FREE SPIN 공 = 10 무료스핀(최대 50, 무료스핀 중 집게가 또 나오면 계속 뽑기) · 휠 공 = 3x~50x 휠 · ❓ 공 = 2x~30x 상금 · 잭팟 공 = MINI~GRAND · 🟡 상금 공 6개 = 홀드앤스핀 (도중에 집게가 나오면 나온 집게마다 순서대로 공을 뽑아 그 상금을 집게 안에 표시)",
         theme: { bg: "linear-gradient(180deg,#be185d 0%,#1d4ed8 60%,#0c0a09 100%)", accent: "#fde047", glow: "#38bdf8", font: "'Lilita One', sans-serif" },
         skin: "claw",
         syms: { ...CARDS, H1: { e: "🧸", name: "Teddy", pay: [0.6, 2, 6] }, H2: { e: "🐰", name: "Bunny Plush", pay: [0.5, 1.5, 4] }, H3: { e: "🎀", name: "Ribbon", pay: [0.4, 1.2, 3] }, H4: { e: "🍭", name: "Lollipop", pay: [0.3, 1, 2.5] } },
@@ -257,7 +257,7 @@ export const THEME_SLOTS = [
         features: { claw: { p: 0.012, spins: 10, sym: true }, hold: { p: 0.004, sym: true } },
         bgm: "lounge_jazz",
         omens: [LUCKY, { fx: "shake" }, { fx: "burst", icon: "🦾", chars: ["✨", "🦾", "✨"] }, { fx: "rain", chars: ["❓", "🔮", "❓"] }, { fx: "rain", chars: ["🍀", "🍀", "☘️"] }],
-        tests: [["claw", "🦾 집게 보너스"], ["hold", "🟡 홀드앤스핀"]]
+        tests: [["claw", "🦾 집게 보너스"], ["hold", "🟡 홀드앤스핀"], ["hold:claw", "🟡 홀드앤스핀 (집게 여러 개)"]]
     },
     // ------------------------------------------------ 16. Cathedral of Wings
     {
@@ -339,6 +339,137 @@ export const THEME_SLOTS = [
         omens: [{ fx: "shake", text: "🌃 NEON LIGHTS ARE SHINING 🌃" }, { fx: "big", icon: "📸", cls: "flash" }],
         tests: [["green", "🚦 GREEN LIGHT EXPRESS"], ["subway", "🕳️ SUBWAY RUMBLE"], ["heli", "🚁 HELICOPTER SPOTLIGHT"], ["badge", "🚨 PRECINCT 잭팟"]]
     },
+    // ================================================ round 6
+    // ------------------------------------------------ 21. Rotate The Helm!
+    {
+        id: "rotate_helm", name: "Rotate The Helm!", brand: "BLK", engine: "sp_helm", progressive: true,
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { seed: 60000, rate: 0.01 }, GRAND: { seed: 600000, rate: 0.02, cap: 2400000 } },
+        bets: [200, 400, 600, 800, 1000], reels: 5, rows: 3, maxX: 5000, px: 1.5,
+        desc: "비 내리는 바다 한가운데 돛을 내린 배 두 척 (GROW REELS · GROW CASH)이 흔들린다. ⛵ 돛 아이콘이 던져지면 배의 돛이 천천히 올라가고, 끝까지 오르면 배가 요동치며 보너스 발동! ⛵ GROW REELS = 5 무료스핀, 스핀마다 릴이 위로 1줄씩 늘어 마지막엔 8줄 · ⛵ GROW CASH = 5 무료스핀, WILD가 STICKY WILD로 쌓인다 · ⛵⛵ 동시 = 8줄까지 늘어나는 릴 + STICKY WILD · ☸️ 키(Helm) 3개 = 8 무료스핀 (도중에 GROW 보너스 발동 가능) · 🛖 SHIPWRECK = 조가비 3개 중 하나를 골라 MINI~GRAND 잭팟",
+        theme: { bg: "linear-gradient(180deg,#334155 0%,#1e3a8a 45%,#0c4a6e 70%,#082f49 100%)", accent: "#7dd3fc", glow: "#facc15", font: "'Lilita One', sans-serif" },
+        skin: "sea",
+        syms: { ...CARDS, H1: { e: "🏴‍☠️", name: "Jolly Roger", pay: [0.6, 2, 6] }, H2: { e: "⚓", name: "Anchor", pay: [0.5, 1.5, 4] }, H3: { e: "🦜", name: "Parrot", pay: [0.4, 1.2, 3] }, H4: { e: "🧭", name: "Compass", pay: [0.3, 1, 2.5] } },
+        look: { W: { e: "🔱", name: "TRIDENT WILD" }, ZH: sp("☸️", "Helm"), ZS: sp("⛵", "Sail") },
+        w: { ...CARD_W, H1: 2.5, H2: 3, H3: 3.5, H4: 4, W: [0, 1.3, 1.3, 1.3, 0] },
+        features: { free: { p: 0.004, spins: 8, grow: 0.12, sym: true }, growreels: { p: 0.002 }, growcash: { p: 0.002 }, growboth: { p: 0.0008 }, shipwreck: { p: 0.0012, tw: { MINI: 55, MINOR: 30, MAJOR: 12, GRAND: 3 } } },
+        bgm: "tropical_steel",
+        omens: [LUCKY, { fx: "shake" }, { fx: "shake", text: "⛵ Hoist the Sail..........!" }, { fx: "shake", text: "☸️ Rotate the Helm.......!" },
+            { fx: "rise", chars: ["🐟", "🐠", "🌊", "🐡"], shake: true, text: "🌊 물이 차오른다!!" }, { fx: "big", icon: "🛖", cls: "rise", text: "SHIPWRECK!!!", only: "shipwreck" }],
+        tests: [["free", "☸️ HELM 8 무료스핀"], ["growreels", "⛵ GROW REELS"], ["growcash", "⛵ GROW CASH"], ["growboth", "⛵⛵ GROW REELS & CASH"], ["shipwreck", "🐚 SHIPWRECK 잭팟"]]
+    },
+    // ------------------------------------------------ 22. Smash The Bricks
+    {
+        id: "smash_bricks", name: "Smash The Bricks", brand: "CLOUD GAMING", engine: "sp_bricks", progressive: true, spinLabel: "🔨 TAP",
+        jp: { MINI: { x: 10 }, MINOR: { x: 25 }, MAJOR: { seed: 150000, rate: 0.01 }, GRAND: { seed: 1500000, rate: 0.02, cap: 6000000 } },
+        bets: [500, 1000, 1500, 2000, 3000], reels: 5, rows: 3, maxX: 5000, px: 1,
+        desc: "공사장 한가운데 3x5 벽돌벽! 릴 없이 🔨 TAP을 누를 때마다 망치가 벽돌을 깬다. 벽돌 뒤에는 2x2 크기의 판이 숨어 있고, 판이 완전히 드러나면 바로 지급 — JACKPOT 판 = MINI~GRAND 잭팟 · 상금 판 = 1,000G~10,000G (최소 베팅 기준, 베팅에 비례) · MULTIPLY 판 = 베팅 x2~x10 · 💥 TOTAL SMASH = 한 번에 벽 전체가 무너져 모든 판을 한꺼번에! · 판을 모두 받거나 벽돌이 다 깨지면 새 벽돌벽과 새 보너스로 교체",
+        theme: { bg: "repeating-linear-gradient(135deg,#facc15 0 18px,#1c1917 18px 36px)", accent: "#facc15", glow: "#f97316", font: "'Lilita One', sans-serif" },
+        skin: "brick",
+        syms: {},
+        look: { ZB: sp("🧱", "Brick", "sym-special sym-brick"), Y: { e: "", name: "Rubble", cls: "sym-rubble" },
+            ...Object.fromEntries(["ZJ", "ZC", "ZM"].flatMap(k => [0, 1, 2, 3].map(q => [k + q, { e: "", name: k === "ZJ" ? "Jackpot Plate" : k === "ZC" ? "Cash Plate" : "Multiply Plate", cls: `sym-special sym-tile t-${k.slice(1).toLowerCase()} q${q}` }]))) },
+        w: {},
+        features: { tile: { p: 0.133 }, smashall: { p: 0.004 }, jp: { p: 0, tw: { MINI: 62, MINOR: 31, MAJOR: 6, GRAND: 1 } }, cash: { p: 0 }, mult: { p: 0 } },
+        bgm: "lounge_jazz",
+        omens: [LUCKY, { fx: "big", icon: "🔨", cls: "flash" }, { fx: "rain", chars: ["⛑️", "⛑️", "👷"] }, { fx: "shake", text: "💥 Smashed.................??!!" }],
+        tests: [["jp", "🔨 JACKPOT 판"], ["cash", "💰 상금 판"], ["mult", "✖️ MULTIPLY 판"], ["smashall", "💥 TOTAL SMASH (전부 부수기)"]]
+    },
+    // ------------------------------------------------ 23. Classic Mania
+    {
+        id: "classic_mania", name: "Classic Mania", brand: "Classic Gaming", engine: "sp_classic", progressive: false, jp: null,
+        bets: [300, 600, 900, 1200, 1500], reels: 3, rows: 3, maxX: 3000, px: 2.36,
+        desc: "3릴 · 3 PAYLINE 고전 과일 슬롯. 🎰 FREE BONUS 3개 = 8 무료스핀 · 7️⃣ 세 개가 한 줄 = 베팅 x7 즉시 지급 · 📌 STICKY WILD 3개 = 3 무료스핀 (나온 WILD는 끝까지 고정) · 🍀 네잎클로버 3개 = 클로버 3개 중 PICK ONE (x3~x10) · 🍒 체리 3개 = 최고의 보너스, 체리 3개 중 PICK ONE (x30~x100)",
+        jpText: "🍒 CHERRY x30~x100 · 🍀 CLOVER x3~x10 · 7️⃣7️⃣7️⃣ x7 · 📌 STICKY WILD · 🎰 FREE BONUS",
+        theme: { bg: "radial-gradient(circle at 50% 30%,#b91c1c 0%,#7f1d1d 45%,#1c0505 100%)", accent: "#fde047", glow: "#f87171", font: "'Lilita One', sans-serif" },
+        skin: "classic",
+        syms: { H1: { e: "BAR", name: "Triple Bar", cls: "sym-bar", pay: [20] }, H2: { e: "🔔", name: "Bell", pay: [10] }, H3: { e: "🍉", name: "Watermelon", pay: [6] }, L1: { e: "🍋", name: "Lemon", pay: [3] }, L2: { e: "🍊", name: "Orange", pay: [2.5] }, L3: { e: "🍇", name: "Grapes", pay: [2] } },
+        look: { W: { e: "⭐", name: "WILD" }, ZS: { e: "7", name: "Lucky Seven", cls: "sym-special sym-seven" }, ZF: { e: "FREE BONUS", name: "Free Bonus", cls: "sym-special sym-word" }, ZK: { e: "STICKY WILD", name: "Sticky Wild", cls: "sym-special sym-word" }, ZL: sp("🍀", "Four-leaf Clover"), ZC: sp("🍒", "Cherry") },
+        w: { H1: 1.6, H2: 2.4, H3: 3.2, L1: 4.4, L2: 4.8, L3: 5.2, W: 0.5, ZS: 0.9, ZF: 0.5, ZK: 0.5, ZL: 0.5, ZC: 0.35 },
+        features: { free: { p: 0.003, spins: 8, sym: true }, seven: { p: 0.003 }, sticky: { p: 0.0025, sym: true }, clover: { p: 0.0015, sym: true }, cherry: { p: 0.0004, sym: true } },
+        bgm: "lounge_jazz",
+        omens: [LUCKY, { fx: "shake" }, { fx: "shake", text: "💰 Let's win some money........!!" }, { fx: "rain", chars: ["7️⃣", "7️⃣", "7️⃣"] }],
+        tests: [["free", "🎰 FREE BONUS 8 무료스핀"], ["seven", "7️⃣7️⃣7️⃣ x7"], ["sticky", "📌 STICKY WILD 3 스핀"], ["clover", "🍀 클로버 PICK"], ["cherry", "🍒 체리 PICK"]]
+    },
+    // ------------------------------------------------ 24. The Mimic's Labyrinth
+    {
+        id: "mimic_labyrinth", name: "The Mimic's Labyrinth", brand: "CLOUD GAMING", engine: "sp_mimic", progressive: true,
+        jp: PROG(60000, 600000, 2400000), bets: [200, 500, 800, 1000, 1200], reels: 5, rows: 5, maxX: 5000, px: 2.93,
+        desc: "횃불이 일렁이는 돌 던전 바닥, 25개의 압력판이 5x5 마름모로 깔려 있다. 스핀하면 무거운 돌판이 가라앉았다 룬·마법검·물약·금화가 새겨진 채 솟아오른다 (CLUSTER 5+). 🗡️ SPIKE TRAP PURGE = 숨은 가시가 룬 타일을 모두 부수고 보물 타일이 굴러 내려온다 · 🧰 MIMIC AMBUSH = 보물상자가 이빨을 드러내 주변 타일을 씹어먹고 STICKY WILD 코인을 뱉는다 · 🔥 TORCHLIGHT EXPANSION = 푸른 용의 불꽃이 테두리 16장을 같은 고급 심볼로 · 🗝️ DUNGEON KEY = 철창 4개 중 하나를 열어 MINI~GRAND 유물 잭팟",
+        theme: { bg: "radial-gradient(circle at 50% 45%,#78350f 0%,#292524 45%,#0c0a09 100%)", accent: "#fbbf24", glow: "#38bdf8", font: "'Lilita One', sans-serif" },
+        skin: "dungeon",
+        syms: { H1: { e: "💰", name: "Gold Coins", pay: CL(0.9) }, H2: { e: "🗡️", name: "Enchanted Sword", pay: CL(0.7) }, H3: { e: "🧪", name: "Potion Flask", pay: CL(0.55) }, H4: { e: "🛡️", name: "Shield", pay: CL(0.45) },
+            L1: { e: "ᚠ", name: "Fehu Rune", cls: "sym-rune", pay: CL(0.2) }, L2: { e: "ᚱ", name: "Raido Rune", cls: "sym-rune", pay: CL(0.16) }, L3: { e: "ᛟ", name: "Othala Rune", cls: "sym-rune", pay: CL(0.14) } },
+        look: { W: { e: "🪙", name: "STICKY WILD COIN" }, W2: { e: "🧰", name: "x2 MIMIC WILD", cls: "sym-wild" }, ZM: sp("🧰", "Mimic Chest"), ZK: sp("🗝️", "Skeleton Key") },
+        w: { H1: 4, H2: 5, H3: 6, H4: 6.5, L1: 9, L2: 9.5, L3: 10, W: 0.6 },
+        features: { spike: { p: 0.003 }, mimic: { p: 0.003 }, torch: { p: 0.0025 }, dkey: { p: 0.001, tw: { MINI: 45, MINOR: 30, MAXI: 15, MAJOR: 8, GRAND: 2 } } },
+        bgm: "celestial_brass",
+        omens: [{ fx: "shake", text: "🪨 Dungeon is collapsing!! 🪨" }, { fx: "rain", chars: ["🪨", "🪨", "🧱"], text: "🍀 Lucky has arrived 🍀" }, { fx: "shake", text: "⛓️ Dungeon gates are opening up..." }],
+        tests: [["spike", "🗡️ SPIKE TRAP PURGE"], ["mimic", "🧰 MIMIC AMBUSH"], ["torch", "🔥 TORCHLIGHT EXPANSION"], ["dkey", "🗝️ DUNGEON KEY 잭팟"]]
+    },
+    // ------------------------------------------------ 25. Abyssal Trench
+    {
+        id: "abyssal_trench", name: "Abyssal Trench", brand: "Rabbit-Gaming", engine: "sp_abyss", progressive: false, jp: null,
+        bets: [300, 500, 800, 1000, 1500, 2000], reels: 5, rows: 3, maxX: 3000, px: 1.84,
+        desc: "칠흑 같은 심해 잠수구 조종실. 플레이필드는 둥근 초록·금빛 소나 레이더 화면이고, 스핀마다 레이더 빔이 360° 돌며 발광 해파리·가라앉은 닻·아귀·진주를 화면에 띄운다 (5x3 · 243 WAYS). 📡 SONAR PULSE OVERCHARGE = 이중 핑으로 심볼 아래 숨은 보물상자 공개, 즉시 배수 상금 · 🐉 LEVIATHAN WAKE = 거대한 바다뱀이 지나가며 x3 EXPANDING EEL WILD를 남긴다 · 🫧 THERMAL VENT ERUPTION = 뜨거운 거품이 심볼을 밀어올리며 한 단계씩 업그레이드",
+        jpText: "📡 SONAR CHEST x2~x50 · 🐉 x3 EEL WILD · 🫧 VENT UPGRADE",
+        theme: { bg: "radial-gradient(circle at 50% 50%,#064e3b 0%,#022c22 40%,#000 100%)", accent: "#4ade80", glow: "#facc15", font: "'Lilita One', sans-serif" },
+        skin: "sonar",
+        syms: { H1: { e: "🦑", name: "Giant Squid", pay: [0.6, 2, 6] }, H2: { e: "🐡", name: "Anglerfish", pay: [0.5, 1.5, 4] }, H3: { e: "⚓", name: "Sunken Anchor", pay: [0.4, 1.2, 3] }, H4: { e: "🪼", name: "Jellyfish", pay: [0.3, 1, 2.5] },
+            L1: { e: "🦪", name: "Pearl", pay: [0.12, 0.3, 0.75] }, L2: { e: "🐚", name: "Shell", pay: [0.1, 0.25, 0.6] }, L3: { e: "🦐", name: "Shrimp", pay: [0.08, 0.2, 0.5] }, L4: { e: "🫧", name: "Bubble", pay: [0.06, 0.15, 0.4] } },
+        look: { W: { e: "🔦", name: "SONAR WILD" }, W3: { e: "🐍", name: "x3 EEL WILD", cls: "sym-wild" } },
+        w: { H1: 2.5, H2: 3, H3: 3.5, H4: 4, L1: 6, L2: 6, L3: 6.5, L4: 7, W: [0, 1.3, 1.3, 1.3, 0] },
+        features: { sonar: { p: 0.0035 }, leviathan: { p: 0.003 }, vent: { p: 0.0035 } },
+        bgm: "tropical_steel",
+        omens: [{ fx: "shake" }, LUCKY, { fx: "rise", chars: ["🫧", "🫧", "🐟", "🫧"], shake: true, text: "⬇️ Go deep deep water — FULL SPEED!" }],
+        tests: [["sonar", "📡 SONAR PULSE"], ["leviathan", "🐉 LEVIATHAN WAKE"], ["vent", "🫧 THERMAL VENT"]]
+    },
+    // ------------------------------------------------ 26. Glacier Fracture
+    {
+        id: "glacier_fracture", name: "Glacier Fracture", brand: "BLK", engine: "sp_glacier", progressive: false, jp: null,
+        bets: [100, 200, 300, 500, 800, 1000], reels: 6, rows: 3, maxX: 3000, px: 1.04,
+        desc: "위에서 내려다본 투명한 북극 호수. 릴 대신 푸른 얼음판 아래 얼어붙은 매머드·바이킹 도끼·사파이어가 비친다. 스핀마다 거대한 서리 망치가 얼음을 내리쳐 18개의 얼음 조각으로 쪼갠다 (6x3 · 729 WAYS). 🌬️ FLASH FREEZE = 북극 바람이 당첨 조각을 x2 서리 배수로 꽁꽁 얼리고 나머지는 부숴 무료 리필 스핀 · 🌌 AURORA BOREALIS = 오로라가 6~10조각을 최고 배당 심볼로 동기화",
+        jpText: "🌬️ FLASH FREEZE x2 + REFILL · 🌌 AURORA 6~10 TOP SYMBOLS",
+        theme: { bg: "linear-gradient(180deg,#e0f2fe 0%,#7dd3fc 35%,#0369a1 75%,#082f49 100%)", accent: "#e0f2fe", glow: "#a78bfa", font: "'Lilita One', sans-serif" },
+        skin: "ice",
+        syms: { H1: { e: "🦣", name: "Wooly Mammoth", pay: [0.5, 1.6, 4, 8] }, H2: { e: "🪓", name: "Viking Axe", pay: [0.4, 1.2, 3, 6] }, H3: { e: "💎", name: "Sapphire", pay: [0.3, 1, 2.5, 5] }, H4: { e: "🐟", name: "Frozen Fish", pay: [0.25, 0.8, 2, 4] },
+            L1: { e: "❄️", name: "Snowflake", pay: [0.08, 0.2, 0.5, 1] }, L2: { e: "🧊", name: "Ice Cube", pay: [0.07, 0.18, 0.45, 0.9] }, L3: { e: "🫧", name: "Air Bubble", pay: [0.06, 0.15, 0.4, 0.8] } },
+        look: { W: { e: "🔨", name: "FROST HAMMER WILD" } },
+        w: { H1: 2.6, H2: 3, H3: 3.5, H4: 4, L1: 6.5, L2: 7, L3: 7.5, W: [0, 1, 1, 1, 1, 0] },
+        features: { freeze: { p: 0.005 }, aurora: { p: 0.004 } },
+        bgm: "pizzicato_march",
+        omens: [{ fx: "rain", chars: ["🧊", "❄️", "🧊"], text: "🧊 Icicles are dropping down!" }, { fx: "wind", chars: ["❄️", "🌨️", "❄️", "💨"], text: "🌨️ A huge blizzard comes in!!" }],
+        tests: [["freeze", "🌬️ FLASH FREEZE"], ["aurora", "🌌 AURORA BOREALIS"]]
+    },
+    // ------------------------------------------------ 27. Schrödinger's Quantum Cube
+    {
+        id: "quantum_cube", name: "Schrödinger's Quantum Cube", brand: "YG GAMING", engine: "sp_quantum", progressive: true,
+        jp: PROG(30000, 300000, 1200000), bets: [100, 200, 300, 500, 800, 1000], reels: 3, rows: 3, maxX: 5000, px: 0.905,
+        desc: "매끈한 SF 이론물리 연구소, 화면 중앙에 떠서 회전하는 루빅스 큐브 홀로그램. 스핀마다 큐브 면이 3D로 비틀리며 앞면 9개의 양자 면에 원자·모래시계·주사위·무한대 기호가 나타난다 (3x3 · 5 LINES). ⚛️ QUANTUM SUPERPOSITION = 큐브가 멈추기 전 4~6면이 두 고급 심볼 사이를 깜빡이다 가장 높은 배당으로 붕괴 · 🧊🧊 PARALLEL TIMELINE SPLIT = 큐브가 쌍둥이로 갈라져 두 차원의 당첨을 동시에 지급 · 🦋 BUTTERFLY EFFECT = 모서리에 앉은 네온 나비가 연쇄 반응, 인접 면을 2x QUANTUM WILD로 · 보너스 끝에 QUANTUM COLLAPSE 잭팟(MINI~GRAND)이 터질 수 있다",
+        theme: { bg: "radial-gradient(circle at 50% 40%,#1e1b4b 0%,#0f172a 50%,#020617 100%)", accent: "#67e8f9", glow: "#c084fc", font: "'Orbitron', 'Lilita One', sans-serif" },
+        skin: "cube",
+        syms: { H1: { e: "♾️", name: "Infinity Loop", pay: [12] }, H2: { e: "⚛️", name: "Atom", pay: [7] }, H3: { e: "⏳", name: "Hourglass", pay: [5] }, H4: { e: "🎲", name: "Dice", pay: [4] }, L1: { e: "🔷", name: "Quark", pay: [2] }, L2: { e: "🔺", name: "Photon", pay: [1.5] } },
+        look: { W: { e: "🐈‍⬛", name: "SCHRÖDINGER WILD" }, W2: { e: "🦋", name: "x2 QUANTUM WILD", cls: "sym-wild" } },
+        w: { H1: 1.6, H2: 2.2, H3: 2.8, H4: 3.2, L1: 4.6, L2: 5, W: 0.55 },
+        features: { superpose: { p: 0.0035 }, parallel: { p: 0.0035 }, butterfly: { p: 0.003 }, qjp: { p: 0.1, tw: { MINI: 50, MINOR: 28, MAXI: 14, MAJOR: 6, GRAND: 2 } } },
+        bgm: "synthwave",
+        omens: [{ fx: "rain", chars: ["0", "1", "π", "∞", "Ψ", "7"], text: "🍀 Lucky has arrived 🍀 · 01101∞π…" }, { fx: "shake", text: "🧊 A huge cube is getting enormous!!" }, { fx: "rain", chars: ["🧩", "🧩", "🧩"] }],
+        tests: [["superpose", "⚛️ QUANTUM SUPERPOSITION"], ["parallel", "🧊🧊 PARALLEL TIMELINE"], ["butterfly", "🦋 BUTTERFLY EFFECT"]]
+    },
+    // ------------------------------------------------ 28. Kindness
+    {
+        id: "kindness", name: "Kindness", brand: "Classic Gaming", engine: "sp_kindness", progressive: true,
+        jp: PROG(15000, 150000, 600000), bets: [100, 200, 300, 400, 500], reels: 5, rows: 3, maxX: 5000, px: 2.04,
+        desc: "동화책 삽화 같은 빅토리아 시대 겨울 광장, 등불이 따뜻하게 빛나는 무료 급식소 겸 쉼터. 릴 대신 건물 정면의 아치형 나무창 15개가 매 스핀 덧문을 여닫으며 김이 나는 수프·뜨개 목도리·따뜻한 빵·황금 기부 코인을 보여준다 (5x3 · 243 WAYS). 🔥 HEARTHFIRE WARMTH = 중앙 벽난로의 황금 불씨가 창문 4~7곳을 WILD LANTERN으로 · 🧥 GENEROUS BENEFACTOR = 망토 쓴 신사가 금화 주머니를 던져 당첨 창문마다 x2~x5 감사 배수 · 🍞 COMMUNITY FEAST = 빵·수프 3개가 함께 나오면 쉼터 문이 열리고 1층 창문 전체가 하나의 거대 메가 심볼로 확정 당첨 · 보너스 끝에 GOLDEN DONATION 잭팟이 터질 수 있다",
+        theme: { bg: "linear-gradient(180deg,#1e293b 0%,#334155 40%,#78350f 85%,#451a03 100%)", accent: "#fde68a", glow: "#fb923c", font: "'Lilita One', sans-serif" },
+        skin: "shelter",
+        syms: { ...CARDS, H1: { e: "🍞", name: "Warm Bread", pay: [0.6, 2, 6] }, H2: { e: "🥣", name: "Steaming Soup", pay: [0.5, 1.5, 4] }, H3: { e: "🧣", name: "Knitted Scarf", pay: [0.4, 1.2, 3] }, H4: { e: "🪙", name: "Donation Coin", pay: [0.3, 1, 2.5] } },
+        look: { W: { e: "🏮", name: "WILD LANTERN" } },
+        w: { ...CARD_W, H1: 2.5, H2: 3, H3: 3.5, H4: 4, W: [0, 1.3, 1.3, 1.3, 0] },
+        features: { hearth: { p: 0.0035 }, benefactor: { p: 0.0035 }, feast: { p: 0.003 }, kjp: { p: 0.1, tw: { MINI: 50, MINOR: 28, MAXI: 14, MAJOR: 6, GRAND: 2 } } },
+        bgm: "jingle_box",
+        omens: [LUCKY, { fx: "shake" }, { fx: "rise", chars: ["🧎", "🧎‍♂️", "🥣", "🧎‍♀️"], text: "😱 Ugly Beggars are suddenly swarming up!" }],
+        tests: [["hearth", "🔥 HEARTHFIRE WARMTH"], ["benefactor", "🧥 GENEROUS BENEFACTOR"], ["feast", "🍞 COMMUNITY FEAST"]]
+    },
 ];
 
 // map placement (one machine per map, never shared)
@@ -346,5 +477,7 @@ export const THEME_HOME = {
     clockwork_vault: "igloo", alchemists_lab: "underground", astral_weaver: "zodiac", neon_blitz: "cany", popcorn_pandemonium: "mj2",
     midnight_ouija: "coffin", tower_of_terror: "spooky", the_bog: "blackwater", cyber_dial: "poly2", sun_drum: "dung2",
     three_strikes: "crazy_casino", vampire_bingo: "evil_town", pay_day: "riches", jokers: "island", coin_claw: "redblue",
-    cathedral_wings: "dove", velvet_table: "winners", astro_diner: "spacetown", lilypad_leap: "ribbit", gridlock_rush: "downtown"
+    cathedral_wings: "dove", velvet_table: "winners", astro_diner: "spacetown", lilypad_leap: "ribbit", gridlock_rush: "downtown",
+    rotate_helm: "deep_ocean", smash_bricks: "highlimit", classic_mania: "possibility", mimic_labyrinth: "dungeon", abyssal_trench: "deepsea_casino",
+    glacier_fracture: "ice", quantum_cube: "possibility", kindness: "beggar_shelter"
 };

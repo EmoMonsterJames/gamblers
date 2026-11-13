@@ -61,7 +61,7 @@ export function openSlot(cfg, ctx) {
     const reelsBox = h("div.reels" + (classic ? ".classic" : ""), { style: { "--rows": rows } }, reelEls, classic ? h("div.payline") : null);
     if (special) { reelsBox.classList.add("sp-reels", "spr-" + reelsN); reelsBox.style.gridTemplateColumns = `repeat(${reelsN}, 1fr)`; }
     const overlay = h("div.slot-overlay");
-    const spinBtn = h("button.spin-btn", { onclick: () => doSpin() }, egg ? "TAP!" : "SPIN");
+    const spinBtn = h("button.spin-btn", { onclick: () => doSpin() }, egg ? "TAP!" : cfg.spinLabel || "SPIN");
     const autoBtn = h("button.btn.ghost.small", { onclick: () => { auto = auto ? 0 : 25; autoBtn.classList.toggle("on", !!auto); autoBtn.textContent = auto ? `AUTO ${auto}` : "AUTO"; if (auto && !busy) doSpin(); } }, "AUTO");
     const turboBtn = h("button.btn.ghost.small", { onclick: () => { turbo = !turbo; turboBtn.classList.toggle("on", turbo); } }, "⚡ TURBO");
     const logo = BRAND_LOGO[cfg.brand] ? h("img.brand-logo", { src: BRAND_LOGO[cfg.brand], alt: cfg.brand }) : h("span.brand-text", cfg.brand);
@@ -852,7 +852,7 @@ export function openSlot(cfg, ctx) {
             return;
         }
         if (o.fx === "shake" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1500); }
-        if (o.fx === "wind" && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
+        if ((o.fx === "wind" || o.fx === "rain" || o.fx === "rise") && o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
         if (o.fx === "wind" && !o.chars) o = { ...o, chars: ["🍃", "🌫️", "〰️"] };
         // one huge thing (halo rising, light flooding in, spaceship fly-by, lily pad cover, flash strobe)
         if (o.fx === "big") {

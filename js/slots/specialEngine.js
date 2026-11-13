@@ -135,7 +135,11 @@ function finish(cfg, ctx, o) {
     if (features.length) features[0].total = scaled; else if (scaled > 0) features.push({ type: "sp", kind: "extra", scales: true, total: scaled });
     if (jpWins.length) features.push({ type: "jp", jpWins, total: jpSum });
     const bonus = (o.kinds || []).length > 0 || jpWins.length > 0;
-    const omen = cfg.omens?.length && ((bonus && R() < 0.6) || (!bonus && R() < 0.03)) ? 1 + ri(cfg.omens.length) : 0;
+    // an omen with `only: kind` is reserved for that bonus (and always plays for it); the rest are shared
+    const ks = o.kinds || [];
+    const own = (cfg.omens || []).map((x, i) => x.only && ks.includes(x.only) ? i + 1 : 0).filter(Boolean);
+    const free = (cfg.omens || []).map((x, i) => x.only ? 0 : i + 1).filter(Boolean);
+    const omen = own.length ? own[ri(own.length)] : free.length && ((bonus && R() < 0.6) || (!bonus && R() < 0.03)) ? free[ri(free.length)] : 0;
     return {
         special: true, grid: o.grid, phases: o.phases, features, jackpots: jpWins.map(j => j.tier), points: o.points || 0,
         base: { win: Math.min(o.baseWin || 0, total), lines: o.lines || [] }, total, bonus, state: o.state, anticipation: o.antic || [],

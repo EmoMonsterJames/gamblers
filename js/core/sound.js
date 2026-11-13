@@ -239,6 +239,36 @@ const SONGS = {
             if (bar === 3 && st === 12) for (const n of [77, 80, 84]) bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len * 4, vol: 0.02, cut: 4000, cutEnd: 1200, attack: 0.02 });
             if (st === 15) bgmVoice(a, out, t, { freq: midi(96), type: "sine", dur: 0.5, vol: 0.04, cut: 9000, cutEnd: 6000 }); // bell
         }
+    },
+    // Glacier Fracture: cute pizzicato-strings + woodblock march, 118 BPM (G – C – D – G)
+    pizzicato_march: {
+        bpm: 118, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (st % 4 === 0) bgmVoice(a, out, t, { freq: st % 8 ? 1500 : 1100, type: "square", dur: 0.03, vol: 0.05, cut: 4500, cutEnd: 2000, attack: 0.001 }); // woodblock tick-tock
+            if (st === 0 || st === 8) kick(a, out, t, 0.18);
+            const CH = [[55, 59, 62], [60, 64, 67], [62, 66, 69], [55, 59, 62]][bar];
+            if (st % 4 === 0) bgmVoice(a, out, t, { freq: midi(CH[0] - 12 + (st % 8 ? 7 : 0)), type: "triangle", dur: len * 1.2, vol: 0.16, cut: 900, cutEnd: 300, attack: 0.002 }); // pizz. cello "oom-pah"
+            if (st % 4 === 2) CH.forEach(n => bgmVoice(a, out, t, { freq: midi(n), type: "triangle", dur: len * 0.8, vol: 0.03, cut: 3200, cutEnd: 900, attack: 0.002 })); // pizz. chords
+            const MEL = { 0: 79, 2: 81, 4: 83, 6: 79, 8: 84, 12: 83, 16: 84, 18: 83, 20: 81, 22: 79, 24: 76, 28: 79, 32: 81, 34: 83, 36: 84, 38: 86, 40: 88, 44: 86, 48: 83, 50: 81, 52: 79, 54: 78, 56: 79, 60: 79 };
+            if (MEL[s]) bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "triangle", dur: len * 0.9, vol: 0.05, cut: 6000, cutEnd: 2000, attack: 0.002 }); // pizz. violin tune
+            if (st === 14 && bar % 2) bgmVoice(a, out, t, { freq: midi(91), type: "sine", dur: 0.4, vol: 0.03, cut: 9000, cutEnd: 5000 }); // glockenspiel
+        }
+    },
+    // Kindness: jingle bells + music box + sleigh bells, 112 BPM (C – F – G7 – C)
+    jingle_box: {
+        bpm: 112, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (st % 2 === 0) bgmNoise(a, out, t, { dur: st % 4 ? 0.04 : 0.09, vol: st % 4 ? 0.03 : 0.06, hp: 7500 }); // sleigh bells
+            if (st === 0 || st === 8) kick(a, out, t, 0.16);
+            const CH = [[60, 64, 67], [65, 69, 72], [67, 71, 74], [60, 64, 67]][bar];
+            if (st % 8 === 0) bgmVoice(a, out, t, { freq: midi(CH[0] - 24), type: "sine", dur: len * 6, vol: 0.15, cut: 600, cutEnd: 200 });
+            if (st % 4 === 2) CH.forEach(n => bgmVoice(a, out, t, { freq: midi(n), type: "sine", dur: len * 1.6, vol: 0.022, cut: 5000, cutEnd: 2500, attack: 0.002 })); // soft piano comp
+            // music-box melody (bright sine + bell partial)
+            const BOX = { 0: 76, 2: 76, 4: 76, 8: 76, 10: 76, 12: 76, 16: 76, 18: 79, 20: 72, 23: 74, 24: 76, 32: 77, 34: 77, 36: 77, 39: 77, 40: 77, 42: 76, 44: 76, 46: 76, 48: 76, 50: 74, 52: 74, 54: 76, 56: 74, 60: 79 };
+            if (BOX[s]) { bgmVoice(a, out, t, { freq: midi(BOX[s] + 12), type: "sine", dur: len * 2.2, vol: 0.05, cut: 9000, cutEnd: 4000, attack: 0.001 }); bgmVoice(a, out, t, { freq: midi(BOX[s] + 12) * 3.01, type: "sine", dur: len * 0.6, vol: 0.01, cut: 9000, cutEnd: 5000, attack: 0.001 }); }
+        }
     }
 };
 function taiko(a, out, t, vol = 0.5) {
