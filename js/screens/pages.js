@@ -64,7 +64,7 @@ export function playersPage() {
 export function hallPage() {
     const rows = Store.hall;
     return h("div.page.hall",
-        h("h2.page-title", "🏆 명예의 전당"),
+        h("div.row.between", h("h2.page-title", "🏆 명예의 전당"), h("a.btn.ghost", { href: "#/summary" }, "📜 시즌 요약 보기")),
         rows.length ? h("div.hall-grid", rows.map(r => {
             const sn = r.snapshot || {};
             const p = Store.player(r.playerId);

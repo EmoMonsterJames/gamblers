@@ -615,3 +615,26 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .sel-quota small { opacity: .7; margin-right: 4px; }
 .sq-chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #ffffff12; border: 1px solid #ffffff22; }
 .sq-chip.ok { background: #22c55e2a; border-color: #22c55e77; }
+/* 📜 시즌 요약 */
+.season-summary .tabs { margin: 10px 0; }
+.ss-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-radius: 14px; background: #1a1030; margin-bottom: 10px; }
+.ss-head > b { font-family: var(--display); font-size: 20px; letter-spacing: .04em; }
+.ss-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ss-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #0e0819; border: 1px solid #ffffff10; }
+.ss-row.champ { border-color: #facc15aa; background: linear-gradient(90deg, #facc1522, #0e0819 60%); }
+.ss-row.alive { border-color: #22c55e55; }
+.ss-rank { flex: none; width: 44px; text-align: center; font-family: var(--display); font-size: 18px; padding-top: 10px; color: var(--muted); }
+.ss-row.champ .ss-rank { color: #facc15; }
+.ss-body { flex: 1; min-width: 0; }
+.ss-name b { font-size: 15px; } .ss-no { color: var(--muted); }
+.ss-how { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 4px; font-size: 13px; }
+.ss-mission { flex-basis: 100%; order: 2; color: #e9d5ff; }
+.ss-res { flex-basis: 100%; order: 3; }
+.ss-cands { flex-basis: 100%; order: 4; display: flex; flex-wrap: wrap; gap: 4px; }
+.ss-round { font-family: var(--display); font-size: 11px; padding: 1px 7px; border-radius: 999px; background: #a855f733; border: 1px solid #a855f766; }
+.ss-tag { font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 999px; background: #ffffff12; }
+.ss-tag.live { background: #22c55e22; color: #86efac; } .ss-tag.win { background: #facc1522; color: #fde047; }
+.ss-tag.final { background: #f9731622; color: #fdba74; } .ss-tag.death { background: #ef444422; color: #fca5a5; }
+.ss-who { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px 1px 2px; border-radius: 999px; background: #ffffff10; font-size: 12px; font-weight: 700; vertical-align: middle; }
+.ss-who .avatar, .ss-who > * { flex: none; }
+@media (max-width: 560px) { .ss-rank { width: 34px; font-size: 15px; } }

@@ -16,9 +16,10 @@ import { adminMapsPage } from "./screens/adminMaps.js";
 import { adminSimPage } from "./screens/adminSim.js";
 import { adminResourcesPage } from "./screens/adminResources.js";
 import { applyMaps } from "./data/mapAdmin.js";
+import { seasonSummaryPage } from "./screens/seasonSummary.js";
 
 const ROUTES = {
-    "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage,
+    "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
     "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-resources": adminResourcesPage
@@ -28,7 +29,7 @@ function nav(active) {
     const link = (id, label) => h("a" + (active === id ? ".on" : ""), { href: "#/" + id }, label);
     return h("nav.topnav",
         h("a.brand", { href: "#/" }, h("span", "🎰"), "GAMBLERS"),
-        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
+        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("summary", "시즌 요약"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
         h("div.navright",
             h("span.mode" + (Store.cloud ? (Store.user ? ".cloud" : ".ro") : ".local"), Store.cloud ? (Store.user ? "☁ 저장중" : "☁ 읽기전용") : "💾 로컬"),
             h("button.icon-btn", { onclick: e => { e.currentTarget.textContent = Sound.toggle() ? "🔇" : "🔊"; }, title: "사운드" }, Sound.muted ? "🔇" : "🔊")));

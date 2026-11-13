@@ -911,7 +911,7 @@ export function eliminate(pid) {
     const s = S();
     const rank = alive().length;
     Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
-    s.history.push({ round: s.round, mission: s.mission, candidates: [...s.candidates], eliminated: pid, rank });
+    s.history.push({ round: s.round, mission: s.mission, candidates: [...s.candidates], eliminated: pid, rank, exempt: (s.exempt || []).map(e => e.pid) });
     log(`💀 ${name(pid)} 탈락 (${rank}위)`);
     s.lastEliminated = pid;
     s.status = alive().length <= CONFIG.FINALISTS ? "final" : "eliminated";
@@ -928,7 +928,10 @@ export async function crown(winnerId, snapshot) {
     const s = S();
     const loser = alive().find(p => p !== winnerId);
     s.ps[winnerId].rank = 1;
-    if (loser != null) { s.ps[loser].rank = 2; s.ps[loser].out = true; s.ps[loser].outRound = s.round; }
+    if (loser != null) {
+        s.ps[loser].rank = 2; s.ps[loser].out = true; s.ps[loser].outRound = s.round;
+        s.history.push({ round: s.round, final: true, winner: winnerId, eliminated: loser, rank: 2 }); // 📜 시즌 요약
+    }
     s.status = "done";
     s.winnerId = winnerId;
     s.endedAt = new Date().toISOString();

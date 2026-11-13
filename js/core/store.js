@@ -54,6 +54,7 @@ export const Store = {
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
+        this.archive = L.archive || []; // finished seasons (local mode): { number, status, winnerId, round, roster, history, ps }
         const base = new Map(SEED_PLAYERS.map(p => [p.id, { ...p }]));
         for (const [id, p] of Object.entries(this.playerEdits)) base.set(+id, { ...base.get(+id), ...p });
         this.setPlayers([...base.values()]);
@@ -113,7 +114,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, playerEdits: this.playerEdits }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -249,11 +250,34 @@ export const Store = {
         this.seasonCount = Math.max(this.seasonCount, season.number);
         for (const [pid, rank] of Object.entries(ranks)) this.results.push({ season: season.number, playerId: +pid, rank });
         this.hall.unshift({ season: season.number, playerId: season.winnerId, snapshot: champSnapshot, at: new Date().toISOString() });
+        this.archive = [...(this.archive || []).filter(d => d.number !== season.number), this.seasonDigest(season)];
         this.saveSeason(true);
         await this.write(sb => sb.from("season_results").insert(Object.entries(ranks).map(([pid, rank]) => ({ season_number: season.number, player_id: +pid, rank }))));
         await this.write(sb => sb.from("hall_of_fame").insert({ season_number: season.number, player_id: season.winnerId, snapshot: champSnapshot }));
     },
     endSeasonLocal() { this.season = null; this.saveLocal(); },
+
+    // ------------------------------------------------------------ season summaries (📜 시즌 요약)
+    // the slim part of a season state the summary page needs
+    seasonDigest(s) {
+        if (!s) return null;
+        const ps = {};
+        for (const pid of s.roster || []) { const p = s.ps?.[pid] || {}; ps[pid] = { rank: p.rank ?? null, out: !!p.out, outRound: p.outRound ?? null, money: p.money || 0, points: p.points || 0, hp: p.hp ?? 0 }; }
+        return { number: s.number, status: s.status, winnerId: s.winnerId ?? null, round: s.round || 0, roster: [...(s.roster || [])], history: structuredClone(s.history || []), ps };
+    },
+    // every season (newest first). Cloud: read from the seasons table; local: the archive + the current one.
+    async seasonDigests() {
+        if (this.cloud && sb) {
+            const { data, error } = await sb.from("seasons")
+                .select("number,status,winner_id,round:state->round,roster:state->roster,history:state->history,ps:state->ps")
+                .order("number", { ascending: false });
+            if (error) throw error;
+            return (data || []).map(r => this.seasonDigest({ number: r.number, status: r.status, winnerId: r.winner_id, round: r.round, roster: r.roster, history: r.history, ps: r.ps }));
+        }
+        const list = [...this.archive];
+        if (this.season && !list.some(d => d.number === this.season.number)) list.push(this.seasonDigest(this.season));
+        return list.sort((a, b) => b.number - a.number);
+    },
 
     // ------------------------------------------------------------ jackpots
     ensureJackpots() {
