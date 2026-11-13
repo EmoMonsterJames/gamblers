@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Chucklepuff: a bouncy red clown-nose balloon with a painted white smile, big cartoon eyes and a tied rubber knot for a foot -->
+  <defs>
+    <radialGradient id="rub" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#ff9a9a"/><stop offset=".45" stop-color="#ff2a3a"/><stop offset="1" stop-color="#9a0010"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd6e0" stop-opacity=".55"/><stop offset="1" stop-color="#ffd6e0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="472" rx="90" ry="12" fill="#5a0010" opacity=".25"/>
+  <!-- confetti air puffs -->
+  <g opacity=".95"><rect x="70" y="150" width="14" height="8" rx="2" fill="#ffd23a" transform="rotate(30 77 154)"/><rect x="420" y="130" width="14" height="8" rx="2" fill="#3ad8ff" transform="rotate(-20 427 134)"/>
+    <rect x="96" y="330" width="14" height="8" rx="2" fill="#7aff6a" transform="rotate(60 103 334)"/><rect x="404" y="320" width="14" height="8" rx="2" fill="#c86aff" transform="rotate(10 411 324)"/>
+    <circle cx="430" cy="230" r="6" fill="#ff7ac8"/><circle cx="80" cy="250" r="6" fill="#3ad8ff"/></g>
+  <path d="M60 210 q20 -12 40 0 q20 12 40 0 M372 250 q20 -12 40 0 q20 12 40 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+  <!-- knot foot -->
+  <path d="M236 410 L276 410 L292 452 L220 452 Z" fill="#c8001a" stroke="#5a0010" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M224 452 q32 -14 64 0" fill="none" stroke="#5a0010" stroke-width="6"/>
+  <!-- balloon body with puffed cheeks -->
+  <circle cx="256" cy="246" r="168" fill="url(#rub)" stroke="#5a0010" stroke-width="9"/>
+  <ellipse cx="190" cy="160" rx="46" ry="26" fill="#fff" opacity=".55" transform="rotate(-30 190 160)"/>
+  <circle cx="164" cy="290" r="40" fill="#ff5a6a" opacity=".7"/><circle cx="348" cy="290" r="40" fill="#ff5a6a" opacity=".7"/>
+  <!-- cartoon eyes -->
+  <ellipse cx="208" cy="214" rx="38" ry="46" fill="#fff" stroke="#3a0008" stroke-width="6"/>
+  <ellipse cx="304" cy="214" rx="38" ry="46" fill="#fff" stroke="#3a0008" stroke-width="6"/>
+  <ellipse cx="216" cy="226" rx="18" ry="24" fill="#1a1a2a"/><ellipse cx="296" cy="226" rx="18" ry="24" fill="#1a1a2a"/>
+  <circle cx="222" cy="214" r="7" fill="#fff"/><circle cx="302" cy="214" r="7" fill="#fff"/>
+  <!-- painted-on white smile -->
+  <path d="M168 300 Q256 400 344 300 Q256 352 168 300 Z" fill="#fff" stroke="#3a0008" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M206 326 Q256 360 306 326" fill="none" stroke="#e0102a" stroke-width="5" stroke-linecap="round"/>
+  <!-- squeak marks -->
+  <path d="M410 90 l16 -18 M424 108 l22 -6 M88 96 l-16 -18 M76 116 l-22 -6" stroke="#ffd23a" stroke-width="6" stroke-linecap="round"/>
+</svg>

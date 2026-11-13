@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Crossfix: a weathered, rotting wooden cross bound with rusty chains; one crimson eye where the beams meet -->
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d5038"/><stop offset=".5" stop-color="#8a6a4a"/><stop offset="1" stop-color="#5a3e28"/></linearGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffcdd2"/><stop offset=".4" stop-color="#ff1744"/><stop offset="1" stop-color="#5a0000"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#4a3060" stop-opacity=".55"/><stop offset="1" stop-color="#4a3060" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".5"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="466" rx="150" ry="18" fill="url(#sh)"/>
+  <!-- withered frozen plants -->
+  <path d="M110 466 Q100 430 84 420 M110 466 Q120 436 136 430 M400 466 Q392 436 376 428 M400 466 Q410 440 428 434" fill="none" stroke="#78909c" stroke-width="5" stroke-linecap="round"/>
+  <!-- vertical beam -->
+  <path d="M222 40 L290 44 L294 460 L218 458 Z" fill="url(#wood)" stroke="#2e1e10" stroke-width="8" stroke-linejoin="round"/>
+  <!-- horizontal beam -->
+  <path d="M70 150 L442 140 L444 210 L68 218 Z" fill="url(#wood)" stroke="#2e1e10" stroke-width="8" stroke-linejoin="round"/>
+  <!-- grain / rot -->
+  <path d="M240 70 Q246 120 238 160 M272 240 Q266 320 276 420 M110 170 Q160 176 200 168 M320 172 Q380 166 420 172" fill="none" stroke="#3e2a18" stroke-width="4" stroke-linecap="round"/>
+  <path d="M90 196 L104 216 M424 150 L410 170 M236 430 L250 460" stroke="#2e1e10" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="270" cy="330" r="10" fill="#4e7a3a" opacity=".7"/><circle cx="130" cy="186" r="8" fill="#4e7a3a" opacity=".7"/>
+  <!-- rusty chains around the center -->
+  <g fill="none" stroke="#a0522d" stroke-width="9">
+    <ellipse cx="190" cy="196" rx="18" ry="11" transform="rotate(30 190 196)"/>
+    <ellipse cx="214" cy="214" rx="18" ry="11" transform="rotate(30 214 214)"/>
+    <ellipse cx="300" cy="214" rx="18" ry="11" transform="rotate(-30 300 214)"/>
+    <ellipse cx="324" cy="196" rx="18" ry="11" transform="rotate(-30 324 196)"/>
+    <ellipse cx="206" cy="148" rx="18" ry="11" transform="rotate(-30 206 148)"/>
+    <ellipse cx="308" cy="148" rx="18" ry="11" transform="rotate(30 308 148)"/>
+  </g>
+  <!-- the single crimson eye -->
+  <ellipse cx="256" cy="180" rx="40" ry="30" fill="#1a0a10" stroke="#2e1e10" stroke-width="6"/>
+  <ellipse cx="256" cy="180" rx="30" ry="22" fill="url(#eye)"/>
+  <ellipse cx="256" cy="180" rx="6" ry="16" fill="#1a0000"/>
+  <path d="M214 160 L240 170 M298 160 L272 170" stroke="#1a0a10" stroke-width="6" stroke-linecap="round"/>
+  <!-- cold shadow -->
+  <path d="M150 300 Q130 340 150 380 M362 300 Q382 340 362 380" fill="none" stroke="#7e57c2" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+</svg>

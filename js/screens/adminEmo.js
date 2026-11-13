@@ -18,7 +18,7 @@ const RARITY = ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY", "MYTHIC"];
 const TRIGGERS = ["Always", "Battle start", "When attacking", "When hit", "Low HP", "Once per battle", "Turn end"];
 
 export function adminEmoPage() {
-    if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🐾 EmoMon 관리"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
+    if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🐾 몬스터 관리 (EmoMon)"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
     let tab = cat() ? "mons" : "sync";
     const tabsEl = h("div.tabs"), body = h("div.ae-body", h("p.muted", "불러오는 중…"));
     const page = h("div.page.admin-emo", h("h2.page-title", "🐾 몬스터 관리 (EmoMon)"), h("p.muted.small", "EmoMonster 데이터를 바탕으로 Gamblers 안에서 쓸 몬스터 · 무기 · 특성 · 아이템을 관리합니다. 켜기/끄기와 가격은 Gamblers에만 적용되고 EmoMonster 원본은 바뀌지 않습니다."), tabsEl, body);

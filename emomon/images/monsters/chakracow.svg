@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="hide" cx="45%" cy="30%" r="75%"><stop offset="0%" stop-color="#b8743e"/><stop offset="60%" stop-color="#7a4422"/><stop offset="100%" stop-color="#4a2612"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#7affd0" stop-opacity=".35"/><stop offset="100%" stop-color="#7affd0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="horn" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#d8cdb8"/><stop offset="100%" stop-color="#5a5248"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a2a2a" stop-opacity=".4"/><stop offset="100%" stop-color="#1a2a2a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="270" r="240" fill="url(#aura)"/>
+  <!-- road -->
+  <path d="M20 470 L492 470" stroke="#3a3f44" stroke-width="40"/>
+  <path d="M200 470 L250 470 M300 470 L350 470" stroke="#e8c23a" stroke-width="6"/>
+  <ellipse cx="256" cy="452" rx="200" ry="18" fill="url(#sh)"/>
+  <!-- slumped body -->
+  <path d="M120 440 C110 360 160 300 250 296 C350 292 420 340 430 420 C432 440 420 452 400 452 L140 452 C126 452 120 448 120 440 Z" fill="url(#hide)" stroke="#2e180a" stroke-width="5"/>
+  <path d="M300 340 C330 350 360 380 362 420 M220 330 C200 360 196 400 210 440" fill="none" stroke="#3a1e0e" stroke-width="4" opacity=".6"/>
+  <!-- legs splayed -->
+  <path d="M140 430 C110 440 70 446 40 440 L44 456 C80 462 120 458 150 450 Z" fill="url(#hide)" stroke="#2e180a" stroke-width="4"/>
+  <path d="M30 436 L50 436 L52 460 L28 460 Z" fill="#3a3530" stroke="#1a1612" stroke-width="3"/>
+  <path d="M400 440 C430 446 460 452 482 448 L478 464 C450 468 420 464 396 456 Z" fill="url(#hide)" stroke="#2e180a" stroke-width="4"/>
+  <path d="M474 444 L494 444 L494 466 L472 466 Z" fill="#3a3530" stroke="#1a1612" stroke-width="3"/>
+  <!-- head -->
+  <path d="M170 150 C170 110 210 90 256 90 C302 90 342 110 342 150 L340 250 C338 300 306 330 256 330 C206 330 174 300 172 250 Z" fill="url(#hide)" stroke="#2e180a" stroke-width="5"/>
+  <!-- horns -->
+  <path d="M178 130 C140 120 110 80 120 30 C140 70 170 92 196 104 Z" fill="url(#horn)" stroke="#2a2620" stroke-width="4"/>
+  <path d="M334 130 C372 120 402 80 392 30 C372 70 342 92 316 104 Z" fill="url(#horn)" stroke="#2a2620" stroke-width="4"/>
+  <!-- ears -->
+  <path d="M174 160 C140 150 116 170 112 186 C140 196 162 186 178 176 Z M338 160 C372 150 396 170 400 186 C372 196 350 186 334 176 Z" fill="#8a5030" stroke="#2e180a" stroke-width="4"/>
+  <!-- glaring eyes -->
+  <path d="M196 196 L240 206 L236 222 L200 216 Z" fill="#e8ffe8" stroke="#1a0e06" stroke-width="3"/>
+  <path d="M316 196 L272 206 L276 222 L312 216 Z" fill="#e8ffe8" stroke="#1a0e06" stroke-width="3"/>
+  <circle cx="222" cy="212" r="6" fill="#0a0a0a"/><circle cx="290" cy="212" r="6" fill="#0a0a0a"/>
+  <circle cx="222" cy="212" r="2" fill="#7affd0"/><circle cx="290" cy="212" r="2" fill="#7affd0"/>
+  <path d="M190 186 L244 200 M322 186 L268 200" stroke="#1a0e06" stroke-width="7" stroke-linecap="round"/>
+  <!-- muzzle -->
+  <ellipse cx="256" cy="282" rx="58" ry="38" fill="#d9a59a" stroke="#2e180a" stroke-width="4"/>
+  <ellipse cx="236" cy="282" rx="9" ry="12" fill="#5a2a2a"/><ellipse cx="276" cy="282" rx="9" ry="12" fill="#5a2a2a"/>
+  <path d="M232 308 C246 302 266 302 280 308" fill="none" stroke="#2e180a" stroke-width="4"/>
+  <!-- bruises / stitches -->
+  <path d="M300 130 L330 150 M306 126 L298 140 M316 136 L308 150 M326 144 L318 158" stroke="#2e180a" stroke-width="3"/>
+  <circle cx="190" cy="250" r="10" fill="#5a3a5a" opacity=".6"/>
+  <!-- ghost wisps -->
+  <path d="M120 300 C96 270 110 240 90 214 M400 290 C424 262 410 232 430 206" fill="none" stroke="#7affd0" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <circle cx="86" cy="206" r="8" fill="#7affd0" opacity=".7"/><circle cx="434" cy="198" r="8" fill="#7affd0" opacity=".7"/>
+</svg>

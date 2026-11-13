@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fur" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fbe2c4"/>
+      <stop offset="60%" stop-color="#e2a066"/>
+      <stop offset="100%" stop-color="#b06a32"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#f0e06a"/>
+      <stop offset="60%" stop-color="#b08a1a"/>
+      <stop offset="100%" stop-color="#5a3e06"/>
+    </radialGradient>
+    <linearGradient id="claw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#c3cbd8"/>
+    </linearGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a4a3a" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#5a4a3a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="256" cy="484" rx="200" ry="18" fill="url(#shadow)"/>
+
+  <!-- tail -->
+  <path d="M410 420 C470 410 486 350 460 320" fill="none" stroke="#c8824a" stroke-width="28" stroke-linecap="round"/>
+
+  <!-- big round fat body -->
+  <ellipse cx="256" cy="350" rx="176" ry="134" fill="url(#fur)" stroke="#8a4a1a" stroke-width="4"/>
+  <ellipse cx="256" cy="380" rx="112" ry="92" fill="#fbeedd"/>
+  <path d="M160 260 l20 26 M150 300 l26 18 M352 260 l-20 26 M362 300 l-26 18" stroke="#a8622a" stroke-width="8" stroke-linecap="round"/>
+  <!-- stubby feet -->
+  <ellipse cx="180" cy="470" rx="44" ry="18" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3"/>
+  <ellipse cx="332" cy="470" rx="44" ry="18" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3"/>
+
+  <!-- head -->
+  <path d="M120 128 L144 50 L210 104 Z" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M392 128 L368 50 L302 104 Z" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M140 114 L150 74 L186 104 Z M372 114 L362 74 L326 104 Z" fill="#f0a0b0"/>
+  <ellipse cx="256" cy="186" rx="146" ry="108" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3"/>
+  <path d="M232 86 l6 26 M256 82 l0 28 M280 86 l-6 26" stroke="#a8622a" stroke-width="7" stroke-linecap="round"/>
+  <!-- chubby cheeks -->
+  <ellipse cx="166" cy="232" rx="50" ry="36" fill="#f6c99a" opacity=".8"/>
+  <ellipse cx="346" cy="232" rx="50" ry="36" fill="#f6c99a" opacity=".8"/>
+
+  <!-- grumpy half-lidded eyes -->
+  <ellipse cx="206" cy="186" rx="26" ry="20" fill="#fff" stroke="#4a2a0a" stroke-width="3"/>
+  <ellipse cx="306" cy="186" rx="26" ry="20" fill="#fff" stroke="#4a2a0a" stroke-width="3"/>
+  <ellipse cx="208" cy="192" rx="15" ry="13" fill="url(#eye)"/>
+  <ellipse cx="304" cy="192" rx="15" ry="13" fill="url(#eye)"/>
+  <ellipse cx="208" cy="192" rx="4" ry="11" fill="#1a1002"/>
+  <ellipse cx="304" cy="192" rx="4" ry="11" fill="#1a1002"/>
+  <!-- heavy grumpy eyelids and brows -->
+  <path d="M178 182 Q206 166 234 180 L234 172 Q206 160 178 174 Z" fill="#c8824a"/>
+  <path d="M278 180 Q306 166 334 182 L334 174 Q306 160 278 172 Z" fill="#c8824a"/>
+  <path d="M178 176 Q206 168 234 180 M278 180 Q306 168 334 176" fill="none" stroke="#4a2a0a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M176 152 L236 166 M336 152 L276 166" stroke="#4a2a0a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- nose and sulky mouth -->
+  <path d="M246 222 L266 222 L256 234 Z" fill="#e87a90"/>
+  <path d="M226 258 Q256 240 286 258" fill="none" stroke="#4a2a0a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M256 234 L256 246" stroke="#4a2a0a" stroke-width="3"/>
+  <path d="M176 236 L110 228 M176 248 L112 254 M336 236 L402 228 M336 248 L400 254" stroke="#4a2a0a" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- paws on the belly with SHARP claws still out -->
+  <circle cx="176" cy="330" r="34" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3"/>
+  <circle cx="336" cy="330" r="34" fill="url(#fur)" stroke="#8a4a1a" stroke-width="3"/>
+  <g fill="url(#claw)" stroke="#7a8496" stroke-width="2" stroke-linejoin="round">
+    <path d="M156 352 L130 404 L170 360 Z"/>
+    <path d="M172 360 L164 420 L184 362 Z"/>
+    <path d="M190 356 L204 412 L198 354 Z"/>
+    <path d="M356 352 L382 404 L342 360 Z"/>
+    <path d="M340 360 L348 420 L328 362 Z"/>
+    <path d="M322 356 L308 412 L314 354 Z"/>
+  </g>
+
+  <!-- grumpy steam puff -->
+  <g fill="#e8e8f0" opacity=".9"><circle cx="420" cy="120" r="12"/><circle cx="440" cy="104" r="9"/><circle cx="452" cy="88" r="6"/></g>
+</svg>

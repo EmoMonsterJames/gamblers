@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="g1" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fffbe0"/><stop offset="100%" stop-color="#ff5ea8"/></radialGradient>
+    <radialGradient id="g2" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fffbe0"/><stop offset="100%" stop-color="#5fc8ff"/></radialGradient>
+    <radialGradient id="g3" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fffbe0"/><stop offset="100%" stop-color="#5fe08a"/></radialGradient>
+    <g id="lantern">
+      <path d="M-18 -110 C-18 -134 18 -134 18 -110" fill="none" stroke="#3a3f4a" stroke-width="6"/>
+      <rect x="-46" y="-110" width="92" height="20" rx="6" fill="#3a3f4a"/>
+      <rect x="-50" y="60" width="100" height="20" rx="6" fill="#3a3f4a"/>
+      <path d="M-46 -90 L46 -90 L56 60 L-56 60 Z" fill="currentColor" stroke="#3a3f4a" stroke-width="6"/>
+      <path d="M0 -90 L0 60 M-50 -14 L50 -14" stroke="#3a3f4a" stroke-width="4" opacity=".6"/>
+      <ellipse cx="-18" cy="-20" rx="9" ry="11" fill="#1a1a2a"/><ellipse cx="18" cy="-20" rx="9" ry="11" fill="#1a1a2a"/>
+      <circle cx="-15" cy="-24" r="3" fill="#fff"/><circle cx="21" cy="-24" r="3" fill="#fff"/>
+      <path d="M-10 10 C-4 18 4 18 10 10" fill="none" stroke="#1a1a2a" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <!-- colored light beams -->
+  <path d="M120 300 L0 512 L240 512 Z" fill="#ff5ea8" opacity=".18"/>
+  <path d="M256 250 L150 512 L362 512 Z" fill="#5fc8ff" opacity=".18"/>
+  <path d="M392 300 L272 512 L512 512 Z" fill="#5fe08a" opacity=".18"/>
+  <!-- hanging bar -->
+  <path d="M60 80 L452 80" stroke="#3a3f4a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M120 80 L120 150 M256 80 L256 110 M392 80 L392 150" stroke="#3a3f4a" stroke-width="5"/>
+  <g style="color:#ffb8d8"><use xlink:href="#lantern" transform="translate(120 280)"/></g>
+  <circle cx="120" cy="268" r="60" fill="url(#g1)" opacity=".45"/>
+  <g style="color:#b8e4ff"><use xlink:href="#lantern" transform="translate(256 240) scale(1.15)"/></g>
+  <circle cx="256" cy="226" r="70" fill="url(#g2)" opacity=".45"/>
+  <g style="color:#c8ffd8"><use xlink:href="#lantern" transform="translate(392 280)"/></g>
+  <circle cx="392" cy="268" r="60" fill="url(#g3)" opacity=".45"/>
+  <g fill="#fff6a0"><path d="M60 180 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M450 190 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M256 40 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/></g>
+</svg>

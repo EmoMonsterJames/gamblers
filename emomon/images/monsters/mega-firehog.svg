@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="body" cx="40%" cy="40%" r="70%"><stop offset="0%" stop-color="#d88a4a"/><stop offset="70%" stop-color="#8a3a1a"/><stop offset="100%" stop-color="#4a1a08"/></radialGradient>
+    <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#d80000"/><stop offset="55%" stop-color="#ff6d00"/><stop offset="100%" stop-color="#ffe14d"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="60%" r="55%"><stop offset="0%" stop-color="#ff6d00" stop-opacity=".45"/><stop offset="100%" stop-color="#ff6d00" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a0a00" stop-opacity=".4"/><stop offset="100%" stop-color="#2a0a00" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="300" r="250" fill="url(#aura)"/>
+  <ellipse cx="256" cy="482" rx="210" ry="18" fill="url(#sh)"/>
+  <!-- many sharp fire spikes -->
+  <g fill="url(#fire)" stroke="#8a0a00" stroke-width="3" stroke-linejoin="round">
+    <path d="M90 300 L20 200 L130 250 Z"/><path d="M110 240 L60 110 L160 200 Z"/><path d="M160 200 L140 50 L210 170 Z"/><path d="M220 180 L230 20 L270 170 Z"/>
+    <path d="M280 170 L320 20 L320 180 Z"/><path d="M330 190 L400 60 L370 210 Z"/><path d="M370 220 L470 120 L410 260 Z"/><path d="M400 280 L500 230 L420 320 Z"/>
+  </g>
+  <!-- huge body -->
+  <ellipse cx="256" cy="340" rx="200" ry="140" fill="url(#body)" stroke="#2a0a00" stroke-width="6"/>
+  <!-- snout -->
+  <ellipse cx="150" cy="370" rx="86" ry="64" fill="#f4d8b8" stroke="#2a0a00" stroke-width="5"/>
+  <circle cx="86" cy="370" r="14" fill="#1a0800"/>
+  <path d="M120 320 L176 336 L170 352 L124 340 Z M220 320 L176 336 L182 352 L216 340 Z" fill="#ffe83a" stroke="#1a0800" stroke-width="3"/>
+  <circle cx="150" cy="338" r="5" fill="#1a0800"/><circle cx="196" cy="338" r="5" fill="#1a0800"/>
+  <path d="M110 312 L178 330 M236 312 L178 330" stroke="#1a0800" stroke-width="7" stroke-linecap="round"/>
+  <!-- fangs -->
+  <path d="M120 396 C150 420 190 420 214 396 L200 410 L190 398 L180 414 L168 400 L156 414 L146 400 L134 410 Z" fill="#fff" stroke="#1a0800" stroke-width="3"/>
+  <!-- claws -->
+  <g fill="#4a1a08" stroke="#2a0a00" stroke-width="4"><ellipse cx="190" cy="470" rx="36" ry="14"/><ellipse cx="340" cy="470" rx="36" ry="14"/></g>
+  <path d="M164 476 L158 490 M180 480 L178 494 M196 480 L198 494 M316 480 L312 494 M332 480 L332 494 M348 480 L352 494" stroke="#f4ead0" stroke-width="5" stroke-linecap="round"/>
+</svg>

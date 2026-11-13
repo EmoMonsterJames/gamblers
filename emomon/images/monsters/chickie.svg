@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fluff" cx="42%" cy="32%" r="72%"><stop offset="0%" stop-color="#fffbd0"/><stop offset="55%" stop-color="#ffe45a"/><stop offset="100%" stop-color="#f0b81a"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="468" rx="120" ry="14" fill="url(#sh)"/>
+  <!-- feet -->
+  <path d="M220 420 L220 456 M200 462 L220 452 L240 462 M292 420 L292 456 M272 462 L292 452 L312 462" fill="none" stroke="#ff9a2a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- body -->
+  <circle cx="256" cy="300" r="150" fill="url(#fluff)" stroke="#d99a10" stroke-width="5"/>
+  <!-- egg shell pants -->
+  <path d="M120 350 L150 330 L176 360 L204 332 L232 362 L256 334 L280 362 L308 332 L336 360 L362 330 L392 350 C380 420 330 452 256 452 C182 452 132 420 120 350 Z" fill="#fff8ea" stroke="#c4a87a" stroke-width="5" stroke-linejoin="round"/>
+  <!-- tuft -->
+  <path d="M240 156 C230 120 246 100 262 110 C256 126 270 136 276 120 C290 132 284 156 270 160" fill="#ffe45a" stroke="#d99a10" stroke-width="5" stroke-linejoin="round"/>
+  <!-- wings -->
+  <path d="M110 290 C70 280 60 320 80 340 C100 330 112 316 118 300 Z M402 290 C442 280 452 320 432 340 C412 330 400 316 394 300 Z" fill="#ffd83a" stroke="#d99a10" stroke-width="5"/>
+  <!-- face -->
+  <ellipse cx="206" cy="262" rx="20" ry="24" fill="#1a1208"/><ellipse cx="306" cy="262" rx="20" ry="24" fill="#1a1208"/>
+  <circle cx="213" cy="252" r="8" fill="#fff"/><circle cx="313" cy="252" r="8" fill="#fff"/>
+  <path d="M236 290 L276 290 L256 318 Z" fill="#ff9a2a" stroke="#c46a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M238 290 L274 290 L256 300 Z" fill="#ffb84a"/>
+  <ellipse cx="170" cy="300" rx="18" ry="10" fill="#ffaa88" opacity=".8"/><ellipse cx="342" cy="300" rx="18" ry="10" fill="#ffaa88" opacity=".8"/>
+</svg>

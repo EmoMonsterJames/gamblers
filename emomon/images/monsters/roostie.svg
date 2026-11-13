@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="feather" cx="42%" cy="32%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="65%" stop-color="#f3eee4"/><stop offset="100%" stop-color="#cfc6b4"/></radialGradient>
+    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3a8a5a"/><stop offset="50%" stop-color="#1a3a6a"/><stop offset="100%" stop-color="#3a1a5a"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="474" rx="150" ry="16" fill="url(#sh)"/>
+  <!-- tail feathers -->
+  <path d="M340 300 C390 220 450 200 470 230 C440 240 420 270 410 300 Z" fill="url(#tail)" stroke="#12203a" stroke-width="4"/>
+  <path d="M350 330 C420 280 476 290 484 330 C450 324 420 340 400 360 Z" fill="url(#tail)" stroke="#12203a" stroke-width="4"/>
+  <path d="M346 360 C410 350 450 380 444 414 C416 396 386 396 360 400 Z" fill="#c8402a" stroke="#6a1a0a" stroke-width="4"/>
+  <!-- legs -->
+  <path d="M220 420 L216 460 M196 466 L216 456 L236 466 M290 420 L294 460 M274 466 L294 456 L314 466" fill="none" stroke="#f5a020" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- plump body -->
+  <ellipse cx="256" cy="340" rx="150" ry="110" fill="url(#feather)" stroke="#a89a80" stroke-width="5"/>
+  <path d="M160 330 C190 380 240 400 300 390 C260 370 220 350 200 310 Z" fill="#e6dfd0" stroke="#a89a80" stroke-width="4"/>
+  <!-- head -->
+  <circle cx="230" cy="190" r="86" fill="url(#feather)" stroke="#a89a80" stroke-width="5"/>
+  <!-- comb -->
+  <path d="M180 120 C176 84 200 74 212 96 C214 64 244 60 246 92 C256 66 286 74 278 108 C292 100 304 118 290 130 Z" fill="#e8322a" stroke="#8a1a10" stroke-width="5" stroke-linejoin="round"/>
+  <!-- beak + wattle -->
+  <path d="M290 190 L344 204 L290 220 Z" fill="#f5a020" stroke="#a3600a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M286 222 C300 236 300 262 284 268 C270 260 272 236 286 222 Z" fill="#e8322a" stroke="#8a1a10" stroke-width="4"/>
+  <!-- eyes -->
+  <ellipse cx="216" cy="180" rx="16" ry="20" fill="#fff" stroke="#3a2a1a" stroke-width="3"/><ellipse cx="270" cy="178" rx="13" ry="17" fill="#fff" stroke="#3a2a1a" stroke-width="3"/>
+  <circle cx="220" cy="184" r="9" fill="#1a1208"/><circle cx="273" cy="182" r="8" fill="#1a1208"/>
+  <circle cx="223" cy="180" r="3" fill="#fff"/><circle cx="276" cy="178" r="3" fill="#fff"/>
+  <path d="M196 156 L232 162 M258 158 L284 160" stroke="#3a2a1a" stroke-width="5" stroke-linecap="round"/>
+  <!-- wing -->
+  <path d="M150 300 C120 330 130 380 170 390 C190 360 190 330 180 300 Z" fill="#e6dfd0" stroke="#a89a80" stroke-width="4"/>
+  <!-- wake-up call sound -->
+  <path d="M362 150 C380 160 380 190 362 200 M384 132 C414 150 414 200 384 218" fill="none" stroke="#f5a020" stroke-width="7" stroke-linecap="round"/>
+</svg>

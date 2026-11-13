@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Archburger: a towering cosmic burger in a glowing neon wrapper cloak; its layers spin like planet rings,
+       hypnotic sesame-seed eyes -->
+  <defs>
+    <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcc80"/><stop offset="1" stop-color="#c46a1c"/></linearGradient>
+    <linearGradient id="cloak" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4fd8"/><stop offset=".5" stop-color="#7c4dff"/><stop offset="1" stop-color="#18ffff"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b388ff" stop-opacity=".7"/><stop offset="1" stop-color="#b388ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#ffecb3"/><stop offset="1" stop-color="#ff9100"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1a0040" stop-opacity=".4"/><stop offset="1" stop-color="#1a0040" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="246" fill="url(#aura)"/>
+  <ellipse cx="256" cy="476" rx="130" ry="12" fill="url(#sh)"/>
+  <!-- neon wrapper cloak behind -->
+  <path d="M120 120 C60 220 70 380 110 456 L402 456 C442 380 452 220 392 120 C340 160 172 160 120 120 Z" fill="url(#cloak)" stroke="#2a0060" stroke-width="7" opacity=".9"/>
+  <path d="M140 160 C110 260 120 380 150 440 M372 160 C402 260 392 380 362 440" fill="none" stroke="#fff" stroke-width="4" opacity=".5"/>
+  <!-- bottom bun -->
+  <path d="M150 420 Q150 456 256 458 Q362 456 362 420 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="7"/>
+  <!-- spinning ring layers -->
+  <ellipse cx="256" cy="394" rx="150" ry="22" fill="#6d3b1c" stroke="#3a1a06" stroke-width="6"/>
+  <ellipse cx="256" cy="362" rx="170" ry="20" fill="none" stroke="#fdd835" stroke-width="12" transform="rotate(-6 256 362)"/>
+  <ellipse cx="256" cy="334" rx="150" ry="18" fill="#7cb342" stroke="#2e5a10" stroke-width="6" transform="rotate(5 256 334)"/>
+  <ellipse cx="256" cy="304" rx="160" ry="20" fill="#e53935" stroke="#7a0000" stroke-width="6" transform="rotate(-4 256 304)"/>
+  <ellipse cx="256" cy="274" rx="146" ry="22" fill="#6d3b1c" stroke="#3a1a06" stroke-width="6"/>
+  <!-- tall top bun (the face) -->
+  <path d="M120 262 C120 140 180 80 256 80 C332 80 392 140 392 262 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="8"/>
+  <!-- hypnotic sesame-seed eyes -->
+  <ellipse cx="206" cy="180" rx="30" ry="20" fill="url(#eye)" stroke="#6b3d0c" stroke-width="5" transform="rotate(-20 206 180)"/>
+  <ellipse cx="306" cy="180" rx="30" ry="20" fill="url(#eye)" stroke="#6b3d0c" stroke-width="5" transform="rotate(20 306 180)"/>
+  <path d="M206 180 m-10 0 a10 10 0 1 0 20 0 a6 6 0 1 0 -12 0 M306 180 m-10 0 a10 10 0 1 0 20 0 a6 6 0 1 0 -12 0" fill="none" stroke="#7c4dff" stroke-width="4"/>
+  <ellipse cx="180" cy="120" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="256" cy="104" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="330" cy="120" rx="8" ry="5" fill="#fff8e1"/>
+  <ellipse cx="160" cy="220" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="352" cy="220" rx="8" ry="5" fill="#fff8e1"/>
+  <path d="M226 226 Q256 244 286 226" fill="none" stroke="#6b3d0c" stroke-width="6" stroke-linecap="round"/>
+  <!-- psychic waves -->
+  <path d="M60 140 Q40 180 60 220 M452 140 Q472 180 452 220 M30 120 Q4 180 30 240 M482 120 Q508 180 482 240" fill="none" stroke="#18ffff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <circle cx="256" cy="40" r="10" fill="#ff4fd8"/><circle cx="210" cy="50" r="5" fill="#18ffff"/><circle cx="302" cy="50" r="5" fill="#18ffff"/>
+</svg>

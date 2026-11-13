@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Elementy Two: a shapeless WATER element with a gentle smiling-eyes look -->
+  <defs>
+    <radialGradient id="wat" cx="42%" cy="35%" r="65%"><stop offset="0" stop-color="#e8faff"/><stop offset=".5" stop-color="#5ab8ff"/><stop offset="1" stop-color="#1a5ac8"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#c8ecff" stop-opacity=".6"/><stop offset="1" stop-color="#c8ecff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- blobby rippling water body -->
+  <path d="M130 330 C100 250 150 130 256 120 C362 130 412 250 382 330 C370 370 400 400 360 420 C330 436 300 410 276 430 C250 450 220 430 200 418 C170 432 130 420 140 380 C120 370 120 350 130 330 Z" fill="url(#wat)" stroke="#0a3a8a" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="206" cy="190" rx="40" ry="22" fill="#fff" opacity=".55" transform="rotate(-30 206 190)"/>
+  <g fill="none" stroke="#bfe8ff" stroke-width="4" opacity=".8"><path d="M170 330 q30 -12 60 0 M280 350 q30 -12 60 0"/></g>
+  <!-- drips -->
+  <path d="M110 420 q-10 20 0 30 q10 -10 0 -30 M410 410 q-10 20 0 30 q10 -10 0 -30 M256 470 q-8 16 0 24 q8 -8 0 -24" fill="#5ab8ff"/>
+  <!-- smiling crescent eyes -->
+  <path d="M196 262 Q218 238 240 262" fill="none" stroke="#0a2a6a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M272 262 Q294 238 316 262" fill="none" stroke="#0a2a6a" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="192" cy="292" rx="16" ry="9" fill="#ff9ac0" opacity=".55"/><ellipse cx="320" cy="292" rx="16" ry="9" fill="#ff9ac0" opacity=".55"/>
+  <path d="M238 300 Q256 316 274 300" fill="none" stroke="#0a2a6a" stroke-width="5" stroke-linecap="round"/>
+</svg>

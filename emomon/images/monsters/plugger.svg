@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff59d"/><stop offset="100%" stop-color="#fbc02d"/></linearGradient>
+    <linearGradient id="pin" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#eceff1"/><stop offset="100%" stop-color="#90a4ae"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff9c4" stop-opacity=".7"/><stop offset="100%" stop-color="#fff9c4" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3e2f00" stop-opacity=".3"/><stop offset="100%" stop-color="#3e2f00" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="452" rx="140" ry="14" fill="url(#sh)"/>
+  <!-- long cord coiling -->
+  <path d="M256 380 C256 420 200 430 160 420 C100 404 90 360 130 340 C170 320 200 360 170 390 C140 420 80 440 50 470" fill="none" stroke="#263238" stroke-width="16" stroke-linecap="round"/>
+  <!-- prongs -->
+  <rect x="196" y="56" width="26" height="90" rx="6" fill="url(#pin)" stroke="#37474f" stroke-width="6"/>
+  <rect x="290" y="56" width="26" height="90" rx="6" fill="url(#pin)" stroke="#37474f" stroke-width="6"/>
+  <circle cx="209" cy="80" r="6" fill="#37474f"/><circle cx="303" cy="80" r="6" fill="#37474f"/>
+  <!-- plug body -->
+  <path d="M150 150 L362 150 Q378 150 378 168 L370 300 Q366 340 326 344 L186 344 Q146 340 142 300 L134 168 Q134 150 150 150 Z" fill="url(#body)" stroke="#5d4300" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M220 344 L222 384 L290 384 L292 344" fill="#37474f" stroke="#1c262b" stroke-width="6"/>
+  <path d="M160 300 L352 300" stroke="#f9a825" stroke-width="6"/>
+  <!-- sparks -->
+  <path d="M120 90 L140 120 L126 122 L146 156" fill="none" stroke="#ffeb3b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M392 90 L372 120 L386 122 L366 156" fill="none" stroke="#ffeb3b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- face -->
+  <ellipse cx="212" cy="222" rx="26" ry="30" fill="#fff" stroke="#3e2f00" stroke-width="6"/>
+  <ellipse cx="300" cy="222" rx="26" ry="30" fill="#fff" stroke="#3e2f00" stroke-width="6"/>
+  <circle cx="216" cy="226" r="13" fill="#1a1a1a"/><circle cx="304" cy="226" r="13" fill="#1a1a1a"/>
+  <circle cx="220" cy="220" r="5" fill="#fff"/><circle cx="308" cy="220" r="5" fill="#fff"/>
+  <path d="M228 270 Q256 290 284 270" fill="none" stroke="#3e2f00" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="176" cy="262" r="10" fill="#ff8a65" opacity=".7"/><circle cx="336" cy="262" r="10" fill="#ff8a65" opacity=".7"/>
+</svg>

@@ -61,8 +61,8 @@ export const isFirstStage = id => !C?.evoTo(id).length;
 export const isFinalStage = id => !C?.evoFrom(id).length && !!C?.evoTo(id).length;
 export const hasEvolution = id => !!(C?.evoFrom(id).length || C?.evoTo(id).length);
 export const typesOfSpecies = m => [m?.type1 || m?.type, m?.type2, m?.type3].filter(Boolean);
-export const monImg = m => m?.image ? "EmoMonster/" + String(m.image).replace(/^\.?\.?\//, "") : "";
-export const itemImg = it => it?.image ? (/^(https?:|data:)/.test(it.image) ? it.image : "EmoMonster/" + String(it.image).replace(/^\.?\.?\//, "")) : "";
+export const monImg = m => m?.image ? "emomon/" + String(m.image).replace(/^\.?\.?\//, "") : "";
+export const itemImg = it => it?.image ? (/^(https?:|data:)/.test(it.image) ? it.image : "emomon/" + String(it.image).replace(/^\.?\.?\//, "")) : "";
 
 // ---------------------------------------------------------------- Gamblers monster goods
 // kind: ball · potion · cure · delete · breaker · evo · material. `src` = the EmoMonster item it is
@@ -106,7 +106,7 @@ export function baseItem(id) {
 }
 export const evoItems = () => (C?.items || []).filter(i => i.category === "evolution").map(i => emoItem(i.id));
 export const materials = () => (C?.items || []).filter(i => i.category === "material").map(i => emoItem(i.id));
-export const itemPic = it => it?.img ? "EmoMonster/" + String(it.img).replace(/^\.?\.?\//, "") : it?.src?.image ? itemImg(it.src) : "";
+export const itemPic = it => it?.img ? "emomon/" + String(it.img).replace(/^\.?\.?\//, "") : it?.src?.image ? itemImg(it.src) : "";
 
 // monster weapons / traits as goods
 export const weaponPriceBase = w => Math.round((4000 + (w.rarity || 1) * 4000 + (Number(w.power) || 0) * 150) / 100) * 100;

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Mangrove: an eerie tree monster - a huge leafy crown on top and a tangle of twisted roots it walks on like legs -->
+  <defs>
+    <radialGradient id="leaf" cx="45%" cy="35%" r="65%"><stop offset="0" stop-color="#8ae86a"/><stop offset="1" stop-color="#1a6a2a"/></radialGradient>
+    <linearGradient id="bark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a3a1a"/><stop offset=".5" stop-color="#8a5a2a"/><stop offset="1" stop-color="#4a2a10"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d0f0c0" stop-opacity=".5"/><stop offset="1" stop-color="#d0f0c0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <path d="M10 470 q60 -14 120 0 q60 14 120 0 q60 -14 120 0 q60 14 120 0" fill="none" stroke="#5a8a6a" stroke-width="6" opacity=".6"/>
+  <!-- tangled root legs -->
+  <g fill="none" stroke="#3a2008" stroke-width="22" stroke-linecap="round"><path d="M220 300 C180 340 120 360 80 470"/><path d="M236 310 C220 380 170 420 150 476"/><path d="M256 310 C256 380 240 430 250 480"/><path d="M276 310 C300 380 330 420 350 476"/><path d="M292 300 C340 340 400 360 432 470"/></g>
+  <g fill="none" stroke="url(#bark)" stroke-width="12" stroke-linecap="round"><path d="M220 300 C180 340 120 360 80 470"/><path d="M236 310 C220 380 170 420 150 476"/><path d="M256 310 C256 380 240 430 250 480"/><path d="M276 310 C300 380 330 420 350 476"/><path d="M292 300 C340 340 400 360 432 470"/></g>
+  <path d="M150 400 C200 380 300 380 360 410 M120 430 C180 420 230 440 260 420" fill="none" stroke="#4a2a10" stroke-width="7" stroke-linecap="round"/>
+  <!-- trunk -->
+  <path d="M206 300 C210 240 214 210 220 180 L292 180 C298 210 302 240 306 300 Z" fill="url(#bark)" stroke="#2a1404" stroke-width="7"/>
+  <path d="M236 200 q-6 40 4 90 M272 200 q8 40 -2 90" fill="none" stroke="#3a2008" stroke-width="4"/>
+  <!-- creepy face in the bark -->
+  <ellipse cx="238" cy="236" rx="10" ry="14" fill="#1a0a00"/><ellipse cx="276" cy="236" rx="10" ry="14" fill="#1a0a00"/>
+  <circle cx="240" cy="240" r="3.5" fill="#d8ff6a"/><circle cx="274" cy="240" r="3.5" fill="#d8ff6a"/>
+  <path d="M236 272 Q256 262 278 274 Q258 286 236 272 Z" fill="#1a0a00"/>
+  <!-- huge dense crown -->
+  <g fill="url(#leaf)" stroke="#0a3a14" stroke-width="7">
+    <circle cx="160" cy="150" r="70"/><circle cx="352" cy="150" r="70"/><circle cx="256" cy="100" r="84"/><circle cx="200" cy="200" r="54"/><circle cx="312" cy="200" r="54"/>
+  </g>
+  <g fill="none" stroke="#0a3a14" stroke-width="4" opacity=".5"><path d="M130 130 q20 10 30 -6 M330 120 q16 14 34 0 M230 70 q20 12 40 0"/></g>
+  <!-- hanging aerial roots -->
+  <path d="M120 200 v40 M396 200 v46 M168 230 v30" stroke="#5a3a1a" stroke-width="5" stroke-linecap="round"/>
+</svg>

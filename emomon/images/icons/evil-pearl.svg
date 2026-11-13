@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Evil Pearl (rare evolution item): a dark violet pearl in an open black clam shell -->
+  <defs>
+    <radialGradient id="ep" cx="36%" cy="30%" r="70%"><stop offset="0" stop-color="#f4e6ff"/><stop offset=".4" stop-color="#8a4ac8"/><stop offset="1" stop-color="#2a0a48"/></radialGradient>
+    <linearGradient id="es" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a5a"/><stop offset="1" stop-color="#1a1024"/></linearGradient>
+  </defs>
+  <ellipse cx="32" cy="58" rx="20" ry="3.5" fill="#000" opacity=".25"/>
+  <!-- top shell -->
+  <path d="M8 30 C10 12 54 12 56 30 C48 24 16 24 8 30 Z" fill="url(#es)" stroke="#0e0618" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M20 26 L22 17 M32 24 L32 14 M44 26 L42 17" stroke="#6a5a7a" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- bottom shell -->
+  <path d="M6 40 C10 56 54 56 58 40 C50 46 14 46 6 40 Z" fill="url(#es)" stroke="#0e0618" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M8 40 C16 44 48 44 56 40" fill="none" stroke="#c070ff" stroke-width="1.5" opacity=".6"/>
+  <!-- pearl -->
+  <circle cx="32" cy="37" r="11" fill="url(#ep)" stroke="#1a0630" stroke-width="2"/>
+  <circle cx="28" cy="33" r="3" fill="#fff" opacity=".8"/>
+  <path d="M27 40 L30 41.5 L27 43 Z M37 40 L34 41.5 L37 43 Z" fill="#c8ff3a"/>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="neb" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#ff80ab" stop-opacity=".9"/><stop offset="45%" stop-color="#7c4dff" stop-opacity=".75"/><stop offset="100%" stop-color="#0a0a2e" stop-opacity="0"/></radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3949ab"/><stop offset="100%" stop-color="#120a3a"/></linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="40%" stop-color="#80d8ff"/><stop offset="100%" stop-color="#1a237e"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="240" r="256" fill="url(#neb)"/>
+  <!-- gravity rings -->
+  <ellipse cx="256" cy="260" rx="220" ry="54" fill="none" stroke="#b388ff" stroke-width="6" transform="rotate(-14 256 260)" opacity=".85"/>
+  <ellipse cx="256" cy="260" rx="190" ry="40" fill="none" stroke="#80d8ff" stroke-width="4" transform="rotate(18 256 260)" opacity=".7"/>
+  <!-- phantom body -->
+  <path d="M256 80 C176 80 146 150 150 220 C152 300 136 360 110 430 C150 410 170 450 200 424 C220 456 240 436 256 460 C272 436 292 456 312 424 C342 450 362 410 402 430 C376 360 360 300 362 220 C366 150 336 80 256 80 Z" fill="url(#body)" stroke="#05021a" stroke-width="9" stroke-linejoin="round"/>
+  <!-- stars inside the body -->
+  <circle cx="190" cy="320" r="4" fill="#fff"/><circle cx="320" cy="350" r="3" fill="#fff"/><circle cx="250" cy="400" r="4" fill="#fff"/><circle cx="300" cy="140" r="3" fill="#fff"/><circle cx="210" cy="150" r="2" fill="#fff"/>
+  <!-- core -->
+  <circle cx="256" cy="290" r="34" fill="url(#core)" stroke="#05021a" stroke-width="6"/>
+  <!-- face -->
+  <path d="M196 200 C198 172 242 172 244 200 C244 220 196 222 196 200 Z" fill="#05021a"/>
+  <path d="M268 200 C270 172 314 172 316 200 C316 220 268 222 268 200 Z" fill="#05021a"/>
+  <circle cx="222" cy="198" r="9" fill="#80d8ff"/><circle cx="290" cy="198" r="9" fill="#80d8ff"/>
+  <path d="M232 240 Q256 230 280 240" fill="none" stroke="#05021a" stroke-width="6" stroke-linecap="round"/>
+  <!-- strong arms of mist -->
+  <path d="M152 230 C110 220 80 250 72 290 C96 280 112 292 120 310 C130 280 146 262 160 256" fill="url(#body)" stroke="#05021a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M360 230 C402 220 432 250 440 290 C416 280 400 292 392 310 C382 280 366 262 352 256" fill="url(#body)" stroke="#05021a" stroke-width="7" stroke-linejoin="round"/>
+  <!-- orbiting moons -->
+  <circle cx="60" cy="210" r="14" fill="#ffd180" stroke="#05021a" stroke-width="5"/>
+  <circle cx="452" cy="320" r="18" fill="#b2ff59" stroke="#05021a" stroke-width="5"/>
+</svg>

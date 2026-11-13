@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="seg" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#e8f08a"/><stop offset="55%" stop-color="#9ab82a"/><stop offset="100%" stop-color="#4a6a10"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a3a0a" stop-opacity=".3"/><stop offset="100%" stop-color="#2a3a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="440" rx="220" ry="16" fill="url(#sh)"/>
+  <!-- segments with bristles (tail to head) -->
+  <g stroke="#2a3a08" stroke-width="5">
+    <circle cx="70" cy="380" r="40" fill="url(#seg)"/><circle cx="130" cy="370" r="46" fill="url(#seg)"/><circle cx="196" cy="356" r="52" fill="url(#seg)"/><circle cx="268" cy="340" r="56" fill="url(#seg)"/><circle cx="340" cy="300" r="58" fill="url(#seg)"/>
+  </g>
+  <g stroke="#3a2a10" stroke-width="4" stroke-linecap="round">
+    <path d="M60 340 L54 316 M78 340 L84 316 M120 324 L112 298 M142 324 L150 298 M182 304 L172 276 M210 304 L220 276 M254 284 L244 254 M282 284 L292 254 M326 242 L318 212 M354 242 L364 212"/>
+  </g>
+  <g fill="#ffb02a"><circle cx="70" cy="380" r="7"/><circle cx="130" cy="372" r="8"/><circle cx="196" cy="358" r="9"/><circle cx="268" cy="342" r="10"/></g>
+  <!-- little legs -->
+  <path d="M70 420 L66 436 M130 414 L128 432 M196 406 L196 426 M268 394 L270 416" stroke="#4a6a10" stroke-width="10" stroke-linecap="round"/>
+  <!-- head -->
+  <circle cx="400" cy="230" r="80" fill="url(#seg)" stroke="#2a3a08" stroke-width="6"/>
+  <path d="M370 156 C360 120 344 104 326 100 M430 156 C440 120 456 104 474 100" fill="none" stroke="#3a2a10" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="324" cy="98" r="9" fill="#ffb02a" stroke="#3a2a10" stroke-width="3"/><circle cx="476" cy="98" r="9" fill="#ffb02a" stroke="#3a2a10" stroke-width="3"/>
+  <ellipse cx="374" cy="222" rx="18" ry="22" fill="#1a2208"/><ellipse cx="430" cy="222" rx="18" ry="22" fill="#1a2208"/>
+  <circle cx="380" cy="214" r="7" fill="#fff"/><circle cx="436" cy="214" r="7" fill="#fff"/>
+  <ellipse cx="350" cy="256" rx="12" ry="7" fill="#ffb07a" opacity=".8"/><ellipse cx="452" cy="256" rx="12" ry="7" fill="#ffb07a" opacity=".8"/>
+  <path d="M388 262 C396 272 408 272 416 262" fill="none" stroke="#1a2208" stroke-width="5" stroke-linecap="round"/>
+  <!-- leaf it nibbles -->
+  <path d="M470 300 C500 290 510 330 490 350 C470 340 462 320 470 300 Z" fill="#6cc455" stroke="#2f6e26" stroke-width="4"/>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c8f08a"/><stop offset="55%" stop-color="#6cc64a"/><stop offset="100%" stop-color="#3a8a2a"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a3a1a" stop-opacity=".25"/><stop offset="100%" stop-color="#1a3a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="470" rx="100" ry="12" fill="url(#sh)"/>
+  <!-- drifting leaf body -->
+  <g transform="rotate(-12 256 260)">
+    <path d="M256 80 C360 140 400 240 360 340 C330 410 290 440 256 450 C222 440 182 410 152 340 C112 240 152 140 256 80 Z" fill="url(#leaf)" stroke="#2f6e26" stroke-width="6"/>
+    <path d="M256 96 L256 446" stroke="#2f6e26" stroke-width="5"/>
+    <path d="M256 180 L196 150 M256 180 L316 150 M256 340 L190 310 M256 340 L322 310 M256 400 L210 380 M256 400 L302 380" stroke="#2f6e26" stroke-width="4" stroke-linecap="round"/>
+    <path d="M256 450 C256 470 246 486 230 494" fill="none" stroke="#5a3a1a" stroke-width="8" stroke-linecap="round"/>
+    <!-- shy face -->
+    <ellipse cx="216" cy="250" rx="16" ry="20" fill="#1a3a10"/><ellipse cx="296" cy="250" rx="16" ry="20" fill="#1a3a10"/>
+    <circle cx="221" cy="242" r="6" fill="#fff"/><circle cx="301" cy="242" r="6" fill="#fff"/>
+    <ellipse cx="190" cy="282" rx="14" ry="8" fill="#ffb3a0" opacity=".8"/><ellipse cx="322" cy="282" rx="14" ry="8" fill="#ffb3a0" opacity=".8"/>
+    <path d="M244 286 C250 280 262 280 268 286" fill="none" stroke="#1a3a10" stroke-width="4" stroke-linecap="round"/>
+    <path d="M200 222 C206 216 220 214 228 218 M284 218 C292 214 306 216 312 222" fill="none" stroke="#1a3a10" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- wind lines -->
+  <path d="M60 180 C90 170 110 180 130 170 M40 230 C70 220 90 230 110 220 M400 120 C420 112 440 118 460 110" fill="none" stroke="#a8d890" stroke-width="5" stroke-linecap="round"/>
+  <path d="M90 360 c-6 -12 -22 -6 -16 8 l16 14 l16 -14 c6 -14 -10 -20 -16 -8z" fill="#9ad870" transform="rotate(-20 90 360)"/>
+</svg>

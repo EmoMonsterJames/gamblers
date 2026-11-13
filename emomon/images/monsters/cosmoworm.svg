@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Cosmoworm: an iridescent purple-blue space larva, segmented, with a starfield sheen and a glowing violet maw -->
+  <defs>
+    <linearGradient id="iri" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b388ff"/><stop offset=".35" stop-color="#7c4dff"/><stop offset=".65" stop-color="#448aff"/><stop offset="1" stop-color="#1a237e"/></linearGradient>
+    <radialGradient id="maw" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#e040fb"/><stop offset="1" stop-color="#4a148c"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#7c4dff" stop-opacity=".45"/><stop offset="1" stop-color="#1a237e" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#0d0030" stop-opacity=".4"/><stop offset="1" stop-color="#0d0030" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="456" rx="190" ry="14" fill="url(#sh)"/>
+  <!-- segments, tail to head -->
+  <g stroke="#1a0050" stroke-width="7">
+    <circle cx="80" cy="400" r="38" fill="url(#iri)"/>
+    <circle cx="140" cy="380" r="48" fill="url(#iri)"/>
+    <circle cx="210" cy="350" r="56" fill="url(#iri)"/>
+    <circle cx="282" cy="306" r="62" fill="url(#iri)"/>
+    <circle cx="350" cy="236" r="78" fill="url(#iri)"/>
+  </g>
+  <!-- star specks across the hide -->
+  <g fill="#fff"><circle cx="76" cy="392" r="3"/><circle cx="140" cy="364" r="4"/><circle cx="156" cy="400" r="2"/><circle cx="200" cy="336" r="3"/><circle cx="226" cy="372" r="4"/><circle cx="270" cy="286" r="3"/><circle cx="300" cy="330" r="2"/><circle cx="320" cy="190" r="3"/><circle cx="398" cy="270" r="3"/></g>
+  <path d="M190 340 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z M270 296 l3 -8 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 Z" fill="#e1f5fe"/>
+  <!-- little stubby legs -->
+  <path d="M130 424 v20 M180 400 v24 M240 400 v22 M300 364 v24" stroke="#1a0050" stroke-width="10" stroke-linecap="round"/>
+  <!-- head: antennae, eyes, glowing violet maw -->
+  <path d="M320 166 C300 110 280 90 250 84 M380 162 C400 110 430 92 460 90" fill="none" stroke="#1a0050" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="250" cy="84" r="12" fill="#e040fb" stroke="#1a0050" stroke-width="4"/><circle cx="460" cy="90" r="12" fill="#18ffff" stroke="#1a0050" stroke-width="4"/>
+  <ellipse cx="318" cy="210" rx="18" ry="20" fill="#fff" stroke="#1a0050" stroke-width="5"/>
+  <ellipse cx="386" cy="206" rx="18" ry="20" fill="#fff" stroke="#1a0050" stroke-width="5"/>
+  <circle cx="320" cy="212" r="10" fill="#120030"/><circle cx="388" cy="208" r="10" fill="#120030"/>
+  <circle cx="324" cy="207" r="4" fill="#fff"/><circle cx="392" cy="203" r="4" fill="#fff"/>
+  <ellipse cx="354" cy="270" rx="38" ry="26" fill="url(#maw)" stroke="#1a0050" stroke-width="6"/>
+  <path d="M326 262 l8 10 l8 -12 l8 12 l8 -12 l8 12 l8 -10" fill="none" stroke="#fff" stroke-width="3"/>
+  <!-- cosmic dust -->
+  <circle cx="460" cy="380" r="6" fill="#b388ff"/><circle cx="480" cy="340" r="3" fill="#fff"/><circle cx="60" cy="160" r="4" fill="#fff"/><circle cx="110" cy="120" r="6" fill="#448aff"/>
+</svg>

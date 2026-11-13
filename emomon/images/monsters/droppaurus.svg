@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="water" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfeaff"/>
+      <stop offset="50%" stop-color="#4fa8e6"/>
+      <stop offset="100%" stop-color="#1f56a8"/>
+    </radialGradient>
+    <radialGradient id="belly" cx="45%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#f2f8ff"/>
+      <stop offset="70%" stop-color="#c3d9f5"/>
+      <stop offset="100%" stop-color="#93b4e2"/>
+    </radialGradient>
+    <linearGradient id="fin" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#3f8fe0" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#bfe6ff" stop-opacity=".95"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#3b5c9e"/>
+      <stop offset="70%" stop-color="#0e1b42"/>
+      <stop offset="100%" stop-color="#050b1e"/>
+    </radialGradient>
+    <radialGradient id="bub" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="55%" stop-color="#a9dcff" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#3f8fe0" stop-opacity=".8"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3a52a0" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#3a52a0" stop-opacity="0"/>
+    </radialGradient>
+    <g id="b"><circle r="10" fill="url(#bub)" stroke="#3f8fe0" stroke-width="1.5"/><circle cx="-3.5" cy="-3.5" r="2.5" fill="#fff"/></g>
+    <path id="spike" d="M-18 0 C-12 -30 -4 -50 6 -70 C10 -46 16 -24 20 0 Z" fill="url(#fin)" stroke="#1d4a8c" stroke-width="2.5"/>
+    <path id="toe" d="M-12 0 C-12 -12 12 -12 12 0 C12 8 -12 8 -12 0 Z" fill="#cfe4fb" stroke="#1d4a8c" stroke-width="2"/>
+  </defs>
+
+  <ellipse cx="256" cy="480" rx="190" ry="20" fill="url(#shadow)"/>
+
+  <!-- water fins on the back -->
+  <use xlink:href="#spike" transform="translate(96 230) rotate(-40)"/>
+  <use xlink:href="#spike" transform="translate(84 300) rotate(-65)"/>
+  <use xlink:href="#spike" transform="translate(416 220) rotate(40)"/>
+  <use xlink:href="#spike" transform="translate(430 290) rotate(65)"/>
+  <use xlink:href="#spike" transform="translate(380 150) rotate(20)"/>
+
+  <!-- thick legs -->
+  <path d="M120 360 C96 400 100 450 130 466 L222 466 C236 440 232 400 214 370 Z" fill="url(#water)" stroke="#1d4a8c" stroke-width="3"/>
+  <path d="M392 360 C416 400 412 450 382 466 L290 466 C276 440 280 400 298 370 Z" fill="url(#water)" stroke="#1d4a8c" stroke-width="3"/>
+  <use xlink:href="#toe" transform="translate(140 466)"/><use xlink:href="#toe" transform="translate(172 470)"/><use xlink:href="#toe" transform="translate(204 466)"/>
+  <use xlink:href="#toe" transform="translate(308 466)"/><use xlink:href="#toe" transform="translate(340 470)"/><use xlink:href="#toe" transform="translate(372 466)"/>
+
+  <!-- chubby body + dome head -->
+  <path d="M256 54 C330 54 360 110 362 170 C420 200 440 270 430 340 C418 420 350 456 256 456 C162 456 94 420 82 340 C72 270 92 200 150 170 C152 110 182 54 256 54 Z"
+        fill="url(#water)" stroke="#1d4a8c" stroke-width="4" stroke-linejoin="round"/>
+  <!-- big pale belly -->
+  <ellipse cx="256" cy="340" rx="122" ry="108" fill="url(#belly)" stroke="#7c9fd4" stroke-width="2"/>
+  <!-- lighter muzzle band -->
+  <path d="M164 176 C200 214 312 214 348 176 C340 206 310 226 256 226 C202 226 172 206 164 176 Z" fill="#dcecff" opacity=".9"/>
+  <!-- shines -->
+  <ellipse cx="214" cy="92" rx="34" ry="16" fill="#fff" opacity=".7" transform="rotate(-20 214 92)"/>
+  <ellipse cx="220" cy="300" rx="40" ry="18" fill="#fff" opacity=".6" transform="rotate(-15 220 300)"/>
+  <g fill="#fff" opacity=".7"><circle cx="300" cy="110" r="5"/><circle cx="330" cy="380" r="6"/><circle cx="190" cy="400" r="4"/><circle cx="120" cy="290" r="5"/></g>
+
+  <!-- arms with claws -->
+  <path d="M150 220 C104 236 82 290 92 350 C100 372 126 372 134 352 C140 320 150 290 166 262 Z" fill="url(#water)" stroke="#1d4a8c" stroke-width="3"/>
+  <path d="M362 220 C408 236 430 290 420 350 C412 372 386 372 378 352 C372 320 362 290 346 262 Z" fill="url(#water)" stroke="#1d4a8c" stroke-width="3"/>
+  <g fill="#e8f2ff" stroke="#1d4a8c" stroke-width="2">
+    <path d="M96 352 l-6 20 l14 -8 Z M112 360 l-2 22 l12 -14 Z M128 356 l4 20 l6 -18 Z"/>
+    <path d="M416 352 l6 20 l-14 -8 Z M400 360 l2 22 l-12 -14 Z M384 356 l-4 20 l-6 -18 Z"/>
+  </g>
+
+  <!-- small round eyes -->
+  <ellipse cx="208" cy="148" rx="17" ry="21" fill="url(#eye)"/>
+  <ellipse cx="304" cy="148" rx="17" ry="21" fill="url(#eye)"/>
+  <circle cx="202" cy="140" r="6" fill="#fff"/><circle cx="298" cy="140" r="6" fill="#fff"/>
+  <!-- soft smile -->
+  <path d="M236 196 Q256 208 276 196" fill="none" stroke="#0e1b42" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- bubbles -->
+  <use xlink:href="#b" transform="translate(56 160) scale(1.4)"/>
+  <use xlink:href="#b" transform="translate(460 140) scale(1.2)"/>
+  <use xlink:href="#b" transform="translate(470 380) scale(1)"/>
+  <use xlink:href="#b" transform="translate(44 400) scale(1.1)"/>
+  <use xlink:href="#b" transform="translate(150 60) scale(.9)"/>
+</svg>

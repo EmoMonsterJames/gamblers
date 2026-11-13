@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe26a"/><stop offset="100%" stop-color="#e0a812"/></linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#9aa3b2"/><stop offset="50%" stop-color="#eef2f8"/><stop offset="100%" stop-color="#7a8496"/></linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff8c0" stop-opacity=".95"/><stop offset="100%" stop-color="#fff8c0" stop-opacity="0"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a3a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a3a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="220" cy="470" rx="140" ry="14" fill="url(#sh)"/>
+  <!-- light beam -->
+  <path d="M330 170 L512 60 L512 360 L330 270 Z" fill="url(#beam)"/>
+  <!-- feet -->
+  <ellipse cx="160" cy="456" rx="34" ry="14" fill="#3a3f4a"/><ellipse cx="270" cy="456" rx="34" ry="14" fill="#3a3f4a"/>
+  <path d="M170 400 L166 446 M262 400 L266 446" stroke="#3a3f4a" stroke-width="16" stroke-linecap="round"/>
+  <!-- flashlight lying sideways -->
+  <rect x="80" y="180" width="200" height="220" rx="40" fill="url(#body)" stroke="#8a6a00" stroke-width="6"/>
+  <path d="M100 240 L260 240 M100 340 L260 340" stroke="#b8860a" stroke-width="5"/>
+  <rect x="150" y="360" width="60" height="30" rx="10" fill="#e8322a" stroke="#8a1a10" stroke-width="4"/>
+  <path d="M280 160 L340 140 L340 300 L280 280 Z" fill="url(#head)" stroke="#4a5262" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="340" cy="220" rx="18" ry="82" fill="#fffbe0" stroke="#4a5262" stroke-width="6"/>
+  <!-- face on the body -->
+  <ellipse cx="148" cy="282" rx="22" ry="26" fill="#2a1a04"/><ellipse cx="222" cy="282" rx="22" ry="26" fill="#2a1a04"/>
+  <circle cx="155" cy="272" r="8" fill="#fff"/><circle cx="229" cy="272" r="8" fill="#fff"/>
+  <ellipse cx="118" cy="316" rx="14" ry="8" fill="#ff9a7a" opacity=".8"/><ellipse cx="252" cy="316" rx="14" ry="8" fill="#ff9a7a" opacity=".8"/>
+  <path d="M170 318 C178 330 194 330 202 318" fill="none" stroke="#2a1a04" stroke-width="5" stroke-linecap="round"/>
+  <!-- arm holding strap -->
+  <path d="M84 300 C50 300 40 330 54 352" fill="none" stroke="#e0a812" stroke-width="16" stroke-linecap="round"/>
+  <path d="M100 180 C100 130 150 110 170 140" fill="none" stroke="#3a3f4a" stroke-width="8"/>
+  <g fill="#fff6a0"><path d="M410 120 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M450 280 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/></g>
+</svg>

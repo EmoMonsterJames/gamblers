@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="fluff" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <radialGradient id="fur" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#b98552"/>
+      <stop offset="60%" stop-color="#8a5a30"/>
+      <stop offset="100%" stop-color="#5a3818"/>
+    </radialGradient>
+    <radialGradient id="cream" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="100%" stop-color="#f0dcbc"/>
+    </radialGradient>
+    <linearGradient id="gi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d9dde8"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffcf6a"/>
+      <stop offset="60%" stop-color="#c46a14"/>
+      <stop offset="100%" stop-color="#6a3006"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4a5480" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#4a5480" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="256" cy="484" rx="200" ry="18" fill="url(#shadow)"/>
+
+  <!-- fluffy tail -->
+  <path d="M370 420 C420 420 460 400 470 360 C480 400 470 440 420 456 Z" fill="url(#fur)" filter="url(#fluff)"/>
+
+  <!-- wide fighting stance: gi pants and furry feet -->
+  <path d="M150 330 C110 370 90 420 96 460 L170 466 C176 430 196 400 226 380 Z" fill="url(#gi)" stroke="#9aa2b8" stroke-width="3"/>
+  <path d="M362 330 C402 370 422 420 416 460 L342 466 C336 430 316 400 286 380 Z" fill="url(#gi)" stroke="#9aa2b8" stroke-width="3"/>
+  <g fill="url(#fur)" filter="url(#fluff)">
+    <ellipse cx="128" cy="468" rx="48" ry="20"/>
+    <ellipse cx="384" cy="468" rx="48" ry="20"/>
+  </g>
+  <g fill="#e8e2d8" stroke="#5a3818" stroke-width="1.5">
+    <path d="M86 470 l-8 10 l12 -2 Z M100 476 l-6 12 l12 -6 Z M426 470 l8 10 l-12 -2 Z M412 476 l6 12 l-12 -6 Z"/>
+  </g>
+
+  <!-- gi jacket -->
+  <path d="M150 230 C200 210 312 210 362 230 C380 280 384 330 372 370 L140 370 C128 330 132 280 150 230 Z"
+        fill="url(#gi)" stroke="#9aa2b8" stroke-width="3" stroke-linejoin="round"/>
+  <!-- furry chest showing in the V of the gi -->
+  <path d="M220 222 L256 300 L292 222 Z" fill="url(#fur)" filter="url(#fluff)"/>
+  <path d="M214 220 L256 306 L298 220" fill="none" stroke="#9aa2b8" stroke-width="5" stroke-linejoin="round"/>
+  <!-- black belt -->
+  <rect x="142" y="318" width="228" height="24" rx="6" fill="#1c1c22"/>
+  <path d="M246 330 l-26 56 l18 4 l18 -46 Z M266 330 l22 54 l-18 4 l-14 -48 Z" fill="#1c1c22"/>
+  <rect x="242" y="320" width="28" height="22" rx="5" fill="#2c2c36"/>
+  <!-- dojo patch on the sleeve -->
+  <circle cx="378" cy="256" r="16" fill="#e8892a" stroke="#8a4410" stroke-width="2"/>
+  <path d="M370 250 h16 M378 244 v18 M370 262 h16" stroke="#5a2a08" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- raised fist (left) and clawed hand (right) -->
+  <path d="M152 236 C120 230 96 200 96 170" fill="none" stroke="#e3e6ef" stroke-width="40" stroke-linecap="round"/>
+  <circle cx="92" cy="150" r="34" fill="url(#fur)" filter="url(#fluff)"/>
+  <ellipse cx="96" cy="156" rx="18" ry="16" fill="#e8a8a0"/>
+  <g fill="#e8e2d8" stroke="#5a3818" stroke-width="1.5"><path d="M72 128 l-6 -12 l12 6 Z M90 120 l0 -14 l8 12 Z M110 126 l8 -12 l0 14 Z"/></g>
+  <path d="M362 240 C392 260 404 300 400 340" fill="none" stroke="#e3e6ef" stroke-width="40" stroke-linecap="round"/>
+  <circle cx="402" cy="356" r="32" fill="url(#fur)" filter="url(#fluff)"/>
+  <g fill="#e8e2d8" stroke="#5a3818" stroke-width="1.5"><path d="M384 380 l-4 14 l10 -8 Z M402 386 l0 14 l7 -12 Z M420 378 l6 12 l-1 -14 Z"/></g>
+
+  <!-- big fluffy head -->
+  <circle cx="256" cy="160" r="118" fill="url(#fur)" filter="url(#fluff)"/>
+  <!-- ears -->
+  <circle cx="160" cy="66" r="30" fill="url(#fur)" filter="url(#fluff)"/>
+  <circle cx="352" cy="66" r="30" fill="url(#fur)" filter="url(#fluff)"/>
+  <circle cx="162" cy="70" r="15" fill="#e8a0a8"/>
+  <circle cx="350" cy="70" r="15" fill="#e8a0a8"/>
+  <!-- cream face -->
+  <ellipse cx="256" cy="186" rx="82" ry="70" fill="url(#cream)" filter="url(#fluff)"/>
+  <!-- fierce, determined eyes -->
+  <ellipse cx="220" cy="160" rx="20" ry="22" fill="#fff" stroke="#3a2008" stroke-width="3"/>
+  <ellipse cx="292" cy="160" rx="20" ry="22" fill="#fff" stroke="#3a2008" stroke-width="3"/>
+  <circle cx="224" cy="164" r="13" fill="url(#eye)"/><circle cx="288" cy="164" r="13" fill="url(#eye)"/>
+  <circle cx="224" cy="164" r="5" fill="#1a0c02"/><circle cx="288" cy="164" r="5" fill="#1a0c02"/>
+  <circle cx="219" cy="158" r="4" fill="#fff"/><circle cx="283" cy="158" r="4" fill="#fff"/>
+  <path d="M194 136 L242 148 M318 136 L270 148" stroke="#3a2008" stroke-width="7" stroke-linecap="round"/>
+  <!-- nose and grinning fanged mouth -->
+  <ellipse cx="256" cy="192" rx="11" ry="8" fill="#2a1606"/>
+  <path d="M222 210 Q256 202 290 210 Q284 250 256 254 Q228 250 222 210 Z" fill="#7a1a24" stroke="#3a2008" stroke-width="3"/>
+  <path d="M234 238 Q256 228 278 238 Q270 252 256 253 Q242 252 234 238 Z" fill="#e8707e"/>
+  <g fill="#fff"><path d="M226 211 l6 13 l6 -14 Z M242 208 l5 12 l5 -12 Z M260 208 l5 12 l5 -12 Z M274 210 l6 14 l6 -13 Z"/></g>
+  <ellipse cx="196" cy="206" rx="13" ry="7" fill="#ff9fb0" opacity=".55"/>
+  <ellipse cx="316" cy="206" rx="13" ry="7" fill="#ff9fb0" opacity=".55"/>
+</svg>

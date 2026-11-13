@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Krow: a big, scary crow monster with huge purple eyes that have no pupils -->
+  <defs>
+    <linearGradient id="feath" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3450"/><stop offset="1" stop-color="#0a0812"/></linearGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#f0c8ff"/><stop offset=".5" stop-color="#b03aff"/><stop offset="1" stop-color="#4a0a8a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b088d8" stop-opacity=".5"/><stop offset="1" stop-color="#b088d8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- branch -->
+  <path d="M20 440 C140 430 300 440 492 420" stroke="#3a2008" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <!-- spread ragged wings -->
+  <path d="M190 230 C130 180 60 170 20 200 C50 214 50 236 40 254 C70 250 70 270 62 290 C100 280 120 300 120 320 C150 300 170 290 196 300 Z" fill="url(#feath)" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M322 230 C382 180 452 170 492 200 C462 214 462 236 472 254 C442 250 442 270 450 290 C412 280 392 300 392 320 C362 300 342 290 316 300 Z" fill="url(#feath)" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+  <!-- body -->
+  <ellipse cx="256" cy="320" rx="96" ry="110" fill="url(#feath)" stroke="#000" stroke-width="8"/>
+  <path d="M206 300 l18 20 l-18 20 M306 300 l-18 20 l18 20 M256 330 l14 18 l-14 18 l-14 -18 Z" fill="none" stroke="#5a5070" stroke-width="4"/>
+  <!-- talons on the branch -->
+  <path d="M210 420 l-16 26 M220 420 l0 30 M230 420 l14 26 M282 420 l-14 26 M292 420 l0 30 M302 420 l16 26" stroke="#c8a040" stroke-width="7" stroke-linecap="round"/>
+  <!-- head -->
+  <ellipse cx="256" cy="176" rx="84" ry="76" fill="url(#feath)" stroke="#000" stroke-width="8"/>
+  <path d="M190 120 l-20 -30 l34 18 M230 104 l-6 -36 l22 30 M282 104 l6 -36 l-22 30" fill="#1a1626" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+  <!-- huge glowing purple eyes, no pupils -->
+  <ellipse cx="214" cy="168" rx="34" ry="30" fill="url(#eye)" stroke="#000" stroke-width="6"/>
+  <ellipse cx="298" cy="168" rx="34" ry="30" fill="url(#eye)" stroke="#000" stroke-width="6"/>
+  <ellipse cx="204" cy="158" rx="9" ry="6" fill="#fff" opacity=".7"/><ellipse cx="288" cy="158" rx="9" ry="6" fill="#fff" opacity=".7"/>
+  <path d="M176 136 l60 18 M336 136 l-60 18" stroke="#000" stroke-width="9" stroke-linecap="round"/>
+  <!-- sharp hooked beak -->
+  <path d="M226 200 L286 200 L256 258 Z" fill="#3a3a44" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M232 214 L280 214" stroke="#000" stroke-width="4"/>
+  <!-- stolen glitter -->
+  <circle cx="420" cy="420" r="12" fill="#ffd23a" stroke="#8a6a00" stroke-width="4"/>
+</svg>

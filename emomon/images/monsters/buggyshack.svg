@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8ff4a"/><stop offset="100%" stop-color="#3f9a12"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e2ff9a" stop-opacity=".65"/><stop offset="100%" stop-color="#e2ff9a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1d2a10" stop-opacity=".38"/><stop offset="100%" stop-color="#1d2a10" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="246" fill="url(#aura)"/>
+  <ellipse cx="256" cy="458" rx="200" ry="18" fill="url(#sh)"/>
+  <!-- antennae -->
+  <path d="M200 132 C176 76 150 52 120 44 M312 132 C336 76 362 52 392 44" fill="none" stroke="#24400c" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="118" cy="42" r="16" fill="#ffd23d" stroke="#24400c" stroke-width="6"/>
+  <circle cx="394" cy="42" r="16" fill="#ffd23d" stroke="#24400c" stroke-width="6"/>
+  <!-- roof -->
+  <path d="M120 150 Q256 100 392 150 L392 170 L120 170 Z" fill="#fff8e6" stroke="#24400c" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M120 170 L392 170" stroke="#e53935" stroke-width="8"/>
+  <path d="M140 170 L150 270 M372 170 L362 270" stroke="#24400c" stroke-width="10" stroke-linecap="round"/>
+  <!-- golf club arm (left) -->
+  <path d="M96 300 C60 270 54 220 70 170" fill="none" stroke="#24400c" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="72" cy="168" r="18" fill="#c8ff4a" stroke="#24400c" stroke-width="6"/>
+  <path d="M72 168 L40 60" stroke="#9e9e9e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M40 60 L18 64 L22 44 L48 40 Z" fill="#cfd8dc" stroke="#37474f" stroke-width="5" stroke-linejoin="round"/>
+  <!-- ball arm (right) -->
+  <path d="M416 300 C452 280 462 240 450 206" fill="none" stroke="#24400c" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="450" cy="196" r="24" fill="#fff" stroke="#24400c" stroke-width="6"/>
+  <circle cx="442" cy="190" r="3" fill="#b0bec5"/><circle cx="454" cy="186" r="3" fill="#b0bec5"/><circle cx="448" cy="202" r="3" fill="#b0bec5"/><circle cx="460" cy="198" r="3" fill="#b0bec5"/>
+  <!-- body -->
+  <path d="M86 290 Q86 256 122 256 L392 256 Q426 256 426 296 L420 382 Q416 410 388 410 L124 410 Q92 410 88 380 Z" fill="url(#body)" stroke="#24400c" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M110 380 L402 380" stroke="#2e7d0e" stroke-width="6"/>
+  <rect x="318" y="270" width="84" height="44" rx="10" fill="#bde8ff" stroke="#24400c" stroke-width="6"/>
+  <!-- face, determined -->
+  <ellipse cx="166" cy="320" rx="34" ry="34" fill="#fff" stroke="#24400c" stroke-width="7"/>
+  <ellipse cx="252" cy="320" rx="34" ry="34" fill="#fff" stroke="#24400c" stroke-width="7"/>
+  <circle cx="172" cy="326" r="16" fill="#1f2a12"/><circle cx="258" cy="326" r="16" fill="#1f2a12"/>
+  <circle cx="178" cy="320" r="5" fill="#fff"/><circle cx="264" cy="320" r="5" fill="#fff"/>
+  <path d="M130 282 L196 296 M290 282 L224 296" stroke="#24400c" stroke-width="8" stroke-linecap="round"/>
+  <path d="M180 364 Q210 384 240 364" fill="none" stroke="#24400c" stroke-width="7" stroke-linecap="round"/>
+  <!-- wheels -->
+  <circle cx="150" cy="418" r="40" fill="#2b2b2b" stroke="#111" stroke-width="7"/><circle cx="150" cy="418" r="15" fill="#cfd8dc"/>
+  <circle cx="364" cy="418" r="40" fill="#2b2b2b" stroke="#111" stroke-width="7"/><circle cx="364" cy="418" r="15" fill="#cfd8dc"/>
+</svg>

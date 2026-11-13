@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="cloud" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6aff8a" stop-opacity=".35"/><stop offset="70%" stop-color="#3a1a5a" stop-opacity=".25"/><stop offset="100%" stop-color="#1a0a2a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pa" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#d8ffc0"/><stop offset="60%" stop-color="#7ad85a"/><stop offset="100%" stop-color="#2a6a2a"/></radialGradient>
+    <radialGradient id="pb" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#e8c8ff"/><stop offset="60%" stop-color="#9a5ad8"/><stop offset="100%" stop-color="#3a1a6a"/></radialGradient>
+    <radialGradient id="core" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#9a6aa8"/><stop offset="55%" stop-color="#4a1a5a"/><stop offset="100%" stop-color="#14041e"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#cloud)"/>
+  <!-- toxic wisps -->
+  <path d="M60 300 C100 260 80 220 120 190 M452 300 C412 260 432 220 392 190 M256 470 C236 430 276 410 256 380" fill="none" stroke="#6aff8a" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+  <!-- particle ring: each with its own face -->
+  <g stroke="#14041e" stroke-width="4">
+    <circle cx="256" cy="86" r="40" fill="url(#pa)"/><circle cx="404" cy="170" r="36" fill="url(#pb)"/><circle cx="410" cy="340" r="38" fill="url(#pa)"/>
+    <circle cx="256" cy="430" r="34" fill="url(#pb)"/><circle cx="104" cy="340" r="38" fill="url(#pb)"/><circle cx="108" cy="170" r="36" fill="url(#pa)"/>
+  </g>
+  <!-- small faces -->
+  <g fill="#14041e">
+    <circle cx="244" cy="80" r="6"/><circle cx="268" cy="80" r="6"/><path d="M244 98 C252 106 262 106 270 98" fill="none" stroke="#14041e" stroke-width="4"/>
+    <path d="M390 164 L402 170 M418 164 L406 170" stroke="#14041e" stroke-width="5"/><ellipse cx="404" cy="186" rx="8" ry="6"/>
+    <circle cx="398" cy="334" r="7"/><circle cx="422" cy="334" r="4"/><path d="M398 354 L422 354" stroke="#14041e" stroke-width="4"/>
+    <path d="M244 424 C248 418 254 418 256 424 M258 424 C262 418 268 418 270 424" fill="none" stroke="#14041e" stroke-width="4"/><path d="M248 442 C254 436 260 436 266 442" fill="none" stroke="#14041e" stroke-width="4"/>
+    <circle cx="92" cy="334" r="6"/><circle cx="116" cy="334" r="6"/><path d="M92 354 L100 348 L108 354 L116 348" fill="none" stroke="#14041e" stroke-width="4"/>
+    <circle cx="98" cy="166" r="5"/><circle cx="120" cy="166" r="5"/><circle cx="109" cy="184" r="6"/>
+  </g>
+  <g fill="#fff"><circle cx="246" cy="78" r="2"/><circle cx="270" cy="78" r="2"/><circle cx="94" cy="332" r="2"/><circle cx="118" cy="332" r="2"/></g>
+  <!-- tiny drifting particles -->
+  <g fill="#9aff8a" opacity=".8"><circle cx="180" cy="120" r="9"/><circle cx="340" cy="110" r="7"/><circle cx="450" cy="250" r="8"/><circle cx="62" cy="252" r="8"/><circle cx="170" cy="410" r="7"/><circle cx="350" cy="410" r="9"/></g>
+  <!-- evil core particle -->
+  <circle cx="256" cy="256" r="98" fill="url(#core)" stroke="#0a0212" stroke-width="6"/>
+  <g stroke="#0a0212" stroke-width="5" fill="#2a0a3a">
+    <path d="M256 158 L256 136"/><path d="M326 186 L342 170"/><path d="M354 256 L376 256"/><path d="M326 326 L342 342"/><path d="M256 354 L256 376"/><path d="M186 326 L170 342"/><path d="M158 256 L136 256"/><path d="M186 186 L170 170"/>
+  </g>
+  <g fill="#6aff8a" stroke="#0a0212" stroke-width="3"><circle cx="256" cy="134" r="8"/><circle cx="344" cy="168" r="7"/><circle cx="378" cy="256" r="8"/><circle cx="344" cy="344" r="7"/><circle cx="256" cy="378" r="8"/><circle cx="168" cy="344" r="7"/><circle cx="134" cy="256" r="8"/><circle cx="168" cy="168" r="7"/></g>
+  <!-- sinister eyes -->
+  <path d="M196 230 L248 250 L240 270 L198 258 Z M316 230 L264 250 L272 270 L314 258 Z" fill="#c8ff3a" stroke="#0a0212" stroke-width="4"/>
+  <ellipse cx="226" cy="254" rx="4" ry="9" fill="#0a0212"/><ellipse cx="286" cy="254" rx="4" ry="9" fill="#0a0212"/>
+  <path d="M212 300 C236 320 276 320 300 300 C286 336 226 336 212 300 Z" fill="#0a0212"/>
+  <path d="M220 304 L228 318 L236 306 L244 322 L252 308 L260 322 L268 308 L276 322 L284 306 L292 316" fill="none" stroke="#c8ff3a" stroke-width="3"/>
+</svg>

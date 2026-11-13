@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d4ff6a"/><stop offset="100%" stop-color="#6fbf1e"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e6ffb0" stop-opacity=".6"/><stop offset="100%" stop-color="#e6ffb0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1d2a10" stop-opacity=".35"/><stop offset="100%" stop-color="#1d2a10" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="260" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="440" rx="170" ry="16" fill="url(#sh)"/>
+  <!-- antennae -->
+  <path d="M206 150 C190 100 170 80 150 70 M306 150 C322 100 342 80 362 70" fill="none" stroke="#2c4a12" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="148" cy="68" r="14" fill="#ffe14d" stroke="#2c4a12" stroke-width="6"/>
+  <circle cx="364" cy="68" r="14" fill="#ffe14d" stroke="#2c4a12" stroke-width="6"/>
+  <!-- canopy roof + poles -->
+  <path d="M150 160 Q256 120 362 160 L362 176 L150 176 Z" fill="#f5fff0" stroke="#2c4a12" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M168 176 L176 280 M344 176 L336 280" stroke="#2c4a12" stroke-width="9" stroke-linecap="round"/>
+  <!-- cart body -->
+  <path d="M110 290 Q110 262 140 262 L380 262 Q410 262 410 300 L404 370 Q400 392 376 392 L136 392 Q112 392 110 368 Z" fill="url(#body)" stroke="#2c4a12" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="300" y="276" width="70" height="40" rx="10" fill="#bde8ff" stroke="#2c4a12" stroke-width="6"/>
+  <!-- face -->
+  <ellipse cx="176" cy="318" rx="30" ry="32" fill="#fff" stroke="#2c4a12" stroke-width="6"/>
+  <ellipse cx="248" cy="318" rx="30" ry="32" fill="#fff" stroke="#2c4a12" stroke-width="6"/>
+  <circle cx="182" cy="322" r="14" fill="#1f2a12"/><circle cx="254" cy="322" r="14" fill="#1f2a12"/>
+  <circle cx="187" cy="316" r="5" fill="#fff"/><circle cx="259" cy="316" r="5" fill="#fff"/>
+  <path d="M190 366 Q212 382 234 366" fill="none" stroke="#2c4a12" stroke-width="6" stroke-linecap="round"/>
+  <!-- wheels -->
+  <circle cx="164" cy="400" r="34" fill="#2b2b2b" stroke="#111" stroke-width="6"/><circle cx="164" cy="400" r="13" fill="#cfd8dc"/>
+  <circle cx="350" cy="400" r="34" fill="#2b2b2b" stroke="#111" stroke-width="6"/><circle cx="350" cy="400" r="13" fill="#cfd8dc"/>
+</svg>

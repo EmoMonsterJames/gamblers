@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+    <linearGradient id="outer" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ff5a1f"/>
+      <stop offset="60%" stop-color="#ff8a2a"/>
+      <stop offset="100%" stop-color="#ffb347"/>
+    </linearGradient>
+    <linearGradient id="inner" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ffd23f"/>
+      <stop offset="100%" stop-color="#fff3b0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- warm glow -->
+  <ellipse cx="256" cy="320" rx="150" ry="140" fill="#ff8a2a" opacity=".45" filter="url(#glow)"/>
+
+  <!-- outer flame -->
+  <path d="M256 70 C276 120 330 150 352 210 C362 180 356 160 350 140 C392 180 410 240 400 300 C390 380 330 430 256 430
+           C182 430 122 380 112 300 C104 240 130 190 162 160 C160 190 168 210 180 224 C190 160 230 120 256 70 Z"
+        fill="url(#outer)" stroke="#d9400f" stroke-width="4" stroke-linejoin="round"/>
+  <!-- inner flame -->
+  <path d="M256 170 C268 210 310 230 320 280 C330 340 300 392 256 392 C212 392 182 340 192 290 C198 256 222 240 230 214 C238 234 244 244 256 250 C250 220 248 196 256 170 Z"
+        fill="url(#inner)"/>
+  <path d="M196 196 C186 220 180 244 182 266" fill="none" stroke="#fff3b0" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+
+  <!-- cute face -->
+  <ellipse cx="226" cy="306" rx="15" ry="19" fill="#4a1a00"/>
+  <ellipse cx="286" cy="306" rx="15" ry="19" fill="#4a1a00"/>
+  <circle cx="221" cy="299" r="6" fill="#fff"/><circle cx="281" cy="299" r="6" fill="#fff"/>
+  <circle cx="230" cy="314" r="2.5" fill="#fff"/><circle cx="290" cy="314" r="2.5" fill="#fff"/>
+  <ellipse cx="200" cy="336" rx="15" ry="8" fill="#ff6f6f" opacity=".55"/>
+  <ellipse cx="312" cy="336" rx="15" ry="8" fill="#ff6f6f" opacity=".55"/>
+  <path d="M242 336 Q256 352 270 336" fill="#c2410c" stroke="#4a1a00" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- floating sparks -->
+  <g fill="#ffb347">
+    <circle cx="150" cy="120" r="7"/><circle cx="372" cy="100" r="6"/><circle cx="410" cy="190" r="5"/><circle cx="110" cy="230" r="5"/>
+  </g>
+  <g fill="#ffd23f"><circle cx="330" cy="70" r="4"/><circle cx="180" cy="80" r="4"/></g>
+</svg>

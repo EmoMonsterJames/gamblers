@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- OOO: a translucent orange glass serpent arching into the sky, its hollow body full of roaring plasma fire, magma flowing along its belly -->
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd8a0" stop-opacity=".85"/><stop offset="1" stop-color="#ff7a1a" stop-opacity=".7"/></linearGradient>
+    <radialGradient id="fire" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="#fff6a0"/><stop offset=".5" stop-color="#ff8a1a"/><stop offset="1" stop-color="#e0301a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffc890" stop-opacity=".55"/><stop offset="1" stop-color="#ffc890" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- ash and heatwaves -->
+  <path d="M60 470 q20 -14 40 0 q20 14 40 0 M380 476 q20 -14 40 0 q20 14 40 0" fill="none" stroke="#ff8a1a" stroke-width="5" opacity=".7"/>
+  <g fill="#6a5a50" opacity=".7"><circle cx="90" cy="420" r="5"/><circle cx="120" cy="440" r="4"/><circle cx="420" cy="440" r="5"/></g>
+  <!-- glass crescent -->
+  <path d="M120 460 C70 300 140 110 280 96 C400 86 456 210 410 340 C400 370 384 400 366 426 L326 414 C356 362 372 316 370 268 C368 182 320 138 272 144 C176 152 136 300 168 460 Z" fill="url(#glass)" stroke="#a83a00" stroke-width="8" stroke-linejoin="round"/>
+  <!-- plasma fire inside -->
+  <path d="M146 440 C116 320 160 170 270 120 C230 180 200 240 196 300 C220 260 250 230 290 200 C260 260 240 330 250 400 C220 380 190 400 180 440 Z" fill="url(#fire)" opacity=".9"/>
+  <path d="M380 300 C396 240 380 170 330 130 C350 190 344 250 330 300 Z" fill="url(#fire)" opacity=".85"/>
+  <!-- magma along the underbelly -->
+  <path d="M168 452 C150 340 176 220 260 170" fill="none" stroke="#ff3a0a" stroke-width="10" stroke-linecap="round" stroke-dasharray="30 10"/>
+  <path d="M120 120 l10 -20 M300 60 l6 -24 M440 170 l18 -12" stroke="#ffd23a" stroke-width="5" stroke-linecap="round"/>
+  <!-- glossy highlight -->
+  <path d="M170 220 C190 170 230 130 280 116" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <!-- glass head -->
+  <path d="M310 400 C306 368 334 346 372 348 C412 352 434 382 428 418 C422 454 388 472 350 466 C322 462 312 430 310 400 Z" fill="url(#glass)" stroke="#a83a00" stroke-width="7"/>
+  <path d="M340 420 C340 390 360 376 384 380 C374 400 380 420 396 430 C380 450 350 446 340 420 Z" fill="url(#fire)"/>
+  <circle cx="352" cy="390" r="10" fill="#fff6a0" stroke="#a83a00" stroke-width="4"/><circle cx="402" cy="392" r="10" fill="#fff6a0" stroke="#a83a00" stroke-width="4"/>
+  <circle cx="354" cy="392" r="4" fill="#3a1000"/><circle cx="400" cy="394" r="4" fill="#3a1000"/>
+  <text x="66" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#ff8a1a" stroke="#5a2000" stroke-width="3">O</text>
+</svg>

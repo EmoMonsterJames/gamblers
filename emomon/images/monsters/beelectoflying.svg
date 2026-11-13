@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="fuzz" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="13" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="eyeglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="haze" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="18"/></filter>
+    <linearGradient id="armor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd84a"/><stop offset="100%" stop-color="#c98a0c"/>
+    </linearGradient>
+    <radialGradient id="fur" cx="45%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#ffe066"/><stop offset="100%" stop-color="#d4960e"/>
+    </radialGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a42"/><stop offset="100%" stop-color="#121216"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#e8eef6" stop-opacity=".8"/><stop offset="100%" stop-color="#ffffff" stop-opacity=".95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- golden storm haze -->
+  <circle cx="256" cy="250" r="220" fill="#ffd84a" opacity=".2" filter="url(#haze)"/>
+
+  <!-- HUGE wings (the key feature) -->
+  <g stroke="#2a2a30" stroke-width="3.5" fill="url(#wing)" stroke-linejoin="round">
+    <path d="M220 150 C170 60 80 10 20 30 C4 70 60 150 196 196 Z"/>
+    <path d="M292 150 C342 60 432 10 492 30 C508 70 452 150 316 196 Z"/>
+    <path d="M206 196 C130 186 50 210 30 260 C60 290 150 260 214 222 Z"/>
+    <path d="M306 196 C382 186 462 210 482 260 C452 290 362 260 298 222 Z"/>
+  </g>
+  <g fill="none" stroke="#2a2a30" stroke-width="2.2" opacity=".85">
+    <path d="M200 184 C150 130 90 70 34 40 M150 130 L96 130 M120 92 L150 70 M176 158 L130 170"/>
+    <path d="M312 184 C362 130 422 70 478 40 M362 130 L416 130 M392 92 L362 70 M336 158 L382 170"/>
+    <path d="M210 210 C150 220 90 236 40 256 M130 222 L110 250 M300 210 C362 220 422 236 472 256 M382 222 L402 250"/>
+  </g>
+
+  <!-- golden lightning behind -->
+  <g fill="none" stroke="#ffe27a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M20 330 l30 -20 l-4 30 l34 -24 l-4 30 l30 -18"/>
+    <path d="M492 330 l-30 -20 l4 30 l-34 -24 l4 30 l-30 -18"/>
+    <path d="M150 470 l20 -30 l10 20 l18 -34"/>
+    <path d="M362 470 l-20 -30 l-10 20 l-18 -34"/>
+  </g>
+
+  <!-- segmented abdomen with stinger -->
+  <g stroke="#0b0b10" stroke-width="2.5">
+    <ellipse cx="256" cy="360" rx="56" ry="26" fill="url(#dark)"/>
+    <ellipse cx="256" cy="388" rx="50" ry="22" fill="url(#armor)"/>
+    <ellipse cx="256" cy="412" rx="42" ry="19" fill="url(#dark)"/>
+    <ellipse cx="256" cy="434" rx="32" ry="16" fill="url(#armor)"/>
+  </g>
+  <path d="M240 446 L256 500 L272 446 Z" fill="#1a1a20" stroke="#0b0b10" stroke-width="2"/>
+
+  <!-- clawed legs -->
+  <g fill="none" stroke="#1a1a20" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M212 340 L150 380 L128 450"/><path d="M300 340 L362 380 L384 450"/>
+  </g>
+  <path d="M140 360 C152 340 180 336 196 352 L176 406 C156 402 140 388 140 360 Z" fill="url(#armor)" stroke="#7a5008" stroke-width="2.5"/>
+  <path d="M372 360 C360 340 332 336 316 352 L336 406 C356 402 372 388 372 360 Z" fill="url(#armor)" stroke="#7a5008" stroke-width="2.5"/>
+  <g fill="#1a1a20"><path d="M116 446 l-12 24 l22 -8 Z M132 450 l2 26 l10 -22 Z M396 446 l12 24 l-22 -8 Z M380 450 l-2 26 l-10 -22 Z"/></g>
+
+  <!-- armored thorax -->
+  <path d="M190 230 C220 214 292 214 322 230 C334 270 320 320 300 346 L212 346 C192 320 178 270 190 230 Z" fill="url(#dark)" stroke="#0b0b10" stroke-width="3"/>
+  <path d="M220 250 L256 290 L292 250 L282 318 L256 336 L230 318 Z" fill="url(#armor)" stroke="#7a5008" stroke-width="2.5"/>
+
+  <!-- clawed arms reaching out -->
+  <g fill="none" stroke="#1a1a20" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M196 246 L130 270 L90 320"/><path d="M316 246 L382 270 L422 320"/>
+  </g>
+  <path d="M120 250 C136 236 166 240 176 258 L150 290 C132 288 118 272 120 250 Z" fill="url(#armor)" stroke="#7a5008" stroke-width="2.5"/>
+  <path d="M392 250 C376 236 346 240 336 258 L362 290 C380 288 394 272 392 250 Z" fill="url(#armor)" stroke="#7a5008" stroke-width="2.5"/>
+  <g fill="#1a1a20"><path d="M76 316 l-18 18 l24 -2 Z M88 328 l-8 24 l18 -14 Z M100 322 l6 24 l6 -22 Z M436 316 l18 18 l-24 -2 Z M424 328 l8 24 l-18 -14 Z M412 322 l-6 24 l-6 -22 Z"/></g>
+
+  <!-- fur mane -->
+  <circle cx="256" cy="168" r="92" fill="url(#fur)" filter="url(#fuzz)"/>
+  <!-- armored head -->
+  <path d="M206 120 C226 100 286 100 306 120 C322 150 318 200 296 226 C280 244 232 244 216 226 C194 200 190 150 206 120 Z"
+        fill="url(#armor)" stroke="#7a5008" stroke-width="3"/>
+  <path d="M256 108 L256 150" stroke="#7a5008" stroke-width="3"/>
+  <!-- antennae -->
+  <path d="M236 110 C220 70 196 50 170 44 M276 110 C292 70 316 50 342 44" fill="none" stroke="#1a1a20" stroke-width="8" stroke-linecap="round"/>
+  <!-- glowing eyes -->
+  <circle cx="230" cy="162" r="22" fill="#ffb21f" opacity=".8" filter="url(#eyeglow)"/>
+  <circle cx="282" cy="162" r="22" fill="#ffb21f" opacity=".8" filter="url(#eyeglow)"/>
+  <path d="M208 150 L248 160 Q246 182 228 182 Q210 178 208 150 Z" fill="#fff3c0" stroke="#1a1a20" stroke-width="3"/>
+  <path d="M304 150 L264 160 Q266 182 284 182 Q302 178 304 150 Z" fill="#fff3c0" stroke="#1a1a20" stroke-width="3"/>
+  <circle cx="230" cy="168" r="5" fill="#e06a00"/><circle cx="282" cy="168" r="5" fill="#e06a00"/>
+  <!-- fanged grin -->
+  <path d="M220 196 Q256 186 292 196 Q284 236 256 240 Q228 236 220 196 Z" fill="#1a0408"/>
+  <g fill="#f4f0e8"><path d="M224 197 l5 14 l5 -15 Z M240 194 l5 16 l5 -16 Z M258 194 l5 16 l5 -16 Z M274 196 l5 14 l5 -14 Z M240 236 l5 -14 l5 14 Z M260 236 l5 -14 l5 14 Z"/></g>
+
+  <!-- golden lightning in front -->
+  <g fill="none" stroke="#ffe27a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M196 300 l22 14 l-16 8 l24 16"/>
+    <path d="M330 290 l-18 18 l18 4 l-20 22"/>
+  </g>
+  <g fill="#ffe27a"><circle cx="60" cy="400" r="3"/><circle cx="450" cy="400" r="3"/><circle cx="100" cy="200" r="2.5"/><circle cx="420" cy="190" r="2.5"/></g>
+</svg>

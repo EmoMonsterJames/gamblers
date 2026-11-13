@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Bananazism: a bigger, half-peeled banana villain with jagged teeth, a whip in one hand and a sabre in the other,
+       wearing a glowing made-up banana-peel skull emblem (no real-world symbols). -->
+  <defs>
+    <linearGradient id="peel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f57f17"/><stop offset=".5" stop-color="#ffeb3b"/><stop offset="1" stop-color="#f57f17"/></linearGradient>
+    <linearGradient id="flesh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffde7"/><stop offset="1" stop-color="#f0e2a8"/></linearGradient>
+    <linearGradient id="blade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#eceff1"/><stop offset="1" stop-color="#78909c"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ea80fc"/><stop offset="1" stop-color="#ea80fc" stop-opacity="0"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#6a1b9a" stop-opacity=".55"/><stop offset="1" stop-color="#6a1b9a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="246" fill="url(#aura)"/>
+  <ellipse cx="256" cy="480" rx="150" ry="14" fill="url(#sh)"/>
+  <!-- boots -->
+  <path d="M190 420 L190 474 L146 474 Q136 460 160 452 L168 420 Z M322 420 L322 474 L366 474 Q376 460 352 452 L344 420 Z" fill="#111" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+  <!-- peeled banana flesh body -->
+  <path d="M220 40 C180 110 170 230 180 330 C190 420 228 444 268 436 C300 428 330 396 334 320 C338 220 310 110 276 46 Z" fill="url(#flesh)" stroke="#5d4000" stroke-width="7"/>
+  <!-- peel flaps hanging down like a cape -->
+  <path d="M190 210 C140 230 110 300 120 380 C150 340 170 300 190 280 Z" fill="url(#peel)" stroke="#5d4000" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M326 210 C376 230 406 300 396 380 C366 340 346 300 326 280 Z" fill="url(#peel)" stroke="#5d4000" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M220 40 L232 12 L252 14 L250 46" fill="#4e342e" stroke="#3e2723" stroke-width="5" stroke-linejoin="round"/>
+  <!-- black officer coat over the lower half -->
+  <path d="M184 270 C184 256 334 256 332 270 L336 430 L180 430 Z" fill="#141414" stroke="#000" stroke-width="6"/>
+  <rect x="180" y="380" width="156" height="16" fill="#3e2723" stroke="#000" stroke-width="3"/>
+  <circle cx="258" cy="300" r="5" fill="#bdbdbd"/><circle cx="258" cy="340" r="5" fill="#bdbdbd"/>
+  <!-- glowing emblem on the chest -->
+  <circle cx="258" cy="226" r="46" fill="url(#glow)" opacity=".8"/>
+  <g transform="translate(258 226)">
+    <path d="M-30 -4 C-36 -22 -18 -26 -12 -14 M30 -4 C36 -22 18 -26 12 -14 M0 -16 C-3 -36 5 -36 2 -16" fill="#ffeb3b" stroke="#5d4000" stroke-width="3"/>
+    <circle cx="0" cy="4" r="20" fill="#f3e5f5" stroke="#4a148c" stroke-width="4"/>
+    <circle cx="-7" cy="0" r="6" fill="#4a148c"/><circle cx="7" cy="0" r="6" fill="#4a148c"/><path d="M-7 14 h14" stroke="#4a148c" stroke-width="3"/>
+  </g>
+  <!-- arms -->
+  <path d="M188 286 C140 300 110 270 92 236" fill="none" stroke="#141414" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="88" cy="228" r="16" fill="#fff" stroke="#000" stroke-width="4"/>
+  <path d="M328 286 C372 300 404 330 420 360" fill="none" stroke="#141414" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="424" cy="366" r="16" fill="#fff" stroke="#000" stroke-width="4"/>
+  <!-- whip (left) -->
+  <rect x="80" y="182" width="14" height="50" rx="4" fill="#5d4037" stroke="#000" stroke-width="3" transform="rotate(-20 87 207)"/>
+  <path d="M78 184 C50 130 10 140 26 90 C36 60 70 70 60 40" fill="none" stroke="#4e342e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M60 40 l-12 -8 M60 40 l10 -10 M60 40 l2 -16" stroke="#e040fb" stroke-width="4" stroke-linecap="round"/>
+  <!-- sabre (right) -->
+  <path d="M432 356 C460 290 470 200 456 120 L470 118 C488 200 478 300 444 364 Z" fill="url(#blade)" stroke="#263238" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M410 352 L452 372" stroke="#ffd54f" stroke-width="10" stroke-linecap="round"/>
+  <!-- menacing face with jagged teeth -->
+  <path d="M206 112 L240 128 M310 112 L276 128" stroke="#3e2723" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="226" cy="140" rx="13" ry="10" fill="#e040fb" stroke="#3e2723" stroke-width="4"/><ellipse cx="290" cy="140" rx="13" ry="10" fill="#e040fb" stroke="#3e2723" stroke-width="4"/>
+  <circle cx="228" cy="141" r="4" fill="#fff"/><circle cx="288" cy="141" r="4" fill="#fff"/>
+  <path d="M212 166 Q258 196 304 166 Q258 186 212 166 Z" fill="#3e0f0f" stroke="#3e2723" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M218 168 l8 12 l8 -10 l8 12 l8 -10 l8 12 l8 -10 l8 12 l8 -10 l8 12 l8 -14" fill="#fff" stroke="#3e2723" stroke-width="2" stroke-linejoin="round"/>
+  <!-- peaked cap -->
+  <path d="M192 90 C192 40 324 40 326 90 Z" fill="#141414" stroke="#000" stroke-width="6"/>
+  <path d="M184 90 L334 90 L344 102 L174 102 Z" fill="#212121" stroke="#000" stroke-width="5"/>
+  <rect x="192" y="82" width="134" height="8" fill="#7b1fa2"/>
+  <circle cx="258" cy="64" r="11" fill="#e0e0e0" stroke="#000" stroke-width="3"/><circle cx="254" cy="62" r="3" fill="#000"/><circle cx="262" cy="62" r="3" fill="#000"/>
+</svg>

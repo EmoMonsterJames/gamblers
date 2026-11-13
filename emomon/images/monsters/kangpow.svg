@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Kangpow: a kangaroo in red boxing gloves, ready to fight -->
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0a066"/><stop offset="1" stop-color="#b06a32"/></linearGradient>
+    <radialGradient id="glove" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ff8a80"/><stop offset=".6" stop-color="#e53935"/><stop offset="1" stop-color="#8e0000"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe0b2" stop-opacity=".6"/><stop offset="1" stop-color="#ffe0b2" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3e2000" stop-opacity=".35"/><stop offset="1" stop-color="#3e2000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="462" rx="150" ry="16" fill="url(#sh)"/>
+  <!-- tail -->
+  <path d="M300 400 C360 410 420 420 470 450 C420 452 360 446 300 430 Z" fill="url(#fur)" stroke="#5d3412" stroke-width="7" stroke-linejoin="round"/>
+  <!-- legs / big feet -->
+  <path d="M190 380 C170 420 150 440 120 452 L230 452 C240 430 236 400 226 380 Z" fill="url(#fur)" stroke="#5d3412" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M322 380 C340 420 350 440 380 452 L280 452 C272 430 276 400 286 380 Z" fill="url(#fur)" stroke="#5d3412" stroke-width="7" stroke-linejoin="round"/>
+  <!-- body -->
+  <ellipse cx="256" cy="320" rx="96" ry="100" fill="url(#fur)" stroke="#5d3412" stroke-width="8"/>
+  <ellipse cx="256" cy="340" rx="58" ry="66" fill="#f6d7b0"/>
+  <path d="M214 352 Q256 372 298 352" fill="none" stroke="#c48a55" stroke-width="5"/>
+  <!-- ears -->
+  <path d="M196 120 C176 60 186 30 206 26 C222 50 228 92 222 130 Z" fill="url(#fur)" stroke="#5d3412" stroke-width="7"/>
+  <path d="M316 120 C336 60 326 30 306 26 C290 50 284 92 290 130 Z" fill="url(#fur)" stroke="#5d3412" stroke-width="7"/>
+  <path d="M202 112 C194 72 198 50 206 44 C214 64 216 92 214 116 Z" fill="#f8bbd0"/>
+  <path d="M310 112 C318 72 314 50 306 44 C298 64 296 92 298 116 Z" fill="#f8bbd0"/>
+  <!-- head -->
+  <ellipse cx="256" cy="176" rx="84" ry="72" fill="url(#fur)" stroke="#5d3412" stroke-width="8"/>
+  <ellipse cx="256" cy="212" rx="44" ry="30" fill="#f6d7b0" stroke="#5d3412" stroke-width="5"/>
+  <ellipse cx="256" cy="198" rx="14" ry="9" fill="#3e2000"/>
+  <path d="M240 222 Q256 234 272 222" fill="none" stroke="#3e2000" stroke-width="5" stroke-linecap="round"/>
+  <!-- determined eyes -->
+  <ellipse cx="222" cy="164" rx="18" ry="20" fill="#fff" stroke="#3e2000" stroke-width="5"/>
+  <ellipse cx="290" cy="164" rx="18" ry="20" fill="#fff" stroke="#3e2000" stroke-width="5"/>
+  <circle cx="226" cy="168" r="9" fill="#1a1a1a"/><circle cx="286" cy="168" r="9" fill="#1a1a1a"/>
+  <circle cx="229" cy="164" r="3" fill="#fff"/><circle cx="289" cy="164" r="3" fill="#fff"/>
+  <path d="M200 140 L240 150 M312 140 L272 150" stroke="#3e2000" stroke-width="7" stroke-linecap="round"/>
+  <!-- boxing gloves up -->
+  <path d="M176 290 C160 270 150 250 156 240" stroke="#5d3412" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M336 290 C352 270 362 250 356 240" stroke="#5d3412" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <circle cx="150" cy="228" r="44" fill="url(#glove)" stroke="#5a0000" stroke-width="7"/>
+  <circle cx="362" cy="228" r="44" fill="url(#glove)" stroke="#5a0000" stroke-width="7"/>
+  <rect x="128" y="262" width="46" height="18" rx="5" fill="#fff" stroke="#5a0000" stroke-width="5"/>
+  <rect x="338" y="262" width="46" height="18" rx="5" fill="#fff" stroke="#5a0000" stroke-width="5"/>
+  <path d="M132 206 Q148 196 164 204 M348 204 Q364 196 380 206" stroke="#ffcdd2" stroke-width="6" stroke-linecap="round" fill="none"/>
+</svg>

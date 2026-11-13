@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- III: a hovering, semi-transparent arch of deep indigo nebula fog with tiny star systems and black holes spinning inside; nearby things drift upward -->
+  <defs>
+    <linearGradient id="neb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a7aff" stop-opacity=".8"/><stop offset=".5" stop-color="#3a1aa8" stop-opacity=".85"/><stop offset="1" stop-color="#14084a" stop-opacity=".9"/></linearGradient>
+    <radialGradient id="hole" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000"/><stop offset=".55" stop-color="#000"/><stop offset=".75" stop-color="#c8a8ff"/><stop offset="1" stop-color="#c8a8ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#c8bcff" stop-opacity=".55"/><stop offset="1" stop-color="#c8bcff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- pebbles drifting upward (gravity warp) -->
+  <g fill="#8a7a9a"><circle cx="90" cy="430" r="8"/><circle cx="110" cy="380" r="6"/><circle cx="440" cy="420" r="7"/><circle cx="460" cy="370" r="5"/></g>
+  <path d="M90 470 v-24 M440 466 v-24" stroke="#8a7aff" stroke-width="3" stroke-dasharray="3 5"/>
+  <!-- nebula crescent (floating, no ground) -->
+  <path d="M120 440 C70 290 136 110 276 96 C396 84 452 204 408 334 C398 364 382 396 364 420 L324 408 C354 360 370 314 368 266 C366 180 318 138 270 144 C174 152 136 290 172 440 Z" fill="url(#neb)" stroke="#0a0430" stroke-width="7" stroke-linejoin="round"/>
+  <!-- stars and spinning systems inside -->
+  <g fill="#fff"><circle cx="150" cy="330" r="3"/><circle cx="170" cy="260" r="2.5"/><circle cx="200" cy="190" r="3"/><circle cx="300" cy="120" r="2.5"/><circle cx="380" cy="190" r="3"/><circle cx="392" cy="290" r="2.5"/><circle cx="140" cy="400" r="2.5"/></g>
+  <g fill="#ffe8a0"><path d="M240 130 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z"/><path d="M160 300 l3 -8 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 Z"/></g>
+  <g transform="translate(350 150)"><ellipse rx="22" ry="7" fill="none" stroke="#ffb8ff" stroke-width="3"/><circle r="7" fill="#ffd23a"/></g>
+  <circle cx="170" cy="210" r="16" fill="url(#hole)"/><circle cx="388" cy="240" r="12" fill="url(#hole)"/>
+  <!-- head -->
+  <path d="M310 400 C306 366 334 344 372 346 C412 350 434 380 428 416 C422 452 388 470 350 464 C322 460 312 428 310 400 Z" fill="url(#neb)" stroke="#0a0430" stroke-width="7"/>
+  <circle cx="354" cy="396" r="12" fill="#e8e0ff" stroke="#0a0430" stroke-width="4"/><circle cx="402" cy="396" r="12" fill="#e8e0ff" stroke="#0a0430" stroke-width="4"/>
+  <circle cx="354" cy="396" r="5" fill="#0a0430"/><circle cx="402" cy="396" r="5" fill="#0a0430"/>
+  <path d="M366 432 Q378 438 390 432" fill="none" stroke="#e8e0ff" stroke-width="4" stroke-linecap="round"/>
+  <text x="70" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#4a2ad8" stroke="#0a0430" stroke-width="3">I</text>
+</svg>

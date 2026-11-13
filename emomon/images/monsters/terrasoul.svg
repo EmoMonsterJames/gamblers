@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="rock" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#a1887f"/><stop offset="70%" stop-color="#5d4037"/><stop offset="100%" stop-color="#3e2723"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#9c7cff" stop-opacity=".45"/><stop offset="100%" stop-color="#9c7cff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e1ff7a"/><stop offset="100%" stop-color="#7cb342"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="250" fill="url(#aura)"/>
+  <!-- ghostly wisp base instead of a shadow -->
+  <path d="M130 400 C150 450 190 430 210 470 C230 430 260 460 280 470 C300 430 340 456 380 400 Z" fill="#b39ddb" opacity=".55" stroke="#5e35b1" stroke-width="5"/>
+  <!-- boulder fortress body -->
+  <path d="M96 380 L80 250 L120 160 L190 110 L260 96 L340 116 L404 170 L432 260 L414 380 Z" fill="url(#rock)" stroke="#1b0f0b" stroke-width="9" stroke-linejoin="round"/>
+  <!-- battlements -->
+  <path d="M150 128 L150 92 L184 92 L184 112 M232 100 L232 64 L280 64 L280 98 M328 112 L328 84 L362 84 L362 136" fill="#6d4c41" stroke="#1b0f0b" stroke-width="8" stroke-linejoin="round"/>
+  <!-- cracks glowing -->
+  <path d="M120 300 L170 270 L160 230 M380 300 L340 260 L360 220 M256 380 L250 340 L270 320" fill="none" stroke="#c6ff00" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- moss -->
+  <path d="M96 380 C120 360 150 376 176 362 C200 378 230 360 256 372 C290 360 320 380 350 364 C380 378 400 362 414 380 Z" fill="#558b2f" stroke="#1b0f0b" stroke-width="6"/>
+  <!-- hollow ghost eyes -->
+  <path d="M168 220 C170 186 230 186 232 220 C232 244 170 248 168 220 Z" fill="#1a0f2e" stroke="#1b0f0b" stroke-width="6"/>
+  <path d="M280 220 C282 186 342 186 344 220 C344 244 282 248 280 220 Z" fill="#1a0f2e" stroke="#1b0f0b" stroke-width="6"/>
+  <circle cx="200" cy="216" r="12" fill="url(#glow)"/><circle cx="312" cy="216" r="12" fill="url(#glow)"/>
+  <path d="M206 296 C230 280 282 280 306 296 L296 310 L276 300 L256 314 L236 300 L216 310 Z" fill="#1a0f2e" stroke="#1b0f0b" stroke-width="6" stroke-linejoin="round"/>
+  <!-- floating pebbles -->
+  <path d="M60 180 L80 170 L90 190 L70 200 Z M440 140 L462 136 L466 158 L446 162 Z M450 300 L470 296 L474 316 L454 318 Z" fill="#795548" stroke="#1b0f0b" stroke-width="4"/>
+</svg>

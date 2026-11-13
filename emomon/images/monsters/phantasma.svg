@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Phantasma: a towering spectral wraith of pitch-black ectoplasm with one huge unblinking eye of cold white fire and floating neon-purple claws -->
+  <defs>
+    <radialGradient id="void" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2a1a3a"/><stop offset=".7" stop-color="#0a0410"/><stop offset="1" stop-color="#000"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#e8fff8"/><stop offset=".75" stop-color="#7affd8"/><stop offset="1" stop-color="#2a8a7a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b88aff" stop-opacity=".45"/><stop offset="1" stop-color="#b88aff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- swirling ectoplasm body -->
+  <path d="M130 200 C120 110 190 50 256 50 C322 50 392 110 382 200 C376 290 400 360 430 420 C390 410 380 450 340 440 C320 470 290 452 270 480 C250 452 220 470 200 440 C160 450 140 410 90 420 C120 360 136 290 130 200 Z" fill="url(#void)" stroke="#6a3aa8" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M170 140 C200 100 240 90 280 96 M150 260 C170 320 160 380 140 410 M362 260 C342 320 352 380 372 410" fill="none" stroke="#4a2a7a" stroke-width="5" stroke-linecap="round"/>
+  <!-- one massive burning eye -->
+  <circle cx="256" cy="210" r="78" fill="#0a0410" stroke="#7affd8" stroke-width="5"/>
+  <circle cx="256" cy="210" r="62" fill="url(#eye)"/>
+  <circle cx="256" cy="210" r="22" fill="#0a0410"/>
+  <circle cx="246" cy="198" r="7" fill="#fff"/>
+  <path d="M186 168 q-14 -14 -8 -32 M326 168 q14 -14 8 -32 M256 132 v-26" stroke="#e8fff8" stroke-width="5" stroke-linecap="round" fill="none" opacity=".8"/>
+  <!-- laser beam from the eye -->
+  <path d="M256 288 L256 380" stroke="#e8fff8" stroke-width="16" stroke-linecap="round" opacity=".55"/>
+  <path d="M256 288 L256 380" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <!-- floating clawed hands of hardened neon-purple light -->
+  <g fill="#c86aff" stroke="#5a0a9a" stroke-width="5" stroke-linejoin="round">
+    <path d="M60 250 C80 230 110 236 116 260 L100 300 L90 270 L80 300 L72 268 L60 292 L58 262 Z"/>
+    <path d="M452 250 C432 230 402 236 396 260 L412 300 L422 270 L432 300 L440 268 L452 292 L454 262 Z"/>
+  </g>
+  <path d="M70 250 l12 -16 M440 250 l-12 -16" stroke="#f0c8ff" stroke-width="4" stroke-linecap="round"/>
+  <!-- a snuffed lantern below -->
+  <g transform="translate(400 450)"><rect x="-14" y="-24" width="28" height="34" rx="5" fill="#3a3a48" stroke="#1a1a22" stroke-width="4"/><path d="M-8 -24 q8 -14 16 0" fill="none" stroke="#1a1a22" stroke-width="4"/></g>
+</svg>

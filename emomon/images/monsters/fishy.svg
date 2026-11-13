@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="body" cx="42%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#e3eeff"/>
+      <stop offset="85%" stop-color="#a9c4f2"/>
+      <stop offset="100%" stop-color="#8eacE6"/>
+    </radialGradient>
+    <linearGradient id="fin" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="55%" stop-color="#dbe8ff" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#a8c6f5" stop-opacity=".7"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="50%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#5d8bea"/>
+      <stop offset="55%" stop-color="#23408f"/>
+      <stop offset="100%" stop-color="#0f1d4a"/>
+    </radialGradient>
+    <radialGradient id="bubble" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="60%" stop-color="#dcebff" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#9cc0f0" stop-opacity=".6"/>
+    </radialGradient>
+    <g id="bub">
+      <circle r="10" fill="url(#bubble)" stroke="#bcd5f7" stroke-width="1.2"/>
+      <ellipse cx="-3.5" cy="-4" rx="3" ry="2" fill="#fff"/>
+    </g>
+  </defs>
+
+  <g transform="translate(-22 -15)">
+  <!-- big flowing tail (behind) -->
+  <g stroke="#b9d0f5" stroke-width="2" stroke-linejoin="round">
+    <path d="M232 280 C190 230 150 170 175 120 C200 135 205 160 214 175 C215 140 235 110 262 100 C268 140 262 190 258 250 Z" fill="url(#fin)"/>
+    <path d="M226 292 C170 270 110 250 92 205 C120 200 140 212 158 222 C140 195 140 165 160 145 C190 175 210 220 238 268 Z" fill="url(#fin)"/>
+    <path d="M228 305 C175 315 120 330 96 300 C112 285 130 286 150 290 C130 275 122 255 134 238 C170 250 200 275 236 296 Z" fill="url(#fin)"/>
+  </g>
+  <g fill="none" stroke="#c5d9f7" stroke-width="2" stroke-linecap="round" opacity=".9">
+    <path d="M245 255 C230 200 222 160 230 120 M238 262 C215 215 195 180 190 140"/>
+    <path d="M232 278 C195 255 160 235 125 212 M234 286 C200 270 170 255 150 235"/>
+    <path d="M232 300 C200 305 160 310 118 302"/>
+  </g>
+  <!-- bubbles hanging on the tail -->
+  <use xlink:href="#bub" transform="translate(150 285) scale(1.5)"/>
+  <use xlink:href="#bub" transform="translate(178 130) scale(0.8)"/>
+
+  <!-- dorsal fin -->
+  <path d="M300 205 C305 170 330 140 362 130 C352 155 360 170 372 178 C360 185 352 200 346 218 Z"
+        fill="url(#fin)" stroke="#b9d0f5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M312 205 C322 180 338 160 355 145 M326 210 C338 192 350 182 364 176" fill="none" stroke="#c5d9f7" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- body -->
+  <ellipse cx="300" cy="300" rx="108" ry="100" fill="url(#body)" stroke="#9ab6ea" stroke-width="2"/>
+  <!-- soft scale pattern on the back -->
+  <g fill="none" stroke="#b7cdf3" stroke-width="2" opacity=".7" stroke-linecap="round">
+    <path d="M262 222 q10 9 20 0 M292 214 q10 9 20 0 M322 218 q10 9 20 0 M248 246 q10 9 20 0 M278 238 q10 9 20 0 M308 236 q10 9 20 0 M338 242 q10 9 20 0"/>
+  </g>
+  <ellipse cx="262" cy="240" rx="30" ry="16" fill="#fff" opacity=".55" transform="rotate(-25 262 240)"/>
+
+  <!-- eyes -->
+  <ellipse cx="262" cy="318" rx="22" ry="27" fill="url(#eye)"/>
+  <ellipse cx="342" cy="318" rx="22" ry="27" fill="url(#eye)"/>
+  <ellipse cx="255" cy="306" rx="8" ry="9" fill="#fff"/>
+  <ellipse cx="335" cy="306" rx="8" ry="9" fill="#fff"/>
+  <circle cx="269" cy="330" r="3.5" fill="#fff" opacity=".85"/>
+  <circle cx="349" cy="330" r="3.5" fill="#fff" opacity=".85"/>
+  <path d="M241 306 l-8 -4 M240 314 l-8 0 M363 306 l8 -4 M364 314 l8 0" stroke="#2a3f80" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- blush and little worried mouth -->
+  <ellipse cx="234" cy="352" rx="17" ry="9" fill="#ff9fbf" opacity=".55"/>
+  <ellipse cx="370" cy="352" rx="17" ry="9" fill="#ff9fbf" opacity=".55"/>
+  <path d="M292 354 Q302 346 312 354" fill="none" stroke="#5b4a7a" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- side fins -->
+  <path d="M252 378 C232 395 222 420 230 440 C245 430 262 420 280 392 Z"
+        fill="url(#fin)" stroke="#b9d0f5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M398 300 C420 290 438 296 446 310 C430 318 418 326 404 330 Z"
+        fill="url(#fin)" stroke="#b9d0f5" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M256 395 C248 408 242 420 238 432 M268 392 C262 405 255 416 248 428" fill="none" stroke="#c5d9f7" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- floating bubbles -->
+  <use xlink:href="#bub" transform="translate(410 220) scale(1.3)"/>
+  <use xlink:href="#bub" transform="translate(436 180) scale(0.8)"/>
+  <use xlink:href="#bub" transform="translate(395 420) scale(1)"/>
+  <use xlink:href="#bub" transform="translate(120 400) scale(1.1)"/>
+  </g>
+</svg>

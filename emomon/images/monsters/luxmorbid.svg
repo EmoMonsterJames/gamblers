@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Luxmorbid: a floating angelic silhouette of blinding sterile white light; tar-black shadow leaks from a crack in its chest -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="55%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fffbe8" stop-opacity=".75"/><stop offset="1" stop-color="#fffbe8" stop-opacity="0"/></radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e8ecf8"/></linearGradient>
+  </defs>
+  <circle cx="256" cy="230" r="250" fill="url(#glow)"/>
+  <!-- light-beam cage bars -->
+  <g stroke="#fff6c8" stroke-width="6" opacity=".7" stroke-linecap="round"><path d="M70 470 L120 120 M442 470 L392 120 M150 480 L176 150 M362 480 L336 150"/></g>
+  <!-- wings of light -->
+  <path d="M200 200 C130 140 60 150 40 190 C80 200 96 230 92 260 C130 250 170 250 210 262 Z" fill="#fff" stroke="#d8d0a8" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M312 200 C382 140 452 150 472 190 C432 200 416 230 420 260 C382 250 342 250 302 262 Z" fill="#fff" stroke="#d8d0a8" stroke-width="5" stroke-linejoin="round"/>
+  <!-- robed silhouette tapering away (floating) -->
+  <path d="M190 180 C170 260 180 360 220 440 C240 470 272 470 292 440 C332 360 342 260 322 180 Z" fill="url(#body)" stroke="#c8c0a0" stroke-width="6"/>
+  <!-- the crack in its chest, tar-black shadow leaking out -->
+  <path d="M250 220 L262 246 L246 262 L266 292 L254 312" fill="none" stroke="#0a0a0a" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M256 300 C240 340 250 380 236 420 C230 440 244 456 252 440 C262 410 270 380 266 330 Z" fill="#0a0a0a"/>
+  <path d="M262 260 C290 280 300 320 296 360 C292 380 280 376 282 356 C284 320 276 300 262 290 Z" fill="#1a1a1a" opacity=".85"/>
+  <circle cx="246" cy="456" r="6" fill="#0a0a0a"/><circle cx="284" cy="378" r="4" fill="#0a0a0a"/>
+  <!-- face: a blank serene mask with a false smile -->
+  <circle cx="256" cy="130" r="60" fill="url(#body)" stroke="#c8c0a0" stroke-width="6"/>
+  <path d="M226 124 q10 -8 20 0 M266 124 q10 -8 20 0" fill="none" stroke="#a8a080" stroke-width="5" stroke-linecap="round"/>
+  <path d="M234 154 Q256 170 278 154" fill="none" stroke="#a8a080" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="256" cy="58" rx="50" ry="12" fill="none" stroke="#ffe14d" stroke-width="6"/>
+  <!-- blinding flashes -->
+  <g fill="#fffbe0"><path d="M100 90 l6 -20 l6 20 l20 6 l-20 6 l-6 20 l-6 -20 l-20 -6 Z"/><path d="M410 80 l5 -16 l5 16 l16 5 l-16 5 l-5 16 l-5 -16 l-16 -5 Z"/></g>
+</svg>

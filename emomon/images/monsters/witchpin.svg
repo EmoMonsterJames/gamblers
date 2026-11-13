@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="hat" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a148c"/><stop offset="100%" stop-color="#1a0033"/></linearGradient>
+    <linearGradient id="pin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f3e5f5"/><stop offset="100%" stop-color="#9e86b8"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#b9f6ca" stop-opacity=".45"/><stop offset="100%" stop-color="#7c4dff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="250" fill="url(#aura)"/>
+  <!-- ghost tail -->
+  <path d="M206 380 C200 420 214 440 196 470 C226 456 240 470 256 456 C272 470 286 456 316 470 C298 440 312 420 306 380 Z" fill="#cfd8dc" opacity=".6" stroke="#4a148c" stroke-width="5"/>
+  <!-- bowling pin body -->
+  <path d="M256 150 C220 150 214 190 224 220 C232 244 196 280 192 330 C188 380 220 400 256 400 C292 400 324 380 320 330 C316 280 280 244 288 220 C298 190 292 150 256 150 Z" fill="url(#pin)" stroke="#2a0a4a" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M226 232 L286 232 M220 248 L292 248" stroke="#c62828" stroke-width="7"/>
+  <!-- witch hat -->
+  <path d="M150 168 Q256 140 362 168 Q256 186 150 168 Z" fill="url(#hat)" stroke="#12001f" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M206 162 L262 32 C276 60 290 90 306 160 Z" fill="url(#hat)" stroke="#12001f" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M262 32 C286 30 300 44 304 60" fill="none" stroke="#12001f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M212 150 L302 148" stroke="#76ff03" stroke-width="8"/>
+  <!-- evil eyes -->
+  <path d="M226 278 L250 290 L226 298 Z M286 278 L262 290 L286 298 Z" fill="#76ff03" stroke="#12001f" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M232 334 Q256 318 280 334 L272 342 L264 334 L256 344 L248 334 L240 342 Z" fill="#12001f"/>
+  <!-- broom / exorcism sparks -->
+  <path d="M110 420 L190 300" stroke="#6d4c2a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M90 444 L110 410 L130 432 Z" fill="#c8a165" stroke="#4e342e" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M380 260 L388 276 L404 284 L388 292 L380 308 L372 292 L356 284 L372 276 Z M420 190 L426 202 L438 208 L426 214 L420 226 L414 214 L402 208 L414 202 Z" fill="#b9f6ca"/>
+</svg>

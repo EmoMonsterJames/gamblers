@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+    <radialGradient id="moon" cx="60%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#fffbe0"/>
+      <stop offset="55%" stop-color="#ffe98a"/>
+      <stop offset="100%" stop-color="#eebd46"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a4a9a" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#5a4a9a" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/>
+  </defs>
+
+  <ellipse cx="266" cy="470" rx="120" ry="14" fill="url(#shadow)"/>
+
+  <!-- glow -->
+  <path d="M200 80 A176 176 0 0 1 200 432 Z" fill="#ffe27a" opacity=".5" filter="url(#glow)"/>
+
+  <!-- little feet -->
+  <ellipse cx="246" cy="446" rx="26" ry="14" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+  <ellipse cx="316" cy="436" rx="26" ry="14" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+
+  <!-- half moon: flat side on the left -->
+  <path d="M200 80 A176 176 0 0 1 200 432 Z" fill="url(#moon)" stroke="#c99230" stroke-width="4" stroke-linejoin="round"/>
+  <line x1="200" y1="84" x2="200" y2="428" stroke="#fff6c8" stroke-width="6" opacity=".8"/>
+
+  <!-- craters -->
+  <g fill="#efc458" opacity=".75">
+    <circle cx="300" cy="140" r="16"/><circle cx="340" cy="190" r="9"/><circle cx="330" cy="380" r="14"/><circle cx="250" cy="400" r="9"/>
+  </g>
+  <ellipse cx="300" cy="120" rx="34" ry="14" fill="#fff" opacity=".6" transform="rotate(25 300 120)"/>
+
+  <!-- little arms -->
+  <path d="M368 270 C394 262 412 276 410 292 C396 296 382 292 370 286 Z" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+  <path d="M206 290 C184 290 168 304 172 318 C186 320 198 314 208 306 Z" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+
+  <!-- face -->
+  <ellipse cx="258" cy="250" rx="13" ry="16" fill="#4a3208"/>
+  <ellipse cx="318" cy="250" rx="13" ry="16" fill="#4a3208"/>
+  <circle cx="254" cy="244" r="5" fill="#fff"/><circle cx="314" cy="244" r="5" fill="#fff"/>
+  <ellipse cx="236" cy="286" rx="15" ry="8" fill="#ff9fb6" opacity=".6"/>
+  <ellipse cx="340" cy="286" rx="15" ry="8" fill="#ff9fb6" opacity=".6"/>
+  <path d="M276 284 q12 12 24 0" fill="none" stroke="#4a3208" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- twinkles -->
+  <use href="#star" transform="translate(120 140) scale(1.5)" fill="#fff4b0"/>
+  <use href="#star" transform="translate(130 330)" fill="#fff4b0"/>
+  <use href="#star" transform="translate(430 120) scale(1.2)" fill="#fff4b0"/>
+  <circle cx="440" cy="380" r="5" fill="#fff4b0"/><circle cx="90" cy="230" r="4" fill="#fff4b0"/>
+</svg>

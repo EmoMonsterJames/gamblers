@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="shell" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#b8e88a"/><stop offset="55%" stop-color="#5aa83a"/><stop offset="100%" stop-color="#2a5a1a"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a2a1a" stop-opacity=".35"/><stop offset="100%" stop-color="#1a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="440" rx="200" ry="20" fill="url(#sh)"/>
+  <!-- belly rim -->
+  <ellipse cx="256" cy="380" rx="200" ry="56" fill="#f4e0a0" stroke="#8a6a2a" stroke-width="5"/>
+  <!-- dome shell -->
+  <path d="M60 380 C60 220 150 120 256 120 C362 120 452 220 452 380 Z" fill="url(#shell)" stroke="#1f4a12" stroke-width="6"/>
+  <g fill="none" stroke="#1f4a12" stroke-width="5" stroke-linejoin="round">
+    <path d="M196 190 L256 160 L316 190 L316 250 L256 280 L196 250 Z"/>
+    <path d="M196 190 L130 220 M316 190 L382 220 M196 250 L140 300 M316 250 L372 300 M256 280 L256 360 M130 220 L100 330 M382 220 L412 330"/>
+  </g>
+  <path d="M120 230 C140 180 180 150 220 140" fill="none" stroke="#e0ffc0" stroke-width="10" stroke-linecap="round" opacity=".7"/>
+  <!-- hiding: only sleepy eyes peek out of the front opening -->
+  <path d="M176 330 C176 290 336 290 336 330 L336 372 L176 372 Z" fill="#1a1006" stroke="#1f4a12" stroke-width="5"/>
+  <path d="M206 336 C214 326 232 326 240 336 M272 336 C280 326 298 326 306 336" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="223" cy="344" rx="12" ry="8" fill="#e8f4ff"/><ellipse cx="289" cy="344" rx="12" ry="8" fill="#e8f4ff"/>
+  <circle cx="225" cy="347" r="5" fill="#1a1006"/><circle cx="291" cy="347" r="5" fill="#1a1006"/>
+  <path d="M206 334 L242 334 M270 334 L306 334" stroke="#5aa83a" stroke-width="6" stroke-linecap="round"/>
+  <!-- zzz -->
+  <text x="370" y="120" font-family="Arial Black,Arial" font-size="36" font-weight="900" fill="#7ab8e8">Z</text>
+  <text x="404" y="84" font-family="Arial Black,Arial" font-size="26" font-weight="900" fill="#7ab8e8">z</text>
+  <text x="430" y="58" font-family="Arial Black,Arial" font-size="18" font-weight="900" fill="#7ab8e8">z</text>
+  <!-- water drops -->
+  <path d="M80 300 c0 -14 10 -24 10 -24 s10 10 10 24 a10 10 0 0 1 -20 0z" fill="#7ac8f0"/>
+</svg>

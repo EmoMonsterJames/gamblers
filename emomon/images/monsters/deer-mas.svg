@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fur" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#e8b884"/><stop offset="60%" stop-color="#b87a44"/><stop offset="100%" stop-color="#7a4a22"/></radialGradient>
+    <linearGradient id="sled" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8322a"/><stop offset="100%" stop-color="#8a0a10"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff6c0" stop-opacity=".5"/><stop offset="100%" stop-color="#fff6c0" stop-opacity="0"/></radialGradient>
+    <g id="deer">
+      <ellipse cx="0" cy="40" rx="40" ry="24" fill="url(#fur)" stroke="#4a2a10" stroke-width="3"/>
+      <path d="M-26 58 L-28 90 M-10 60 L-8 90 M12 60 L14 90 M28 58 L30 90" stroke="#7a4a22" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-30 -20 C-40 -40 -50 -48 -60 -50 M30 -20 C40 -40 50 -48 60 -50" fill="none" stroke="#8a5a2a" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="30" fill="url(#fur)" stroke="#4a2a10" stroke-width="3"/>
+      <circle cx="0" cy="12" r="7" fill="#e8222a"/>
+      <circle cx="-10" cy="-4" r="4" fill="#1a0e04"/><circle cx="10" cy="-4" r="4" fill="#1a0e04"/>
+      <circle cx="-8" cy="-6" r="1.5" fill="#fff"/><circle cx="12" cy="-6" r="1.5" fill="#fff"/>
+      <path d="M-22 -18 C-16 -46 16 -50 26 -24 Z" fill="#e8222a" stroke="#8a0a10" stroke-width="3"/>
+      <path d="M-24 -18 L28 -22" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="30" cy="-34" r="7" fill="#fff"/>
+    </g>
+  </defs>
+  <circle cx="300" cy="260" r="250" fill="url(#glow)"/>
+  <!-- reins -->
+  <path d="M120 300 C200 290 260 300 300 320 M140 360 C210 350 260 350 300 360" fill="none" stroke="#c8962a" stroke-width="4"/>
+  <!-- sleigh full of presents -->
+  <g>
+    <rect x="320" y="250" width="56" height="50" fill="#3ab06a" stroke="#1a5a30" stroke-width="3"/><path d="M348 250 L348 300 M320 275 L376 275" stroke="#ffd23a" stroke-width="6"/>
+    <rect x="370" y="220" width="60" height="80" fill="#5a8aff" stroke="#1a3a8a" stroke-width="3"/><path d="M400 220 L400 300 M370 260 L430 260" stroke="#ff5a7a" stroke-width="6"/>
+    <rect x="420" y="250" width="52" height="50" fill="#ffd23a" stroke="#8a6a00" stroke-width="3"/><path d="M446 250 L446 300" stroke="#e8222a" stroke-width="6"/>
+    <path d="M384 220 C376 204 392 198 400 212 C408 198 424 204 416 220" fill="none" stroke="#ff5a7a" stroke-width="5"/>
+  </g>
+  <path d="M300 290 L490 290 C500 340 470 380 420 380 L330 380 C310 380 300 360 300 340 Z" fill="url(#sled)" stroke="#5a0a0a" stroke-width="5"/>
+  <path d="M310 310 L480 310" stroke="#ffd23a" stroke-width="5"/>
+  <path d="M290 410 L470 410 C500 410 506 380 490 370" fill="none" stroke="#c8962a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M330 380 L330 410 M440 380 L440 410" stroke="#c8962a" stroke-width="6"/>
+  <!-- three deer pulling -->
+  <use xlink:href="#deer" transform="translate(110 250) scale(1.1)"/>
+  <use xlink:href="#deer" transform="translate(200 300) scale(1.1)"/>
+  <use xlink:href="#deer" transform="translate(70 360) scale(1.1)"/>
+  <!-- sparkles -->
+  <g fill="#fff6a0"><path d="M60 120 l6 14 14 6 -14 6 -6 14 -6 -14 -14 -6 14 -6z"/><path d="M460 120 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M250 180 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/></g>
+</svg>

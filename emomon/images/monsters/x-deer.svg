@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fur" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#e8b884"/><stop offset="60%" stop-color="#b87a44"/><stop offset="100%" stop-color="#7a4a22"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a1a0a" stop-opacity=".3"/><stop offset="100%" stop-color="#2a1a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="478" rx="140" ry="14" fill="url(#sh)"/>
+  <!-- legs -->
+  <g fill="url(#fur)" stroke="#4a2a10" stroke-width="4">
+    <rect x="186" y="380" width="26" height="90" rx="12"/><rect x="226" y="390" width="26" height="80" rx="12"/><rect x="276" y="390" width="26" height="80" rx="12"/><rect x="316" y="380" width="26" height="90" rx="12"/>
+  </g>
+  <g fill="#3a2010"><rect x="186" y="456" width="26" height="16" rx="5"/><rect x="226" y="456" width="26" height="16" rx="5"/><rect x="276" y="456" width="26" height="16" rx="5"/><rect x="316" y="456" width="26" height="16" rx="5"/></g>
+  <!-- body -->
+  <ellipse cx="264" cy="360" rx="110" ry="64" fill="url(#fur)" stroke="#4a2a10" stroke-width="5"/>
+  <g fill="#fff4e0" opacity=".9"><circle cx="250" cy="330" r="7"/><circle cx="290" cy="320" r="6"/><circle cx="320" cy="350" r="7"/><circle cx="220" cy="350" r="6"/></g>
+  <path d="M366 330 C390 320 396 300 384 290" fill="none" stroke="#fff4e0" stroke-width="12" stroke-linecap="round"/>
+  <!-- antlers -->
+  <path d="M190 150 C170 110 150 90 120 80 M160 104 C140 100 126 108 112 120 M174 124 C160 128 150 140 146 154" fill="none" stroke="#8a5a2a" stroke-width="12" stroke-linecap="round"/>
+  <path d="M290 150 C310 110 330 90 360 80 M320 104 C340 100 354 108 368 120 M306 124 C320 128 330 140 334 154" fill="none" stroke="#8a5a2a" stroke-width="12" stroke-linecap="round"/>
+  <!-- head -->
+  <ellipse cx="240" cy="230" rx="90" ry="80" fill="url(#fur)" stroke="#4a2a10" stroke-width="5"/>
+  <path d="M154 200 C120 186 104 200 102 216 C124 226 144 222 160 214 Z M326 200 C360 186 376 200 378 216 C356 226 336 222 320 214 Z" fill="url(#fur)" stroke="#4a2a10" stroke-width="4"/>
+  <ellipse cx="240" cy="270" rx="48" ry="34" fill="#f4dcc0"/>
+  <!-- red nose -->
+  <circle cx="240" cy="258" r="18" fill="#e8222a" stroke="#8a0a10" stroke-width="3"/><circle cx="234" cy="252" r="5" fill="#fff" opacity=".8"/>
+  <ellipse cx="204" cy="220" rx="15" ry="19" fill="#1a0e04"/><ellipse cx="276" cy="220" rx="15" ry="19" fill="#1a0e04"/>
+  <circle cx="209" cy="213" r="6" fill="#fff"/><circle cx="281" cy="213" r="6" fill="#fff"/>
+  <ellipse cx="178" cy="250" rx="13" ry="8" fill="#ff9a8a" opacity=".8"/><ellipse cx="302" cy="250" rx="13" ry="8" fill="#ff9a8a" opacity=".8"/>
+  <path d="M226 284 C234 292 246 292 254 284" fill="none" stroke="#4a2a10" stroke-width="4" stroke-linecap="round"/>
+  <!-- santa hat -->
+  <path d="M168 168 C180 100 250 70 300 100 C330 120 344 150 330 176 Z" fill="#e8222a" stroke="#8a0a10" stroke-width="5"/>
+  <path d="M300 100 C340 90 370 110 372 140" fill="none" stroke="#e8222a" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="374" cy="150" r="20" fill="#fff" stroke="#c8c8c8" stroke-width="3"/>
+  <path d="M160 170 C210 150 290 156 340 180" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+  <!-- snowflakes -->
+  <g fill="#fff"><circle cx="80" cy="300" r="5"/><circle cx="440" cy="260" r="6"/><circle cx="420" cy="380" r="4"/><circle cx="70" cy="410" r="5"/></g>
+</svg>

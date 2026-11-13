@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Aerobound: a segmented trapeze acrobat of twisted balloon latex in blue and yellow checks, with air-tube arms and mitten hands, trailing stardust -->
+  <defs>
+    <pattern id="chk" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#1e7bff"/><rect width="20" height="20" fill="#ffe14d"/><rect x="20" y="20" width="20" height="20" fill="#ffe14d"/></pattern>
+    <radialGradient id="shine" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#bfe2ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe2ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- glittering stardust trail -->
+  <path d="M60 470 C120 420 140 380 170 360" fill="none" stroke="#ff7ac8" stroke-width="10" stroke-linecap="round" opacity=".5" stroke-dasharray="2 18"/>
+  <path d="M40 440 C100 400 130 360 160 340" fill="none" stroke="#7aeaff" stroke-width="10" stroke-linecap="round" opacity=".6" stroke-dasharray="2 16"/>
+  <g fill="#ffe14d"><path d="M90 400 l5 -14 l5 14 l14 5 l-14 5 l-5 14 l-5 -14 l-14 -5 Z"/><path d="M136 446 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z"/></g>
+  <!-- trapeze bar -->
+  <path d="M150 40 L196 120 M362 40 L316 120" stroke="#8a6a3a" stroke-width="6"/>
+  <rect x="180" y="112" width="152" height="14" rx="7" fill="#c84a2a" stroke="#5a1a0a" stroke-width="5"/>
+  <!-- long air-tube arms holding the bar -->
+  <path d="M216 210 C190 170 196 140 210 126 M296 210 C322 170 316 140 302 126" fill="none" stroke="#0a3a8a" stroke-width="30" stroke-linecap="round"/>
+  <path d="M216 210 C190 170 196 140 210 126 M296 210 C322 170 316 140 302 126" fill="none" stroke="url(#chk)" stroke-width="20" stroke-linecap="round"/>
+  <ellipse cx="208" cy="118" rx="22" ry="18" fill="#ffe14d" stroke="#0a3a8a" stroke-width="6"/>
+  <ellipse cx="304" cy="118" rx="22" ry="18" fill="#ffe14d" stroke="#0a3a8a" stroke-width="6"/>
+  <!-- segmented balloon body, bending in a flip -->
+  <g stroke="#0a3a8a" stroke-width="7">
+    <ellipse cx="256" cy="250" rx="56" ry="44" fill="url(#chk)"/>
+    <ellipse cx="270" cy="324" rx="50" ry="40" fill="url(#chk)" transform="rotate(14 270 324)"/>
+    <ellipse cx="300" cy="390" rx="42" ry="34" fill="url(#chk)" transform="rotate(30 300 390)"/>
+    <ellipse cx="344" cy="440" rx="32" ry="26" fill="url(#chk)" transform="rotate(44 344 440)"/>
+  </g>
+  <ellipse cx="236" cy="236" rx="30" ry="18" fill="url(#shine)"/>
+  <!-- twisted-latex knots between segments -->
+  <g fill="#ff4a8a" stroke="#0a3a8a" stroke-width="4"><circle cx="262" cy="288" r="9"/><circle cx="286" cy="358" r="8"/><circle cx="322" cy="418" r="7"/></g>
+  <!-- grinning acrobat face -->
+  <circle cx="234" cy="246" r="12" fill="#fff" stroke="#0a3a8a" stroke-width="4"/><circle cx="278" cy="246" r="12" fill="#fff" stroke="#0a3a8a" stroke-width="4"/>
+  <circle cx="236" cy="249" r="6" fill="#0a1a3a"/><circle cx="276" cy="249" r="6" fill="#0a1a3a"/>
+  <path d="M236 270 Q256 286 276 270" fill="#fff" stroke="#0a3a8a" stroke-width="4" stroke-linejoin="round"/>
+  <!-- gust lines -->
+  <path d="M380 200 q30 -10 60 0 M396 230 q24 -8 48 0 M60 220 q30 -10 60 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".85"/>
+</svg>

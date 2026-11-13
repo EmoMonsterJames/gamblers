@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="poo" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#c8905a"/><stop offset="55%" stop-color="#8a5428"/><stop offset="100%" stop-color="#5a3010"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a1a0a" stop-opacity=".3"/><stop offset="100%" stop-color="#2a1a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="472" rx="160" ry="16" fill="url(#sh)"/>
+  <!-- three swirled layers -->
+  <path d="M90 440 C70 400 90 350 140 340 L372 340 C422 350 442 400 422 440 C400 466 112 466 90 440 Z" fill="url(#poo)" stroke="#3a1e08" stroke-width="6"/>
+  <path d="M130 344 C110 300 140 256 186 252 L326 252 C372 256 402 300 382 344 Z" fill="url(#poo)" stroke="#3a1e08" stroke-width="6"/>
+  <path d="M176 256 C160 220 190 186 226 182 L290 182 C326 186 352 220 336 256 Z" fill="url(#poo)" stroke="#3a1e08" stroke-width="6"/>
+  <path d="M226 184 C210 150 230 110 270 96 C262 120 280 140 300 132 C312 160 300 184 290 184 Z" fill="url(#poo)" stroke="#3a1e08" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M150 270 C190 262 230 262 260 268 M120 360 C170 350 230 350 280 356 M210 196 C230 190 250 190 270 194" fill="none" stroke="#e8b880" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <!-- face -->
+  <ellipse cx="208" cy="300" rx="22" ry="26" fill="#fff"/><ellipse cx="304" cy="300" rx="22" ry="26" fill="#fff"/>
+  <circle cx="212" cy="306" r="13" fill="#1a0e04"/><circle cx="308" cy="306" r="13" fill="#1a0e04"/>
+  <circle cx="217" cy="299" r="5" fill="#fff"/><circle cx="313" cy="299" r="5" fill="#fff"/>
+  <ellipse cx="170" cy="338" rx="16" ry="9" fill="#ff9a8a" opacity=".8"/><ellipse cx="342" cy="338" rx="16" ry="9" fill="#ff9a8a" opacity=".8"/>
+  <path d="M236 346 C246 362 266 362 276 346" fill="#6a1a1a" stroke="#3a1e08" stroke-width="5" stroke-linecap="round"/>
+  <!-- tiny flies + sparkle (cute) -->
+  <g fill="#3a3a4a"><circle cx="390" cy="160" r="6"/><circle cx="110" cy="190" r="5"/></g>
+  <g fill="#cfe8ff" opacity=".8"><ellipse cx="384" cy="152" rx="6" ry="3"/><ellipse cx="396" cy="152" rx="6" ry="3"/><ellipse cx="104" cy="183" rx="5" ry="2.5"/><ellipse cx="116" cy="183" rx="5" ry="2.5"/></g>
+  <path d="M410 240 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z" fill="#ffe680"/>
+</svg>

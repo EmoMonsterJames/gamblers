@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+    <radialGradient id="cloth" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#efe6fb"/>
+      <stop offset="60%" stop-color="#c7b3ea"/>
+      <stop offset="100%" stop-color="#8f74c4"/>
+    </radialGradient>
+    <linearGradient id="patch" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3dfbf"/>
+      <stop offset="100%" stop-color="#cfae80"/>
+    </linearGradient>
+    <radialGradient id="btnA" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ff7aa2"/>
+      <stop offset="100%" stop-color="#8a1f45"/>
+    </radialGradient>
+    <radialGradient id="btnB" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#7b5cc4"/>
+      <stop offset="100%" stop-color="#24154c"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ghostly aura -->
+  <ellipse cx="256" cy="275" rx="190" ry="185" fill="#8a63d8" opacity=".38" filter="url(#blur)"/>
+
+  <!-- top knot with pins -->
+  <g stroke="#9aa3ad" stroke-width="4" stroke-linecap="round">
+    <line x1="230" y1="96" x2="196" y2="40"/><line x1="262" y1="88" x2="268" y2="26"/><line x1="292" y1="98" x2="330" y2="46"/>
+  </g>
+  <circle cx="194" cy="37" r="11" fill="#ffd25b" stroke="#a87a1f" stroke-width="2"/>
+  <circle cx="268" cy="22" r="11" fill="#ff5b7f" stroke="#a8203f" stroke-width="2"/>
+  <circle cx="332" cy="43" r="11" fill="#5bd1ff" stroke="#1f7ea8" stroke-width="2"/>
+  <path d="M232 104 C236 80 276 78 282 104 Z" fill="url(#cloth)" stroke="#6e5799" stroke-width="3"/>
+  <path d="M238 104 Q256 112 276 104" fill="none" stroke="#c4466e" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- big ghost-doll body -->
+  <path d="M256 98 C362 98 404 182 404 266 C404 336 392 382 378 420 C362 404 346 404 334 428 C318 410 300 412 286 436
+           C272 414 248 412 234 436 C220 412 202 410 186 428 C174 404 158 404 140 420 C126 382 108 336 108 266 C108 182 150 98 256 98 Z"
+        fill="url(#cloth)" stroke="#6e5799" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- patchwork (Normal) -->
+  <path d="M120 230 C150 214 196 220 206 240 C210 280 196 320 170 330 C140 326 120 300 116 270 Z"
+        fill="url(#patch)" stroke="#9c7a4e" stroke-width="3"/>
+  <path d="M300 330 L370 316 L382 380 L316 396 Z" fill="url(#patch)" stroke="#9c7a4e" stroke-width="3"/>
+  <g fill="none" stroke="#7a5a32" stroke-width="2.5" stroke-dasharray="7 6">
+    <path d="M128 236 C156 224 190 228 198 244 C202 280 190 312 168 320 C144 316 128 296 124 270 Z"/>
+    <path d="M306 336 L364 324 L374 374 L320 388 Z"/>
+  </g>
+
+  <!-- arms; one holds a big needle with thread -->
+  <path d="M112 300 C80 296 60 316 66 334 C84 336 102 326 116 318 Z" fill="url(#cloth)" stroke="#6e5799" stroke-width="3"/>
+  <path d="M400 290 C430 280 452 296 448 316 C430 320 412 312 398 306 Z" fill="url(#cloth)" stroke="#6e5799" stroke-width="3"/>
+  <path d="M440 330 L470 196" stroke="#b9c2cc" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="468" cy="206" rx="4" ry="9" fill="none" stroke="#7d8790" stroke-width="2.5" transform="rotate(13 468 206)"/>
+  <path d="M468 206 C500 240 470 300 488 340 C496 360 480 380 460 372" fill="none" stroke="#ff5b7f" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- seams -->
+  <g fill="none" stroke="#5c4785" stroke-width="3" stroke-linecap="round" stroke-dasharray="9 8">
+    <path d="M256 100 C246 150 248 190 256 222"/>
+    <path d="M150 352 C220 372 300 372 370 352"/>
+  </g>
+  <g stroke="#5c4785" stroke-width="3" stroke-linecap="round"><path d="M244 124 l24 6 M243 152 l24 4 M244 180 l24 3 M246 206 l22 2"/></g>
+
+  <!-- eyes: two different buttons -->
+  <circle cx="208" cy="238" r="30" fill="url(#btnA)" stroke="#4a0f25" stroke-width="3"/>
+  <circle cx="306" cy="232" r="34" fill="url(#btnB)" stroke="#120a28" stroke-width="3"/>
+  <g fill="#ffd0e0"><circle cx="198" cy="229" r="5"/><circle cx="218" cy="229" r="5"/><circle cx="198" cy="247" r="5"/><circle cx="218" cy="247" r="5"/></g>
+  <path d="M198 229 L218 247 M218 229 L198 247" stroke="#ffd0e0" stroke-width="2"/>
+  <g fill="#c9b8ff"><circle cx="294" cy="220" r="5.5"/><circle cx="318" cy="220" r="5.5"/><circle cx="294" cy="244" r="5.5"/><circle cx="318" cy="244" r="5.5"/></g>
+  <path d="M294 220 L318 244 M318 220 L294 244" stroke="#c9b8ff" stroke-width="2"/>
+  <path d="M176 196 L232 208 M282 194 L338 186" stroke="#3a2466" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- wide stitched grin -->
+  <path d="M190 292 Q256 344 326 290" fill="#3a1a4a" stroke="#24154c" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M190 292 Q256 312 326 290" fill="none" stroke="#24154c" stroke-width="3"/>
+  <g stroke="#f4eefc" stroke-width="3" stroke-linecap="round">
+    <path d="M206 300 l0 12 M226 307 l0 14 M246 311 l0 15 M266 311 l0 15 M286 307 l0 14 M306 300 l0 12"/>
+  </g>
+
+  <!-- floating spirit pins -->
+  <g transform="translate(80 150) rotate(-30)"><line x1="0" y1="0" x2="0" y2="40" stroke="#9aa3ad" stroke-width="3"/><circle r="7" fill="#c9b0ff"/></g>
+  <g transform="translate(430 120) rotate(25)"><line x1="0" y1="0" x2="0" y2="36" stroke="#9aa3ad" stroke-width="3"/><circle r="6" fill="#ffd25b"/></g>
+  <g fill="#c9b0ff" opacity=".85"><circle cx="70" cy="420" r="6"/><circle cx="440" cy="450" r="5"/><circle cx="60" cy="250" r="4"/></g>
+</svg>

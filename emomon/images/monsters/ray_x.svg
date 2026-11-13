@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="soft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5"/></filter>
+    <radialGradient id="gold" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#fff3a6"/>
+      <stop offset="100%" stop-color="#ffbf2e"/>
+    </radialGradient>
+    <radialGradient id="ray" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffbe0"/>
+      <stop offset="100%" stop-color="#ffd23f" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -100 L12 -30 L70 -70 L30 -12 L100 0 L30 12 L70 70 L12 30 L0 100 L-12 30 L-70 70 L-30 12 L-100 0 L-30 -12 L-70 -70 L-12 -30 Z"/>
+    <g id="mote"><circle r="22" fill="#ffe27a" opacity=".55" filter="url(#soft)"/><circle r="10" fill="url(#gold)"/></g>
+  </defs>
+
+  <!-- soft light rays -->
+  <circle cx="256" cy="256" r="190" fill="url(#ray)" opacity=".7"/>
+  <use xlink:href="#star" transform="translate(256 256) scale(1.9)" fill="#fff1a8" opacity=".55"/>
+  <use xlink:href="#star" transform="translate(256 256) rotate(22.5) scale(1.35)" fill="#ffe27a" opacity=".6"/>
+
+  <!-- little lights gathering in -->
+  <use xlink:href="#mote" transform="translate(120 150)"/>
+  <use xlink:href="#mote" transform="translate(390 140) scale(.8)"/>
+  <use xlink:href="#mote" transform="translate(410 330) scale(1.1)"/>
+  <use xlink:href="#mote" transform="translate(110 360) scale(.9)"/>
+  <use xlink:href="#mote" transform="translate(256 80) scale(.7)"/>
+  <use xlink:href="#mote" transform="translate(260 440) scale(.75)"/>
+  <g stroke="#ffe27a" stroke-width="4" stroke-linecap="round" opacity=".7">
+    <path d="M140 165 L190 205 M375 155 L325 200 M392 318 L340 290 M128 345 L180 305"/>
+  </g>
+
+  <!-- main light orb -->
+  <circle cx="256" cy="256" r="110" fill="#ffd84d" opacity=".55" filter="url(#glow)"/>
+  <circle cx="256" cy="256" r="78" fill="url(#gold)"/>
+
+  <!-- one big eye in the middle -->
+  <ellipse cx="256" cy="258" rx="34" ry="38" fill="#fff" stroke="#c98a00" stroke-width="3"/>
+  <circle cx="256" cy="264" r="20" fill="#3a2a00"/>
+  <circle cx="256" cy="264" r="11" fill="#7a5600"/>
+  <circle cx="248" cy="254" r="7" fill="#fff"/>
+  <circle cx="264" cy="274" r="3" fill="#fff" opacity=".8"/>
+</svg>

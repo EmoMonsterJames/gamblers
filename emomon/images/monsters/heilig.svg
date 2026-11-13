@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff3b0"/><stop offset="45%" stop-color="#ffcf33"/><stop offset="100%" stop-color="#b8860b"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#fff8d0" stop-opacity=".9"/><stop offset="100%" stop-color="#fff8d0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#5a4200" stop-opacity=".3"/><stop offset="100%" stop-color="#5a4200" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="230" fill="url(#aura)"/>
+  <ellipse cx="256" cy="452" rx="120" ry="14" fill="url(#sh)"/>
+  <!-- halo -->
+  <ellipse cx="256" cy="86" rx="70" ry="16" fill="none" stroke="#ffe066" stroke-width="10"/>
+  <!-- cup -->
+  <path d="M136 120 L376 120 C376 210 330 270 256 276 C182 270 136 210 136 120 Z" fill="url(#gold)" stroke="#7a5a00" stroke-width="8" stroke-linejoin="round"/>
+  <ellipse cx="256" cy="120" rx="120" ry="20" fill="#ffe680" stroke="#7a5a00" stroke-width="7"/>
+  <path d="M160 160 C176 220 206 248 240 256" fill="none" stroke="#fffbe0" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+  <!-- stem + base -->
+  <path d="M236 276 L236 360 L276 360 L276 276" fill="url(#gold)" stroke="#7a5a00" stroke-width="7"/>
+  <ellipse cx="256" cy="318" rx="26" ry="12" fill="#ffd54f" stroke="#7a5a00" stroke-width="6"/>
+  <path d="M170 420 Q256 340 342 420 Z" fill="url(#gold)" stroke="#7a5a00" stroke-width="8" stroke-linejoin="round"/>
+  <ellipse cx="256" cy="420" rx="86" ry="14" fill="#e6b800" stroke="#7a5a00" stroke-width="7"/>
+  <!-- gems -->
+  <circle cx="256" cy="230" r="10" fill="#e53935" stroke="#7a0000" stroke-width="4"/>
+  <!-- eyes -->
+  <ellipse cx="216" cy="182" rx="22" ry="26" fill="#fff" stroke="#5a4200" stroke-width="6"/>
+  <ellipse cx="296" cy="182" rx="22" ry="26" fill="#fff" stroke="#5a4200" stroke-width="6"/>
+  <circle cx="220" cy="186" r="11" fill="#3a2a00"/><circle cx="300" cy="186" r="11" fill="#3a2a00"/>
+  <circle cx="224" cy="181" r="4" fill="#fff"/><circle cx="304" cy="181" r="4" fill="#fff"/>
+  <!-- sparkles -->
+  <path d="M90 200 L98 216 L114 224 L98 232 L90 248 L82 232 L66 224 L82 216 Z" fill="#fff6b0"/>
+  <path d="M420 150 L426 162 L438 168 L426 174 L420 186 L414 174 L402 168 L414 162 Z" fill="#fff6b0"/>
+</svg>

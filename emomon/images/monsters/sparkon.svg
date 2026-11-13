@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="body" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#b3e5fc"/><stop offset="100%" stop-color="#4fc3f7"/></radialGradient>
+    <linearGradient id="volt" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff59d"/><stop offset="100%" stop-color="#ffb300"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e1f5fe" stop-opacity=".7"/><stop offset="100%" stop-color="#e1f5fe" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#01395a" stop-opacity=".3"/><stop offset="100%" stop-color="#01395a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="230" fill="url(#aura)"/>
+  <ellipse cx="256" cy="440" rx="120" ry="12" fill="url(#sh)"/>
+  <!-- ice crystal spikes -->
+  <path d="M256 60 L276 140 L236 140 Z M110 190 L184 210 L164 246 Z M402 190 L328 210 L348 246 Z" fill="#e1f5fe" stroke="#0277bd" stroke-width="6" stroke-linejoin="round"/>
+  <!-- body -->
+  <circle cx="256" cy="270" r="130" fill="url(#body)" stroke="#01579b" stroke-width="8"/>
+  <path d="M180 220 L200 200 M320 340 L340 322" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <!-- lightning tail -->
+  <path d="M370 320 L420 300 L404 330 L452 320 L400 380 L414 346 L378 356 Z" fill="url(#volt)" stroke="#8a5a00" stroke-width="5" stroke-linejoin="round"/>
+  <!-- face -->
+  <ellipse cx="220" cy="260" rx="24" ry="28" fill="#fff" stroke="#01395a" stroke-width="6"/>
+  <ellipse cx="292" cy="260" rx="24" ry="28" fill="#fff" stroke="#01395a" stroke-width="6"/>
+  <circle cx="224" cy="264" r="12" fill="#0d47a1"/><circle cx="296" cy="264" r="12" fill="#0d47a1"/>
+  <circle cx="228" cy="258" r="5" fill="#fff"/><circle cx="300" cy="258" r="5" fill="#fff"/>
+  <path d="M236 312 Q256 326 276 312" fill="none" stroke="#01395a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M180 300 L192 296 M332 296 L344 300" stroke="#ffd54f" stroke-width="6" stroke-linecap="round"/>
+  <!-- little feet -->
+  <ellipse cx="206" cy="396" rx="28" ry="14" fill="#81d4fa" stroke="#01579b" stroke-width="6"/>
+  <ellipse cx="306" cy="396" rx="28" ry="14" fill="#81d4fa" stroke="#01579b" stroke-width="6"/>
+  <path d="M90 300 L110 290 L104 310 L124 304" fill="none" stroke="#ffee58" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

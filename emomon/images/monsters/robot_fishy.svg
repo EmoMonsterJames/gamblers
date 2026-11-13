@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Robot Fishy: the robot form of Fishy (monster #1) - same round fish with flowing tail and big eyes, rebuilt in steel; it is not afraid of water -->
+  <defs>
+    <radialGradient id="body" cx="42%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#d6dee8"/><stop offset=".85" stop-color="#8e9cb0"/><stop offset="1" stop-color="#5a687c"/></radialGradient>
+    <linearGradient id="fin" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e8eef6"/><stop offset=".55" stop-color="#a8b6c8"/><stop offset="1" stop-color="#6a7a90"/></linearGradient>
+    <radialGradient id="eye" cx="50%" cy="38%" r="62%"><stop offset="0" stop-color="#9ef0ff"/><stop offset="55%" stop-color="#1a8aff"/><stop offset="100%" stop-color="#0a2a6a"/></radialGradient>
+    <radialGradient id="bubble" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".6" stop-color="#dcebff" stop-opacity=".25"/><stop offset="1" stop-color="#9cc0f0" stop-opacity=".6"/></radialGradient>
+  </defs>
+  <g transform="translate(-22 -15)">
+  <!-- jointed metal tail -->
+  <g stroke="#3a4658" stroke-width="4" stroke-linejoin="round">
+    <path d="M232 280 C190 230 150 170 175 120 C200 135 205 160 214 175 C215 140 235 110 262 100 C268 140 262 190 258 250 Z" fill="url(#fin)"/>
+    <path d="M226 292 C170 270 110 250 92 205 C120 200 140 212 158 222 C140 195 140 165 160 145 C190 175 210 220 238 268 Z" fill="url(#fin)"/>
+    <path d="M228 305 C175 315 120 330 96 300 C112 285 130 286 150 290 C130 275 122 255 134 238 C170 250 200 275 236 296 Z" fill="url(#fin)"/>
+  </g>
+  <g fill="#c8d2de" stroke="#3a4658" stroke-width="2"><circle cx="200" cy="150" r="5"/><circle cx="130" cy="210" r="5"/><circle cx="120" cy="300" r="5"/></g>
+  <!-- antenna dorsal fin -->
+  <path d="M300 205 C305 170 330 140 362 130 C352 155 360 170 372 178 C360 185 352 200 346 218 Z" fill="url(#fin)" stroke="#3a4658" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M362 130 L380 96" stroke="#3a4658" stroke-width="5"/><circle cx="382" cy="92" r="9" fill="#ff3a3a" stroke="#3a4658" stroke-width="3"/>
+  <!-- riveted steel body -->
+  <ellipse cx="300" cy="300" rx="108" ry="100" fill="url(#body)" stroke="#3a4658" stroke-width="5"/>
+  <path d="M206 270 Q300 250 394 270 M200 330 Q300 350 400 330" fill="none" stroke="#5a687c" stroke-width="4"/>
+  <g fill="#e8eef6" stroke="#3a4658" stroke-width="2"><circle cx="220" cy="272" r="5"/><circle cx="380" cy="272" r="5"/><circle cx="216" cy="332" r="5"/><circle cx="384" cy="332" r="5"/></g>
+  <ellipse cx="262" cy="240" rx="30" ry="16" fill="#fff" opacity=".6" transform="rotate(-25 262 240)"/>
+  <!-- glowing LED eyes like Fishy's -->
+  <ellipse cx="262" cy="318" rx="24" ry="29" fill="#1a2232" stroke="#3a4658" stroke-width="3"/>
+  <ellipse cx="342" cy="318" rx="24" ry="29" fill="#1a2232" stroke="#3a4658" stroke-width="3"/>
+  <ellipse cx="262" cy="318" rx="19" ry="24" fill="url(#eye)"/><ellipse cx="342" cy="318" rx="19" ry="24" fill="url(#eye)"/>
+  <ellipse cx="255" cy="306" rx="7" ry="8" fill="#fff"/><ellipse cx="335" cy="306" rx="7" ry="8" fill="#fff"/>
+  <!-- speaker-grille mouth and blush LEDs -->
+  <ellipse cx="234" cy="352" rx="14" ry="7" fill="#ff7aa0" opacity=".6"/><ellipse cx="370" cy="352" rx="14" ry="7" fill="#ff7aa0" opacity=".6"/>
+  <rect x="288" y="346" width="28" height="14" rx="4" fill="#3a4658"/><path d="M294 350 v6 M302 350 v6 M310 350 v6" stroke="#9ef0ff" stroke-width="2"/>
+  <!-- propeller side fin -->
+  <path d="M252 378 C232 395 222 420 230 440 C245 430 262 420 280 392 Z" fill="url(#fin)" stroke="#3a4658" stroke-width="4" stroke-linejoin="round"/>
+  <g transform="translate(424 312)"><circle r="8" fill="#5a687c" stroke="#3a4658" stroke-width="3"/><path d="M0 0 L22 -14 L26 -4 Z M0 0 L-6 24 L4 26 Z" fill="#a8b6c8" stroke="#3a4658" stroke-width="3"/></g>
+  <!-- bubbles: it swims happily -->
+  <circle cx="410" cy="200" r="13" fill="url(#bubble)" stroke="#bcd5f7" stroke-width="1.5"/>
+  <circle cx="440" cy="160" r="8" fill="url(#bubble)" stroke="#bcd5f7" stroke-width="1.5"/>
+  <circle cx="130" cy="400" r="11" fill="url(#bubble)" stroke="#bcd5f7" stroke-width="1.5"/>
+  </g>
+</svg>

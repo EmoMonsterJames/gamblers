@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Malacross: a polished obsidian cross with glowing neon-pink fairy runes and translucent dark-magic wings -->
+  <defs>
+    <linearGradient id="obs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a4a5a"/><stop offset=".5" stop-color="#1a1a24"/><stop offset="1" stop-color="#0a0a10"/></linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ea80fc" stop-opacity=".75"/><stop offset="1" stop-color="#4a148c" stop-opacity=".35"/></linearGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ff4fd8"/><stop offset="1" stop-color="#6a0050"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f48fb1" stop-opacity=".55"/><stop offset="1" stop-color="#f48fb1" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2a0030" stop-opacity=".35"/><stop offset="1" stop-color="#2a0030" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="246" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="482" rx="80" ry="10" fill="url(#sh)"/>
+  <!-- insect wings from the horizontal beam -->
+  <path d="M120 180 C40 100 10 160 30 220 C50 270 110 240 150 210 Z" fill="url(#wing)" stroke="#ea80fc" stroke-width="5"/>
+  <path d="M130 220 C60 250 50 320 90 340 C130 350 150 290 160 240 Z" fill="url(#wing)" stroke="#ea80fc" stroke-width="5"/>
+  <path d="M392 180 C472 100 502 160 482 220 C462 270 402 240 362 210 Z" fill="url(#wing)" stroke="#ea80fc" stroke-width="5"/>
+  <path d="M382 220 C452 250 462 320 422 340 C382 350 362 290 352 240 Z" fill="url(#wing)" stroke="#ea80fc" stroke-width="5"/>
+  <!-- obsidian cross -->
+  <path d="M226 50 L286 50 L290 450 L222 450 Z" fill="url(#obs)" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M100 160 L412 160 L412 222 L100 222 Z" fill="url(#obs)" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M236 64 L244 64 L248 440 L238 440 Z M112 170 L400 170 L400 176 L112 176 Z" fill="#fff" opacity=".18"/>
+  <!-- glowing fairy runes -->
+  <g fill="none" stroke="#ff4fd8" stroke-width="5" stroke-linecap="round">
+    <path d="M256 80 l-10 14 h20 Z"/><path d="M246 112 q10 -10 20 0 q-10 10 -20 0"/>
+    <path d="M130 180 l10 22 l10 -22 M372 180 l-10 22 l-10 -22"/>
+    <path d="M176 184 v26 M186 184 v26 M326 184 v26 M336 184 v26"/>
+    <path d="M246 300 l10 14 l10 -14 M248 340 h16 M256 332 v16 M246 380 q10 14 20 0 M248 420 l8 -10 l8 10"/>
+  </g>
+  <!-- giggling pink eye -->
+  <ellipse cx="256" cy="191" rx="30" ry="22" fill="url(#eye)" stroke="#000" stroke-width="5"/>
+  <circle cx="256" cy="191" r="8" fill="#2a0030"/>
+  <path d="M222 232 Q256 254 290 232" fill="none" stroke="#ff4fd8" stroke-width="5" stroke-linecap="round"/>
+  <!-- illusion lights -->
+  <circle cx="70" cy="400" r="12" fill="#18ffff" opacity=".6"/><circle cx="440" cy="400" r="10" fill="#ffeb3b" opacity=".6"/><circle cx="110" cy="440" r="7" fill="#ff4fd8" opacity=".7"/><circle cx="400" cy="70" r="8" fill="#b2ff59" opacity=".6"/>
+</svg>

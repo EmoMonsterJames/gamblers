@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Burgrotesque: a raw, misshapen patty with one bulging eye; the bun keeps slipping off -->
+  <defs>
+    <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6c26b"/><stop offset="1" stop-color="#c7832c"/></linearGradient>
+    <radialGradient id="meat" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f48a9a"/><stop offset=".6" stop-color="#c2455a"/><stop offset="1" stop-color="#7a1f30"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d1c4e9" stop-opacity=".55"/><stop offset="1" stop-color="#d1c4e9" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2a1030" stop-opacity=".35"/><stop offset="1" stop-color="#2a1030" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="452" rx="150" ry="16" fill="url(#sh)"/>
+  <!-- bottom bun -->
+  <path d="M110 380 Q110 440 256 444 Q402 440 402 380 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="7" stroke-linejoin="round"/>
+  <!-- dripping raw patty, half liquid -->
+  <path d="M96 300 C96 230 170 200 256 200 C350 200 420 236 418 300 C416 340 400 360 380 366 C376 400 360 410 350 384 C330 392 300 380 280 386 C270 420 252 428 248 388 C210 392 170 384 150 372 C140 396 120 398 120 364 C104 352 96 330 96 300 Z"
+        fill="url(#meat)" stroke="#5a0f1e" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="160" cy="270" r="8" fill="#e57385"/><circle cx="340" cy="250" r="10" fill="#e57385"/><circle cx="370" cy="310" r="7" fill="#e57385"/><circle cx="150" cy="330" r="6" fill="#e57385"/>
+  <!-- one bulging eye -->
+  <circle cx="250" cy="282" r="56" fill="#fff" stroke="#5a0f1e" stroke-width="8"/>
+  <path d="M206 262 Q220 270 214 286 M290 250 Q280 266 296 274" stroke="#e53935" stroke-width="3" fill="none"/>
+  <circle cx="262" cy="290" r="26" fill="#7cb342" stroke="#2a3a10" stroke-width="5"/>
+  <circle cx="264" cy="292" r="12" fill="#111"/><circle cx="270" cy="282" r="6" fill="#fff"/>
+  <!-- slipping top bun -->
+  <g transform="rotate(-22 250 150)">
+    <path d="M130 186 C130 100 190 70 256 70 C330 70 386 104 386 186 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="8" stroke-linejoin="round"/>
+    <ellipse cx="210" cy="120" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="256" cy="100" rx="8" ry="5" fill="#fff8e1"/>
+    <ellipse cx="300" cy="126" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="240" cy="146" rx="8" ry="5" fill="#fff8e1"/><ellipse cx="330" cy="156" rx="7" ry="4" fill="#fff8e1"/>
+  </g>
+  <!-- onion smell + static -->
+  <path d="M410 150 Q430 130 414 110 Q398 90 420 70" fill="none" stroke="#b39ddb" stroke-width="5" stroke-linecap="round"/>
+  <path d="M70 200 L84 214 L72 222 L88 238" fill="none" stroke="#ffeb3b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

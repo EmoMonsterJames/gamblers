@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="pet" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe4f0"/><stop offset="100%" stop-color="#f48fb1"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fffde0" stop-opacity=".75"/><stop offset="100%" stop-color="#fffde0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1b3a12" stop-opacity=".3"/><stop offset="100%" stop-color="#1b3a12" stop-opacity="0"/></radialGradient>
+    <g id="p"><path d="M0 0 C-36 -30 -30 -96 0 -110 C30 -96 36 -30 0 0 Z" fill="url(#pet)" stroke="#ad1457" stroke-width="6" stroke-linejoin="round"/></g>
+    <g id="wing"><path d="M0 0 C30 -60 90 -86 130 -70 C110 -30 70 0 0 10 Z" fill="#fff" stroke="#90a4ae" stroke-width="6" stroke-linejoin="round"/><path d="M20 0 C50 -20 80 -40 110 -62" fill="none" stroke="#cfd8dc" stroke-width="4"/></g>
+  </defs>
+  <circle cx="256" cy="240" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="450" rx="110" ry="12" fill="url(#sh)"/>
+  <ellipse cx="256" cy="74" rx="56" ry="13" fill="none" stroke="#ffe066" stroke-width="9"/>
+  <use href="#wing" transform="translate(300 250)"/>
+  <use href="#wing" transform="translate(212 250) scale(-1 1)"/>
+  <!-- stem + leaves -->
+  <path d="M256 330 C250 370 262 400 256 440" fill="none" stroke="#388e3c" stroke-width="12" stroke-linecap="round"/>
+  <path d="M256 390 C220 370 190 380 176 400 C200 414 236 408 256 390 Z M258 410 C292 392 322 400 334 420 C310 432 276 428 258 410 Z" fill="#7cb342" stroke="#33691e" stroke-width="5"/>
+  <!-- petals -->
+  <g transform="translate(256 220)">
+    <use href="#p" transform="rotate(0)"/><use href="#p" transform="rotate(60)"/><use href="#p" transform="rotate(120)"/>
+    <use href="#p" transform="rotate(180)"/><use href="#p" transform="rotate(240)"/><use href="#p" transform="rotate(300)"/>
+  </g>
+  <circle cx="256" cy="220" r="62" fill="#fff59d" stroke="#f9a825" stroke-width="7"/>
+  <!-- sleepy gentle face -->
+  <path d="M222 214 Q234 224 246 214 M266 214 Q278 224 290 214" fill="none" stroke="#5d4037" stroke-width="6" stroke-linecap="round"/>
+  <path d="M240 244 Q256 254 272 244" fill="none" stroke="#5d4037" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="218" cy="238" r="8" fill="#f48fb1" opacity=".7"/><circle cx="294" cy="238" r="8" fill="#f48fb1" opacity=".7"/>
+  <!-- music notes -->
+  <path d="M380 120 L380 160 M380 120 L404 114 L404 152" fill="none" stroke="#7e57c2" stroke-width="5"/><circle cx="374" cy="162" r="8" fill="#7e57c2"/><circle cx="398" cy="154" r="8" fill="#7e57c2"/>
+</svg>

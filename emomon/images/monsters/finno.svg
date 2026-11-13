@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5ac8f0"/><stop offset="100%" stop-color="#1a4a8a"/></linearGradient>
+    <linearGradient id="fin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8aa4b8"/><stop offset="100%" stop-color="#3a5468"/></linearGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff6a0" stop-opacity=".9"/><stop offset="100%" stop-color="#fff6a0" stop-opacity="0"/></radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="5"/></filter>
+    <clipPath id="water"><ellipse cx="256" cy="330" rx="230" ry="130"/></clipPath>
+  </defs>
+  <!-- pool of water -->
+  <ellipse cx="256" cy="330" rx="230" ry="130" fill="url(#sea)" stroke="#1a3a6a" stroke-width="6"/>
+  <g clip-path="url(#water)">
+    <!-- blurry body + eyes under water -->
+    <ellipse cx="256" cy="360" rx="150" ry="60" fill="#2a4a6a" opacity=".55" filter="url(#blur)"/>
+    <g filter="url(#blur)" opacity=".85">
+      <circle cx="196" cy="350" r="26" fill="url(#eye)"/><circle cx="316" cy="350" r="26" fill="url(#eye)"/>
+    </g>
+    <ellipse cx="196" cy="350" rx="9" ry="12" fill="#fff" opacity=".75"/><ellipse cx="316" cy="350" rx="9" ry="12" fill="#fff" opacity=".75"/>
+    <circle cx="198" cy="352" r="4" fill="#1a2a3a" opacity=".8"/><circle cx="318" cy="352" r="4" fill="#1a2a3a" opacity=".8"/>
+    <g fill="none" stroke="#bfefff" stroke-width="4" opacity=".55">
+      <path d="M60 300 C100 290 140 310 180 300"><animate attributeName="d" values="M60 300 C100 290 140 310 180 300;M60 304 C100 314 140 294 180 304;M60 300 C100 290 140 310 180 300" dur="2s" repeatCount="indefinite"/></path>
+      <path d="M330 410 C370 400 410 420 450 410"/><path d="M120 430 C160 420 200 440 240 430"/>
+    </g>
+  </g>
+  <!-- the fin sticking out -->
+  <path d="M220 290 C236 210 270 140 330 100 C316 170 318 240 332 290 Z" fill="url(#fin)" stroke="#2a3a4a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M250 270 C262 214 284 168 316 132" fill="none" stroke="#c8dcea" stroke-width="6" stroke-linecap="round" opacity=".6"/>
+  <!-- splash ring around the fin -->
+  <ellipse cx="276" cy="292" rx="78" ry="16" fill="none" stroke="#e6fbff" stroke-width="6"><animate attributeName="rx" values="62;92;62" dur="1.6s" repeatCount="indefinite"/></ellipse>
+  <g fill="#e6fbff"><circle cx="200" cy="270" r="7"/><circle cx="356" cy="264" r="6"/><circle cx="186" cy="248" r="4"/><circle cx="372" cy="246" r="4"/></g>
+</svg>

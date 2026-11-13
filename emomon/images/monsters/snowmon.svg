@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="snow" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="70%" stop-color="#eaf5fb"/><stop offset="100%" stop-color="#a8cce2"/></radialGradient>
+    <linearGradient id="carrot" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff9a2a"/><stop offset="100%" stop-color="#d95a0a"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a4a6a" stop-opacity=".3"/><stop offset="100%" stop-color="#2a4a6a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="482" rx="160" ry="16" fill="url(#sh)"/>
+  <!-- stick arms -->
+  <path d="M130 300 L50 240 M80 262 L56 224 M382 300 L462 230 M436 252 L468 260" stroke="#6a4020" stroke-width="10" stroke-linecap="round"/>
+  <!-- bottom + middle -->
+  <circle cx="256" cy="380" r="110" fill="url(#snow)" stroke="#8ab6d0" stroke-width="5"/>
+  <circle cx="256" cy="250" r="86" fill="url(#snow)" stroke="#8ab6d0" stroke-width="5"/>
+  <circle cx="256" cy="230" r="9" fill="#2a2a3a"/><circle cx="256" cy="264" r="9" fill="#2a2a3a"/><circle cx="256" cy="360" r="10" fill="#2a2a3a"/><circle cx="256" cy="400" r="10" fill="#2a2a3a"/>
+  <!-- scarf -->
+  <path d="M176 186 C220 206 292 206 336 186 L340 214 C292 236 220 236 172 214 Z" fill="#e8322a" stroke="#8a1a10" stroke-width="4"/>
+  <path d="M300 210 L320 290 L292 292 L280 214 Z" fill="#e8322a" stroke="#8a1a10" stroke-width="4"/>
+  <path d="M186 196 L196 222 M214 202 L222 228 M300 202 L292 228 M326 196 L316 222" stroke="#fff" stroke-width="5"/>
+  <!-- head -->
+  <circle cx="256" cy="120" r="76" fill="url(#snow)" stroke="#8ab6d0" stroke-width="5"/>
+  <!-- hat -->
+  <rect x="200" y="18" width="112" height="56" rx="6" fill="#2a2a3a" stroke="#0a0a14" stroke-width="4"/>
+  <rect x="180" y="66" width="152" height="16" rx="6" fill="#2a2a3a" stroke="#0a0a14" stroke-width="4"/>
+  <rect x="200" y="52" width="112" height="12" fill="#e8322a"/>
+  <!-- face -->
+  <circle cx="228" cy="112" r="10" fill="#1a1a2a"/><circle cx="284" cy="112" r="10" fill="#1a1a2a"/>
+  <circle cx="231" cy="108" r="3" fill="#fff"/><circle cx="287" cy="108" r="3" fill="#fff"/>
+  <path d="M256 126 L320 140 L256 146 Z" fill="url(#carrot)" stroke="#a3400a" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="#2a2a3a"><circle cx="228" cy="160" r="5"/><circle cx="244" cy="166" r="5"/><circle cx="262" cy="167" r="5"/><circle cx="280" cy="162" r="5"/></g>
+  <ellipse cx="206" cy="140" rx="12" ry="7" fill="#ffc4dc"/><ellipse cx="306" cy="140" rx="12" ry="7" fill="#ffc4dc"/>
+</svg>

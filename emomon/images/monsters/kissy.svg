@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="lip" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6a7a"/><stop offset="60%" stop-color="#e01a3a"/><stop offset="100%" stop-color="#8a0a1e"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffb8c8" stop-opacity=".5"/><stop offset="100%" stop-color="#ffb8c8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a0a1a" stop-opacity=".2"/><stop offset="100%" stop-color="#3a0a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="240" r="220" fill="url(#glow)"/>
+  <ellipse cx="256" cy="470" rx="110" ry="12" fill="url(#sh)"/>
+  <!-- upper lip -->
+  <path d="M60 240 C110 150 190 130 228 170 C240 182 248 186 256 186 C264 186 272 182 284 170 C322 130 402 150 452 240 C380 236 320 236 256 250 C192 236 132 236 60 240 Z" fill="url(#lip)" stroke="#6a0a16" stroke-width="6" stroke-linejoin="round"/>
+  <!-- lower lip -->
+  <path d="M60 250 C130 250 192 252 256 266 C320 252 382 250 452 250 C410 350 330 380 256 380 C182 380 102 350 60 250 Z" fill="url(#lip)" stroke="#6a0a16" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M120 300 C170 330 230 340 280 338" fill="none" stroke="#ffc8d0" stroke-width="12" stroke-linecap="round" opacity=".8"/>
+  <path d="M140 196 C170 172 200 168 216 178" fill="none" stroke="#ffc8d0" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+  <!-- little eyes on the top lip -->
+  <ellipse cx="200" cy="208" rx="12" ry="15" fill="#fff"/><ellipse cx="312" cy="208" rx="12" ry="15" fill="#fff"/>
+  <circle cx="202" cy="212" r="7" fill="#2a0a12"/><circle cx="314" cy="212" r="7" fill="#2a0a12"/>
+  <path d="M188 192 L194 186 M202 190 L202 182 M216 192 L210 186 M300 192 L306 186 M314 190 L314 182 M328 192 L322 186" stroke="#2a0a12" stroke-width="3" stroke-linecap="round"/>
+  <!-- floating hearts -->
+  <path d="M410 110 c-8 -14 -28 -6 -20 10 l20 18 l20 -18 c8 -16 -12 -24 -20 -10z" fill="#ff4a6a"/>
+  <path d="M100 120 c-6 -10 -20 -4 -14 7 l14 13 l14 -13 c6 -11 -8 -17 -14 -7z" fill="#ff7a8a"/>
+  <path d="M440 330 c-5 -8 -16 -3 -11 6 l11 10 l11 -10 c5 -9 -6 -14 -11 -6z" fill="#ff9aaa"/>
+</svg>

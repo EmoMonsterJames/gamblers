@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- EmoMon Battlebot (#219): the Test Bot's robot look, armoured for the survival final, with "EmoMon Battle" on its chest -->
+  <defs>
+    <linearGradient id="bbHead" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7fb"/><stop offset="1" stop-color="#a8b4c6"/></linearGradient>
+    <linearGradient id="bbBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6ecf4"/><stop offset="1" stop-color="#8e9bb0"/></linearGradient>
+    <radialGradient id="bbEye" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#d8fbff"/><stop offset=".55" stop-color="#6af0ff"/><stop offset="1" stop-color="#1aa8c8"/></radialGradient>
+    <linearGradient id="bbBand" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff4a6a"/><stop offset=".5" stop-color="#ffb02a"/><stop offset="1" stop-color="#ff4a6a"/></linearGradient>
+  </defs>
+  <ellipse cx="256" cy="486" rx="150" ry="16" fill="#000" opacity=".22"/>
+  <!-- legs -->
+  <rect x="178" y="404" width="54" height="74" rx="14" fill="#6a7486" stroke="#3a4252" stroke-width="6"/>
+  <rect x="280" y="404" width="54" height="74" rx="14" fill="#6a7486" stroke="#3a4252" stroke-width="6"/>
+  <rect x="166" y="462" width="78" height="22" rx="10" fill="#4a5468"/><rect x="268" y="462" width="78" height="22" rx="10" fill="#4a5468"/>
+  <!-- arms (fists up, ready to battle) -->
+  <path d="M136 300 C96 300 78 262 86 222" fill="none" stroke="#6a7486" stroke-width="30" stroke-linecap="round"/>
+  <path d="M376 300 C416 300 434 262 426 222" fill="none" stroke="#6a7486" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="86" cy="206" r="30" fill="url(#bbHead)" stroke="#4a5468" stroke-width="6"/>
+  <circle cx="426" cy="206" r="30" fill="url(#bbHead)" stroke="#4a5468" stroke-width="6"/>
+  <!-- body -->
+  <path d="M136 268 C136 248 152 236 172 236 L340 236 C360 236 376 248 376 268 L376 400 C376 414 364 424 350 424 L162 424 C148 424 136 414 136 400 Z" fill="url(#bbBody)" stroke="#4a5468" stroke-width="7"/>
+  <rect x="160" y="262" width="192" height="86" rx="16" fill="#121a2a" stroke="#2a3244" stroke-width="5"/>
+  <text x="256" y="298" font-family="Arial Black,Arial" font-size="30" font-weight="900" fill="#6af0ff" text-anchor="middle">EmoMon</text>
+  <text x="256" y="334" font-family="Arial Black,Arial" font-size="30" font-weight="900" fill="#ffb02a" text-anchor="middle">Battle</text>
+  <circle cx="200" cy="384" r="11" fill="#3ae07a"/><circle cx="236" cy="384" r="11" fill="#ffb02a"/><circle cx="272" cy="384" r="11" fill="#ff5a5a"/>
+  <rect x="296" y="374" width="40" height="20" rx="6" fill="#4a5468"/>
+  <!-- neck -->
+  <rect x="226" y="214" width="60" height="28" rx="8" fill="#6a7486" stroke="#4a5468" stroke-width="5"/>
+  <!-- head (the Test Bot face) -->
+  <path d="M256 66 L256 34" stroke="#c8d0dc" stroke-width="10"/><circle cx="256" cy="28" r="15" fill="#ff5a5a" stroke="#8a1a1a" stroke-width="5"/>
+  <rect x="146" y="64" width="220" height="156" rx="50" fill="url(#bbHead)" stroke="#4a5468" stroke-width="8"/>
+  <rect x="122" y="116" width="26" height="56" rx="9" fill="#6a7486"/><rect x="364" y="116" width="26" height="56" rx="9" fill="#6a7486"/>
+  <rect x="172" y="90" width="168" height="88" rx="32" fill="#121a2a" stroke="#2a3244" stroke-width="6"/>
+  <circle cx="218" cy="134" r="21" fill="url(#bbEye)"/><circle cx="294" cy="134" r="21" fill="url(#bbEye)"/>
+  <circle cx="224" cy="126" r="6" fill="#fff"/><circle cx="300" cy="126" r="6" fill="#fff"/>
+  <path d="M190 108 L240 120 M322 108 L272 120" stroke="#ff5a5a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M226 196 L286 196" stroke="#6af0ff" stroke-width="8" stroke-linecap="round"/>
+  <!-- battle headband -->
+  <rect x="150" y="70" width="212" height="16" rx="8" fill="url(#bbBand)"/>
+  <path d="M362 78 L404 64 L396 86 Z M362 78 L408 92 L392 98 Z" fill="#ff4a6a"/>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="ice" cx="45%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#cdf2ff"/><stop offset="100%" stop-color="#6ac6ec"/></radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#bff0ff" stop-opacity=".6"/><stop offset="100%" stop-color="#bff0ff" stop-opacity="0"/></radialGradient>
+    <g id="arm">
+      <path d="M0 -60 L0 -200" stroke="#7ad4f4" stroke-width="22" stroke-linecap="round"/>
+      <path d="M0 -60 L0 -200" stroke="#eafaff" stroke-width="10" stroke-linecap="round"/>
+      <path d="M0 -120 L-36 -156 M0 -120 L36 -156 M0 -170 L-24 -194 M0 -170 L24 -194" stroke="#7ad4f4" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="0" cy="-206" r="12" fill="#eafaff" stroke="#7ad4f4" stroke-width="4"/>
+    </g>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#glow)"/>
+  <g transform="translate(256 256)">
+    <use href="#arm"/><use href="#arm" transform="rotate(60)"/><use href="#arm" transform="rotate(120)"/>
+    <use href="#arm" transform="rotate(180)"/><use href="#arm" transform="rotate(240)"/><use href="#arm" transform="rotate(300)"/>
+  </g>
+  <path d="M256 160 L340 208 L340 304 L256 352 L172 304 L172 208 Z" fill="url(#ice)" stroke="#4ab0dc" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="226" cy="246" rx="17" ry="22" fill="#1a3a5a"/><ellipse cx="286" cy="246" rx="17" ry="22" fill="#1a3a5a"/>
+  <circle cx="232" cy="238" r="7" fill="#fff"/><circle cx="292" cy="238" r="7" fill="#fff"/>
+  <ellipse cx="200" cy="280" rx="14" ry="8" fill="#ffc4dc" opacity=".8"/><ellipse cx="312" cy="280" rx="14" ry="8" fill="#ffc4dc" opacity=".8"/>
+  <path d="M242 286 C250 296 262 296 270 286" fill="none" stroke="#1a3a5a" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#fff"><path d="M110 110 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M410 400 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/></g>
+</svg>

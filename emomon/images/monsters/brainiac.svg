@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="brain" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffd8e4"/><stop offset="55%" stop-color="#f08aa8"/><stop offset="100%" stop-color="#a8406a"/></radialGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffffff"/><stop offset="80%" stop-color="#f4e8d8"/><stop offset="100%" stop-color="#d8b8a0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a0a2a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a0a2a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="476" rx="160" ry="14" fill="url(#sh)"/>
+  <!-- nerve tendril hands -->
+  <g fill="none" stroke="#c84a5a" stroke-width="12" stroke-linecap="round">
+    <path d="M150 300 C100 340 80 400 50 420"/><path d="M362 300 C412 340 432 400 462 420"/>
+    <path d="M200 330 C190 390 170 430 150 460"/><path d="M312 330 C322 390 342 430 362 460"/>
+  </g>
+  <g fill="none" stroke="#c84a5a" stroke-width="6" stroke-linecap="round">
+    <path d="M50 420 L24 410 M50 420 L36 444 M50 420 L60 448"/><path d="M462 420 L488 410 M462 420 L476 444 M462 420 L452 448"/>
+    <path d="M150 460 L128 470 M150 460 L150 484"/><path d="M362 460 L384 470 M362 460 L362 484"/>
+  </g>
+  <path d="M150 300 C100 340 80 400 50 420" fill="none" stroke="#ff8aa0" stroke-width="3" stroke-dasharray="4 10"/>
+  <!-- brain -->
+  <path d="M256 70 C330 50 410 100 420 170 C460 200 450 280 400 300 C380 350 300 360 256 340 C212 360 132 350 112 300 C62 280 52 200 92 170 C102 100 182 50 256 70 Z" fill="url(#brain)" stroke="#7a2048" stroke-width="6"/>
+  <path d="M256 74 L256 330" stroke="#7a2048" stroke-width="5"/>
+  <g fill="none" stroke="#a8406a" stroke-width="5" stroke-linecap="round">
+    <path d="M140 140 C170 120 200 150 180 170 C160 190 190 220 220 200"/><path d="M372 140 C342 120 312 150 332 170 C352 190 322 220 292 200"/>
+    <path d="M110 230 C140 210 170 240 150 270"/><path d="M402 230 C372 210 342 240 362 270"/>
+    <path d="M200 100 C220 90 236 110 226 126"/><path d="M312 100 C292 90 276 110 286 126"/>
+  </g>
+  <!-- one big eye -->
+  <circle cx="256" cy="230" r="66" fill="url(#eye)" stroke="#7a2048" stroke-width="5"/>
+  <path d="M206 214 C226 230 240 224 250 238 M300 200 C290 220 270 220 268 236 M240 280 C250 266 264 270 270 260" stroke="#e85a6a" stroke-width="3" fill="none"/>
+  <circle cx="262" cy="236" r="32" fill="#3a8a3a"/><circle cx="262" cy="236" r="16" fill="#0a0a0a"/>
+  <circle cx="272" cy="226" r="7" fill="#fff"/>
+</svg>

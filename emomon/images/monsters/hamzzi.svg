@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fur" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#fff4e0"/><stop offset="60%" stop-color="#f4c88a"/><stop offset="100%" stop-color="#d8964a"/></radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff6a0" stop-opacity=".7"/><stop offset="100%" stop-color="#fff6a0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ffd6e7"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="220" fill="url(#halo)"/>
+  <ellipse cx="256" cy="476" rx="120" ry="14" fill="url(#sh)"/>
+  <!-- wings -->
+  <path d="M150 280 C80 220 40 260 50 320 C70 360 120 340 160 320 Z M362 280 C432 220 472 260 462 320 C442 360 392 340 352 320 Z" fill="url(#wing)" stroke="#d8a0b8" stroke-width="4"/>
+  <path d="M70 300 C90 300 110 310 130 320 M442 300 C422 300 402 310 382 320" stroke="#e8c0d0" stroke-width="3" fill="none"/>
+  <!-- halo -->
+  <ellipse cx="256" cy="70" rx="70" ry="16" fill="none" stroke="#ffd23a" stroke-width="10"/>
+  <!-- feet -->
+  <ellipse cx="216" cy="456" rx="26" ry="12" fill="#ffb3a0" stroke="#c87a5a" stroke-width="3"/><ellipse cx="296" cy="456" rx="26" ry="12" fill="#ffb3a0" stroke="#c87a5a" stroke-width="3"/>
+  <!-- chubby body with nurse dress -->
+  <ellipse cx="256" cy="360" rx="120" ry="104" fill="url(#fur)" stroke="#a8682a" stroke-width="5"/>
+  <path d="M160 330 C200 360 312 360 352 330 L364 420 C320 460 192 460 148 420 Z" fill="#ffffff" stroke="#c8c0c8" stroke-width="4"/>
+  <rect x="236" y="370" width="40" height="40" fill="#fff"/><path d="M256 374 L256 406 M240 390 L272 390" stroke="#e8322a" stroke-width="10"/>
+  <!-- head -->
+  <ellipse cx="256" cy="200" rx="120" ry="104" fill="url(#fur)" stroke="#a8682a" stroke-width="5"/>
+  <ellipse cx="256" cy="232" rx="70" ry="54" fill="#fff6ea"/>
+  <!-- ears -->
+  <circle cx="160" cy="118" r="30" fill="url(#fur)" stroke="#a8682a" stroke-width="4"/><circle cx="160" cy="118" r="16" fill="#ffb3c6"/>
+  <circle cx="352" cy="118" r="30" fill="url(#fur)" stroke="#a8682a" stroke-width="4"/><circle cx="352" cy="118" r="16" fill="#ffb3c6"/>
+  <!-- nurse cap -->
+  <path d="M196 120 C210 90 302 90 316 120 L304 148 L208 148 Z" fill="#ffffff" stroke="#c8c0c8" stroke-width="4"/>
+  <path d="M256 104 L256 136 M240 120 L272 120" stroke="#e8322a" stroke-width="8"/>
+  <!-- face -->
+  <ellipse cx="214" cy="200" rx="16" ry="19" fill="#2a1a10"/><ellipse cx="298" cy="200" rx="16" ry="19" fill="#2a1a10"/>
+  <circle cx="220" cy="192" r="6" fill="#fff"/><circle cx="304" cy="192" r="6" fill="#fff"/>
+  <ellipse cx="180" cy="236" rx="18" ry="11" fill="#ffaa9a"/><ellipse cx="332" cy="236" rx="18" ry="11" fill="#ffaa9a"/>
+  <ellipse cx="256" cy="224" rx="8" ry="6" fill="#ff8a9a"/>
+  <path d="M240 240 C248 250 256 250 256 240 C256 250 264 250 272 240" fill="none" stroke="#2a1a10" stroke-width="4" stroke-linecap="round"/>
+  <!-- holding a pill -->
+  <path d="M170 330 C150 300 170 270 196 280" fill="none" stroke="#d8964a" stroke-width="22" stroke-linecap="round"/>
+  <g transform="rotate(-30 190 290)">
+    <rect x="160" y="272" width="64" height="30" rx="15" fill="#ffffff" stroke="#a8682a" stroke-width="4"/>
+    <path d="M192 272 L192 302 L209 302 A15 15 0 0 0 209 272 Z" fill="#ff5a7a"/>
+  </g>
+</svg>

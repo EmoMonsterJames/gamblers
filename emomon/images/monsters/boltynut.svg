@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7d8898"/>
+      <stop offset="35%" stop-color="#eef2f7"/>
+      <stop offset="65%" stop-color="#bcc5d1"/>
+      <stop offset="100%" stop-color="#5f6a7a"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4f7fb"/>
+      <stop offset="100%" stop-color="#9aa5b4"/>
+    </linearGradient>
+    <linearGradient id="nut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8c66a"/>
+      <stop offset="100%" stop-color="#a87a22"/>
+    </linearGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3a4258" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#3a4258" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="256" cy="484" rx="160" ry="16" fill="url(#shadow)"/>
+
+  <!-- threaded shaft / legs -->
+  <rect x="200" y="230" width="112" height="226" rx="16" fill="url(#metal)" stroke="#4a5464" stroke-width="3"/>
+  <g stroke="#5f6a7a" stroke-width="6" stroke-linecap="round">
+    <path d="M202 400 L310 388 M202 426 L310 414 M202 452 L310 440"/>
+  </g>
+  <ellipse cx="208" cy="466" rx="34" ry="14" fill="#9aa5b4" stroke="#4a5464" stroke-width="3"/>
+  <ellipse cx="304" cy="466" rx="34" ry="14" fill="#9aa5b4" stroke="#4a5464" stroke-width="3"/>
+
+  <!-- big brass nut screwed on as its body -->
+  <path d="M104 316 L160 250 L352 250 L408 316 L352 382 L160 382 Z" fill="url(#nut)" stroke="#6a4a10" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M160 250 L180 316 L160 382 M352 250 L332 316 L352 382" fill="none" stroke="#8a6418" stroke-width="3"/>
+  <path d="M170 262 L342 262" stroke="#fff1c0" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+  <!-- bolt passing through the nut -->
+  <ellipse cx="256" cy="316" rx="48" ry="40" fill="url(#metal)" stroke="#4a5464" stroke-width="3"/>
+  <path d="M220 300 Q256 286 292 300 M216 322 Q256 308 296 322" fill="none" stroke="#5f6a7a" stroke-width="4"/>
+
+  <!-- strong arms with washer fists -->
+  <path d="M108 300 C70 300 50 330 56 360" fill="none" stroke="#bcc5d1" stroke-width="30" stroke-linecap="round"/>
+  <path d="M404 300 C442 300 462 330 456 360" fill="none" stroke="#bcc5d1" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="56" cy="372" r="26" fill="url(#head)" stroke="#4a5464" stroke-width="3"/><circle cx="56" cy="372" r="9" fill="#5f6a7a"/>
+  <circle cx="456" cy="372" r="26" fill="url(#head)" stroke="#4a5464" stroke-width="3"/><circle cx="456" cy="372" r="9" fill="#5f6a7a"/>
+
+  <!-- hexagon bolt head -->
+  <path d="M136 110 L196 46 L316 46 L376 110 L316 232 L196 232 Z" fill="url(#head)" stroke="#4a5464" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M136 110 L376 110" stroke="#7d8898" stroke-width="3" opacity=".6"/>
+  <path d="M200 58 L312 58" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+  <path d="M232 80 L280 80 M256 66 L256 94" stroke="#5f6a7a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- tougher, confident face -->
+  <ellipse cx="216" cy="160" rx="15" ry="16" fill="#26303e"/>
+  <ellipse cx="296" cy="160" rx="15" ry="16" fill="#26303e"/>
+  <circle cx="211" cy="154" r="5" fill="#fff"/><circle cx="291" cy="154" r="5" fill="#fff"/>
+  <path d="M190 132 L238 140 M322 132 L274 140" stroke="#26303e" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="188" cy="194" rx="14" ry="7" fill="#ff9fb6" opacity=".55"/>
+  <ellipse cx="324" cy="194" rx="14" ry="7" fill="#ff9fb6" opacity=".55"/>
+  <path d="M234 192 Q256 210 282 190" fill="none" stroke="#26303e" stroke-width="4.5" stroke-linecap="round"/>
+
+  <path d="M420 70 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#dfe8f5"/>
+  <path d="M90 200 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#dfe8f5"/>
+</svg>

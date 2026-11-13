@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="fur" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#fff2d8"/><stop offset="60%" stop-color="#ecd2a8"/><stop offset="100%" stop-color="#bc9a70"/></radialGradient>
+    <radialGradient id="mask" cx="45%" cy="35%" r="70%"><stop offset="0%" stop-color="#6a5248"/><stop offset="100%" stop-color="#2a1e18"/></radialGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dcd0c0"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a1a10" stop-opacity=".35"/><stop offset="100%" stop-color="#2a1a10" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="484" rx="230" ry="18" fill="url(#sh)"/>
+  <!-- huffy puffs -->
+  <path d="M330 60 c10 -16 34 -12 34 4 c14 -6 26 8 16 20 c-12 10 -40 6 -50 -24z" fill="#f4ead8" opacity=".9"/>
+  <path d="M396 90 c6 -10 22 -8 22 2 c10 -4 16 6 10 12 c-8 6 -26 4 -32 -14z" fill="#f4ead8" opacity=".9"/>
+  <!-- chunky body -->
+  <ellipse cx="300" cy="350" rx="190" ry="120" fill="url(#fur)" stroke="#8a6a4a" stroke-width="5"/>
+  <path d="M170 380 C220 420 330 430 420 390" fill="none" stroke="#c8a880" stroke-width="5"/>
+  <circle cx="470" cy="300" r="26" fill="url(#fur)" stroke="#8a6a4a" stroke-width="4"/>
+  <!-- blue vest + bell -->
+  <path d="M170 260 C230 300 330 300 390 270 L400 360 C330 390 230 390 170 350 Z" fill="#2a5aa8" stroke="#123a7a" stroke-width="5"/>
+  <path d="M190 300 C240 330 320 330 380 304" fill="none" stroke="#123a7a" stroke-width="3" stroke-dasharray="8 6"/>
+  <path d="M180 270 C230 300 320 300 380 276" fill="none" stroke="#c89a2a" stroke-width="5"/>
+  <path d="M268 300 L268 316" stroke="#c89a2a" stroke-width="4"/>
+  <path d="M252 316 L284 316 L288 344 L248 344 Z" fill="#f5c22a" stroke="#8a6a00" stroke-width="4"/><circle cx="268" cy="338" r="4" fill="#8a6a00"/>
+  <!-- two bones -->
+  <rect x="40" y="420" width="420" height="40" rx="20" fill="url(#bone)" stroke="#a8988a" stroke-width="5"/>
+  <circle cx="36" cy="420" r="26" fill="url(#bone)" stroke="#a8988a" stroke-width="5"/><circle cx="36" cy="460" r="26" fill="url(#bone)" stroke="#a8988a" stroke-width="5"/>
+  <circle cx="464" cy="420" r="26" fill="url(#bone)" stroke="#a8988a" stroke-width="5"/><circle cx="464" cy="460" r="26" fill="url(#bone)" stroke="#a8988a" stroke-width="5"/>
+  <!-- paws -->
+  <ellipse cx="180" cy="424" rx="40" ry="24" fill="url(#fur)" stroke="#8a6a4a" stroke-width="4"/><ellipse cx="290" cy="428" rx="40" ry="24" fill="url(#fur)" stroke="#8a6a4a" stroke-width="4"/>
+  <g fill="#3a2a20"><ellipse cx="166" cy="436" rx="5" ry="6"/><ellipse cx="180" cy="440" rx="5" ry="6"/><ellipse cx="194" cy="436" rx="5" ry="6"/><ellipse cx="276" cy="440" rx="5" ry="6"/><ellipse cx="290" cy="444" rx="5" ry="6"/><ellipse cx="304" cy="440" rx="5" ry="6"/></g>
+  <!-- big wrinkly head -->
+  <path d="M200 80 C300 70 350 140 350 220 C350 300 290 340 200 340 C110 340 50 300 50 220 C50 140 100 90 200 80 Z" fill="url(#fur)" stroke="#8a6a4a" stroke-width="5"/>
+  <path d="M150 110 C170 100 190 98 206 104 M210 104 C226 98 244 100 260 110 M140 130 C176 120 226 120 266 132" fill="none" stroke="#bc9a70" stroke-width="5" stroke-linecap="round"/>
+  <path d="M84 140 C40 120 30 180 56 210 C76 206 92 176 98 152 Z M316 140 C360 120 370 180 344 210 C324 206 308 176 302 152 Z" fill="url(#mask)" stroke="#1a120c" stroke-width="4"/>
+  <path d="M200 196 C256 190 290 230 286 270 C282 310 246 326 200 326 C154 326 118 310 114 270 C110 230 144 190 200 196 Z" fill="url(#mask)" stroke="#1a120c" stroke-width="4"/>
+  <path d="M150 240 C170 250 230 250 250 240" fill="none" stroke="#0a0604" stroke-width="3"/>
+  <ellipse cx="200" cy="228" rx="24" ry="15" fill="#140c08"/>
+  <path d="M200 244 L200 262 M178 278 C190 268 200 268 200 262 C200 268 210 268 222 278" fill="none" stroke="#0a0604" stroke-width="4" stroke-linecap="round"/>
+  <!-- puppy eyes looking up -->
+  <circle cx="138" cy="184" r="27" fill="#fff" stroke="#1a120c" stroke-width="3"/><circle cx="262" cy="184" r="27" fill="#fff" stroke="#1a120c" stroke-width="3"/>
+  <circle cx="142" cy="176" r="18" fill="#3a2010"/><circle cx="258" cy="176" r="18" fill="#3a2010"/>
+  <circle cx="148" cy="168" r="7" fill="#fff"/><circle cx="264" cy="168" r="7" fill="#fff"/>
+  <ellipse cx="108" cy="230" rx="14" ry="8" fill="#ffaa9a" opacity=".7"/><ellipse cx="292" cy="230" rx="14" ry="8" fill="#ffaa9a" opacity=".7"/>
+</svg>

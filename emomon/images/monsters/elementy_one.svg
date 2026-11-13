@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Elementy One: a shapeless AIR element wearing a meaningful, knowing expression -->
+  <defs>
+    <radialGradient id="air" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".6" stop-color="#d8f2fa" stop-opacity=".8"/><stop offset="1" stop-color="#9ad0e6" stop-opacity=".5"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e0f6ff" stop-opacity=".6"/><stop offset="1" stop-color="#e0f6ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- swirling wind body, no fixed form -->
+  <path d="M120 300 C80 220 140 120 240 110 C340 100 420 170 400 260 C390 310 420 350 380 380 C340 410 300 380 260 400 C210 424 160 400 150 360 C110 360 96 330 120 300 Z" fill="url(#air)" stroke="#7ab8d0" stroke-width="5" stroke-linejoin="round"/>
+  <g fill="none" stroke="#9ad0e6" stroke-width="6" stroke-linecap="round">
+    <path d="M150 200 C190 170 240 170 260 200 C270 220 250 236 236 226"/><path d="M300 330 C330 330 350 310 346 290 C342 274 324 276 324 290"/>
+    <path d="M40 260 q30 -16 60 0 q30 16 60 0"/><path d="M380 160 q24 -14 48 0 q24 14 48 0"/><path d="M360 440 q24 -12 48 0"/>
+  </g>
+  <!-- knowing half-lidded eyes and a sly little smile -->
+  <path d="M200 252 Q222 240 244 252" fill="none" stroke="#2a4a5a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M276 252 Q298 240 320 252" fill="none" stroke="#2a4a5a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M206 256 Q222 268 238 256 Z M282 256 Q298 268 314 256 Z" fill="#2a4a5a"/>
+  <path d="M196 236 l44 -6 M324 236 l-44 -6" stroke="#2a4a5a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M248 304 Q268 312 290 296" fill="none" stroke="#2a4a5a" stroke-width="5" stroke-linecap="round"/>
+</svg>

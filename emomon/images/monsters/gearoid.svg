@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e0e6ea"/><stop offset="100%" stop-color="#6d838f"/></linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe082"/><stop offset="100%" stop-color="#b8860b"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff3d0" stop-opacity=".6"/><stop offset="100%" stop-color="#fff3d0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#263238" stop-opacity=".38"/><stop offset="100%" stop-color="#263238" stop-opacity="0"/></radialGradient>
+    <g id="gear"><circle r="34" fill="url(#brass)" stroke="#5d4300" stroke-width="5"/>
+      <path d="M-8 -46 L8 -46 L8 -30 L-8 -30 Z M-8 46 L8 46 L8 30 L-8 30 Z M-46 -8 L-46 8 L-30 8 L-30 -8 Z M46 -8 L46 8 L30 8 L30 -8 Z" fill="url(#brass)" stroke="#5d4300" stroke-width="4"/>
+      <circle r="10" fill="#5d4300"/></g>
+  </defs>
+  <circle cx="256" cy="250" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="456" rx="150" ry="14" fill="url(#sh)"/>
+  <!-- head -->
+  <rect x="170" y="90" width="172" height="128" rx="24" fill="url(#metal)" stroke="#263238" stroke-width="8"/>
+  <rect x="196" y="126" width="120" height="50" rx="20" fill="#263238"/>
+  <ellipse cx="228" cy="151" rx="16" ry="14" fill="#40c4ff"/><ellipse cx="284" cy="151" rx="16" ry="14" fill="#40c4ff"/>
+  <circle cx="232" cy="147" r="5" fill="#fff"/><circle cx="288" cy="147" r="5" fill="#fff"/>
+  <path d="M230 196 L282 196" stroke="#263238" stroke-width="6" stroke-linecap="round"/>
+  <use href="#gear" transform="translate(170 100) scale(.6)"/>
+  <!-- body -->
+  <rect x="160" y="226" width="192" height="150" rx="20" fill="url(#metal)" stroke="#263238" stroke-width="8"/>
+  <use href="#gear" transform="translate(256 300)"/>
+  <use href="#gear" transform="translate(318 258) scale(.5)"/>
+  <!-- arms -->
+  <path d="M160 250 C120 260 104 300 108 340" fill="none" stroke="#78909c" stroke-width="22" stroke-linecap="round"/>
+  <path d="M352 250 C392 260 408 300 404 340" fill="none" stroke="#78909c" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="108" cy="350" r="20" fill="url(#metal)" stroke="#263238" stroke-width="6"/>
+  <circle cx="404" cy="350" r="20" fill="url(#metal)" stroke="#263238" stroke-width="6"/>
+  <!-- legs -->
+  <rect x="186" y="376" width="44" height="60" rx="10" fill="#607d8b" stroke="#263238" stroke-width="6"/>
+  <rect x="282" y="376" width="44" height="60" rx="10" fill="#607d8b" stroke="#263238" stroke-width="6"/>
+  <rect x="176" y="430" width="64" height="20" rx="8" fill="#37474f"/><rect x="272" y="430" width="64" height="20" rx="8" fill="#37474f"/>
+</svg>

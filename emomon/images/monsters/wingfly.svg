@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="fe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f4f8ff"/><stop offset="100%" stop-color="#7aa4d8"/></linearGradient>
+    <linearGradient id="fe2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cfe0ff"/><stop offset="100%" stop-color="#4a7ac0"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#c8e0ff" stop-opacity=".65"/><stop offset="100%" stop-color="#c8e0ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a2a4a" stop-opacity=".3"/><stop offset="100%" stop-color="#1a2a4a" stop-opacity="0"/></radialGradient>
+    <g id="wing">
+      <path d="M0 0 C50 -100 170 -150 236 -130 C228 -80 208 -36 186 -6 C160 36 80 66 0 40 Z" fill="url(#fe)" stroke="#23406e" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M18 30 C70 40 130 24 186 -6 M28 10 C90 0 150 -30 210 -70 M38 -16 C100 -44 160 -84 226 -118" fill="none" stroke="#5a80b8" stroke-width="5" stroke-linecap="round"/>
+      <path d="M0 40 C40 96 110 112 166 84 C120 74 70 62 30 36 Z" fill="url(#fe2)" stroke="#23406e" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M10 60 C50 104 100 116 140 104 C100 96 60 84 20 56 Z" fill="#9cbce8" stroke="#23406e" stroke-width="5" stroke-linejoin="round"/>
+      <!-- bigger eye at the tip -->
+      <ellipse cx="220" cy="-118" rx="30" ry="32" fill="#fff" stroke="#1a2a5a" stroke-width="6"/>
+      <circle cx="226" cy="-114" r="15" fill="#1a2a5a"/>
+      <circle cx="232" cy="-120" r="6" fill="#fff"/>
+      <path d="M192 -146 L250 -150" stroke="#1a2a5a" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <circle cx="256" cy="250" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="452" rx="140" ry="14" fill="url(#sh)"/>
+  <g transform="translate(256 286) scale(.86) translate(-256 -286)">
+  <use href="#wing" transform="translate(266 270)"/>
+  <use href="#wing" transform="translate(246 270) scale(-1 1)"/>
+  <ellipse cx="256" cy="286" rx="30" ry="38" fill="#dbe8ff" stroke="#23406e" stroke-width="7"/>
+  <path d="M236 268 C250 282 262 282 276 268 M236 296 C250 310 262 310 276 296" fill="none" stroke="#5a80b8" stroke-width="5"/>
+  </g>
+</svg>

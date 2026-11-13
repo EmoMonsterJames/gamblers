@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e4e9f0"/><stop offset="55%" stop-color="#8f9aab"/><stop offset="100%" stop-color="#4a5262"/></linearGradient>
+    <linearGradient id="grip" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#8a5a32"/><stop offset="100%" stop-color="#5a3418"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a1a2a" stop-opacity=".35"/><stop offset="100%" stop-color="#1a1a2a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="240" cy="470" rx="150" ry="14" fill="url(#sh)"/>
+  <!-- barrel + slide (body) -->
+  <rect x="90" y="150" width="330" height="120" rx="30" fill="url(#metal)" stroke="#2a303c" stroke-width="6"/>
+  <rect x="410" y="180" width="56" height="60" rx="10" fill="#5a6474" stroke="#2a303c" stroke-width="5"/>
+  <circle cx="466" cy="210" r="14" fill="#1a1e26"/>
+  <path d="M130 170 L130 250 M160 170 L160 250 M190 170 L190 250" stroke="#6a7486" stroke-width="5"/>
+  <rect x="250" y="130" width="40" height="24" rx="6" fill="#4a5262" stroke="#2a303c" stroke-width="4"/>
+  <!-- grip (legs) -->
+  <path d="M130 260 L210 260 L190 420 L120 420 Z" fill="url(#grip)" stroke="#3a200a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M140 300 L196 300 M136 340 L192 340 M132 380 L188 380" stroke="#3a200a" stroke-width="3" opacity=".6"/>
+  <ellipse cx="150" cy="440" rx="40" ry="16" fill="#3a3f4a"/>
+  <!-- trigger guard + arm -->
+  <path d="M210 270 C220 330 270 330 286 270" fill="none" stroke="#4a5262" stroke-width="12" stroke-linecap="round"/>
+  <path d="M240 270 L246 300" stroke="#2a303c" stroke-width="8" stroke-linecap="round"/>
+  <!-- cute face on the slide -->
+  <ellipse cx="300" cy="200" rx="20" ry="24" fill="#1a1e26"/><ellipse cx="370" cy="200" rx="20" ry="24" fill="#1a1e26"/>
+  <circle cx="307" cy="191" r="7" fill="#fff"/><circle cx="377" cy="191" r="7" fill="#fff"/>
+  <ellipse cx="276" cy="236" rx="14" ry="8" fill="#ff9a9a" opacity=".8"/><ellipse cx="394" cy="236" rx="14" ry="8" fill="#ff9a9a" opacity=".8"/>
+  <path d="M322 236 C330 246 342 246 350 236" fill="none" stroke="#1a1e26" stroke-width="5" stroke-linecap="round"/>
+  <!-- muzzle flash -->
+  <path d="M484 210 l20 -16 -6 16 14 0 -18 14 6 -10 z" fill="#ffd23a" stroke="#ff8a2a" stroke-width="2"/>
+</svg>

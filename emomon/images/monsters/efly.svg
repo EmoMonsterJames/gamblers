@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="wing" cx="35%" cy="40%" r="75%"><stop offset="0%" stop-color="#fff2d0"/><stop offset="50%" stop-color="#d8b07a"/><stop offset="100%" stop-color="#7a5a32"/></radialGradient>
+    <radialGradient id="fuzz" cx="45%" cy="30%" r="70%"><stop offset="0%" stop-color="#fff8e8"/><stop offset="60%" stop-color="#d8c8a0"/><stop offset="100%" stop-color="#8a7a52"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a2010" stop-opacity=".25"/><stop offset="100%" stop-color="#2a2010" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="482" rx="120" ry="12" fill="url(#sh)"/>
+  <!-- big moth wings -->
+  <path d="M240 220 C180 90 60 60 20 120 C10 200 80 260 230 270 Z" fill="url(#wing)" stroke="#4a3418" stroke-width="5"/>
+  <path d="M272 220 C332 90 452 60 492 120 C502 200 432 260 282 270 Z" fill="url(#wing)" stroke="#4a3418" stroke-width="5"/>
+  <path d="M236 280 C170 280 90 320 90 390 C120 430 200 400 240 320 Z" fill="url(#wing)" stroke="#4a3418" stroke-width="5"/>
+  <path d="M276 280 C342 280 422 320 422 390 C392 430 312 400 272 320 Z" fill="url(#wing)" stroke="#4a3418" stroke-width="5"/>
+  <!-- eye spots -->
+  <circle cx="110" cy="160" r="34" fill="#3a2a10"/><circle cx="110" cy="160" r="22" fill="#e8a83a"/><circle cx="110" cy="160" r="10" fill="#1a1006"/>
+  <circle cx="402" cy="160" r="34" fill="#3a2a10"/><circle cx="402" cy="160" r="22" fill="#e8a83a"/><circle cx="402" cy="160" r="10" fill="#1a1006"/>
+  <circle cx="150" cy="370" r="16" fill="#5a3a1a"/><circle cx="362" cy="370" r="16" fill="#5a3a1a"/>
+  <path d="M60 120 C100 140 160 170 220 230 M452 120 C412 140 352 170 292 230" fill="none" stroke="#5a3e1a" stroke-width="3" opacity=".6"/>
+  <!-- fuzzy body -->
+  <ellipse cx="256" cy="300" rx="40" ry="110" fill="url(#fuzz)" stroke="#5a4a2a" stroke-width="5"/>
+  <path d="M222 260 L290 260 M220 300 L292 300 M222 340 L290 340 M228 380 L284 380" stroke="#a8946a" stroke-width="4"/>
+  <!-- head -->
+  <circle cx="256" cy="190" r="52" fill="url(#fuzz)" stroke="#5a4a2a" stroke-width="5"/>
+  <path d="M236 146 C220 110 190 90 170 92 M276 146 C292 110 322 90 342 92" fill="none" stroke="#5a4a2a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M190 100 L180 86 M202 106 L196 90 M322 100 L332 86 M310 106 L316 90" stroke="#5a4a2a" stroke-width="3"/>
+  <ellipse cx="234" cy="188" rx="18" ry="22" fill="#1a1006"/><ellipse cx="278" cy="188" rx="18" ry="22" fill="#1a1006"/>
+  <circle cx="240" cy="180" r="7" fill="#fff"/><circle cx="284" cy="180" r="7" fill="#fff"/>
+  <path d="M246 222 C252 228 260 228 266 222" fill="none" stroke="#1a1006" stroke-width="4" stroke-linecap="round"/>
+  <!-- dust -->
+  <g fill="#f4e4c0" opacity=".8"><circle cx="70" cy="300" r="5"/><circle cx="440" cy="300" r="5"/><circle cx="200" cy="440" r="4"/><circle cx="320" cy="450" r="4"/></g>
+</svg>

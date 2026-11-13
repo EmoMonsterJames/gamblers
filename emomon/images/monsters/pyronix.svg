@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Pyronix: a giant blazing phoenix with sharp talons, a flame crest and a long sweeping tail of fire -->
+  <defs>
+    <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#b71c1c"/><stop offset=".45" stop-color="#ff6d00"/><stop offset="1" stop-color="#ffea00"/></linearGradient>
+    <radialGradient id="body" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="#fff59d"/><stop offset=".45" stop-color="#ff9100"/><stop offset="1" stop-color="#c62828"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffab40" stop-opacity=".65"/><stop offset="1" stop-color="#ff3d00" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3e0000" stop-opacity=".35"/><stop offset="1" stop-color="#3e0000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="248" fill="url(#aura)"/>
+  <ellipse cx="256" cy="486" rx="150" ry="12" fill="url(#sh)"/>
+  <!-- long sweeping tail -->
+  <path d="M250 330 C230 400 160 440 70 470 C150 470 210 450 250 410 C240 450 230 480 200 506 C260 480 280 430 280 380 C300 430 330 470 400 496 C350 450 320 400 300 330 Z" fill="url(#fire)" stroke="#7f0000" stroke-width="6" stroke-linejoin="round"/>
+  <!-- wings spread wide -->
+  <path d="M220 220 C160 160 90 150 20 180 C70 190 90 210 100 230 C60 230 40 250 26 280 C80 260 120 270 140 290 C110 300 96 320 90 350 C140 320 190 310 220 300 Z" fill="url(#fire)" stroke="#7f0000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M292 220 C352 160 422 150 492 180 C442 190 422 210 412 230 C452 230 472 250 486 280 C432 260 392 270 372 290 C402 300 416 320 422 350 C372 320 322 310 292 300 Z" fill="url(#fire)" stroke="#7f0000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M200 236 C150 200 100 196 60 206 M190 270 C150 254 110 258 80 270" fill="none" stroke="#ffea00" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <path d="M312 236 C362 200 412 196 452 206 M322 270 C362 254 402 258 432 270" fill="none" stroke="#ffea00" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <!-- body -->
+  <ellipse cx="256" cy="280" rx="64" ry="90" fill="url(#body)" stroke="#7f0000" stroke-width="7"/>
+  <path d="M226 260 q30 20 60 0 M222 300 q34 22 68 0 M230 338 q26 16 52 0" fill="none" stroke="#fff59d" stroke-width="4" stroke-linecap="round"/>
+  <!-- talons -->
+  <path d="M232 362 L226 400 M226 400 l-16 14 M226 400 l0 20 M226 400 l14 14" stroke="#4e342e" stroke-width="8" stroke-linecap="round"/>
+  <path d="M280 362 L286 400 M286 400 l-14 14 M286 400 l0 20 M286 400 l16 14" stroke="#4e342e" stroke-width="8" stroke-linecap="round"/>
+  <!-- neck and head -->
+  <path d="M232 210 C226 170 236 140 256 130 C276 140 286 170 280 210 Z" fill="url(#body)" stroke="#7f0000" stroke-width="6"/>
+  <ellipse cx="256" cy="120" rx="44" ry="40" fill="url(#body)" stroke="#7f0000" stroke-width="7"/>
+  <!-- flame crest -->
+  <path d="M224 92 C210 50 226 30 236 10 C240 40 250 50 256 60 C258 30 270 14 286 0 C284 30 290 50 296 70 C306 54 320 48 334 46 C318 70 300 86 290 96 Z" fill="url(#fire)" stroke="#7f0000" stroke-width="5" stroke-linejoin="round"/>
+  <!-- fierce eyes and hooked beak -->
+  <path d="M222 108 L248 116 M290 108 L264 116" stroke="#3e0000" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="236" cy="122" rx="10" ry="8" fill="#fff" stroke="#3e0000" stroke-width="3"/><ellipse cx="276" cy="122" rx="10" ry="8" fill="#fff" stroke="#3e0000" stroke-width="3"/>
+  <circle cx="238" cy="123" r="5" fill="#000"/><circle cx="274" cy="123" r="5" fill="#000"/>
+  <path d="M244 136 L268 136 L256 166 Z" fill="#ffd54f" stroke="#5d4000" stroke-width="4" stroke-linejoin="round"/>
+  <!-- embers -->
+  <g fill="#ffea00"><circle cx="60" cy="100" r="5"/><circle cx="450" cy="90" r="6"/><circle cx="480" cy="400" r="4"/><circle cx="40" cy="380" r="5"/><circle cx="130" cy="40" r="3"/><circle cx="390" cy="30" r="4"/></g>
+</svg>

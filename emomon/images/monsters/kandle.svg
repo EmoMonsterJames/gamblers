@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="wax" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff4e0"/><stop offset="55%" stop-color="#ffe6c0"/><stop offset="100%" stop-color="#e8c090"/></linearGradient>
+    <radialGradient id="flame" cx="50%" cy="65%" r="60%"><stop offset="0%" stop-color="#fffbe0"/><stop offset="40%" stop-color="#ffd23a"/><stop offset="100%" stop-color="#ff5a1a"/></radialGradient>
+    <radialGradient id="glow" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#fff2a0" stop-opacity=".7"/><stop offset="100%" stop-color="#fff2a0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="140" r="200" fill="url(#glow)"/>
+  <ellipse cx="256" cy="470" rx="130" ry="14" fill="url(#sh)"/>
+  <!-- holder -->
+  <ellipse cx="256" cy="440" rx="120" ry="26" fill="#c8962a" stroke="#6a4a00" stroke-width="5"/>
+  <path d="M370 440 C410 440 420 400 390 390" fill="none" stroke="#c8962a" stroke-width="14" stroke-linecap="round"/>
+  <!-- candle body -->
+  <path d="M176 200 L336 200 L336 430 C336 446 176 446 176 430 Z" fill="url(#wax)" stroke="#b88a5a" stroke-width="5"/>
+  <path d="M176 200 C180 230 200 240 206 210 C212 250 230 252 236 214 M300 204 C304 240 320 244 326 210" fill="url(#wax)" stroke="#b88a5a" stroke-width="4"/>
+  <!-- wick + flame -->
+  <path d="M256 200 L256 172" stroke="#2a1a0a" stroke-width="6"/>
+  <path d="M256 40 C300 90 310 140 256 178 C202 140 212 90 256 40 Z" fill="url(#flame)" stroke="#ff8a2a" stroke-width="4"/>
+  <path d="M256 100 C274 120 276 146 256 164 C236 146 238 120 256 100 Z" fill="#fffbe0"/>
+  <!-- face -->
+  <ellipse cx="222" cy="290" rx="16" ry="20" fill="#3a2010"/><ellipse cx="290" cy="290" rx="16" ry="20" fill="#3a2010"/>
+  <circle cx="228" cy="282" r="6" fill="#fff"/><circle cx="296" cy="282" r="6" fill="#fff"/>
+  <ellipse cx="196" cy="324" rx="14" ry="8" fill="#ffaa88" opacity=".8"/><ellipse cx="316" cy="324" rx="14" ry="8" fill="#ffaa88" opacity=".8"/>
+  <path d="M244 326 C250 336 262 336 268 326" fill="none" stroke="#3a2010" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#ffe680"><path d="M120 120 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M390 90 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/></g>
+</svg>

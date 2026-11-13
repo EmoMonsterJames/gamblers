@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<defs>
+<clipPath id="cbTop"><path d="M5 32a27 27 0 0 1 54 0Z"/></clipPath>
+<clipPath id="cbBot"><path d="M5 32a27 27 0 0 0 54 0Z"/></clipPath>
+<linearGradient id="cbRain" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#ff3b3b"/><stop offset=".17" stop-color="#ff9a1f"/><stop offset=".34" stop-color="#ffe23a"/>
+<stop offset=".5" stop-color="#3fd65a"/><stop offset=".67" stop-color="#2fa8ff"/><stop offset=".84" stop-color="#4b4bff"/><stop offset="1" stop-color="#b24bff"/>
+</linearGradient>
+</defs>
+<circle cx="32" cy="32" r="27" fill="#fff"/>
+<g clip-path="url(#cbTop)">
+<rect x="5" y="5" width="54" height="27" fill="url(#cbRain)"/>
+<path d="M2 30 Q32 -2 62 30" stroke="#fff" stroke-width="2" fill="none" opacity=".5"/>
+<path d="M2 22 Q32 -10 62 22" stroke="#fff" stroke-width="2" fill="none" opacity=".35"/>
+</g>
+<g clip-path="url(#cbBot)">
+<path d="M5 34h54v6H5z" fill="#ff3b3b" opacity=".22"/><path d="M5 40h54v6H5z" fill="#ffe23a" opacity=".22"/>
+<path d="M5 46h54v6H5z" fill="#2fa8ff" opacity=".22"/><path d="M5 52h54v8H5z" fill="#b24bff" opacity=".22"/>
+</g>
+<circle cx="32" cy="32" r="27" fill="none" stroke="#2a2a2a" stroke-width="4"/>
+<path d="M5 32h54" stroke="#2a2a2a" stroke-width="4"/>
+<circle cx="32" cy="32" r="8" fill="#fff" stroke="#2a2a2a" stroke-width="4"/><circle cx="32" cy="32" r="3.2" fill="url(#cbRain)"/>
+<path d="M15 20a18 18 0 0 1 10-8" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" opacity=".8"/>
+<path d="M50 44l1.5 3 3 1.5-3 1.5-1.5 3-1.5-3-3-1.5 3-1.5z" fill="#ffe23a"/>
+</svg>

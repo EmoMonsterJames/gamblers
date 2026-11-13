@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="20"/></filter>
+    <linearGradient id="outer" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#b3200c"/>
+      <stop offset="50%" stop-color="#ff4a1a"/>
+      <stop offset="100%" stop-color="#ff9a2a"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ff6a1a"/>
+      <stop offset="100%" stop-color="#ffc040"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="60%" r="60%">
+      <stop offset="0%" stop-color="#fff6c0"/>
+      <stop offset="100%" stop-color="#ffcf3a"/>
+    </radialGradient>
+  </defs>
+
+  <!-- big hot glow -->
+  <circle cx="256" cy="290" r="220" fill="#ff5a1f" opacity=".45" filter="url(#glow)"/>
+
+  <!-- outer flame with jagged crown -->
+  <path d="M256 30 C266 80 300 100 316 130 C330 90 360 72 384 60 C372 100 384 130 410 150 C420 120 444 104 466 100
+           C446 150 470 200 474 260 C482 380 390 476 256 476 C122 476 30 380 38 260 C42 200 66 150 46 100
+           C68 104 92 120 102 150 C128 130 140 100 128 60 C152 72 182 90 196 130 C212 100 246 80 256 30 Z"
+        fill="url(#outer)" stroke="#7a1406" stroke-width="4" stroke-linejoin="round"/>
+  <!-- middle flame layer -->
+  <path d="M256 120 C270 160 320 170 348 210 C360 190 372 180 390 172 C392 230 424 280 410 340 C396 410 336 446 256 446
+           C176 446 116 410 102 340 C88 280 120 230 122 172 C140 180 152 190 164 210 C192 170 242 160 256 120 Z"
+        fill="url(#mid)"/>
+  <!-- bright core / face area -->
+  <ellipse cx="256" cy="320" rx="136" ry="112" fill="url(#core)"/>
+
+  <!-- sly, slightly wicked eyes -->
+  <path d="M174 286 L240 300 Q236 330 206 330 Q178 326 174 286 Z" fill="#3a0a00"/>
+  <path d="M338 286 L272 300 Q276 330 306 330 Q334 326 338 286 Z" fill="#3a0a00"/>
+  <circle cx="212" cy="312" r="7" fill="#ffef7a"/><circle cx="300" cy="312" r="7" fill="#ffef7a"/>
+  <path d="M166 272 L244 292 M346 272 L268 292" stroke="#3a0a00" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- toothy smirk -->
+  <path d="M196 352 Q256 380 330 342 Q318 396 260 400 Q206 398 196 352 Z" fill="#3a0a00"/>
+  <g fill="#fff6c0">
+    <path d="M206 358 l8 14 l6 -12 Z M230 366 l7 15 l7 -14 Z M256 369 l7 15 l7 -15 Z M282 366 l7 14 l7 -15 Z M306 356 l6 13 l8 -15 Z"/>
+  </g>
+  <path d="M232 392 Q260 382 292 390" fill="none" stroke="#ff6a3a" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- embers flying off -->
+  <g fill="#ff9a2a">
+    <circle cx="40" cy="60" r="8"/><circle cx="480" cy="50" r="7"/><circle cx="490" cy="200" r="6"/><circle cx="20" cy="200" r="6"/>
+  </g>
+  <g fill="#ffd23f"><circle cx="90" cy="30" r="5"/><circle cx="430" cy="24" r="5"/><circle cx="256" cy="12" r="4"/></g>
+</svg>

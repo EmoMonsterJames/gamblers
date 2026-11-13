@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8e99a8"/>
+      <stop offset="35%" stop-color="#eef2f7"/>
+      <stop offset="65%" stop-color="#c3cbd6"/>
+      <stop offset="100%" stop-color="#6f7a8a"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4f7fb"/>
+      <stop offset="100%" stop-color="#a8b2c0"/>
+    </linearGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3a4258" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#3a4258" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="256" cy="476" rx="110" ry="14" fill="url(#shadow)"/>
+
+  <!-- threaded shaft -->
+  <rect x="210" y="250" width="92" height="190" rx="14" fill="url(#metal)" stroke="#5a6474" stroke-width="3"/>
+  <g stroke="#6f7a8a" stroke-width="5" stroke-linecap="round">
+    <path d="M212 272 L300 260 M212 298 L300 286 M212 324 L300 312 M212 350 L300 338 M212 376 L300 364 M212 402 L300 390 M212 428 L300 416"/>
+  </g>
+  <path d="M228 262 L228 432" stroke="#fff" stroke-width="5" opacity=".6"/>
+
+  <!-- little feet and arms -->
+  <ellipse cx="226" cy="452" rx="24" ry="12" fill="#a8b2c0" stroke="#5a6474" stroke-width="3"/>
+  <ellipse cx="288" cy="452" rx="24" ry="12" fill="#a8b2c0" stroke="#5a6474" stroke-width="3"/>
+  <path d="M210 300 C186 300 172 314 176 330 C190 332 202 324 212 316 Z" fill="#c3cbd6" stroke="#5a6474" stroke-width="3"/>
+  <path d="M302 300 C326 300 340 314 336 330 C322 332 310 324 300 316 Z" fill="#c3cbd6" stroke="#5a6474" stroke-width="3"/>
+
+  <!-- hexagon head -->
+  <path d="M148 150 L202 92 L310 92 L364 150 L310 254 L202 254 Z" fill="url(#head)" stroke="#5a6474" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M148 150 L364 150" stroke="#8e99a8" stroke-width="3" opacity=".6"/>
+  <path d="M206 104 L300 104" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+  <!-- cross-slot on top -->
+  <path d="M236 122 L276 122 M256 110 L256 134" stroke="#6f7a8a" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- cute face -->
+  <ellipse cx="220" cy="190" rx="14" ry="17" fill="#26303e"/>
+  <ellipse cx="292" cy="190" rx="14" ry="17" fill="#26303e"/>
+  <circle cx="215" cy="183" r="5.5" fill="#fff"/><circle cx="287" cy="183" r="5.5" fill="#fff"/>
+  <ellipse cx="192" cy="222" rx="14" ry="7" fill="#ff9fb6" opacity=".6"/>
+  <ellipse cx="320" cy="222" rx="14" ry="7" fill="#ff9fb6" opacity=".6"/>
+  <path d="M242 220 Q256 234 270 220" fill="none" stroke="#26303e" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- shine sparkles -->
+  <path d="M390 100 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#dfe8f5"/>
+  <path d="M120 260 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#dfe8f5"/>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+    <radialGradient id="cloth" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#f4eefc"/>
+      <stop offset="60%" stop-color="#d6c8ee"/>
+      <stop offset="100%" stop-color="#a893cf"/>
+    </radialGradient>
+    <radialGradient id="button" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#7b5cc4"/>
+      <stop offset="100%" stop-color="#2d1b5a"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ghostly aura -->
+  <ellipse cx="256" cy="270" rx="150" ry="170" fill="#9d7be0" opacity=".35" filter="url(#blur)"/>
+
+  <!-- pins stuck in the head (behind) -->
+  <g stroke="#9aa3ad" stroke-width="4" stroke-linecap="round">
+    <line x1="206" y1="132" x2="170" y2="82"/>
+    <line x1="290" y1="122" x2="312" y2="66"/>
+  </g>
+  <circle cx="168" cy="79" r="11" fill="#ff5b7f" stroke="#a8203f" stroke-width="2"/>
+  <circle cx="313" cy="62" r="11" fill="#5bd1ff" stroke="#1f7ea8" stroke-width="2"/>
+  <circle cx="164" cy="75" r="3.5" fill="#fff" opacity=".8"/><circle cx="309" cy="58" r="3.5" fill="#fff" opacity=".8"/>
+
+  <!-- ghost-doll body with wavy tail -->
+  <path d="M256 110 C340 110 372 180 372 258 C372 320 362 360 350 392 C336 380 322 380 312 400 C298 386 282 388 270 410
+           C258 392 240 390 228 410 C216 390 198 386 186 402 C176 382 160 380 146 392 C140 360 140 320 140 258 C140 180 172 110 256 110 Z"
+        fill="url(#cloth)" stroke="#7d68a8" stroke-width="3" stroke-linejoin="round"/>
+  <!-- little stubby arms -->
+  <path d="M146 270 C118 270 100 286 104 302 C120 304 136 296 148 290 Z" fill="url(#cloth)" stroke="#7d68a8" stroke-width="3"/>
+  <path d="M366 270 C394 270 412 286 408 302 C392 304 376 296 364 290 Z" fill="url(#cloth)" stroke="#7d68a8" stroke-width="3"/>
+
+  <!-- stitched seams -->
+  <g fill="none" stroke="#6b548f" stroke-width="3" stroke-linecap="round" stroke-dasharray="9 8">
+    <path d="M256 112 C246 170 250 220 256 260"/>
+    <path d="M150 300 C210 320 300 320 362 300"/>
+  </g>
+  <g stroke="#6b548f" stroke-width="3" stroke-linecap="round">
+    <path d="M244 140 l24 6 M243 170 l24 4 M244 200 l24 3 M246 230 l22 2"/>
+  </g>
+
+  <!-- heart patch -->
+  <path d="M318 340 C306 326 292 332 296 346 C299 356 312 362 318 368 C324 362 337 356 340 346 C344 332 330 326 318 340 Z"
+        fill="#ff8fb0" stroke="#c4466e" stroke-width="2"/>
+  <path d="M302 344 l4 4 M334 344 l-4 4 M318 364 l0 -5" stroke="#c4466e" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- eyes: one big button, one X stitch -->
+  <circle cx="210" cy="226" r="27" fill="url(#button)" stroke="#1b0f38" stroke-width="3"/>
+  <g fill="#c9b8ff"><circle cx="201" cy="218" r="4.5"/><circle cx="219" cy="218" r="4.5"/><circle cx="201" cy="234" r="4.5"/><circle cx="219" cy="234" r="4.5"/></g>
+  <path d="M201 218 L219 234 M219 218 L201 234" stroke="#c9b8ff" stroke-width="2"/>
+  <path d="M290 210 L322 242 M322 210 L290 242" stroke="#2d1b5a" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- blush -->
+  <ellipse cx="180" cy="270" rx="16" ry="8" fill="#ff9fc4" opacity=".55"/>
+  <ellipse cx="334" cy="270" rx="16" ry="8" fill="#ff9fc4" opacity=".55"/>
+
+  <!-- stitched smile -->
+  <path d="M214 280 Q256 312 300 280" fill="none" stroke="#2d1b5a" stroke-width="4" stroke-linecap="round"/>
+  <g stroke="#2d1b5a" stroke-width="3" stroke-linecap="round">
+    <path d="M224 280 l-4 14 M240 290 l-2 14 M256 294 l0 14 M272 290 l2 14 M288 280 l4 14"/>
+  </g>
+
+  <!-- floating spirit sparks -->
+  <g fill="#c9b0ff" opacity=".85">
+    <circle cx="98" cy="190" r="6"/><circle cx="420" cy="200" r="5"/><circle cx="410" cy="400" r="7"/><circle cx="96" cy="410" r="5"/>
+  </g>
+</svg>

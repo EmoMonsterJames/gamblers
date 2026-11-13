@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="glove" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#ff9a8a"/><stop offset="50%" stop-color="#e8322a"/><stop offset="100%" stop-color="#8a1010"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a1a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a1a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="472" rx="130" ry="15" fill="url(#sh)"/>
+  <!-- cuff -->
+  <rect x="160" y="370" width="200" height="80" rx="24" fill="#f6f2ea" stroke="#8a8478" stroke-width="5"/>
+  <path d="M170 392 L350 392 M170 428 L350 428" stroke="#d8d0c0" stroke-width="5"/>
+  <path d="M226 380 L286 440 M286 380 L226 440" stroke="#e8322a" stroke-width="6" stroke-linecap="round"/>
+  <!-- glove fist -->
+  <path d="M150 380 C110 330 110 220 160 160 C210 100 330 96 380 150 C430 206 420 330 370 380 Z" fill="url(#glove)" stroke="#6a0a0a" stroke-width="6"/>
+  <!-- thumb -->
+  <path d="M130 290 C90 280 80 230 110 210 C140 196 170 220 170 260 Z" fill="url(#glove)" stroke="#6a0a0a" stroke-width="5"/>
+  <path d="M190 140 C220 120 260 116 290 124" fill="none" stroke="#ffc4b8" stroke-width="12" stroke-linecap="round" opacity=".8"/>
+  <!-- angry eyes -->
+  <ellipse cx="226" cy="246" rx="26" ry="28" fill="#fff" stroke="#3a0808" stroke-width="3"/><ellipse cx="318" cy="246" rx="26" ry="28" fill="#fff" stroke="#3a0808" stroke-width="3"/>
+  <circle cx="232" cy="254" r="13" fill="#1a0808"/><circle cx="312" cy="254" r="13" fill="#1a0808"/>
+  <circle cx="236" cy="249" r="4.5" fill="#fff"/><circle cx="316" cy="249" r="4.5" fill="#fff"/>
+  <path d="M192 206 L254 228 M352 206 L290 228" stroke="#3a0808" stroke-width="10" stroke-linecap="round"/>
+  <path d="M244 314 C262 302 286 302 302 314" fill="none" stroke="#3a0808" stroke-width="6" stroke-linecap="round"/>
+  <!-- anger mark + motion -->
+  <path d="M372 120 L384 140 M392 108 L388 132 M404 128 L382 140" stroke="#ffd23a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M60 220 L96 220 M50 260 L92 260 M64 300 L100 300" stroke="#c8c0b0" stroke-width="6" stroke-linecap="round"/>
+</svg>

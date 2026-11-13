@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Pressen: a little four-legged steel pup shaped like a clothes iron, gliding on hidden casters -->
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5f7f8"/><stop offset=".5" stop-color="#b0bec5"/><stop offset="1" stop-color="#607d8b"/></linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7043"/><stop offset="1" stop-color="#ffca28"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#cfd8dc" stop-opacity=".7"/><stop offset="1" stop-color="#cfd8dc" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1a2a33" stop-opacity=".35"/><stop offset="1" stop-color="#1a2a33" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="440" rx="190" ry="16" fill="url(#sh)"/>
+  <!-- tail = cord -->
+  <path d="M430 300 C470 290 480 250 460 230 C450 220 440 228 446 240" fill="none" stroke="#37474f" stroke-width="12" stroke-linecap="round"/>
+  <!-- stubby legs + casters -->
+  <rect x="140" y="350" width="34" height="56" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="6"/>
+  <rect x="200" y="356" width="34" height="56" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="6"/>
+  <rect x="300" y="356" width="34" height="56" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="6"/>
+  <rect x="356" y="350" width="34" height="56" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="6"/>
+  <circle cx="157" cy="414" r="12" fill="#263238"/><circle cx="217" cy="420" r="12" fill="#263238"/><circle cx="317" cy="420" r="12" fill="#263238"/><circle cx="373" cy="414" r="12" fill="#263238"/>
+  <!-- iron body: pointy front, flat hot soleplate -->
+  <path d="M60 340 C80 270 150 230 250 228 L410 228 Q440 228 440 258 L440 340 Z" fill="url(#steel)" stroke="#263238" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M60 340 L440 340 L440 362 L74 362 Z" fill="url(#plate)" stroke="#263238" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="140" cy="352" r="4" fill="#fff"/><circle cx="200" cy="352" r="4" fill="#fff"/><circle cx="260" cy="352" r="4" fill="#fff"/><circle cx="320" cy="352" r="4" fill="#fff"/><circle cx="380" cy="352" r="4" fill="#fff"/>
+  <!-- handle = back -->
+  <path d="M250 228 C250 170 280 150 330 150 L400 150 Q420 150 420 170 L420 228" fill="none" stroke="#455a64" stroke-width="22" stroke-linecap="round"/>
+  <!-- dial -->
+  <circle cx="356" cy="282" r="22" fill="#eceff1" stroke="#263238" stroke-width="5"/><path d="M356 282 L366 268" stroke="#e53935" stroke-width="5" stroke-linecap="round"/>
+  <!-- pup ears -->
+  <path d="M150 238 L130 186 L180 220 Z" fill="#90a4ae" stroke="#263238" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M206 230 L210 176 L240 222 Z" fill="#90a4ae" stroke="#263238" stroke-width="6" stroke-linejoin="round"/>
+  <!-- face on the pointy front -->
+  <ellipse cx="150" cy="282" rx="17" ry="20" fill="#fff" stroke="#263238" stroke-width="5"/>
+  <ellipse cx="210" cy="278" rx="17" ry="20" fill="#fff" stroke="#263238" stroke-width="5"/>
+  <circle cx="146" cy="285" r="9" fill="#1a1a1a"/><circle cx="206" cy="281" r="9" fill="#1a1a1a"/>
+  <circle cx="149" cy="281" r="3" fill="#fff"/><circle cx="209" cy="277" r="3" fill="#fff"/>
+  <circle cx="98" cy="314" r="9" fill="#263238"/>
+  <path d="M150 318 Q172 332 196 316" fill="none" stroke="#263238" stroke-width="5" stroke-linecap="round"/>
+  <path d="M168 324 Q172 342 182 326" fill="#ff80ab" stroke="#263238" stroke-width="3"/>
+  <!-- steam puffs -->
+  <circle cx="90" cy="380" r="12" fill="#fff" opacity=".8"/><circle cx="66" cy="370" r="9" fill="#fff" opacity=".7"/><circle cx="460" cy="376" r="10" fill="#fff" opacity=".7"/>
+</svg>

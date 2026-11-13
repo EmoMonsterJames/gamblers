@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="fuzz" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="5" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="black" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#4a4038"/><stop offset="100%" stop-color="#14100c"/>
+    </radialGradient>
+    <radialGradient id="yellow" cx="45%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#ffe066"/><stop offset="100%" stop-color="#e8a412"/>
+    </radialGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff6e6" stop-opacity=".9"/><stop offset="100%" stop-color="#e8d2b4" stop-opacity=".7"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="38%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#7a5a4a"/><stop offset="45%" stop-color="#2a1a14"/><stop offset="100%" stop-color="#0a0605"/>
+    </radialGradient>
+  </defs>
+
+  <!-- wings -->
+  <g stroke="#8a6a4a" stroke-width="2.5" fill="url(#wing)">
+    <path d="M206 210 C150 120 70 60 36 96 C12 130 70 210 196 236 Z"/>
+    <path d="M200 252 C130 250 60 290 70 340 C84 380 160 330 210 274 Z"/>
+    <path d="M306 210 C362 120 442 60 476 96 C500 130 442 210 316 236 Z"/>
+    <path d="M312 252 C382 250 452 290 442 340 C428 380 352 330 302 274 Z"/>
+  </g>
+  <g fill="none" stroke="#a8865e" stroke-width="1.8" opacity=".8">
+    <path d="M196 226 C150 170 100 120 60 104 M150 180 L110 200 M120 140 L150 120"/>
+    <path d="M316 226 C362 170 412 120 452 104 M362 180 L402 200 M392 140 L362 120"/>
+    <path d="M204 266 C160 290 110 314 84 336 M316 266 C352 290 402 314 428 336"/>
+  </g>
+
+  <!-- legs -->
+  <g fill="none" stroke="#1c1612" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M206 300 L150 330 L120 380"/><path d="M216 330 L176 380 L170 430"/>
+    <path d="M306 300 L362 330 L392 380"/><path d="M296 330 L336 380 L342 430"/>
+    <path d="M236 360 L226 420 L236 460"/><path d="M276 360 L286 420 L276 460"/>
+  </g>
+
+  <!-- striped abdomen -->
+  <g filter="url(#fuzz)">
+    <ellipse cx="256" cy="372" rx="78" ry="90" fill="url(#black)"/>
+  </g>
+  <path d="M184 350 C220 366 292 366 328 350 L332 374 C292 390 220 390 180 374 Z" fill="url(#yellow)" filter="url(#fuzz)"/>
+  <path d="M190 404 C224 418 288 418 322 404 L314 428 C284 440 228 440 198 428 Z" fill="url(#yellow)" filter="url(#fuzz)"/>
+  <path d="M244 456 L256 486 L268 456 Z" fill="#14100c"/>
+
+  <!-- fuzzy head with yellow collar -->
+  <g filter="url(#fuzz)">
+    <circle cx="256" cy="236" r="104" fill="url(#yellow)"/>
+    <circle cx="256" cy="252" r="80" fill="url(#black)"/>
+  </g>
+  <!-- antennae -->
+  <path d="M226 160 C210 110 186 84 160 70 M286 160 C302 110 326 84 352 70" fill="none" stroke="#1c1612" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="158" cy="68" r="10" fill="#1c1612"/><circle cx="354" cy="68" r="10" fill="#1c1612"/>
+  <!-- big glossy eyes -->
+  <ellipse cx="220" cy="244" rx="30" ry="34" fill="url(#eye)" stroke="#000" stroke-width="2"/>
+  <ellipse cx="292" cy="244" rx="30" ry="34" fill="url(#eye)" stroke="#000" stroke-width="2"/>
+  <ellipse cx="210" cy="230" rx="10" ry="8" fill="#fff" opacity=".9"/><ellipse cx="282" cy="230" rx="10" ry="8" fill="#fff" opacity=".9"/>
+  <circle cx="228" cy="258" r="3.5" fill="#fff" opacity=".7"/><circle cx="300" cy="258" r="3.5" fill="#fff" opacity=".7"/>
+  <!-- small mandibles -->
+  <path d="M244 294 q12 10 24 0" fill="none" stroke="#6a4a2a" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="190" cy="282" rx="12" ry="6" fill="#ff8f8f" opacity=".45"/><ellipse cx="322" cy="282" rx="12" ry="6" fill="#ff8f8f" opacity=".45"/>
+
+  <!-- electric sparks -->
+  <g fill="none" stroke="#5fe6ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M60 210 l20 -12 l-6 16 l22 -10"/>
+    <path d="M70 270 l24 6 l-14 10 l26 4"/>
+    <path d="M440 220 l-20 -10 l4 16 l-22 -8"/>
+    <path d="M436 300 l-26 4 l12 12 l-26 2"/>
+    <path d="M222 340 l14 18 l-12 6 l14 22"/>
+    <path d="M300 120 l10 -20 l6 12 l12 -16"/>
+  </g>
+  <g fill="#ffb347"><circle cx="110" cy="60" r="4"/><circle cx="410" cy="420" r="4"/><circle cx="90" cy="440" r="3"/></g>
+</svg>

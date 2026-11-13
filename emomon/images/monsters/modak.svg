@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Modak: a campfire monster of firewood logs and leaves with flames blazing high -->
+  <defs>
+    <linearGradient id="log" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8763a"/><stop offset="1" stop-color="#6a3a14"/></linearGradient>
+    <radialGradient id="fire" cx="50%" cy="75%" r="70%"><stop offset="0" stop-color="#fff6b0"/><stop offset=".4" stop-color="#ffb21a"/><stop offset=".8" stop-color="#ff4a1a"/><stop offset="1" stop-color="#c8100a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="55%" r="50%"><stop offset="0" stop-color="#ffd8a0" stop-opacity=".6"/><stop offset="1" stop-color="#ffd8a0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="270" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="460" rx="170" ry="18" fill="#3a1a0a" opacity=".3"/>
+  <!-- ring of stones -->
+  <g fill="#8a8a92" stroke="#3a3a42" stroke-width="5"><ellipse cx="110" cy="440" rx="30" ry="18"/><ellipse cx="176" cy="456" rx="30" ry="16"/><ellipse cx="256" cy="462" rx="32" ry="16"/><ellipse cx="336" cy="456" rx="30" ry="16"/><ellipse cx="402" cy="440" rx="30" ry="18"/></g>
+  <!-- crossed logs -->
+  <g stroke="#3a1a08" stroke-width="7"><rect x="110" y="380" width="300" height="44" rx="22" fill="url(#log)" transform="rotate(-14 260 402)"/><rect x="102" y="380" width="300" height="44" rx="22" fill="url(#log)" transform="rotate(14 252 402)"/></g>
+  <g fill="#e8b878" stroke="#3a1a08" stroke-width="5"><ellipse cx="116" cy="440" rx="16" ry="20"/><ellipse cx="398" cy="440" rx="16" ry="20"/></g>
+  <!-- leaves tucked in -->
+  <g fill="#4ac84a" stroke="#1a5a1a" stroke-width="4"><path d="M150 380 C120 360 110 330 124 316 C150 330 160 350 150 380 Z"/><path d="M362 380 C392 360 402 330 388 316 C362 330 352 350 362 380 Z"/><path d="M200 400 C180 390 172 372 180 362 C198 370 204 384 200 400 Z"/></g>
+  <!-- blazing flames (the body) -->
+  <path d="M256 40 C230 110 160 140 160 250 C160 330 206 380 256 380 C306 380 352 330 352 250 C352 190 320 170 312 120 C296 160 290 180 276 190 C286 130 276 80 256 40 Z" fill="url(#fire)" stroke="#a8200a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M256 160 C240 200 214 220 214 270 C214 320 236 344 256 344 C276 344 298 320 298 270 C298 240 284 220 276 200 C270 220 262 226 256 230 Z" fill="#fff2a0" opacity=".9"/>
+  <!-- cheerful face in the flames -->
+  <ellipse cx="232" cy="276" rx="11" ry="14" fill="#3a1000"/><ellipse cx="280" cy="276" rx="11" ry="14" fill="#3a1000"/>
+  <circle cx="235" cy="271" r="4" fill="#fff"/><circle cx="283" cy="271" r="4" fill="#fff"/>
+  <path d="M236 306 Q256 324 276 306" fill="none" stroke="#3a1000" stroke-width="6" stroke-linecap="round"/>
+  <!-- embers -->
+  <g fill="#ffb21a"><circle cx="150" cy="140" r="6"/><circle cx="370" cy="110" r="5"/><circle cx="400" cy="190" r="4"/><circle cx="120" cy="220" r="4"/></g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Vaporoc: a serpentine leviathan with obsidian scales and magma veins, fins of glowing blue boiling water,
+       volcanic vents along its spine shooting geysers -->
+  <defs>
+    <linearGradient id="scale" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a4a58"/><stop offset="1" stop-color="#14141c"/></linearGradient>
+    <linearGradient id="fin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e1f5fe"/><stop offset=".5" stop-color="#29b6f6"/><stop offset="1" stop-color="#0d47a1"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#4fc3f7" stop-opacity=".45"/><stop offset="1" stop-color="#4fc3f7" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="470" rx="190" ry="14" fill="url(#sh)"/>
+  <!-- boiling water at the bottom -->
+  <path d="M30 450 Q80 430 130 450 Q180 470 230 450 Q280 430 330 450 Q380 470 430 450 Q470 436 490 448 L490 470 L30 470 Z" fill="#29b6f6" opacity=".7"/>
+  <!-- serpent coil body -->
+  <path d="M60 440 C60 360 160 360 200 400 C240 440 330 440 360 380 C390 320 330 270 280 300 C240 324 200 290 210 240 C220 190 270 170 300 150"
+        fill="none" stroke="#000" stroke-width="66" stroke-linecap="round"/>
+  <path d="M60 440 C60 360 160 360 200 400 C240 440 330 440 360 380 C390 320 330 270 280 300 C240 324 200 290 210 240 C220 190 270 170 300 150"
+        fill="none" stroke="url(#scale)" stroke-width="54" stroke-linecap="round"/>
+  <!-- magma veins -->
+  <path d="M80 420 C90 390 130 384 160 396 M230 424 C270 434 310 424 340 394 M350 340 C340 312 310 300 290 310 M224 270 C222 236 240 210 270 190"
+        fill="none" stroke="#ff6d00" stroke-width="7" stroke-linecap="round"/>
+  <path d="M120 404 l10 6 M300 420 l8 -8 M330 330 l-8 -6" stroke="#ffd54f" stroke-width="5" stroke-linecap="round"/>
+  <!-- plasma-water fins -->
+  <path d="M150 360 C130 320 150 300 180 330 C176 310 200 300 206 340 Z" fill="url(#fin)" stroke="#0d47a1" stroke-width="5"/>
+  <path d="M370 360 C420 340 440 360 410 390 Z" fill="url(#fin)" stroke="#0d47a1" stroke-width="5"/>
+  <!-- spine vents + geyser -->
+  <path d="M250 300 l-8 -16 l16 0 Z M220 250 l-10 -12 l16 -4 Z" fill="#ff6d00"/>
+  <path d="M246 284 C236 250 260 230 246 200" fill="none" stroke="#e1f5fe" stroke-width="10" stroke-linecap="round" opacity=".8"/>
+  <!-- head -->
+  <path d="M270 160 C280 100 340 70 400 80 C440 86 470 110 470 140 C470 170 430 186 390 184 L340 200 C310 206 280 190 270 160 Z" fill="url(#scale)" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M300 100 C290 70 300 50 320 40 C320 60 330 80 340 90 Z M350 82 C350 50 370 34 392 30 C384 54 386 70 392 82 Z" fill="url(#fin)" stroke="#0d47a1" stroke-width="5"/>
+  <path d="M390 150 Q430 160 466 148" fill="none" stroke="#ff6d00" stroke-width="6" stroke-linecap="round"/>
+  <path d="M404 152 l6 12 l6 -12 M428 154 l6 12 l6 -12" fill="#fff" stroke="#000" stroke-width="2"/>
+  <ellipse cx="380" cy="118" rx="18" ry="12" fill="#ffd54f" stroke="#000" stroke-width="5"/>
+  <ellipse cx="384" cy="118" rx="5" ry="10" fill="#000"/>
+  <path d="M356 100 L404 104" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+  <!-- steam from nostril -->
+  <circle cx="480" cy="110" r="12" fill="#fff" opacity=".8"/><circle cx="496" cy="86" r="9" fill="#fff" opacity=".7"/>
+</svg>

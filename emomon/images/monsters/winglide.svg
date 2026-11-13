@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="fe" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#b8d4f0"/></linearGradient>
+    <linearGradient id="fe2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e6f0ff"/><stop offset="100%" stop-color="#8eb4e0"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d8ecff" stop-opacity=".6"/><stop offset="100%" stop-color="#d8ecff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a2a4a" stop-opacity=".25"/><stop offset="100%" stop-color="#1a2a4a" stop-opacity="0"/></radialGradient>
+    <g id="wing">
+      <!-- woven feather wing (drawn for the right side, pointing out) -->
+      <path d="M0 0 C60 -70 150 -100 200 -86 C190 -50 170 -20 150 0 C130 30 70 50 0 30 Z" fill="url(#fe)" stroke="#3a5a8a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M20 22 C60 30 110 18 150 0 M30 6 C80 0 130 -20 176 -50 M40 -14 C90 -34 140 -60 190 -80" fill="none" stroke="#7a9ac8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M60 20 l20 -40 M100 14 l20 -52 M140 -2 l18 -50" stroke="#9ab8e0" stroke-width="3" stroke-dasharray="6 6"/>
+      <path d="M0 30 C40 70 90 80 130 60 C100 52 60 44 30 26 Z" fill="url(#fe2)" stroke="#3a5a8a" stroke-width="5" stroke-linejoin="round"/>
+      <!-- eye at the wing tip -->
+      <ellipse cx="188" cy="-78" rx="20" ry="22" fill="#fff" stroke="#2a3a6a" stroke-width="5"/>
+      <circle cx="192" cy="-76" r="10" fill="#2a3a6a"/>
+      <circle cx="196" cy="-80" r="4" fill="#fff"/>
+    </g>
+  </defs>
+  <circle cx="256" cy="250" r="232" fill="url(#aura)"/>
+  <ellipse cx="256" cy="440" rx="120" ry="12" fill="url(#sh)"/>
+  <use href="#wing" transform="translate(262 260)"/>
+  <use href="#wing" transform="translate(250 260) scale(-1 1)"/>
+  <!-- knot where the two wings are woven together -->
+  <ellipse cx="256" cy="272" rx="24" ry="30" fill="#e6f0ff" stroke="#3a5a8a" stroke-width="6"/>
+  <path d="M240 258 C252 270 260 270 272 258 M240 282 C252 294 260 294 272 282" fill="none" stroke="#7a9ac8" stroke-width="4"/>
+  <path d="M120 360 c10 -6 20 -6 30 0 M360 360 c10 -6 20 -6 30 0" stroke="#bcd8ff" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

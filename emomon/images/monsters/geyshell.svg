@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Geyshell: a little turtle with a red molten-rock shell and sapphire skin; steam jets from the vents on its back -->
+  <defs>
+    <radialGradient id="shell" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#ff8a65"/><stop offset=".6" stop-color="#d84315"/><stop offset="1" stop-color="#7a1a00"/></radialGradient>
+    <radialGradient id="skin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#b3e5fc"/><stop offset="1" stop-color="#1e88e5"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b3e5fc" stop-opacity=".6"/><stop offset="1" stop-color="#b3e5fc" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#0a2040" stop-opacity=".35"/><stop offset="1" stop-color="#0a2040" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="260" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="446" rx="170" ry="14" fill="url(#sh)"/>
+  <!-- steam jets -->
+  <g fill="#fff" opacity=".85"><circle cx="200" cy="120" r="22"/><circle cx="180" cy="86" r="16"/><circle cx="196" cy="56" r="12"/>
+    <circle cx="300" cy="110" r="24"/><circle cx="320" cy="74" r="17"/><circle cx="306" cy="42" r="12"/></g>
+  <!-- flippers -->
+  <ellipse cx="140" cy="400" rx="48" ry="22" fill="url(#skin)" stroke="#0d3a6a" stroke-width="6" transform="rotate(-20 140 400)"/>
+  <ellipse cx="350" cy="410" rx="48" ry="22" fill="url(#skin)" stroke="#0d3a6a" stroke-width="6" transform="rotate(20 350 410)"/>
+  <!-- tail -->
+  <path d="M396 360 L450 380 L400 390 Z" fill="url(#skin)" stroke="#0d3a6a" stroke-width="6" stroke-linejoin="round"/>
+  <!-- molten shell -->
+  <path d="M110 360 C110 230 180 160 270 160 C360 160 410 230 410 360 Z" fill="url(#shell)" stroke="#4a0a00" stroke-width="8"/>
+  <path d="M170 220 L210 260 L190 320 M270 170 L270 250 L230 300 M370 230 L330 270 L350 330 M270 250 L320 280" fill="none" stroke="#ffca28" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="200" cy="170" rx="18" ry="10" fill="#3a0a00" stroke="#4a0a00" stroke-width="4"/>
+  <ellipse cx="300" cy="164" rx="18" ry="10" fill="#3a0a00" stroke="#4a0a00" stroke-width="4"/>
+  <path d="M110 360 L410 360 L400 384 L120 384 Z" fill="#ffab91" stroke="#4a0a00" stroke-width="6"/>
+  <!-- head -->
+  <ellipse cx="100" cy="318" rx="62" ry="54" fill="url(#skin)" stroke="#0d3a6a" stroke-width="7"/>
+  <ellipse cx="84" cy="306" rx="15" ry="17" fill="#fff" stroke="#0d3a6a" stroke-width="5"/>
+  <ellipse cx="124" cy="304" rx="15" ry="17" fill="#fff" stroke="#0d3a6a" stroke-width="5"/>
+  <circle cx="86" cy="309" r="8" fill="#0a1a2a"/><circle cx="126" cy="307" r="8" fill="#0a1a2a"/>
+  <circle cx="89" cy="305" r="3" fill="#fff"/><circle cx="129" cy="303" r="3" fill="#fff"/>
+  <path d="M84 342 Q102 354 120 340" fill="none" stroke="#0d3a6a" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="64" cy="334" r="8" fill="#ff8a80" opacity=".6"/>
+  <!-- bubbles -->
+  <circle cx="460" cy="300" r="10" fill="none" stroke="#81d4fa" stroke-width="4"/><circle cx="480" cy="260" r="6" fill="none" stroke="#81d4fa" stroke-width="3"/>
+</svg>

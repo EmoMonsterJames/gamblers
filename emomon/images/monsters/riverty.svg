@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="patina" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8f0dc"/><stop offset="55%" stop-color="#5ab8a0"/><stop offset="100%" stop-color="#2a7a6a"/></linearGradient>
+    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8ad0ff"/><stop offset="100%" stop-color="#2a6ab0"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ffd6f0" stop-opacity=".55"/><stop offset="100%" stop-color="#ffd6f0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="200" r="240" fill="url(#glow)"/>
+  <!-- river -->
+  <path d="M0 430 C80 410 160 450 256 430 C350 410 430 450 512 430 L512 512 L0 512 Z" fill="url(#river)"/>
+  <path d="M30 460 C80 450 120 466 170 456 M300 470 C350 460 400 476 450 466" stroke="#e8f6ff" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- pedestal -->
+  <path d="M176 440 L336 440 L320 380 L192 380 Z" fill="#9aa6b2" stroke="#3a4452" stroke-width="5"/>
+  <!-- robe -->
+  <path d="M206 380 C190 300 200 230 256 200 C312 230 322 300 306 380 Z" fill="url(#patina)" stroke="#1f5a4e" stroke-width="5"/>
+  <path d="M228 240 C236 290 236 340 230 380 M284 240 C276 290 276 340 282 380" stroke="#2a7a6a" stroke-width="4" fill="none"/>
+  <!-- fairy wings -->
+  <path d="M206 240 C150 190 110 210 120 260 C140 290 180 280 210 270 Z M306 240 C362 190 402 210 392 260 C372 290 332 280 302 270 Z" fill="#ffe6f6" fill-opacity=".85" stroke="#d68ab8" stroke-width="3"/>
+  <!-- arm with sword raised -->
+  <path d="M300 230 C330 200 344 160 340 120" fill="none" stroke="url(#patina)" stroke-width="24" stroke-linecap="round"/>
+  <path d="M338 120 L350 14 L362 120 Z" fill="#e8eef6" stroke="#5a6474" stroke-width="3"/>
+  <rect x="326" y="118" width="48" height="10" rx="4" fill="#c8962a"/>
+  <!-- arm with scales -->
+  <path d="M212 240 C180 260 160 280 150 300" fill="none" stroke="url(#patina)" stroke-width="24" stroke-linecap="round"/>
+  <path d="M150 300 L150 250 M110 250 L190 250" stroke="#c8962a" stroke-width="5"/>
+  <path d="M110 250 L96 286 L124 286 Z M190 250 L176 286 L204 286 Z" fill="none" stroke="#c8962a" stroke-width="4"/>
+  <path d="M94 286 C100 296 120 296 126 286 M174 286 C180 296 200 296 206 286" fill="#ffd23a" stroke="#c8962a" stroke-width="3"/>
+  <!-- head + crown -->
+  <circle cx="256" cy="168" r="44" fill="url(#patina)" stroke="#1f5a4e" stroke-width="5"/>
+  <g fill="url(#patina)" stroke="#1f5a4e" stroke-width="4">
+    <path d="M222 132 L210 96 L234 124 Z"/><path d="M244 126 L244 86 L258 122 Z"/><path d="M268 122 L282 86 L280 126 Z"/><path d="M290 132 L306 98 L294 138 Z"/>
+  </g>
+  <ellipse cx="240" cy="168" rx="8" ry="10" fill="#0e2a24"/><ellipse cx="272" cy="168" rx="8" ry="10" fill="#0e2a24"/>
+  <circle cx="242" cy="164" r="3" fill="#fff"/><circle cx="274" cy="164" r="3" fill="#fff"/>
+  <path d="M244 190 L268 190" stroke="#0e2a24" stroke-width="4" stroke-linecap="round"/>
+</svg>

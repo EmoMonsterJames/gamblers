@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Krowlspace: a cosmic vortex swallowing Krow crows; in its middle an evil giant devil eye and two clawed hands steer it -->
+  <defs>
+    <radialGradient id="vortex" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000"/><stop offset=".35" stop-color="#2a0a4a"/><stop offset=".7" stop-color="#5a1a8a"/><stop offset="1" stop-color="#1a0a3a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe14d"/><stop offset=".5" stop-color="#ff5a1a"/><stop offset="1" stop-color="#8a0010"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#vortex)"/>
+  <!-- spiral arms -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M256 256 C256 170 360 160 400 220 C440 290 380 400 280 410 C160 420 80 330 100 220 C120 110 260 50 370 90" stroke="#b03aff" stroke-width="10" opacity=".8"/>
+    <path d="M256 256 C256 320 170 330 140 280 C110 220 170 140 250 136 C350 132 420 210 400 310" stroke="#7a5aff" stroke-width="6" opacity=".7"/>
+  </g>
+  <g fill="#fff"><circle cx="90" cy="100" r="3"/><circle cx="420" cy="80" r="2.5"/><circle cx="460" cy="380" r="3"/><circle cx="60" cy="400" r="2.5"/><circle cx="300" cy="40" r="2.5"/></g>
+  <!-- little crows being sucked in -->
+  <g fill="#0a0812" stroke="#5a4a7a" stroke-width="2">
+    <path d="M380 100 l-20 -10 l10 12 l-18 4 l22 4 l6 6 Z"/><path d="M110 360 l20 -10 l-10 12 l18 4 l-22 4 l-6 6 Z" transform="rotate(30 110 360)"/>
+    <path d="M420 300 l-16 -8 l8 10 l-14 3 l18 3 l4 5 Z" transform="rotate(-40 420 300)"/><path d="M150 140 l16 -8 l-8 10 l14 3 l-18 3 l-4 5 Z" transform="rotate(60 150 140)"/>
+  </g>
+  <g fill="#b03aff"><circle cx="372" cy="104" r="2"/><circle cx="118" cy="364" r="2"/></g>
+  <!-- two clawed hands steering the vortex -->
+  <g fill="#3a1a2a" stroke="#000" stroke-width="5" stroke-linejoin="round">
+    <path d="M70 230 C100 200 140 210 150 240 L140 290 L126 254 L116 298 L102 258 L86 296 L84 256 Z"/>
+    <path d="M442 230 C412 200 372 210 362 240 L372 290 L386 254 L396 298 L410 258 L426 296 L428 256 Z"/>
+  </g>
+  <g fill="#e0e0e8"><path d="M140 290 l-4 12 l8 -6 Z M116 298 l-4 12 l8 -6 Z M86 296 l-4 12 l8 -6 Z M372 290 l4 12 l-8 -6 Z M396 298 l4 12 l-8 -6 Z M426 296 l4 12 l-8 -6 Z"/></g>
+  <!-- the giant devil eye at the center -->
+  <path d="M166 256 Q256 170 346 256 Q256 342 166 256 Z" fill="#fff6e0" stroke="#000" stroke-width="7"/>
+  <circle cx="256" cy="256" r="46" fill="url(#eye)" stroke="#000" stroke-width="5"/>
+  <ellipse cx="256" cy="256" rx="10" ry="38" fill="#000"/>
+  <path d="M180 220 l20 10 M332 220 l-20 10 M214 196 l10 16 M298 196 l-10 16" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  <path d="M196 300 Q256 330 316 300" fill="none" stroke="#8a0010" stroke-width="5" opacity=".7"/>
+</svg>

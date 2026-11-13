@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bag" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6a3a1a"/><stop offset="45%" stop-color="#b86a34"/><stop offset="100%" stop-color="#5a2e12"/></linearGradient>
+    <radialGradient id="glove" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#ff9a8a"/><stop offset="50%" stop-color="#e8322a"/><stop offset="100%" stop-color="#8a1010"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a1a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a1a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="484" rx="140" ry="14" fill="url(#sh)"/>
+  <!-- chain -->
+  <path d="M256 4 L256 52" stroke="#8a8f98" stroke-width="8" stroke-dasharray="12 6"/>
+  <path d="M206 64 L256 40 L306 64" fill="none" stroke="#8a8f98" stroke-width="6"/>
+  <!-- punching bag body -->
+  <rect x="176" y="60" width="160" height="380" rx="70" fill="url(#bag)" stroke="#3a1a08" stroke-width="6"/>
+  <rect x="176" y="96" width="160" height="22" fill="#3a1a08" opacity=".7"/>
+  <rect x="176" y="380" width="160" height="22" fill="#3a1a08" opacity=".7"/>
+  <path d="M206 140 L206 360 M306 140 L306 360" stroke="#4a2410" stroke-width="3" stroke-dasharray="8 8"/>
+  <!-- patch -->
+  <rect x="270" y="300" width="40" height="34" fill="#c8a07a" stroke="#4a2410" stroke-width="3" transform="rotate(10 290 317)"/>
+  <!-- goofy face -->
+  <ellipse cx="226" cy="190" rx="24" ry="30" fill="#fff" stroke="#2a1006" stroke-width="3"/><ellipse cx="290" cy="196" rx="18" ry="22" fill="#fff" stroke="#2a1006" stroke-width="3"/>
+  <circle cx="234" cy="196" r="11" fill="#1a0a04"/><circle cx="284" cy="200" r="8" fill="#1a0a04"/>
+  <circle cx="237" cy="191" r="4" fill="#fff"/><circle cx="286" cy="196" r="3" fill="#fff"/>
+  <path d="M220 252 C236 290 286 290 300 248 C280 258 240 260 220 252 Z" fill="#5a1010" stroke="#2a1006" stroke-width="4"/>
+  <rect x="246" y="254" width="20" height="14" fill="#fff"/>
+  <!-- arms + gloves -->
+  <path d="M180 250 C130 250 110 220 100 190" fill="none" stroke="url(#bag)" stroke-width="26" stroke-linecap="round"/>
+  <path d="M332 250 C390 260 420 300 430 340" fill="none" stroke="url(#bag)" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="92" cy="170" r="48" fill="url(#glove)" stroke="#6a0a0a" stroke-width="5"/>
+  <path d="M62 196 C56 170 60 150 76 140" fill="none" stroke="#6a0a0a" stroke-width="4"/>
+  <circle cx="438" cy="362" r="50" fill="url(#glove)" stroke="#6a0a0a" stroke-width="5"/>
+  <path d="M466 386 C474 360 470 340 454 330" fill="none" stroke="#6a0a0a" stroke-width="4"/>
+  <!-- stubby legs -->
+  <path d="M220 436 L214 470 M292 436 L298 470" stroke="#4a2410" stroke-width="22" stroke-linecap="round"/>
+  <!-- stars -->
+  <path d="M384 90 l8 16 18 2 -13 12 4 18 -17 -9 -17 9 4 -18 -13 -12 18 -2z" fill="#ffd23a" stroke="#b38a00" stroke-width="2"/>
+</svg>

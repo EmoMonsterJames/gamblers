@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- BBB: an arching serpent of pressurized crystal-clear blue ocean water, held together by a swirling vortex of tidal currents -->
+  <defs>
+    <linearGradient id="wat" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8f6ff" stop-opacity=".9"/><stop offset=".5" stop-color="#2a9cff"/><stop offset="1" stop-color="#0a3aa8"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b8e8ff" stop-opacity=".55"/><stop offset="1" stop-color="#b8e8ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <path d="M30 478 q40 -20 80 0 q40 20 80 0 q40 -20 80 0 q40 20 80 0 q40 -20 80 0" fill="none" stroke="#2a9cff" stroke-width="7" opacity=".6"/>
+  <!-- water crescent -->
+  <path d="M112 466 C66 300 136 112 276 98 C396 86 452 206 408 336 C398 366 382 398 364 424 L324 412 C354 362 370 316 368 268 C366 182 318 140 270 146 C174 154 134 300 168 466 Z" fill="url(#wat)" stroke="#0a2a7a" stroke-width="8" stroke-linejoin="round"/>
+  <!-- swirling tidal currents inside -->
+  <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8">
+    <path d="M136 420 C120 340 150 250 200 200"/><path d="M220 140 C270 120 330 130 370 180"/><path d="M386 230 C396 270 392 310 380 350"/>
+    <path d="M150 320 a16 16 0 1 1 16 16 M300 130 a14 14 0 1 1 -14 14 M390 300 a12 12 0 1 1 12 -12"/>
+  </g>
+  <g fill="#fff" opacity=".85"><circle cx="160" cy="370" r="6"/><circle cx="246" cy="128" r="5"/><circle cx="400" cy="262" r="6"/><circle cx="180" cy="250" r="4"/></g>
+  <!-- head with water torrent from the maw -->
+  <path d="M310 404 C306 370 334 348 372 350 C412 354 434 384 428 420 C422 456 388 474 350 468 C322 464 312 432 310 404 Z" fill="url(#wat)" stroke="#0a2a7a" stroke-width="7"/>
+  <path d="M330 446 C300 470 260 470 220 456 C250 480 300 488 340 466 Z" fill="#7ad8ff" stroke="#0a2a7a" stroke-width="4"/>
+  <path d="M340 360 C340 330 356 316 372 312 C368 330 362 344 354 360 Z M400 362 C412 332 430 324 444 326 C436 346 424 358 410 366 Z" fill="#7ad8ff" stroke="#0a2a7a" stroke-width="4"/>
+  <circle cx="352" cy="400" r="11" fill="#fff" stroke="#0a2a7a" stroke-width="4"/><circle cx="400" cy="400" r="11" fill="#fff" stroke="#0a2a7a" stroke-width="4"/>
+  <circle cx="354" cy="402" r="5" fill="#0a1a4a"/><circle cx="398" cy="402" r="5" fill="#0a1a4a"/>
+  <text x="62" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#1a7aff" stroke="#0a2a7a" stroke-width="3">B</text>
+</svg>

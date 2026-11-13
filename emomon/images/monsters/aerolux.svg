@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="body" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="70%" stop-color="#f4f0ff"/><stop offset="100%" stop-color="#d8d4f0"/></radialGradient>
+    <linearGradient id="prism" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff8ad0"/><stop offset="35%" stop-color="#ffe46a"/><stop offset="65%" stop-color="#7af0c8"/><stop offset="100%" stop-color="#7a9aff"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe89a" stop-opacity=".7"/><stop offset="100%" stop-color="#ffe89a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".22"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="466" rx="100" ry="11" fill="url(#sh)"/>
+  <!-- sparkle trail -->
+  <g fill="#ffd84a">
+    <path d="M256 360 l5 14 14 5 -14 5 -5 14 -5 -14 -14 -5 14 -5 Z"/>
+    <path d="M226 410 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" opacity=".8"/>
+    <path d="M276 440 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z" opacity=".6"/>
+  </g>
+  <!-- cloud-soft balloon body made of puffs -->
+  <g fill="url(#body)" stroke="#8a7ab8" stroke-width="6">
+    <circle cx="170" cy="230" r="58"/><circle cx="342" cy="230" r="58"/>
+    <circle cx="204" cy="164" r="62"/><circle cx="308" cy="164" r="62"/>
+    <circle cx="256" cy="282" r="64"/>
+  </g>
+  <circle cx="256" cy="210" r="104" fill="url(#body)"/>
+  <path d="M170 200 C190 150 230 130 256 128" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".9"/>
+  <!-- golden glow dots inside -->
+  <g fill="#ffe46a" opacity=".55"><circle cx="196" cy="250" r="6"/><circle cx="318" cy="258" r="5"/><circle cx="290" cy="180" r="4"/></g>
+  <!-- forehead prism -->
+  <path d="M256 120 L282 160 L230 160 Z" fill="url(#prism)" stroke="#5a4a9a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M256 120 L256 160" stroke="#fff" stroke-width="3" opacity=".8"/>
+  <!-- face -->
+  <ellipse cx="226" cy="214" rx="13" ry="17" fill="#2a2050"/><ellipse cx="286" cy="214" rx="13" ry="17" fill="#2a2050"/>
+  <circle cx="231" cy="208" r="5" fill="#fff"/><circle cx="291" cy="208" r="5" fill="#fff"/>
+  <path d="M244 244 C252 254 260 254 268 244" fill="none" stroke="#2a2050" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="204" cy="238" rx="11" ry="7" fill="#ffaac8" opacity=".7"/><ellipse cx="308" cy="238" rx="11" ry="7" fill="#ffaac8" opacity=".7"/>
+  <!-- balloon string tuft -->
+  <path d="M256 346 C248 358 264 366 256 378" fill="none" stroke="#c8a83a" stroke-width="4" stroke-linecap="round"/>
+</svg>

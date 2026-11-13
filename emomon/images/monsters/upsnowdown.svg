@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Upsnowdown: an upside-down snowman. Big ball with the face on top, twig arms in the middle ball,
+       the tiny bottom ball wobbles under all that weight -->
+  <defs>
+    <radialGradient id="snow" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#e3f2fd"/><stop offset="1" stop-color="#9fc6e8"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b3e5fc" stop-opacity=".55"/><stop offset="1" stop-color="#b3e5fc" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#0d2a4a" stop-opacity=".35"/><stop offset="1" stop-color="#0d2a4a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="262" cy="470" rx="70" ry="10" fill="url(#sh)"/>
+  <!-- wobble lines -->
+  <path d="M196 440 Q186 452 196 464 M330 440 Q340 452 330 464" stroke="#4a90c8" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- tiny bottom ball, tilted -->
+  <circle cx="262" cy="440" r="30" fill="url(#snow)" stroke="#3a6a96" stroke-width="7"/>
+  <!-- middle ball with twig arms -->
+  <g transform="rotate(-6 256 360)">
+    <circle cx="256" cy="360" r="62" fill="url(#snow)" stroke="#3a6a96" stroke-width="7"/>
+    <path d="M198 350 L120 318 M150 330 L132 300 M140 326 L112 336" stroke="#6d4c2f" stroke-width="9" stroke-linecap="round"/>
+    <path d="M314 350 L392 316 M362 330 L380 300 M372 324 L400 336" stroke="#6d4c2f" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="256" cy="340" r="7" fill="#263238"/><circle cx="256" cy="366" r="7" fill="#263238"/>
+  </g>
+  <!-- huge top ball with the face -->
+  <circle cx="250" cy="176" r="128" fill="url(#snow)" stroke="#3a6a96" stroke-width="8"/>
+  <path d="M150 120 Q170 90 200 80" stroke="#fff" stroke-width="10" stroke-linecap="round" fill="none" opacity=".8"/>
+  <!-- face (a little nervous) -->
+  <circle cx="204" cy="160" r="20" fill="#263238"/><circle cx="296" cy="160" r="20" fill="#263238"/>
+  <circle cx="210" cy="153" r="7" fill="#fff"/><circle cx="302" cy="153" r="7" fill="#fff"/>
+  <path d="M182 128 L222 136 M318 128 L280 136" stroke="#263238" stroke-width="6" stroke-linecap="round"/>
+  <path d="M250 178 L300 196 L250 200 Z" fill="#ff8f00" stroke="#a04a00" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M206 232 Q222 222 238 232 Q254 242 270 232 Q286 222 302 232" fill="none" stroke="#263238" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="168" cy="204" r="12" fill="#f48fb1" opacity=".6"/><circle cx="332" cy="204" r="12" fill="#f48fb1" opacity=".6"/>
+  <!-- sweat drop -->
+  <path d="M352 110 Q362 128 352 138 Q342 128 352 110 Z" fill="#81d4fa" stroke="#3a6a96" stroke-width="4"/>
+</svg>

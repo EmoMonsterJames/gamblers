@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Teslarion: a bipedal mech deity - chrome, carbon fiber and ancient rune tablets; no head, a floating plasma sphere projects a hologram face -->
+  <defs>
+    <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f8fc"/><stop offset=".45" stop-color="#8d99a8"/><stop offset=".6" stop-color="#e2e8f0"/><stop offset="1" stop-color="#4f5a68"/></linearGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7a888"/><stop offset="1" stop-color="#7a6c50"/></linearGradient>
+    <radialGradient id="plasma" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#7ef0ff"/><stop offset="1" stop-color="#1a5aff"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="40%" r="55%"><stop offset="0" stop-color="#9ef0ff" stop-opacity=".5"/><stop offset="1" stop-color="#9ef0ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="476" rx="160" ry="14" fill="#10141c" opacity=".3"/>
+  <!-- legs -->
+  <path d="M196 340 L178 456 L232 456 L240 340 Z M316 340 L334 456 L280 456 L272 340 Z" fill="url(#chrome)" stroke="#2a3240" stroke-width="7" stroke-linejoin="round"/>
+  <rect x="166" y="448" width="76" height="24" rx="8" fill="#3a4250" stroke="#1a2028" stroke-width="5"/>
+  <rect x="270" y="448" width="76" height="24" rx="8" fill="#3a4250" stroke="#1a2028" stroke-width="5"/>
+  <!-- chassis with a stone tablet set in the chest -->
+  <path d="M160 190 L352 190 L332 350 L180 350 Z" fill="url(#chrome)" stroke="#2a3240" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M190 210 L322 210 L314 330 L198 330 Z" fill="#222832"/>
+  <path d="M190 210 L322 210 L314 330 L198 330 Z" fill="none" stroke="#3a4250" stroke-width="2" stroke-dasharray="6 6"/>
+  <rect x="214" y="222" width="84" height="98" rx="10" fill="url(#stone)" stroke="#4a3e28" stroke-width="5"/>
+  <g fill="none" stroke="#7ef0ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M236 240 l12 16 l-12 0 l14 18"/><path d="M270 240 v30 M260 256 h20"/><path d="M232 296 q24 -14 48 0"/>
+  </g>
+  <!-- heavy shoulder pauldrons -->
+  <path d="M100 170 C110 140 150 128 180 140 L186 208 C150 214 116 206 100 170 Z" fill="url(#chrome)" stroke="#2a3240" stroke-width="7"/>
+  <path d="M412 170 C402 140 362 128 332 140 L326 208 C362 214 396 206 412 170 Z" fill="url(#chrome)" stroke="#2a3240" stroke-width="7"/>
+  <!-- arms with tesla coils -->
+  <path d="M120 206 L104 316 M392 206 L408 316" stroke="#2a3240" stroke-width="40" stroke-linecap="round"/>
+  <path d="M120 206 L104 316 M392 206 L408 316" stroke="#9aa6b6" stroke-width="28" stroke-linecap="round"/>
+  <g fill="none" stroke="#c8a040" stroke-width="5"><path d="M92 250 h32 M90 266 h32 M88 282 h32 M388 250 h32 M390 266 h32 M392 282 h32"/></g>
+  <circle cx="102" cy="334" r="22" fill="url(#plasma)" stroke="#1a3a8a" stroke-width="5"/>
+  <circle cx="410" cy="334" r="22" fill="url(#plasma)" stroke="#1a3a8a" stroke-width="5"/>
+  <!-- floating plasma generator instead of a head -->
+  <path d="M220 160 q36 -26 72 0" fill="none" stroke="#7ef0ff" stroke-width="4" stroke-dasharray="4 8"/>
+  <circle cx="256" cy="96" r="62" fill="url(#plasma)" stroke="#1a3a8a" stroke-width="6"/>
+  <ellipse cx="256" cy="96" rx="80" ry="16" fill="none" stroke="#7ef0ff" stroke-width="4" opacity=".7"/>
+  <!-- hologram face -->
+  <g fill="none" stroke="#0a2a7a" stroke-width="5" stroke-linecap="round" opacity=".85">
+    <path d="M226 86 h18 M268 86 h18"/><path d="M234 118 q22 12 44 0"/>
+  </g>
+  <g stroke="#ffffff" stroke-width="2" opacity=".5"><path d="M200 80 h112 M196 100 h120 M204 120 h104"/></g>
+  <!-- arcs of lightning -->
+  <path d="M60 330 l-20 -30 l16 4 l-18 -30 M452 330 l20 -30 l-16 4 l18 -30" fill="none" stroke="#7ef0ff" stroke-width="5" stroke-linejoin="round"/>
+</svg>

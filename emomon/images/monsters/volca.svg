@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6a4a3a"/><stop offset="100%" stop-color="#2a1a14"/></linearGradient>
+    <linearGradient id="lava" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe14d"/><stop offset="45%" stop-color="#ff6d00"/><stop offset="100%" stop-color="#c8100a"/></linearGradient>
+    <radialGradient id="sky" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#ff6d00" stop-opacity=".5"/><stop offset="100%" stop-color="#ff6d00" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="140" r="230" fill="url(#sky)"/>
+  <!-- eruption -->
+  <path d="M220 150 C200 90 230 40 256 20 C282 40 312 90 292 150 Z" fill="url(#lava)"/>
+  <g fill="#ffb02a"><circle cx="170" cy="70" r="12"/><circle cx="350" cy="60" r="14"/><circle cx="130" cy="130" r="8"/><circle cx="390" cy="120" r="9"/><circle cx="256" cy="6" r="8"/></g>
+  <path d="M190 40 C200 20 220 10 240 14 M320 30 C330 20 350 18 362 26" fill="none" stroke="#8a8a8a" stroke-width="14" stroke-linecap="round" opacity=".6"/>
+  <!-- volcano body -->
+  <path d="M40 470 L200 150 L312 150 L472 470 Z" fill="url(#rock)" stroke="#140a06" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M200 150 L312 150 L296 176 L216 176 Z" fill="#ff6d00" stroke="#140a06" stroke-width="5"/>
+  <!-- lava streams -->
+  <path d="M230 176 C220 240 240 280 210 340 C196 370 200 400 190 430" fill="none" stroke="url(#lava)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M290 176 C300 230 280 260 310 320" fill="none" stroke="url(#lava)" stroke-width="14" stroke-linecap="round"/>
+  <!-- glowing face -->
+  <path d="M170 300 L226 318 L220 340 L174 326 Z M342 300 L286 318 L292 340 L338 326 Z" fill="#ffe14d" stroke="#140a06" stroke-width="4"/>
+  <circle cx="200" cy="322" r="6" fill="#140a06"/><circle cx="312" cy="322" r="6" fill="#140a06"/>
+  <path d="M196 390 C226 420 286 420 316 390 C296 440 216 440 196 390 Z" fill="#ff6d00" stroke="#140a06" stroke-width="5"/>
+  <path d="M206 396 L214 410 L224 398 L234 414 L246 400 L256 416 L266 400 L278 414 L288 398 L298 410 L306 396" fill="none" stroke="#2a1a14" stroke-width="3"/>
+  <!-- stone arms -->
+  <path d="M100 360 C60 340 40 300 60 270 M412 360 C452 340 472 300 452 270" fill="none" stroke="#3a2a20" stroke-width="30" stroke-linecap="round"/>
+</svg>

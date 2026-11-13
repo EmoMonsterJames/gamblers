@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="body" cx="40%" cy="40%" r="70%"><stop offset="0%" stop-color="#f4c890"/><stop offset="70%" stop-color="#c88a4a"/><stop offset="100%" stop-color="#8a5428"/></radialGradient>
+    <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#ff3d00"/><stop offset="60%" stop-color="#ff9100"/><stop offset="100%" stop-color="#ffe14d"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a1a0a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a1a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="460" rx="160" ry="16" fill="url(#sh)"/>
+  <!-- flaming spikes on the back -->
+  <g fill="url(#fire)" stroke="#c8320a" stroke-width="3" stroke-linejoin="round">
+    <path d="M150 260 L120 170 L180 230 Z"/><path d="M190 220 L180 120 L230 200 Z"/><path d="M240 200 L250 90 L280 196 Z"/>
+    <path d="M290 200 L320 100 L330 210 Z"/><path d="M330 220 L380 140 L370 240 Z"/><path d="M360 260 L420 200 L390 290 Z"/>
+  </g>
+  <!-- round body -->
+  <ellipse cx="256" cy="330" rx="150" ry="120" fill="url(#body)" stroke="#5a3418" stroke-width="5"/>
+  <path d="M130 300 C170 250 240 230 300 240 C360 250 390 290 400 330" fill="none" stroke="#8a5428" stroke-width="5" stroke-dasharray="10 10"/>
+  <!-- snout face -->
+  <ellipse cx="160" cy="360" rx="70" ry="54" fill="#fff0dc" stroke="#5a3418" stroke-width="4"/>
+  <circle cx="110" cy="360" r="12" fill="#2a1a0a"/>
+  <ellipse cx="160" cy="330" rx="12" ry="15" fill="#2a1a0a"/><ellipse cx="200" cy="330" rx="12" ry="15" fill="#2a1a0a"/>
+  <circle cx="164" cy="324" r="4.5" fill="#fff"/><circle cx="204" cy="324" r="4.5" fill="#fff"/>
+  <ellipse cx="150" cy="380" rx="12" ry="7" fill="#ff9a8a" opacity=".8"/>
+  <path d="M150 394 C160 402 174 402 182 394" fill="none" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/>
+  <!-- feet -->
+  <g fill="#8a5428" stroke="#5a3418" stroke-width="4"><ellipse cx="200" cy="446" rx="28" ry="12"/><ellipse cx="320" cy="446" rx="28" ry="12"/></g>
+  <!-- embers -->
+  <g fill="#ffb02a"><circle cx="100" cy="150" r="6"/><circle cx="420" cy="130" r="5"/><circle cx="300" cy="60" r="4"/></g>
+</svg>

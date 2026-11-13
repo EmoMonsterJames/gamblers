@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#4a1a6a" stop-opacity=".8"/><stop offset="70%" stop-color="#1a0a3a" stop-opacity=".5"/><stop offset="100%" stop-color="#0a0418" stop-opacity="0"/></radialGradient>
+    <radialGradient id="star" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#ffc8f0"/><stop offset="100%" stop-color="#ff5ad0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="venom" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e8ff8a"/><stop offset="60%" stop-color="#8aff3a"/><stop offset="100%" stop-color="#3a8a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#sky)"/>
+  <g fill="#ffffff" opacity=".55"><circle cx="40" cy="60" r="2"/><circle cx="470" cy="470" r="2"/><circle cx="480" cy="140" r="2"/><circle cx="30" cy="440" r="2"/></g>
+  <!-- constellation scorpion lines -->
+  <g stroke="#ffb8f0" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- claws -->
+    <path d="M200 260 L140 220 L90 160 L60 120 M90 160 L120 110"/>
+    <path d="M312 260 L372 220 L422 160 L452 120 M422 160 L392 110"/>
+    <!-- body -->
+    <path d="M200 260 L256 240 L312 260 L300 320 L256 340 L212 320 Z"/>
+    <!-- legs -->
+    <path d="M212 320 L160 360 M220 300 L150 310 M300 320 L352 360 M292 300 L362 310"/>
+    <!-- tail curling up -->
+    <path d="M256 340 L250 400 L280 450 L340 460 L390 420 L400 360 L380 310"/>
+  </g>
+  <g fill="url(#star)">
+    <circle cx="60" cy="120" r="18"/><circle cx="120" cy="110" r="16"/><circle cx="90" cy="160" r="18"/><circle cx="140" cy="220" r="18"/>
+    <circle cx="452" cy="120" r="18"/><circle cx="392" cy="110" r="16"/><circle cx="422" cy="160" r="18"/><circle cx="372" cy="220" r="18"/>
+    <circle cx="200" cy="260" r="20"/><circle cx="256" cy="240" r="22"/><circle cx="312" cy="260" r="20"/><circle cx="300" cy="320" r="18"/><circle cx="212" cy="320" r="18"/><circle cx="256" cy="340" r="20"/>
+    <circle cx="160" cy="360" r="14"/><circle cx="150" cy="310" r="14"/><circle cx="352" cy="360" r="14"/><circle cx="362" cy="310" r="14"/>
+    <circle cx="250" cy="400" r="18"/><circle cx="280" cy="450" r="18"/><circle cx="340" cy="460" r="18"/><circle cx="390" cy="420" r="18"/><circle cx="400" cy="360" r="18"/>
+  </g>
+  <g fill="#fff"><circle cx="256" cy="240" r="6"/><circle cx="200" cy="260" r="5"/><circle cx="312" cy="260" r="5"/><circle cx="256" cy="340" r="5"/><circle cx="60" cy="120" r="5"/><circle cx="452" cy="120" r="5"/><circle cx="400" cy="360" r="5"/></g>
+  <!-- glowing venom stinger -->
+  <circle cx="380" cy="300" r="34" fill="url(#venom)"/>
+  <path d="M380 310 L364 276 L396 284 Z" fill="#e8ff8a" stroke="#3a8a0a" stroke-width="3"/>
+  <!-- fierce eyes on the head star -->
+  <path d="M232 274 L250 282 L234 290 Z M280 274 L262 282 L278 290 Z" fill="#ff3a8a" stroke="#fff" stroke-width="2"/>
+  <path d="M238 300 L246 310 L256 302 L266 310 L274 300" fill="none" stroke="#ffb8f0" stroke-width="3"/>
+</svg>

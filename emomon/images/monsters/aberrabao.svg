@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Aberrabao: the steel dumpling inflated like a party balloon, floating weightlessly; its pleats opened into a spinning turbine crown -->
+  <defs>
+    <radialGradient id="iron" cx="36%" cy="30%" r="74%"><stop offset="0" stop-color="#f4f6ff"/><stop offset=".45" stop-color="#9aa4c0"/><stop offset="1" stop-color="#3a3858"/></radialGradient>
+    <linearGradient id="blade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6e0ff"/><stop offset="1" stop-color="#7a5ad8"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d8c8ff" stop-opacity=".55"/><stop offset="1" stop-color="#d8c8ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- shadow far below (it floats) -->
+  <ellipse cx="256" cy="480" rx="90" ry="10" fill="#10141a" opacity=".25"/>
+  <path d="M256 440 v26" stroke="#7a5ad8" stroke-width="4" stroke-dasharray="4 6"/>
+  <!-- spinning turbine crown -->
+  <g stroke="#2a1a5a" stroke-width="5" stroke-linejoin="round">
+    <path d="M256 120 L210 40 L250 64 Z" fill="url(#blade)"/><path d="M256 120 L302 40 L262 64 Z" fill="url(#blade)"/>
+    <path d="M256 120 L170 82 L222 92 Z" fill="url(#blade)"/><path d="M256 120 L342 82 L290 92 Z" fill="url(#blade)"/>
+  </g>
+  <circle cx="256" cy="116" r="20" fill="#2a1a5a"/><circle cx="256" cy="116" r="9" fill="#b8ff3a"/>
+  <path d="M190 40 q-20 20 -10 44 M322 40 q20 20 10 44" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <!-- inflated, stretched steel balloon body -->
+  <ellipse cx="256" cy="282" rx="178" ry="160" fill="url(#iron)" stroke="#1a1838" stroke-width="9"/>
+  <g fill="none" stroke="#1a1838" stroke-width="5" opacity=".55">
+    <path d="M256 124 C180 170 120 230 90 320"/><path d="M256 124 C220 190 200 260 196 440"/><path d="M256 124 C292 190 312 260 316 440"/><path d="M256 124 C332 170 392 230 422 320"/>
+  </g>
+  <!-- stretched rivets (oval) -->
+  <g fill="#e8eaff" stroke="#1a1838" stroke-width="3"><ellipse cx="130" cy="330" rx="12" ry="6"/><ellipse cx="382" cy="330" rx="12" ry="6"/><ellipse cx="256" cy="420" rx="14" ry="6"/></g>
+  <ellipse cx="178" cy="208" rx="56" ry="26" fill="#fff" opacity=".55" transform="rotate(-30 178 208)"/>
+  <!-- eerie wobbly face -->
+  <circle cx="204" cy="282" r="28" fill="#fff" stroke="#1a1838" stroke-width="5"/><circle cx="312" cy="270" r="20" fill="#fff" stroke="#1a1838" stroke-width="5"/>
+  <circle cx="212" cy="288" r="11" fill="#1a1838"/><circle cx="308" cy="274" r="8" fill="#1a1838"/>
+  <path d="M206 350 Q232 330 256 352 T306 350" fill="none" stroke="#1a1838" stroke-width="6" stroke-linecap="round"/>
+  <!-- abnormal swirls -->
+  <path d="M440 200 a14 14 0 1 1 -14 -14 a24 24 0 1 1 24 24 M74 210 a12 12 0 1 0 12 -12 a20 20 0 1 0 -20 20" fill="none" stroke="#b8ff3a" stroke-width="5" stroke-linecap="round"/>
+</svg>

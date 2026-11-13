@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="16"/></filter>
+    <radialGradient id="gold" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#fff0a0"/>
+      <stop offset="100%" stop-color="#ffaa1a"/>
+    </radialGradient>
+    <radialGradient id="white" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fffbe6"/>
+      <stop offset="100%" stop-color="#ffd86b"/>
+    </radialGradient>
+    <radialGradient id="ray" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff6c8"/>
+      <stop offset="100%" stop-color="#ffc83d" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -100 L12 -30 L70 -70 L30 -12 L100 0 L30 12 L70 70 L12 30 L0 100 L-12 30 L-70 70 L-30 12 L-100 0 L-30 -12 L-70 -70 L-12 -30 Z"/>
+    <!-- glaring eye, centred on 0,0 -->
+    <g id="glare">
+      <path d="M-30 -6 L30 -18 Q32 22 0 26 Q-32 22 -30 -6 Z" fill="#fff" stroke="#b07000" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="4" cy="6" r="13" fill="#3a2a00"/>
+      <circle cx="-1" cy="1" r="4.5" fill="#fff"/>
+      <path d="M-36 -14 L34 -30" stroke="#6b4200" stroke-width="7" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <circle cx="256" cy="256" r="230" fill="url(#ray)" opacity=".8"/>
+  <use xlink:href="#star" transform="translate(256 256) scale(2.3)" fill="#fff0a0" opacity=".5"/>
+
+  <!-- left light -->
+  <use xlink:href="#star" transform="translate(180 250) rotate(20) scale(1.25)" fill="#ffd84d" opacity=".75"/>
+  <circle cx="180" cy="250" r="105" fill="#ffc83d" opacity=".55" filter="url(#glow)"/>
+  <circle cx="180" cy="250" r="74" fill="url(#gold)"/>
+  <use xlink:href="#glare" transform="translate(182 254) scale(1.2)"/>
+
+  <!-- right light -->
+  <use xlink:href="#star" transform="translate(334 268) rotate(-10) scale(1.25)" fill="#fff4b8" opacity=".75"/>
+  <circle cx="334" cy="268" r="105" fill="#ffe27a" opacity=".55" filter="url(#glow)"/>
+  <circle cx="334" cy="268" r="74" fill="url(#white)"/>
+  <use xlink:href="#glare" transform="translate(332 272) scale(-1.2 1.2)"/>
+
+  <!-- sparks between them -->
+  <g stroke="#fff" stroke-width="4" stroke-linecap="round">
+    <path d="M256 150 l0 -26 M243 137 l26 0 M256 380 l0 -22 M245 369 l22 0"/>
+  </g>
+  <g fill="#fff6c8"><circle cx="90" cy="120" r="6"/><circle cx="430" cy="110" r="7"/><circle cx="440" cy="420" r="6"/><circle cx="80" cy="410" r="5"/></g>
+</svg>

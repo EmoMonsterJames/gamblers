@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="suit" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#cdd3de"/></linearGradient>
+    <radialGradient id="helmet" cx="38%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff" stop-opacity=".55"/><stop offset="60%" stop-color="#9ad8ff" stop-opacity=".25"/><stop offset="100%" stop-color="#4a8ad0" stop-opacity=".45"/></radialGradient>
+    <radialGradient id="space" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#2a2a6e" stop-opacity=".55"/><stop offset="100%" stop-color="#0a0a2a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#space)"/>
+  <g fill="#ffd27a"><circle cx="60" cy="80" r="4"/><circle cx="440" cy="60" r="5"/><circle cx="470" cy="300" r="3"/><circle cx="40" cy="360" r="4"/><circle cx="380" cy="460" r="4"/><circle cx="120" cy="470" r="3"/></g>
+  <!-- tether -->
+  <path d="M70 470 C120 420 110 380 170 360" fill="none" stroke="#9aa3b2" stroke-width="6" stroke-dasharray="10 6"/>
+  <g transform="rotate(-14 256 256)">
+    <!-- jetpack -->
+    <rect x="300" y="200" width="70" height="120" rx="20" fill="#9aa3b2" stroke="#4a5262" stroke-width="4"/>
+    <path d="M316 320 L326 360 L338 320 M344 320 L354 352 L364 320" fill="#ffb02a" stroke="#ff7a2a" stroke-width="3"/>
+    <!-- legs floating -->
+    <path d="M220 360 C210 400 200 420 186 440 M290 360 C300 400 318 418 336 430" fill="none" stroke="url(#suit)" stroke-width="36" stroke-linecap="round"/>
+    <path d="M220 360 C210 400 200 420 186 440 M290 360 C300 400 318 418 336 430" fill="none" stroke="#7a8496" stroke-width="3"/>
+    <ellipse cx="180" cy="448" rx="30" ry="18" fill="#4a5262"/><ellipse cx="344" cy="436" rx="30" ry="18" fill="#4a5262"/>
+    <!-- body suit -->
+    <rect x="170" y="230" width="170" height="150" rx="50" fill="url(#suit)" stroke="#7a8496" stroke-width="5"/>
+    <rect x="216" y="262" width="78" height="50" rx="10" fill="#2a3448" stroke="#7a8496" stroke-width="3"/>
+    <circle cx="236" cy="287" r="7" fill="#ff5a5a"/><circle cx="256" cy="287" r="7" fill="#ffd23a"/><circle cx="276" cy="287" r="7" fill="#3ae07a"/>
+    <!-- arms waving -->
+    <path d="M176 270 C130 250 110 200 120 160" fill="none" stroke="url(#suit)" stroke-width="32" stroke-linecap="round"/>
+    <path d="M334 280 C370 300 396 300 420 284" fill="none" stroke="url(#suit)" stroke-width="32" stroke-linecap="round"/>
+    <circle cx="120" cy="150" r="22" fill="#ff7a2a" stroke="#a3501a" stroke-width="4"/><circle cx="426" cy="280" r="22" fill="#ff7a2a" stroke="#a3501a" stroke-width="4"/>
+    <!-- robot head inside helmet -->
+    <rect x="186" y="96" width="140" height="110" rx="44" fill="#ffffff" stroke="#4a5262" stroke-width="5"/>
+    <rect x="204" y="118" width="104" height="62" rx="26" fill="#0e1424" stroke="#20283a" stroke-width="3"/>
+    <circle cx="234" cy="150" r="15" fill="#ffb02a"/><circle cx="278" cy="150" r="15" fill="#ffb02a"/>
+    <circle cx="238" cy="145" r="5" fill="#fff"/><circle cx="282" cy="145" r="5" fill="#fff"/>
+    <circle cx="256" cy="150" r="104" fill="url(#helmet)" stroke="#dfe8f5" stroke-width="7"/>
+    <path d="M190 90 C210 66 240 56 270 58" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".8"/>
+  </g>
+</svg>

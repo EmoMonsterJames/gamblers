@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Glitchware: a corrupted machine whose steel chassis splits and lags; visor flickers with neon static and purple warnings -->
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#546e7a"/><stop offset=".45" stop-color="#cfd8dc"/><stop offset="1" stop-color="#455a64"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b388ff" stop-opacity=".6"/><stop offset="1" stop-color="#b388ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1a0040" stop-opacity=".45"/><stop offset="1" stop-color="#1a0040" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="246" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="478" rx="110" ry="12" fill="url(#sh)"/>
+  <!-- lag ghost copies -->
+  <rect x="196" y="190" width="150" height="150" rx="10" fill="#00e5ff" opacity=".25" transform="translate(-26 4)"/>
+  <rect x="166" y="190" width="150" height="150" rx="10" fill="#ff4081" opacity=".25" transform="translate(26 -4)"/>
+  <!-- broken wheel -->
+  <path d="M206 420 a50 50 0 1 1 100 0" fill="#37474f" stroke="#1a2228" stroke-width="8"/>
+  <path d="M212 430 a44 44 0 0 0 64 30" fill="none" stroke="#1a2228" stroke-width="8" transform="translate(14 8)"/>
+  <rect x="238" y="330" width="36" height="56" fill="url(#steel)" stroke="#263238" stroke-width="6" transform="rotate(6 256 360)"/>
+  <!-- split torso: two halves shifted -->
+  <path d="M170 196 L256 196 L256 340 L182 340 Z" fill="url(#steel)" stroke="#263238" stroke-width="8" stroke-linejoin="round" transform="translate(-10 6)"/>
+  <path d="M256 196 L342 196 L330 340 L256 340 Z" fill="url(#steel)" stroke="#263238" stroke-width="8" stroke-linejoin="round" transform="translate(12 -8)"/>
+  <rect x="200" y="240" width="110" height="50" fill="#120a24" stroke="#263238" stroke-width="5"/>
+  <path d="M206 254 h30 M246 254 h50 M206 266 h60 M276 266 h24 M206 278 h20 M236 278 h60" stroke="#76ff03" stroke-width="4"/>
+  <!-- twitching arms at odd angles -->
+  <path d="M168 216 L110 180 L70 238" fill="none" stroke="#90a4ae" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M168 216 L110 180 L70 238" fill="none" stroke="#263238" stroke-width="4"/>
+  <path d="M352 210 L420 250 L392 312" fill="none" stroke="#90a4ae" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M352 210 L420 250 L392 312" fill="none" stroke="#263238" stroke-width="4"/>
+  <path d="M56 236 L44 256 M70 238 L72 262 M386 316 L370 330 M392 312 L404 334" stroke="#263238" stroke-width="7" stroke-linecap="round"/>
+  <!-- head, phase-shifted slices -->
+  <rect x="186" y="78" width="140" height="40" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="7" transform="translate(14 0)"/>
+  <rect x="186" y="116" width="140" height="40" fill="url(#steel)" stroke="#263238" stroke-width="7" transform="translate(-12 0)"/>
+  <rect x="186" y="154" width="140" height="36" rx="12" fill="url(#steel)" stroke="#263238" stroke-width="7" transform="translate(6 0)"/>
+  <!-- flickering static visor -->
+  <rect x="190" y="104" width="128" height="50" rx="10" fill="#1a0a2e" stroke="#263238" stroke-width="5"/>
+  <g stroke-width="4"><path d="M196 114 h40 M246 114 h30 M200 124 h60 M270 124 h40 M196 134 h22 M232 134 h70 M198 144 h50 M258 144 h30" stroke="#18ffff"/></g>
+  <path d="M232 118 L246 140 L218 140 Z M290 118 L304 140 L276 140 Z" fill="#d500f9" stroke="#fff" stroke-width="2"/>
+  <text x="240" y="139" font-family="Arial Black,Arial" font-size="14" fill="#fff">!</text><text x="298" y="139" font-family="Arial Black,Arial" font-size="14" fill="#fff">!</text>
+  <!-- glitch pixels -->
+  <rect x="80" y="100" width="22" height="10" fill="#d500f9"/><rect x="96" y="114" width="12" height="8" fill="#18ffff"/>
+  <rect x="410" y="96" width="26" height="10" fill="#18ffff"/><rect x="420" y="110" width="12" height="8" fill="#d500f9"/>
+  <rect x="440" y="360" width="18" height="8" fill="#76ff03"/><rect x="60" y="340" width="16" height="8" fill="#d500f9"/>
+</svg>

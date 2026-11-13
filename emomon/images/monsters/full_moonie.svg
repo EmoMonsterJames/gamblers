@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="20"/></filter>
+    <radialGradient id="moon" cx="40%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#fffdf0"/>
+      <stop offset="50%" stop-color="#fff0a8"/>
+      <stop offset="100%" stop-color="#ecbb44"/>
+    </radialGradient>
+    <radialGradient id="mochi" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ece6f0"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a4a9a" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="#5a4a9a" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/>
+  </defs>
+
+  <ellipse cx="256" cy="484" rx="170" ry="16" fill="url(#shadow)"/>
+  <circle cx="256" cy="250" r="230" fill="#ffe27a" opacity=".5" filter="url(#glow)"/>
+
+  <!-- little feet -->
+  <ellipse cx="200" cy="468" rx="34" ry="16" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+  <ellipse cx="312" cy="468" rx="34" ry="16" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+
+  <!-- big round moon -->
+  <circle cx="256" cy="254" r="206" fill="url(#moon)" stroke="#c99230" stroke-width="4"/>
+  <!-- craters -->
+  <g fill="#efc458" opacity=".7">
+    <circle cx="150" cy="150" r="24"/><circle cx="196" cy="110" r="12"/><circle cx="370" cy="140" r="18"/><circle cx="398" cy="320" r="26"/>
+    <circle cx="120" cy="330" r="16"/><circle cx="330" cy="400" r="12"/><circle cx="180" cy="400" r="18"/>
+  </g>
+  <g fill="none" stroke="#e0b04a" stroke-width="3" opacity=".6">
+    <circle cx="150" cy="150" r="24"/><circle cx="398" cy="320" r="26"/><circle cx="180" cy="400" r="18"/>
+  </g>
+  <ellipse cx="190" cy="110" rx="60" ry="24" fill="#fff" opacity=".55" transform="rotate(-25 190 110)"/>
+
+  <!-- chubby happy face -->
+  <path d="M196 224 q20 -24 40 0" fill="none" stroke="#4a3208" stroke-width="7" stroke-linecap="round"/>
+  <path d="M276 224 q20 -24 40 0" fill="none" stroke="#4a3208" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="180" cy="268" rx="26" ry="14" fill="#ff9fb6" opacity=".6"/>
+  <ellipse cx="332" cy="268" rx="26" ry="14" fill="#ff9fb6" opacity=".6"/>
+  <path d="M232 262 Q256 290 280 262 Q268 276 256 276 Q244 276 232 262 Z" fill="#c2410c" stroke="#4a3208" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- stubby arms holding a rice cake (Rice Cake trait) -->
+  <g transform="translate(256 362)">
+    <ellipse cx="0" cy="6" rx="62" ry="38" fill="url(#mochi)" stroke="#bfb3c9" stroke-width="3"/>
+    <ellipse cx="-14" cy="-6" rx="20" ry="8" fill="#fff" opacity=".9"/>
+    <path d="M-20 12 q6 5 12 0 M8 12 q6 5 12 0" fill="none" stroke="#bfb3c9" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="36" cy="-14" r="8" fill="#ffb3c7"/><circle cx="-38" cy="-12" r="6" fill="#bfe8a6"/>
+  </g>
+  <path d="M120 330 C150 330 180 340 196 358 C190 376 170 380 150 370 C130 360 118 346 120 330 Z" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+  <path d="M392 330 C362 330 332 340 316 358 C322 376 342 380 362 370 C382 360 394 346 392 330 Z" fill="#f2c14e" stroke="#c99230" stroke-width="3"/>
+
+  <!-- twinkles -->
+  <use href="#star" transform="translate(40 120) scale(1.4)" fill="#fff4b0"/>
+  <use href="#star" transform="translate(470 90) scale(1.6)" fill="#fff4b0"/>
+  <use href="#star" transform="translate(480 300)" fill="#fff4b0"/>
+  <use href="#star" transform="translate(36 380) scale(1.1)" fill="#fff4b0"/>
+</svg>

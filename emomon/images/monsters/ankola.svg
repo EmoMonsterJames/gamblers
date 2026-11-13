@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Ankola: a small trilobite-armadillo of peat moss and permafrost; a segmented petrified-wood and flint shell rimmed with razor river ice -->
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a5a4a"/><stop offset="1" stop-color="#2a221a"/></linearGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#8ad8ff" stop-opacity=".8"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="55%" r="50%"><stop offset="0" stop-color="#cdeeff" stop-opacity=".55"/><stop offset="1" stop-color="#cdeeff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="270" r="236" fill="url(#aura)"/>
+  <!-- frozen tundra floor with tunnel -->
+  <path d="M20 430 Q256 400 492 430 L492 492 L20 492 Z" fill="#e8f6ff" stroke="#8ab8d8" stroke-width="5"/>
+  <ellipse cx="420" cy="440" rx="44" ry="18" fill="#3a5a7a"/>
+  <!-- little legs -->
+  <g fill="#4a3a2a" stroke="#1a120a" stroke-width="5"><ellipse cx="160" cy="420" rx="18" ry="12"/><ellipse cx="220" cy="428" rx="18" ry="12"/><ellipse cx="292" cy="428" rx="18" ry="12"/><ellipse cx="350" cy="420" rx="18" ry="12"/></g>
+  <!-- ice rim (razor plates) -->
+  <path d="M90 380 L110 350 L130 380 L150 346 L170 380 L196 342 L220 380 L248 340 L272 380 L300 342 L322 380 L346 346 L368 380 L390 350 L412 380 Z" fill="url(#ice)" stroke="#5aa8d8" stroke-width="5" stroke-linejoin="round"/>
+  <!-- segmented shell -->
+  <path d="M96 380 C96 240 180 170 256 170 C332 170 416 240 416 380 Z" fill="url(#shell)" stroke="#1a120a" stroke-width="8"/>
+  <g fill="none" stroke="#1a120a" stroke-width="6"><path d="M130 300 Q256 250 382 300"/><path d="M112 340 Q256 296 400 340"/><path d="M160 240 Q256 210 352 240"/></g>
+  <!-- flint chips and wood grain -->
+  <g fill="#1a1a22" stroke="#6a6a7a" stroke-width="2"><path d="M180 270 l12 -10 l8 14 Z"/><path d="M300 262 l14 -8 l4 16 Z"/><path d="M240 318 l12 -10 l8 14 Z"/></g>
+  <path d="M200 200 q10 10 0 20 M310 200 q-10 10 0 20" fill="none" stroke="#8a7a5a" stroke-width="3"/>
+  <g fill="#3a8a3a" opacity=".8"><circle cx="150" cy="320" r="7"/><circle cx="360" cy="320" r="7"/><circle cx="256" cy="196" r="6"/></g>
+  <!-- head peeking out front -->
+  <path d="M200 380 C200 340 226 320 256 320 C286 320 312 340 312 380 Z" fill="#5a4a3a" stroke="#1a120a" stroke-width="7"/>
+  <circle cx="236" cy="356" r="9" fill="#bff0ff" stroke="#1a120a" stroke-width="3"/><circle cx="276" cy="356" r="9" fill="#bff0ff" stroke="#1a120a" stroke-width="3"/>
+  <circle cx="237" cy="358" r="4" fill="#0a1a2a"/><circle cx="275" cy="358" r="4" fill="#0a1a2a"/>
+  <path d="M232 334 l-12 -20 M280 334 l12 -20" stroke="#1a120a" stroke-width="4" stroke-linecap="round"/>
+  <!-- frosty breath and snow -->
+  <g fill="#fff"><circle cx="80" cy="140" r="5"/><circle cx="420" cy="120" r="6"/><circle cx="360" cy="80" r="4"/><circle cx="130" cy="90" r="4"/></g>
+</svg>

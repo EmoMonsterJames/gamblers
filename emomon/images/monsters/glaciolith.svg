@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Glaciolith: a towering mountain-shrine guardian of quartz and bedrock in a gown of frosted willow and snow lace, crowned by blue fairy fire -->
+  <defs>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a96a8"/><stop offset="1" stop-color="#3a4252"/></linearGradient>
+    <linearGradient id="quartz" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#a8d8ff"/></linearGradient>
+    <linearGradient id="gown" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaf6ff"/><stop offset="1" stop-color="#9ccaf0"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#d8f0ff" stop-opacity=".6"/><stop offset="1" stop-color="#d8f0ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="240" r="240" fill="url(#aura)"/>
+  <!-- frosted earth pillars bursting into ice blooms -->
+  <path d="M40 480 L56 360 L80 480 Z M432 480 L456 340 L476 480 Z" fill="url(#rock)" stroke="#1a2232" stroke-width="5"/>
+  <g fill="url(#quartz)" stroke="#5a9ad8" stroke-width="3"><path d="M56 360 l-14 -26 l14 8 l4 -24 l8 22 l12 -14 l-4 30 Z"/><path d="M456 340 l-14 -26 l14 8 l4 -24 l8 22 l12 -14 l-4 30 Z"/></g>
+  <!-- flowing willow gown with snow lace -->
+  <path d="M170 250 C140 340 110 420 96 480 L416 480 C402 420 372 340 342 250 Z" fill="url(#gown)" stroke="#4a7aa8" stroke-width="7" stroke-linejoin="round"/>
+  <g fill="none" stroke="#6a9a6a" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M190 270 C170 360 150 420 140 470"/><path d="M226 270 C216 360 206 420 202 470"/><path d="M286 270 C296 360 306 420 310 470"/><path d="M322 270 C342 360 362 420 372 470"/></g>
+  <path d="M100 470 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0" fill="none" stroke="#fff" stroke-width="5"/>
+  <!-- bedrock torso with quartz -->
+  <path d="M176 140 L336 140 L350 260 L162 260 Z" fill="url(#rock)" stroke="#1a2232" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M230 170 L256 140 L282 170 L270 230 L242 230 Z" fill="url(#quartz)" stroke="#5a9ad8" stroke-width="4"/>
+  <!-- stone arms, one hand raised -->
+  <path d="M176 160 C130 180 110 220 104 268" fill="none" stroke="#1a2232" stroke-width="40" stroke-linecap="round"/>
+  <path d="M176 160 C130 180 110 220 104 268" fill="none" stroke="#7a8698" stroke-width="28" stroke-linecap="round"/>
+  <path d="M336 160 C380 150 400 110 404 70" fill="none" stroke="#1a2232" stroke-width="40" stroke-linecap="round"/>
+  <path d="M336 160 C380 150 400 110 404 70" fill="none" stroke="#7a8698" stroke-width="28" stroke-linecap="round"/>
+  <g fill="url(#quartz)" stroke="#5a9ad8" stroke-width="3"><path d="M404 52 l-10 -20 l10 6 l4 -18 l6 18 l10 -10 l-4 24 Z"/></g>
+  <!-- head -->
+  <path d="M206 140 C200 90 222 64 256 64 C290 64 312 90 306 140 Z" fill="url(#rock)" stroke="#1a2232" stroke-width="7"/>
+  <rect x="222" y="100" width="22" height="12" rx="4" fill="#bff0ff"/><rect x="268" y="100" width="22" height="12" rx="4" fill="#bff0ff"/>
+  <path d="M240 128 h32" stroke="#1a2232" stroke-width="4" stroke-linecap="round"/>
+  <!-- orbiting ring of pale blue fairy fire (crown) -->
+  <ellipse cx="256" cy="54" rx="78" ry="18" fill="none" stroke="#7ad8ff" stroke-width="4" stroke-dasharray="6 10" opacity=".9"/>
+  <g fill="#9ae8ff"><path d="M184 54 q6 -18 12 0 q-6 8 -12 0"/><path d="M250 34 q6 -18 12 0 q-6 8 -12 0"/><path d="M318 54 q6 -18 12 0 q-6 8 -12 0"/><path d="M226 70 q6 -16 12 0 q-6 6 -12 0"/><path d="M286 70 q6 -16 12 0 q-6 6 -12 0"/></g>
+</svg>

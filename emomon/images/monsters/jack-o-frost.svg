@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="snow" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#e4ecf2"/><stop offset="70%" stop-color="#a8b8c8"/><stop offset="100%" stop-color="#5a6a80"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6a3aa0" stop-opacity=".45"/><stop offset="100%" stop-color="#6a3aa0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="carrot" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff9a2a"/><stop offset="100%" stop-color="#d95a0a"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a1028" stop-opacity=".4"/><stop offset="100%" stop-color="#1a1028" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="260" r="250" fill="url(#aura)"/>
+  <ellipse cx="256" cy="482" rx="160" ry="16" fill="url(#sh)"/>
+  <!-- twisted stick arms -->
+  <path d="M136 300 L60 250 L40 200 M80 262 L40 270" stroke="#3a2010" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M378 296 L430 250" stroke="#3a2010" stroke-width="12" stroke-linecap="round"/>
+  <!-- holding the carrot piece it is eating -->
+  <path d="M410 238 L470 196 L478 214 L420 254 Z" fill="url(#carrot)" stroke="#a3400a" stroke-width="3"/>
+  <path d="M470 196 C480 186 494 186 500 194 M474 206 C486 204 496 210 498 218" stroke="#3a8a2a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M424 240 l6 -10 6 10 6 -10" fill="none" stroke="#7a2a0a" stroke-width="3"/>
+  <!-- body -->
+  <circle cx="256" cy="380" r="110" fill="url(#snow)" stroke="#3a4a5e" stroke-width="5"/>
+  <circle cx="256" cy="250" r="86" fill="url(#snow)" stroke="#3a4a5e" stroke-width="5"/>
+  <path d="M220 360 L240 380 L222 404 M300 344 L284 372 L304 390" stroke="#3a4a5e" stroke-width="4" fill="none"/>
+  <circle cx="256" cy="236" r="9" fill="#5a1a8a"/><circle cx="256" cy="270" r="9" fill="#5a1a8a"/><circle cx="256" cy="380" r="10" fill="#5a1a8a"/>
+  <!-- torn scarf -->
+  <path d="M176 188 C220 208 292 208 336 188 L340 214 C292 236 220 236 172 214 Z" fill="#3a1a5a" stroke="#14081e" stroke-width="4"/>
+  <path d="M200 214 L190 290 L206 276 L214 296 L222 222 Z" fill="#3a1a5a" stroke="#14081e" stroke-width="4"/>
+  <!-- head -->
+  <circle cx="256" cy="120" r="78" fill="url(#snow)" stroke="#3a4a5e" stroke-width="5"/>
+  <!-- broken hat -->
+  <path d="M196 26 L310 18 L316 72 L200 78 Z" fill="#1a1424" stroke="#0a0610" stroke-width="4"/>
+  <path d="M176 72 L336 66 L338 84 L178 90 Z" fill="#1a1424" stroke="#0a0610" stroke-width="4"/>
+  <path d="M290 18 L300 40 L284 46" fill="none" stroke="#5a4a6a" stroke-width="3"/>
+  <!-- evil eyes -->
+  <path d="M206 98 L246 112 L238 128 L206 120 Z M306 98 L266 112 L274 128 L306 120 Z" fill="#c8ff3a" stroke="#14081e" stroke-width="3"/>
+  <circle cx="230" cy="116" r="4" fill="#14081e"/><circle cx="282" cy="116" r="4" fill="#14081e"/>
+  <!-- stub of carrot left in the nose -->
+  <path d="M254 128 L282 134 L254 142 Z" fill="url(#carrot)" stroke="#a3400a" stroke-width="3"/>
+  <!-- monster teeth -->
+  <path d="M210 152 C230 176 282 176 302 152 C290 196 222 196 210 152 Z" fill="#2a0a1a" stroke="#14081e" stroke-width="4"/>
+  <path d="M218 158 L226 176 L234 162 L242 180 L250 164 L258 182 L266 164 L274 180 L282 162 L290 176 L296 158" fill="#f4f4e8" stroke="#14081e" stroke-width="2" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Cryoneuro: a towering glacier-ice monolith with a frozen brain core, studded with electrodes; blue lightning crackles between them -->
+  <defs>
+    <linearGradient id="ice" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#b3e5fc"/><stop offset="1" stop-color="#0277bd"/></linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e1f5fe"/><stop offset=".6" stop-color="#4fc3f7"/><stop offset="1" stop-color="#01579b"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#81d4fa" stop-opacity=".6"/><stop offset="1" stop-color="#81d4fa" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#002a4a" stop-opacity=".4"/><stop offset="1" stop-color="#002a4a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="246" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="472" rx="180" ry="14" fill="url(#sh)"/>
+  <!-- ice shards at the base -->
+  <path d="M90 470 L120 400 L150 470 Z M362 470 L392 390 L422 470 Z M60 470 L76 430 L96 470 Z M420 470 L440 424 L460 470 Z" fill="url(#ice)" stroke="#01579b" stroke-width="5" stroke-linejoin="round"/>
+  <!-- monolith -->
+  <path d="M170 470 L150 140 L210 40 L310 30 L366 130 L346 470 Z" fill="url(#ice)" stroke="#01579b" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M210 40 L230 200 L150 140 M310 30 L290 200 L366 130 M230 200 L290 200 L346 470 M230 200 L170 470" fill="none" stroke="#fff" stroke-width="3" opacity=".6"/>
+  <!-- frozen brain core -->
+  <ellipse cx="258" cy="190" rx="70" ry="56" fill="url(#core)" stroke="#01579b" stroke-width="5" opacity=".9"/>
+  <path d="M202 186 C210 160 236 162 240 180 C246 156 274 156 278 180 C284 160 310 166 312 190 M210 208 C230 200 246 214 258 204 C270 216 290 204 306 212 M258 140 L258 240" fill="none" stroke="#0288d1" stroke-width="4" stroke-linecap="round"/>
+  <!-- face -->
+  <path d="M206 290 L240 300 L206 312 Z M310 290 L276 300 L310 312 Z" fill="#e1f5fe" stroke="#01579b" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="220" cy="300" r="5" fill="#01579b"/><circle cx="296" cy="300" r="5" fill="#01579b"/>
+  <path d="M226 352 L246 344 L266 352 L286 344" fill="none" stroke="#01579b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- electrodes -->
+  <g fill="#cfd8dc" stroke="#263238" stroke-width="4">
+    <rect x="134" y="210" width="26" height="16" rx="3"/><rect x="356" y="210" width="26" height="16" rx="3"/>
+    <rect x="146" y="380" width="26" height="16" rx="3"/><rect x="344" y="380" width="26" height="16" rx="3"/>
+    <rect x="246" y="18" width="24" height="16" rx="3"/>
+  </g>
+  <g fill="#40c4ff"><circle cx="128" cy="218" r="7"/><circle cx="388" cy="218" r="7"/><circle cx="140" cy="388" r="7"/><circle cx="376" cy="388" r="7"/><circle cx="258" cy="12" r="7"/></g>
+  <!-- blue lightning -->
+  <g fill="none" stroke="#40c4ff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M128 218 L90 240 L108 254 L60 280"/><path d="M388 218 L426 240 L408 254 L456 280"/>
+    <path d="M140 388 L100 370 L110 352 L66 340"/><path d="M376 388 L416 370 L406 352 L450 340"/>
+    <path d="M258 12 L230 4"/><path d="M258 12 L292 2"/>
+  </g>
+  <g fill="#fff"><circle cx="70" cy="140" r="4"/><circle cx="440" cy="130" r="5"/><circle cx="460" cy="420" r="3"/></g>
+</svg>

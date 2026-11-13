@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="crown" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#b8e87a"/><stop offset="55%" stop-color="#4aa832"/><stop offset="100%" stop-color="#1f5a14"/></radialGradient>
+    <radialGradient id="crownD" cx="42%" cy="30%" r="75%"><stop offset="0%" stop-color="#8ac85a"/><stop offset="55%" stop-color="#2f7a22"/><stop offset="100%" stop-color="#123a0c"/></radialGradient>
+    <linearGradient id="bark" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5a3418"/><stop offset="50%" stop-color="#9a6634"/><stop offset="100%" stop-color="#4a2a12"/></linearGradient>
+    <g id="tree">
+      <path d="M-46 150 C-34 90 -34 40 -42 0 L42 0 C34 40 34 90 46 150 Z" fill="url(#bark)" stroke="#2e1806" stroke-width="5"/>
+      <path d="M0 -190 C60 -190 100 -150 100 -100 C126 -84 126 -36 92 -20 C66 4 34 0 0 0 C-34 0 -66 4 -92 -20 C-126 -36 -126 -84 -100 -100 C-100 -150 -60 -190 0 -190 Z" fill="url(#crown)" stroke="#123a0c" stroke-width="6"/>
+    </g>
+  </defs>
+  <ellipse cx="256" cy="470" rx="240" ry="34" fill="#8a6a3a"/><ellipse cx="256" cy="462" rx="220" ry="24" fill="#a88a52"/>
+  <!-- left tree: smile -->
+  <g transform="translate(110 320) scale(.78)">
+    <use xlink:href="#tree"/>
+    <circle cx="-14" cy="56" r="9" fill="#1a0e04"/><circle cx="16" cy="56" r="9" fill="#1a0e04"/>
+    <path d="M-14 90 C-4 100 8 100 18 90" fill="none" stroke="#1a0e04" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <!-- right tree: sleepy -->
+  <g transform="translate(402 320) scale(.78)">
+    <use xlink:href="#tree"/>
+    <path d="M-24 56 L-6 56 M8 56 L26 56" stroke="#1a0e04" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="2" cy="94" rx="8" ry="10" fill="#1a0e04"/>
+  </g>
+  <!-- middle tree: weird grin, bigger, darker -->
+  <g transform="translate(256 300)">
+    <path d="M-46 150 C-34 90 -34 40 -42 0 L42 0 C34 40 34 90 46 150 Z" fill="url(#bark)" stroke="#2e1806" stroke-width="5"/>
+    <path d="M0 -230 C70 -230 116 -186 116 -126 C146 -108 146 -50 106 -30 C76 0 38 -4 0 -4 C-38 -4 -76 0 -106 -30 C-146 -50 -146 -108 -116 -126 C-116 -186 -70 -230 0 -230 Z" fill="url(#crownD)" stroke="#0a2606" stroke-width="6"/>
+    <circle cx="-18" cy="44" r="14" fill="#f4e83a" stroke="#1a0e04" stroke-width="4"/><circle cx="20" cy="50" r="9" fill="#f4e83a" stroke="#1a0e04" stroke-width="4"/>
+    <circle cx="-16" cy="46" r="5" fill="#1a0e04"/><circle cx="21" cy="51" r="4" fill="#1a0e04"/>
+    <path d="M-32 86 C-14 108 16 108 34 80 C14 92 -10 94 -32 86 Z" fill="#1a0e04"/>
+    <path d="M-24 90 L-18 100 L-10 92 L-2 102 L6 94 L14 100 L22 90" fill="none" stroke="#f4ead0" stroke-width="3"/>
+  </g>
+  <!-- linked branches -->
+  <path d="M150 350 C190 340 210 344 222 356 M362 350 C322 340 302 344 290 356" fill="none" stroke="url(#bark)" stroke-width="14" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="frost" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="33" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="mist" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="16"/></filter>
+    <radialGradient id="body" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#9fc8f0"/>
+      <stop offset="50%" stop-color="#4a6fb8"/>
+      <stop offset="100%" stop-color="#1c2458"/>
+    </radialGradient>
+    <linearGradient id="ice" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#2a3a8a"/>
+      <stop offset="100%" stop-color="#cfe8ff"/>
+    </linearGradient>
+    <radialGradient id="apple" cx="38%" cy="32%" r="70%">
+      <stop offset="0%" stop-color="#f0d8ff"/>
+      <stop offset="45%" stop-color="#a24ad8"/>
+      <stop offset="100%" stop-color="#4a1470"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1c2458" stop-opacity=".4"/>
+      <stop offset="100%" stop-color="#1c2458" stop-opacity="0"/>
+    </radialGradient>
+    <path id="shard" d="M-14 0 L0 -74 L14 0 Z"/>
+  </defs>
+
+  <ellipse cx="256" cy="486" rx="200" ry="18" fill="url(#shadow)"/>
+  <ellipse cx="256" cy="290" rx="230" ry="190" fill="#6a3ab8" opacity=".3" filter="url(#mist)"/>
+
+  <!-- jagged ice spikes on the back -->
+  <g fill="url(#ice)" stroke="#141a48" stroke-width="2.5" stroke-linejoin="round">
+    <use href="#shard" transform="translate(110 230) rotate(-55) scale(1.3)"/>
+    <use href="#shard" transform="translate(140 180) rotate(-35) scale(1.5)"/>
+    <use href="#shard" transform="translate(372 180) rotate(35) scale(1.5)"/>
+    <use href="#shard" transform="translate(402 230) rotate(55) scale(1.3)"/>
+  </g>
+
+  <!-- legs -->
+  <g fill="url(#body)" filter="url(#frost)">
+    <ellipse cx="186" cy="452" rx="56" ry="34"/>
+    <ellipse cx="326" cy="452" rx="56" ry="34"/>
+  </g>
+  <g fill="#cfe8ff" stroke="#141a48" stroke-width="2">
+    <path d="M144 474 l-8 16 l18 -6 Z M172 480 l-2 16 l14 -10 Z M340 480 l2 16 l-14 -10 Z M368 474 l8 16 l-18 -6 Z"/>
+  </g>
+
+  <!-- body -->
+  <path d="M112 300 C104 200 170 136 256 136 C342 136 408 200 400 300 C392 396 334 454 256 454 C178 454 120 396 112 300 Z"
+        fill="url(#body)" filter="url(#frost)"/>
+  <path d="M190 330 L256 380 L322 330 L304 420 L256 440 L208 420 Z" fill="#2a3a8a" opacity=".6"/>
+
+  <!-- clawed ice arm (left) -->
+  <path d="M124 260 C76 280 54 340 66 396" fill="none" stroke="#3a5aa8" stroke-width="42" stroke-linecap="round" filter="url(#frost)"/>
+  <g fill="#e8f4ff" stroke="#141a48" stroke-width="2">
+    <path d="M44 398 l-10 26 l20 -12 Z M64 408 l-2 28 l16 -20 Z M86 402 l10 24 l0 -24 Z"/>
+  </g>
+  <!-- right arm holding the frozen apple -->
+  <path d="M388 260 C430 270 452 310 448 346" fill="none" stroke="#3a5aa8" stroke-width="42" stroke-linecap="round" filter="url(#frost)"/>
+  <circle cx="446" cy="384" r="34" fill="url(#apple)" stroke="#2a0a40" stroke-width="3"/>
+  <path d="M446 352 C444 340 448 332 456 328" fill="none" stroke="#5a3a1a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M452 340 C466 330 478 336 480 344 C468 348 458 346 452 340 Z" fill="#7ad0e8" stroke="#2a5a70" stroke-width="2"/>
+  <path d="M428 372 C432 362 442 358 450 360" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <g fill="#e8f8ff" opacity=".9"><circle cx="432" cy="396" r="3"/><circle cx="458" cy="404" r="2.5"/><circle cx="448" cy="372" r="2"/></g>
+  <g fill="#e8f4ff" stroke="#141a48" stroke-width="2">
+    <path d="M420 360 l-12 -8 l4 14 Z M424 404 l-14 6 l12 6 Z"/>
+  </g>
+
+  <!-- ice horns -->
+  <path d="M196 158 C170 120 168 80 186 50 C192 86 206 112 226 136 Z" fill="url(#ice)" stroke="#141a48" stroke-width="3"/>
+  <path d="M316 158 C342 120 344 80 326 50 C320 86 306 112 286 136 Z" fill="url(#ice)" stroke="#141a48" stroke-width="3"/>
+
+  <!-- wicked face -->
+  <path d="M170 222 C200 202 312 202 342 222 C346 280 312 314 256 316 C200 314 166 280 170 222 Z" fill="#2a3a7a" stroke="#141a48" stroke-width="2"/>
+  <circle cx="220" cy="246" r="18" fill="#ff3d8a" opacity=".7" filter="url(#glow)"/>
+  <circle cx="292" cy="246" r="18" fill="#ff3d8a" opacity=".7" filter="url(#glow)"/>
+  <path d="M196 236 L242 248 Q238 270 218 270 Q198 266 196 236 Z" fill="#ffd6ea" stroke="#141a48" stroke-width="2.5"/>
+  <path d="M316 236 L270 248 Q274 270 294 270 Q314 266 316 236 Z" fill="#ffd6ea" stroke="#141a48" stroke-width="2.5"/>
+  <circle cx="220" cy="256" r="6" fill="#e0105a"/><circle cx="292" cy="256" r="6" fill="#e0105a"/>
+  <path d="M188 226 L246 242 M324 226 L266 242" stroke="#0a0e2a" stroke-width="7" stroke-linecap="round"/>
+  <!-- jagged icy grin -->
+  <path d="M206 280 L222 290 L236 280 L250 292 L262 280 L276 292 L290 280 L306 290 Q290 312 256 314 Q222 312 206 280 Z" fill="#0a0e2a"/>
+  <path d="M222 290 l4 9 l4 -9 Z M250 292 l4 9 l4 -9 Z M276 292 l4 9 l4 -9 Z" fill="#e8f4ff"/>
+
+  <!-- dark snowflakes -->
+  <g stroke="#8a6ad8" stroke-width="3" stroke-linecap="round">
+    <path d="M60 110 l0 24 M48 122 l24 0 M52 114 l16 16 M68 114 l-16 16"/>
+    <path d="M456 120 l0 20 M446 130 l20 0 M449 123 l14 14 M463 123 l-14 14"/>
+  </g>
+</svg>

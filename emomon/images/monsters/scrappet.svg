@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cfd8dc"/><stop offset="100%" stop-color="#78909c"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#eceff1" stop-opacity=".6"/><stop offset="100%" stop-color="#eceff1" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#263238" stop-opacity=".35"/><stop offset="100%" stop-color="#263238" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="260" r="220" fill="url(#aura)"/>
+  <ellipse cx="256" cy="442" rx="120" ry="13" fill="url(#sh)"/>
+  <!-- antenna spring -->
+  <path d="M256 150 C240 140 272 130 256 120 C240 110 272 100 256 90" fill="none" stroke="#546e7a" stroke-width="6"/>
+  <circle cx="256" cy="84" r="10" fill="#ff7043" stroke="#37474f" stroke-width="5"/>
+  <!-- head: dented can -->
+  <path d="M176 150 L336 150 L340 260 L172 260 Z" fill="url(#metal)" stroke="#263238" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M300 166 C310 180 304 196 292 200" fill="none" stroke="#90a4ae" stroke-width="5"/>
+  <rect x="190" y="230" width="40" height="18" fill="#a1887f" stroke="#263238" stroke-width="4"/>
+  <circle cx="186" cy="164" r="5" fill="#455a64"/><circle cx="326" cy="164" r="5" fill="#455a64"/>
+  <!-- mismatched eyes -->
+  <circle cx="220" cy="198" r="24" fill="#fff" stroke="#263238" stroke-width="6"/><circle cx="224" cy="200" r="11" fill="#29b6f6"/>
+  <rect x="270" y="180" width="44" height="34" rx="6" fill="#fff" stroke="#263238" stroke-width="6"/><circle cx="292" cy="198" r="9" fill="#29b6f6"/>
+  <!-- body -->
+  <rect x="190" y="262" width="132" height="120" rx="14" fill="url(#metal)" stroke="#263238" stroke-width="8"/>
+  <rect x="222" y="286" width="68" height="44" rx="6" fill="#37474f" stroke="#263238" stroke-width="5"/>
+  <circle cx="240" cy="308" r="7" fill="#76ff03"/><circle cx="270" cy="308" r="7" fill="#ffca28"/>
+  <path d="M200 350 L230 344 M282 360 L312 352" stroke="#8d6e63" stroke-width="6"/>
+  <!-- arms: pipe + wrench -->
+  <path d="M190 290 L140 330" stroke="#78909c" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="134" cy="336" r="14" fill="#90a4ae" stroke="#263238" stroke-width="5"/>
+  <path d="M322 290 L370 320" stroke="#78909c" stroke-width="16" stroke-linecap="round"/>
+  <path d="M370 320 L398 300 L410 310 L392 330 L404 346 L388 352 Z" fill="#b0bec5" stroke="#263238" stroke-width="5" stroke-linejoin="round"/>
+  <!-- legs -->
+  <path d="M220 382 L216 426 M292 382 L296 426" stroke="#607d8b" stroke-width="18" stroke-linecap="round"/>
+  <rect x="190" y="420" width="44" height="18" rx="6" fill="#455a64"/><rect x="278" y="420" width="44" height="18" rx="6" fill="#455a64"/>
+</svg>

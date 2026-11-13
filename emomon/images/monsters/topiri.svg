@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="dirt" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#c8955e"/><stop offset="60%" stop-color="#8a5a32"/><stop offset="100%" stop-color="#4a2e16"/></radialGradient>
+    <pattern id="grit" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="6" cy="8" r="4" fill="#5a3a1e" opacity=".6"/><circle cx="20" cy="20" r="3" fill="#3a2410" opacity=".55"/><circle cx="24" cy="6" r="2" fill="#d8b080" opacity=".6"/><circle cx="10" cy="24" r="2" fill="#d8b080" opacity=".5"/></pattern>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a1a0a" stop-opacity=".4"/><stop offset="100%" stop-color="#2a1a0a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="478" rx="170" ry="16" fill="url(#sh)"/>
+  <!-- feet and claws -->
+  <path d="M170 420 C160 450 170 470 210 470 C236 470 240 450 236 420 Z M276 420 C272 450 276 470 302 470 C342 470 352 450 342 420 Z" fill="url(#dirt)" stroke="#2e1a08" stroke-width="4"/>
+  <path d="M180 466 L174 480 M200 470 L198 484 M220 468 L222 482 M290 468 L288 482 M310 470 L312 484 M332 466 L338 480" stroke="#f4ead0" stroke-width="7" stroke-linecap="round"/>
+  <!-- arms -->
+  <path d="M100 300 C60 320 50 380 70 400 C90 400 110 380 120 350 Z M412 300 C452 320 462 380 442 400 C422 400 402 380 392 350 Z" fill="url(#dirt)" stroke="#2e1a08" stroke-width="4"/>
+  <path d="M66 396 L56 410 M80 402 L76 418 M436 402 L440 418 M450 396 L460 410" stroke="#f4ead0" stroke-width="6" stroke-linecap="round"/>
+  <!-- round pac body with big mouth -->
+  <path d="M256 80 C370 80 440 160 440 260 C440 360 370 440 256 440 C142 440 72 360 72 260 C72 160 142 80 256 80 Z" fill="url(#dirt)" stroke="#2e1a08" stroke-width="6"/>
+  <path d="M256 80 C370 80 440 160 440 260 C440 360 370 440 256 440 C142 440 72 360 72 260 C72 160 142 80 256 80 Z" fill="url(#grit)"/>
+  <path d="M100 250 C150 230 362 230 412 250 C400 330 340 370 256 370 C172 370 112 330 100 250 Z" fill="#140a04" stroke="#2e1a08" stroke-width="5"/>
+  <path d="M120 256 L134 280 L148 258 L164 286 L180 262 L198 290 M314 290 L332 262 L348 286 L364 258 L378 280 L392 256" fill="none" stroke="#f4ead0" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M190 350 L200 330 L212 352 L224 334 L236 356 M276 356 L288 334 L300 352 L312 330 L322 350" fill="none" stroke="#f4ead0" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M220 370 C222 390 228 400 232 380 M290 370 C292 394 300 400 302 378" fill="#6a3a1e" stroke="#2e1a08" stroke-width="3"/>
+  <!-- three eyes -->
+  <circle cx="190" cy="170" r="30" fill="#0e0602" stroke="#2e1a08" stroke-width="5"/><circle cx="290" cy="150" r="34" fill="#0e0602" stroke="#2e1a08" stroke-width="5"/><circle cx="370" cy="186" r="26" fill="#0e0602" stroke="#2e1a08" stroke-width="5"/>
+  <circle cx="200" cy="160" r="8" fill="#fff"/><circle cx="302" cy="138" r="9" fill="#fff"/><circle cx="378" cy="176" r="7" fill="#fff"/>
+  <!-- flying dirt -->
+  <g fill="#8a5a32"><circle cx="40" cy="120" r="9"/><circle cx="470" cy="100" r="7"/><circle cx="60" cy="210" r="5"/><circle cx="460" cy="230" r="6"/><circle cx="120" cy="60" r="6"/><circle cx="400" cy="50" r="8"/><circle cx="30" cy="300" r="4"/><circle cx="486" cy="320" r="5"/></g>
+</svg>

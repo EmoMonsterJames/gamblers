@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Habbit: a rabbit half-popping out of a magician's top hat, blinking big cute red eyes, surrounded by a magical aura -->
+  <defs>
+    <linearGradient id="hat" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a1a24"/><stop offset=".45" stop-color="#3a3a4a"/><stop offset="1" stop-color="#0a0a10"/></linearGradient>
+    <radialGradient id="fur" cx="45%" cy="35%" r="65%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e2dcef"/></radialGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#ff9a9a"/><stop offset=".5" stop-color="#e0102a"/><stop offset="1" stop-color="#6a0010"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e2c8ff" stop-opacity=".65"/><stop offset="1" stop-color="#e2c8ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <g fill="#c88aff"><path d="M80 120 l6 -18 l6 18 l18 6 l-18 6 l-6 18 l-6 -18 l-18 -6 Z"/><path d="M420 100 l5 -14 l5 14 l14 5 l-14 5 l-5 14 l-5 -14 l-14 -5 Z"/><path d="M440 300 l4 -12 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 Z"/><path d="M70 330 l4 -12 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 Z"/></g>
+  <!-- long ears -->
+  <path d="M206 170 C186 90 190 30 212 26 C234 30 238 100 232 176 Z" fill="url(#fur)" stroke="#5a4a6a" stroke-width="7"/>
+  <path d="M306 170 C326 90 322 30 300 26 C278 30 274 100 280 176 Z" fill="url(#fur)" stroke="#5a4a6a" stroke-width="7"/>
+  <path d="M210 160 C200 100 202 56 212 48 C222 60 224 110 222 164 Z M302 160 C312 100 310 56 300 48 C290 60 288 110 290 164 Z" fill="#ffb8d0"/>
+  <!-- head peeking from the hat -->
+  <ellipse cx="256" cy="246" rx="92" ry="78" fill="url(#fur)" stroke="#5a4a6a" stroke-width="8"/>
+  <!-- big blinking red eyes (left one mid-blink) -->
+  <ellipse cx="216" cy="238" rx="28" ry="32" fill="url(#eye)" stroke="#3a0010" stroke-width="5"/>
+  <circle cx="226" cy="226" r="9" fill="#fff"/><circle cx="208" cy="250" r="4" fill="#fff" opacity=".8"/>
+  <path d="M272 242 Q296 222 320 242" fill="none" stroke="#3a0010" stroke-width="7" stroke-linecap="round"/>
+  <path d="M276 250 l-6 8 M296 252 v10 M316 250 l6 8" stroke="#3a0010" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="190" cy="282" rx="16" ry="9" fill="#ff9ac0" opacity=".7"/><ellipse cx="322" cy="282" rx="16" ry="9" fill="#ff9ac0" opacity=".7"/>
+  <path d="M248 270 h16 l-8 9 Z" fill="#ff6a9a"/>
+  <path d="M256 279 v10 M256 289 q-10 8 -18 2 M256 289 q10 8 18 2" fill="none" stroke="#5a4a6a" stroke-width="4" stroke-linecap="round"/>
+  <!-- paws on the brim -->
+  <ellipse cx="190" cy="322" rx="22" ry="14" fill="url(#fur)" stroke="#5a4a6a" stroke-width="5"/>
+  <ellipse cx="322" cy="322" rx="22" ry="14" fill="url(#fur)" stroke="#5a4a6a" stroke-width="5"/>
+  <!-- the top hat -->
+  <ellipse cx="256" cy="332" rx="160" ry="30" fill="#0a0a10" stroke="#000" stroke-width="6"/>
+  <path d="M128 336 L150 470 L362 470 L384 336 Z" fill="url(#hat)" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M138 384 L374 384 L370 412 L142 412 Z" fill="#c8102a" stroke="#000" stroke-width="5"/>
+  <ellipse cx="256" cy="470" rx="106" ry="14" fill="#0a0a10" stroke="#000" stroke-width="5"/>
+  <path d="M170 360 L180 450" stroke="#5a5a6a" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Circusnowy: the wobbly upside-down snowman in a circus outfit and red clown nose, juggling its two twigs -->
+  <defs>
+    <radialGradient id="snow" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#e3f2fd"/><stop offset="1" stop-color="#9fc6e8"/></radialGradient>
+    <radialGradient id="nose" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ff8a80"/><stop offset="1" stop-color="#c62828"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e1bee7" stop-opacity=".6"/><stop offset="1" stop-color="#e1bee7" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2a0d4a" stop-opacity=".35"/><stop offset="1" stop-color="#2a0d4a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <ellipse cx="262" cy="474" rx="74" ry="10" fill="url(#sh)"/>
+  <!-- tiny bottom ball on a circus ball stand -->
+  <circle cx="262" cy="446" r="26" fill="url(#snow)" stroke="#3a6a96" stroke-width="6"/>
+  <!-- middle ball in a striped circus vest -->
+  <g transform="rotate(5 256 368)">
+    <circle cx="256" cy="368" r="64" fill="url(#snow)" stroke="#3a6a96" stroke-width="7"/>
+    <path d="M200 340 Q256 310 312 340 L318 380 Q256 420 194 380 Z" fill="#7b1fa2" stroke="#3a0a5a" stroke-width="6"/>
+    <path d="M224 330 L222 400 M256 322 L256 410 M288 330 L290 400" stroke="#ffd54f" stroke-width="8"/>
+    <path d="M232 332 L256 350 L280 332 L256 318 Z" fill="#ffd54f" stroke="#3a0a5a" stroke-width="4"/>
+  </g>
+  <!-- big head ball -->
+  <circle cx="250" cy="196" r="116" fill="url(#snow)" stroke="#3a6a96" stroke-width="8"/>
+  <!-- ruff collar -->
+  <path d="M150 268 Q170 296 196 280 Q214 306 238 288 Q256 312 274 288 Q298 306 316 280 Q342 296 356 266" fill="#fff" stroke="#7b1fa2" stroke-width="6" stroke-linejoin="round"/>
+  <!-- tiny cone hat -->
+  <path d="M220 92 L262 10 L300 88 Z" fill="#e53935" stroke="#7a0000" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="262" cy="12" r="12" fill="#ffd54f" stroke="#7a0000" stroke-width="4"/>
+  <circle cx="250" cy="62" r="7" fill="#fff"/><circle cx="270" cy="40" r="6" fill="#fff"/>
+  <!-- clown face -->
+  <path d="M188 168 L206 150 L224 168 L206 186 Z M276 168 L294 150 L312 168 L294 186 Z" fill="#4fc3f7" opacity=".7"/>
+  <circle cx="206" cy="170" r="15" fill="#263238"/><circle cx="294" cy="170" r="15" fill="#263238"/>
+  <circle cx="211" cy="165" r="5" fill="#fff"/><circle cx="299" cy="165" r="5" fill="#fff"/>
+  <circle cx="250" cy="206" r="22" fill="url(#nose)" stroke="#7a0000" stroke-width="5"/>
+  <circle cx="243" cy="199" r="6" fill="#fff" opacity=".7"/>
+  <path d="M198 238 Q250 278 302 238" fill="#e53935" stroke="#7a0000" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M212 244 Q250 262 288 244" fill="none" stroke="#fff" stroke-width="5"/>
+  <!-- juggled twigs (its own arms!) -->
+  <path d="M88 160 L134 100 M112 116 L98 98" stroke="#6d4c2f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M378 100 L430 150 M410 128 L428 112" stroke="#6d4c2f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M110 200 Q90 120 150 70 M402 200 Q422 120 362 70" fill="none" stroke="#ce93d8" stroke-width="4" stroke-dasharray="8 10"/>
+  <!-- magic snow sparkles -->
+  <path d="M70 260 l8 0 M74 256 l0 8 M440 260 l8 0 M444 256 l0 8 M120 330 l8 0 M124 326 l0 8 M392 340 l8 0 M396 336 l0 8" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+</svg>

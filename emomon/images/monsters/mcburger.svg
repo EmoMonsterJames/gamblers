@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- McBurger: a levitating brain-burger; the patty folds like a cortex and its layers split open on a purple void -->
+  <defs>
+    <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcc80"/><stop offset="1" stop-color="#b8601a"/></linearGradient>
+    <radialGradient id="void" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ea80fc"/><stop offset=".5" stop-color="#6a1b9a"/><stop offset="1" stop-color="#12002a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#7e57c2" stop-opacity=".6"/><stop offset="1" stop-color="#7e57c2" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#12002a" stop-opacity=".45"/><stop offset="1" stop-color="#12002a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="250" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="476" rx="120" ry="12" fill="url(#sh)"/>
+  <!-- warped shadows -->
+  <path d="M40 420 Q120 380 140 440 M472 420 Q392 380 372 440" fill="none" stroke="#311b92" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+  <!-- bottom bun -->
+  <path d="M130 380 Q130 430 256 432 Q382 430 382 380 Z" fill="url(#bun)" stroke="#5a2a06" stroke-width="7"/>
+  <!-- the open void between the layers -->
+  <ellipse cx="256" cy="330" rx="150" ry="52" fill="url(#void)" stroke="#2a0050" stroke-width="7"/>
+  <path d="M170 330 Q256 290 342 330 Q256 370 170 330" fill="none" stroke="#f3e5f5" stroke-width="3" opacity=".7"/>
+  <circle cx="256" cy="330" r="10" fill="#fff"/>
+  <!-- cortex patty folding over -->
+  <path d="M110 280 C110 240 160 222 256 222 C352 222 402 240 402 280 C402 300 360 306 256 306 C152 306 110 300 110 280 Z" fill="#7b3f20" stroke="#3a1a06" stroke-width="7"/>
+  <path d="M140 270 Q170 246 200 268 Q230 290 256 264 Q282 240 312 266 Q342 290 372 266" fill="none" stroke="#c07a52" stroke-width="7" stroke-linecap="round"/>
+  <!-- top bun brain -->
+  <path d="M116 234 C112 130 180 70 256 70 C332 70 400 130 396 234 Z" fill="url(#bun)" stroke="#5a2a06" stroke-width="8"/>
+  <path d="M256 74 L256 230" stroke="#8a4a14" stroke-width="6"/>
+  <path d="M150 170 Q180 150 206 172 Q226 192 246 176 M146 210 Q176 196 206 214 M366 170 Q336 150 310 172 Q290 192 270 176 M370 210 Q340 196 310 214" fill="none" stroke="#a0581c" stroke-width="6" stroke-linecap="round"/>
+  <!-- glowing eyes -->
+  <ellipse cx="200" cy="130" rx="18" ry="14" fill="#ea80fc" stroke="#2a0050" stroke-width="5"/>
+  <ellipse cx="312" cy="130" rx="18" ry="14" fill="#ea80fc" stroke="#2a0050" stroke-width="5"/>
+  <circle cx="200" cy="130" r="6" fill="#fff"/><circle cx="312" cy="130" r="6" fill="#fff"/>
+  <!-- dance motion arcs + glitching sparks -->
+  <path d="M70 230 Q50 180 80 140 M442 230 Q462 180 432 140" fill="none" stroke="#ea80fc" stroke-width="6" stroke-linecap="round"/>
+  <rect x="420" y="70" width="18" height="8" fill="#18ffff"/><rect x="430" y="84" width="10" height="6" fill="#ea80fc"/><rect x="70" y="80" width="16" height="7" fill="#18ffff"/>
+</svg>

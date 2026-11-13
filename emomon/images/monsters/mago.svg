@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="skin" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f6efe4"/>
+      <stop offset="100%" stop-color="#ddd0bd"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity=".18"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ground shadow -->
+  <ellipse cx="256" cy="372" rx="170" ry="22" fill="url(#shadow)"/>
+
+  <!-- chubby segmented grub body (tail on the right, head on the left) -->
+  <g stroke="#c9b9a2" stroke-width="3">
+    <ellipse cx="392" cy="318" rx="34" ry="30" fill="url(#skin)"/>
+    <ellipse cx="350" cy="308" rx="44" ry="44" fill="url(#skin)"/>
+    <ellipse cx="300" cy="296" rx="52" ry="56" fill="url(#skin)"/>
+    <ellipse cx="244" cy="290" rx="58" ry="62" fill="url(#skin)"/>
+    <ellipse cx="178" cy="282" rx="74" ry="72" fill="url(#skin)"/>
+  </g>
+  <!-- tiny nub feet -->
+  <g fill="#efe4d3" stroke="#c9b9a2" stroke-width="2.5">
+    <ellipse cx="160" cy="352" rx="11" ry="8"/><ellipse cx="200" cy="354" rx="11" ry="8"/>
+    <ellipse cx="244" cy="350" rx="10" ry="7"/><ellipse cx="296" cy="350" rx="10" ry="7"/><ellipse cx="346" cy="350" rx="9" ry="6"/>
+  </g>
+  <!-- soft shine -->
+  <ellipse cx="150" cy="238" rx="28" ry="14" fill="#fff" opacity=".9" transform="rotate(-20 150 238)"/>
+  <ellipse cx="290" cy="258" rx="14" ry="7" fill="#fff" opacity=".8" transform="rotate(-15 290 258)"/>
+
+  <!-- face: tiny dot eyes, blush, wobbly mouth -->
+  <ellipse cx="148" cy="282" rx="7" ry="9" fill="#2b2420"/>
+  <ellipse cx="196" cy="282" rx="7" ry="9" fill="#2b2420"/>
+  <circle cx="146" cy="279" r="2.2" fill="#fff"/><circle cx="194" cy="279" r="2.2" fill="#fff"/>
+  <ellipse cx="128" cy="306" rx="13" ry="7" fill="#ffb3c4" opacity=".7"/>
+  <ellipse cx="216" cy="306" rx="13" ry="7" fill="#ffb3c4" opacity=".7"/>
+  <path d="M162 306 q5 6 10 0 q5 6 10 0" fill="none" stroke="#2b2420" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- "so small and useless" sweat drop -->
+  <path d="M232 212 C224 226 222 236 232 240 C242 236 240 226 232 212 Z" fill="#a8dcff" stroke="#6fb4e4" stroke-width="2"/>
+</svg>

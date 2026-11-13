@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="fuzz" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="eyeglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6"/></filter>
+    <linearGradient id="armor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd45a"/><stop offset="100%" stop-color="#d98e0c"/>
+    </linearGradient>
+    <radialGradient id="fur" cx="45%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#ffd860"/><stop offset="100%" stop-color="#c98a14"/>
+    </radialGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3c4a"/><stop offset="100%" stop-color="#16171e"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#bfe0ff" stop-opacity=".95"/><stop offset="100%" stop-color="#6aa8e8" stop-opacity=".75"/>
+    </linearGradient>
+  </defs>
+
+  <!-- blue wings -->
+  <g stroke="#3a6aa8" stroke-width="3" fill="url(#wing)">
+    <path d="M300 160 C340 70 440 30 490 60 C506 110 430 180 330 210 Z"/>
+    <path d="M220 160 C200 90 210 40 240 30 C270 40 280 110 262 170 Z"/>
+  </g>
+  <g fill="none" stroke="#3a6aa8" stroke-width="2" opacity=".7">
+    <path d="M330 196 C380 140 430 100 476 74 M380 150 L430 160 M410 110 L380 90"/>
+    <path d="M244 160 C236 120 236 80 240 44"/>
+  </g>
+
+  <!-- back clawed legs -->
+  <g fill="none" stroke="#1c1d26" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M340 340 L400 380 L420 450"/>
+    <path d="M300 360 L320 420 L300 470"/>
+  </g>
+  <!-- armored abdomen behind -->
+  <ellipse cx="380" cy="320" rx="100" ry="76" fill="url(#dark)" stroke="#0b0b10" stroke-width="3"/>
+  <path d="M310 300 C340 280 400 276 450 296 L456 320 C406 304 344 306 314 326 Z" fill="url(#armor)" stroke="#8a5a08" stroke-width="2"/>
+  <path d="M320 346 C350 330 410 330 462 344 L450 368 C406 356 350 358 326 372 Z" fill="url(#armor)" stroke="#8a5a08" stroke-width="2"/>
+
+  <!-- body + fur mane -->
+  <path d="M120 230 C150 170 250 150 320 190 C360 220 360 300 320 340 C270 380 170 380 140 330 C116 300 108 260 120 230 Z" fill="url(#dark)" stroke="#0b0b10" stroke-width="3"/>
+  <ellipse cx="250" cy="200" rx="110" ry="80" fill="url(#fur)" filter="url(#fuzz)"/>
+
+  <!-- front clawed legs with armor plates -->
+  <g fill="none" stroke="#1c1d26" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 300 L96 350 L78 430"/>
+    <path d="M230 340 L210 410 L180 470"/>
+  </g>
+  <path d="M78 330 C90 300 130 290 150 310 L130 372 C110 370 86 360 78 330 Z" fill="url(#armor)" stroke="#8a5a08" stroke-width="2.5"/>
+  <path d="M206 360 C220 340 250 340 258 362 L240 410 C222 408 206 392 206 360 Z" fill="url(#armor)" stroke="#8a5a08" stroke-width="2.5"/>
+  <g fill="#1c1d26">
+    <path d="M60 428 l-16 26 l24 -8 Z M78 434 l-4 30 l16 -20 Z M96 428 l14 24 l-2 -26 Z"/>
+    <path d="M162 466 l-16 24 l24 -6 Z M180 472 l-2 28 l14 -20 Z M198 464 l16 22 l-4 -26 Z"/>
+    <path d="M404 448 l-10 28 l20 -14 Z M424 446 l8 28 l6 -24 Z M286 468 l-12 26 l20 -12 Z M306 468 l10 26 l2 -24 Z"/>
+  </g>
+  <!-- shoulder armor -->
+  <path d="M270 210 C300 196 340 204 350 230 C344 260 310 270 280 256 Z" fill="url(#armor)" stroke="#8a5a08" stroke-width="2.5"/>
+
+  <!-- armored head -->
+  <path d="M100 150 C120 110 180 100 214 124 C236 140 236 200 216 230 C196 258 140 262 112 236 C92 216 88 178 100 150 Z"
+        fill="url(#armor)" stroke="#8a5a08" stroke-width="3"/>
+  <path d="M120 130 L200 120" stroke="#8a5a08" stroke-width="3"/>
+  <!-- antennae -->
+  <path d="M150 116 C130 80 100 60 70 56 M190 112 C200 70 220 46 248 36" fill="none" stroke="#1c1d26" stroke-width="8" stroke-linecap="round"/>
+  <!-- glowing cyan eyes -->
+  <circle cx="138" cy="170" r="22" fill="#4fe0ff" opacity=".7" filter="url(#eyeglow)"/>
+  <circle cx="194" cy="168" r="22" fill="#4fe0ff" opacity=".7" filter="url(#eyeglow)"/>
+  <ellipse cx="138" cy="170" rx="15" ry="13" fill="#bff6ff" stroke="#0b0b10" stroke-width="3"/>
+  <ellipse cx="194" cy="168" rx="15" ry="13" fill="#bff6ff" stroke="#0b0b10" stroke-width="3"/>
+  <circle cx="134" cy="166" r="4" fill="#fff"/><circle cx="190" cy="164" r="4" fill="#fff"/>
+  <!-- fanged jaws -->
+  <path d="M128 206 Q164 196 204 204 Q196 246 164 250 Q134 246 128 206 Z" fill="#14060a"/>
+  <g fill="#f4f0e8"><path d="M134 207 l5 14 l5 -15 Z M150 204 l5 16 l5 -16 Z M168 203 l5 16 l5 -16 Z M186 204 l5 14 l5 -14 Z M150 246 l5 -14 l5 14 Z M168 247 l5 -14 l5 14 Z"/></g>
+
+  <!-- cyan lightning -->
+  <g fill="none" stroke="#5fe6ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M30 230 l26 -14 l-6 20 l28 -14 l-6 22"/>
+    <path d="M250 260 l30 -10 l-12 22 l34 -8"/>
+    <path d="M330 240 l20 26 l-18 2 l22 30"/>
+    <path d="M470 250 l-20 22 l18 4 l-22 26"/>
+    <path d="M200 300 l18 24 l-16 4 l18 28"/>
+    <path d="M60 300 l-14 24 l18 0 l-12 26"/>
+  </g>
+  <g fill="#4a4a5a"><circle cx="40" cy="380" r="4"/><circle cx="470" cy="420" r="4"/><circle cx="90" cy="90" r="3"/></g>
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Runar-Lemur: a small silver lemur with glowing indigo eyes; its long tail ends in a floating orb of arcane ink that paints glyphs -->
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0f6"/><stop offset="1" stop-color="#a9adbf"/></linearGradient>
+    <radialGradient id="orb" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#b9a4ff"/><stop offset=".55" stop-color="#4b2aa8"/><stop offset="1" stop-color="#160a40"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#cfc4ff"/><stop offset=".5" stop-color="#5a3dff"/><stop offset="1" stop-color="#1b0f66"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d8ccff" stop-opacity=".55"/><stop offset="1" stop-color="#d8ccff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="236" cy="466" rx="120" ry="14" fill="#2a2050" opacity=".25"/>
+  <!-- ringed tail curling up behind -->
+  <path d="M300 400 C400 400 440 320 420 240 C404 176 350 150 330 110" fill="none" stroke="#6b6f80" stroke-width="34" stroke-linecap="round"/>
+  <path d="M300 400 C400 400 440 320 420 240 C404 176 350 150 330 110" fill="none" stroke="url(#fur)" stroke-width="26" stroke-linecap="round" stroke-dasharray="26 18"/>
+  <circle cx="324" cy="92" r="34" fill="url(#orb)" stroke="#2a145e" stroke-width="6"/>
+  <ellipse cx="314" cy="80" rx="10" ry="6" fill="#fff" opacity=".7"/>
+  <!-- glowing glyphs painted in the air -->
+  <g fill="none" stroke="#8f6bff" stroke-width="6" stroke-linecap="round" opacity=".9">
+    <path d="M380 70 l14 -14 l14 14 l-14 14 Z"/><path d="M420 130 q14 -16 28 0 q-14 16 -28 0"/><path d="M366 30 v26 M354 43 h24"/>
+  </g>
+  <!-- body -->
+  <ellipse cx="236" cy="350" rx="82" ry="92" fill="url(#fur)" stroke="#4a4d5e" stroke-width="8"/>
+  <ellipse cx="236" cy="370" rx="46" ry="58" fill="#fbfbff"/>
+  <!-- arms and feet -->
+  <path d="M170 330 C150 360 150 392 168 410" fill="none" stroke="#4a4d5e" stroke-width="26" stroke-linecap="round"/>
+  <path d="M170 330 C150 360 150 392 168 410" fill="none" stroke="#c9ccd8" stroke-width="16" stroke-linecap="round"/>
+  <path d="M302 330 C322 360 322 392 304 410" fill="none" stroke="#4a4d5e" stroke-width="26" stroke-linecap="round"/>
+  <path d="M302 330 C322 360 322 392 304 410" fill="none" stroke="#c9ccd8" stroke-width="16" stroke-linecap="round"/>
+  <ellipse cx="200" cy="444" rx="34" ry="16" fill="#c9ccd8" stroke="#4a4d5e" stroke-width="6"/>
+  <ellipse cx="272" cy="444" rx="34" ry="16" fill="#c9ccd8" stroke="#4a4d5e" stroke-width="6"/>
+  <!-- head with big round ears -->
+  <circle cx="152" cy="166" r="40" fill="url(#fur)" stroke="#4a4d5e" stroke-width="7"/>
+  <circle cx="320" cy="166" r="40" fill="url(#fur)" stroke="#4a4d5e" stroke-width="7"/>
+  <circle cx="152" cy="166" r="22" fill="#d9c8ff"/><circle cx="320" cy="166" r="22" fill="#d9c8ff"/>
+  <ellipse cx="236" cy="210" rx="92" ry="80" fill="url(#fur)" stroke="#4a4d5e" stroke-width="8"/>
+  <path d="M236 150 C200 170 190 214 206 250 L266 250 C282 214 272 170 236 150 Z" fill="#fbfbff"/>
+  <!-- huge glowing indigo eyes -->
+  <circle cx="196" cy="206" r="30" fill="#2a2050"/><circle cx="276" cy="206" r="30" fill="#2a2050"/>
+  <circle cx="196" cy="206" r="24" fill="url(#eye)"/><circle cx="276" cy="206" r="24" fill="url(#eye)"/>
+  <circle cx="204" cy="196" r="8" fill="#fff"/><circle cx="284" cy="196" r="8" fill="#fff"/>
+  <circle cx="190" cy="216" r="3" fill="#fff" opacity=".8"/><circle cx="270" cy="216" r="3" fill="#fff" opacity=".8"/>
+  <path d="M228 248 l8 8 l8 -8 Z" fill="#2a2050"/>
+  <path d="M222 262 Q236 272 250 262" fill="none" stroke="#2a2050" stroke-width="4" stroke-linecap="round"/>
+</svg>

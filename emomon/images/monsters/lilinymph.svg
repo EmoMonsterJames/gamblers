@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Lilinymph: a floating sky-nymph of ivory root, resting in a giant water lily pad throne ringed by clear water, with six lily-petal wings and a rainbow halo -->
+  <defs>
+    <linearGradient id="ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf4"/><stop offset="1" stop-color="#e6dcc0"/></linearGradient>
+    <linearGradient id="petal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ff9ac8"/></linearGradient>
+    <radialGradient id="pad" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#7ae07a"/><stop offset="1" stop-color="#1a7a3a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#fff0f8" stop-opacity=".7"/><stop offset="1" stop-color="#fff0f8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="240" r="244" fill="url(#aura)"/>
+  <!-- rainbow halo -->
+  <g fill="none" stroke-width="6" opacity=".75"><path d="M110 210 A146 146 0 0 1 402 210" stroke="#ff7a7a"/><path d="M122 210 A134 134 0 0 1 390 210" stroke="#ffd23a"/><path d="M134 210 A122 122 0 0 1 378 210" stroke="#7ae07a"/><path d="M146 210 A110 110 0 0 1 366 210" stroke="#7ac8ff"/></g>
+  <!-- six layered petal wings -->
+  <g fill="url(#petal)" stroke="#d86aa8" stroke-width="4">
+    <path d="M220 220 C150 120 70 110 40 150 C80 200 150 220 220 236 Z"/><path d="M292 220 C362 120 442 110 472 150 C432 200 362 220 292 236 Z"/>
+    <path d="M216 250 C140 230 70 250 52 290 C110 300 170 280 222 266 Z"/><path d="M296 250 C372 230 442 250 460 290 C402 300 342 280 290 266 Z"/>
+    <path d="M220 280 C170 300 130 340 130 380 C180 360 210 330 230 296 Z"/><path d="M292 280 C342 300 382 340 382 380 C332 360 302 330 282 296 Z"/>
+  </g>
+  <g fill="#fff" opacity=".9"><circle cx="110" cy="160" r="4"/><circle cx="400" cy="160" r="4"/><circle cx="90" cy="280" r="3"/><circle cx="420" cy="280" r="3"/></g>
+  <!-- ring of crystal water and lily pad throne -->
+  <ellipse cx="256" cy="410" rx="190" ry="44" fill="none" stroke="#7ad8ff" stroke-width="10" opacity=".75"/>
+  <ellipse cx="256" cy="396" rx="150" ry="42" fill="url(#pad)" stroke="#0a4a1a" stroke-width="6"/>
+  <path d="M256 396 L300 360 L306 398 Z" fill="#7ad8ff"/>
+  <!-- lily bloom the torso rises from -->
+  <g fill="url(#petal)" stroke="#d86aa8" stroke-width="4"><path d="M190 380 C180 340 200 320 220 330 C222 350 214 370 210 384 Z"/><path d="M322 380 C332 340 312 320 292 330 C290 350 298 370 302 384 Z"/><path d="M226 384 C220 340 240 316 256 316 C272 316 292 340 286 384 Z"/></g>
+  <!-- ivory root body -->
+  <path d="M220 330 C214 270 226 220 256 210 C286 220 298 270 292 330 Z" fill="url(#ivory)" stroke="#a89a70" stroke-width="5"/>
+  <path d="M240 250 q-8 30 4 60 M272 250 q8 30 -4 60" fill="none" stroke="#c8b890" stroke-width="3"/>
+  <!-- head with dewy hair -->
+  <ellipse cx="256" cy="170" rx="44" ry="48" fill="url(#ivory)" stroke="#a89a70" stroke-width="5"/>
+  <path d="M212 160 C206 110 236 104 256 116 C276 104 306 110 300 160 C290 140 270 132 256 140 C242 132 222 140 212 160 Z" fill="#ffd0e8" stroke="#d86aa8" stroke-width="4"/>
+  <path d="M234 172 q8 -8 16 0 M262 172 q8 -8 16 0" fill="none" stroke="#5a4a6a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M244 196 Q256 204 268 196" fill="none" stroke="#d86aa8" stroke-width="3" stroke-linecap="round"/>
+  <!-- tears of divine water -->
+  <path d="M238 182 q-4 12 0 18 q4 -6 0 -18 M274 182 q-4 12 0 18 q4 -6 0 -18" fill="#7ad8ff"/>
+</svg>

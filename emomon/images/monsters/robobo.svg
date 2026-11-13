@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#c3cad6"/></linearGradient>
+    <radialGradient id="visor" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#2a3448"/><stop offset="100%" stop-color="#0a0e18"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a3a5a" stop-opacity=".3"/><stop offset="100%" stop-color="#2a3a5a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="476" rx="150" ry="16" fill="url(#sh)"/>
+  <!-- legs -->
+  <rect x="186" y="370" width="48" height="74" rx="12" fill="#3a404c" stroke="#1a1e26" stroke-width="4"/>
+  <rect x="278" y="370" width="48" height="74" rx="12" fill="#3a404c" stroke="#1a1e26" stroke-width="4"/>
+  <rect x="170" y="438" width="76" height="28" rx="10" fill="url(#plate)" stroke="#4a5262" stroke-width="4"/>
+  <rect x="266" y="438" width="76" height="28" rx="10" fill="url(#plate)" stroke="#4a5262" stroke-width="4"/>
+  <circle cx="210" cy="400" r="12" fill="#ff7a2a" stroke="#1a1e26" stroke-width="3"/><circle cx="302" cy="400" r="12" fill="#ff7a2a" stroke="#1a1e26" stroke-width="3"/>
+  <!-- arms with claws -->
+  <path d="M162 280 L110 330 L96 390" fill="none" stroke="#3a404c" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M350 280 L402 330 L416 390" fill="none" stroke="#3a404c" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="76" y="292" width="64" height="56" rx="14" fill="url(#plate)" stroke="#4a5262" stroke-width="4"/><rect x="88" y="306" width="22" height="10" rx="3" fill="#ff7a2a"/>
+  <rect x="372" y="292" width="64" height="56" rx="14" fill="url(#plate)" stroke="#4a5262" stroke-width="4"/><rect x="402" y="306" width="22" height="10" rx="3" fill="#2ad8f0"/>
+  <path d="M80 394 L70 420 M96 398 L96 426 M112 394 L122 420 M400 394 L390 420 M416 398 L416 426 M432 394 L442 420" stroke="#2a2e38" stroke-width="7" stroke-linecap="round"/>
+  <!-- torso -->
+  <path d="M170 250 L342 250 L330 376 L182 376 Z" fill="url(#plate)" stroke="#4a5262" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="226" y="276" width="60" height="44" rx="10" fill="#1a2232" stroke="#4a5262" stroke-width="3"/>
+  <rect x="236" y="288" width="40" height="8" rx="3" fill="#2ad8f0"/><rect x="236" y="302" width="26" height="8" rx="3" fill="#ff7a2a"/>
+  <circle cx="196" cy="340" r="8" fill="#2ad8f0"/><circle cx="316" cy="340" r="8" fill="#2ad8f0"/>
+  <!-- head -->
+  <path d="M152 140 C152 70 220 40 266 44 C340 50 372 100 366 160 C362 212 332 240 256 240 C180 240 152 210 152 140 Z" fill="url(#plate)" stroke="#4a5262" stroke-width="6"/>
+  <rect x="196" y="110" width="140" height="92" rx="34" fill="url(#visor)" stroke="#20283a" stroke-width="5"/>
+  <circle cx="276" cy="156" r="20" fill="#2ad8f0"/><circle cx="282" cy="150" r="7" fill="#fff"/>
+  <path d="M226 180 L250 180" stroke="#2ad8f0" stroke-width="5" stroke-linecap="round"/>
+  <!-- ear speaker + cables -->
+  <circle cx="160" cy="150" r="34" fill="#3a404c" stroke="#1a1e26" stroke-width="5"/><circle cx="160" cy="150" r="20" fill="none" stroke="#ff7a2a" stroke-width="7"/>
+  <path d="M136 172 C100 210 120 250 150 262 M150 128 C110 110 100 70 120 50" fill="none" stroke="#1a1e26" stroke-width="5"/>
+  <path d="M340 70 L380 22 L372 72 Z" fill="#c3cad6" stroke="#4a5262" stroke-width="4"/><rect x="370" y="30" width="10" height="34" fill="#2ad8f0"/>
+  <circle cx="230" cy="70" r="6" fill="#ff7a2a"/><circle cx="314" cy="78" r="5" fill="#ff7a2a"/>
+</svg>

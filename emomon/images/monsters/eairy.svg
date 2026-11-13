@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Eairy: a strange little fairy with a tiny face and enormous ears, pink glow, holding a fairy wand -->
+  <defs>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f8bbd0" stop-opacity=".8"/><stop offset="1" stop-color="#f8bbd0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="skin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff1f6"/><stop offset="1" stop-color="#f4a6c4"/></radialGradient>
+    <linearGradient id="ear" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f8bbd0"/><stop offset="1" stop-color="#ec7aa6"/></linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e1f5fe" stop-opacity=".9"/><stop offset="1" stop-color="#f3e5f5" stop-opacity=".5"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#5a1036" stop-opacity=".3"/><stop offset="1" stop-color="#5a1036" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="470" rx="90" ry="10" fill="url(#sh)"/>
+  <!-- wings -->
+  <path d="M220 300 C150 250 120 300 150 350 C170 380 210 360 230 320 Z" fill="url(#wing)" stroke="#ce93d8" stroke-width="5"/>
+  <path d="M292 300 C362 250 392 300 362 350 C342 380 302 360 282 320 Z" fill="url(#wing)" stroke="#ce93d8" stroke-width="5"/>
+  <!-- small dress body -->
+  <path d="M226 300 Q256 286 286 300 L312 410 Q256 430 200 410 Z" fill="#ec407a" stroke="#880e4f" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M206 398 Q256 418 306 398" fill="none" stroke="#fce4ec" stroke-width="6"/>
+  <path d="M236 420 L232 452 M276 420 L280 452" stroke="#880e4f" stroke-width="10" stroke-linecap="round"/>
+  <!-- enormous ears -->
+  <path d="M220 230 C140 220 30 150 40 80 C110 70 190 150 236 210 Z" fill="url(#ear)" stroke="#880e4f" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M292 230 C372 220 482 150 472 80 C402 70 322 150 276 210 Z" fill="url(#ear)" stroke="#880e4f" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M206 214 C150 200 82 150 74 104 C122 108 180 160 216 200 Z" fill="#fce4ec"/>
+  <path d="M306 214 C362 200 430 150 438 104 C390 108 332 160 296 200 Z" fill="#fce4ec"/>
+  <!-- tiny head -->
+  <circle cx="256" cy="236" r="46" fill="url(#skin)" stroke="#880e4f" stroke-width="7"/>
+  <path d="M220 206 Q256 180 292 206 Q280 190 256 188 Q232 190 220 206 Z" fill="#ad1457"/>
+  <circle cx="240" cy="236" r="9" fill="#2a0a1a"/><circle cx="272" cy="236" r="9" fill="#2a0a1a"/>
+  <circle cx="242" cy="233" r="3" fill="#fff"/><circle cx="274" cy="233" r="3" fill="#fff"/>
+  <path d="M248 258 Q256 262 264 258" fill="none" stroke="#880e4f" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="228" cy="252" r="6" fill="#ff80ab" opacity=".7"/><circle cx="284" cy="252" r="6" fill="#ff80ab" opacity=".7"/>
+  <!-- arm + fairy wand -->
+  <path d="M300 318 Q340 310 356 290" stroke="#f4a6c4" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <path d="M356 290 L392 214" stroke="#ffd54f" stroke-width="7" stroke-linecap="round"/>
+  <path d="M396 176 L404 198 L428 200 L410 214 L416 238 L396 224 L376 238 L382 214 L364 200 L388 198 Z" fill="#fff59d" stroke="#f9a825" stroke-width="5" stroke-linejoin="round"/>
+  <!-- sound waves it hears -->
+  <path d="M30 210 Q20 230 30 250 M14 200 Q0 230 14 260 M482 210 Q492 230 482 250 M498 200 Q512 230 498 260" fill="none" stroke="#ec407a" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+  <circle cx="420" cy="150" r="5" fill="#fff"/><circle cx="440" cy="250" r="4" fill="#fff"/><circle cx="90" cy="300" r="4" fill="#fff"/>
+</svg>

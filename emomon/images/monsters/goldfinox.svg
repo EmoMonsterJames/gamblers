@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="gold" cx="38%" cy="30%" r="75%"><stop offset="0%" stop-color="#fffbe0"/><stop offset="35%" stop-color="#ffe066"/><stop offset="75%" stop-color="#e0a812"/><stop offset="100%" stop-color="#8a5a00"/></radialGradient>
+    <linearGradient id="fin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff4b0" stop-opacity=".95"/><stop offset="100%" stop-color="#d9a00a" stop-opacity=".8"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff2a0" stop-opacity=".6"/><stop offset="100%" stop-color="#fff2a0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a00" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a00" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="250" cy="250" r="250" fill="url(#glow)"/>
+  <ellipse cx="256" cy="480" rx="160" ry="16" fill="url(#sh)"/>
+  <!-- huge tail -->
+  <path d="M340 240 C410 130 500 140 504 220 C480 220 460 236 450 260 C490 270 506 320 494 380 C430 380 390 330 340 290 Z" fill="url(#fin)" stroke="#a37400" stroke-width="5"/>
+  <path d="M360 250 C410 210 460 200 494 220 M360 276 C420 300 456 330 482 370" fill="none" stroke="#fffbe0" stroke-width="4"/>
+  <!-- crown-like dorsal -->
+  <path d="M170 140 L196 70 L224 120 L256 52 L286 120 L314 70 L334 150" fill="url(#gold)" stroke="#a37400" stroke-width="5" stroke-linejoin="round"/>
+  <!-- body -->
+  <ellipse cx="240" cy="270" rx="160" ry="135" fill="url(#gold)" stroke="#8a5a00" stroke-width="6"/>
+  <g fill="none" stroke="#fffbe0" stroke-width="4" opacity=".85">
+    <path d="M232 196 C252 210 252 236 232 248"/><path d="M280 206 C300 220 300 246 280 258"/><path d="M256 266 C276 280 276 306 256 318"/><path d="M304 276 C324 290 324 316 304 328"/><path d="M210 290 C230 304 230 330 210 342"/>
+  </g>
+  <path d="M220 360 C206 420 242 446 280 420 C266 396 258 378 258 360 Z" fill="url(#fin)" stroke="#a37400" stroke-width="5"/>
+  <!-- eyes keep their color -->
+  <circle cx="160" cy="250" r="40" fill="#fff" stroke="#8a5a00" stroke-width="4"/>
+  <circle cx="166" cy="256" r="24" fill="#1a2a5a"/><circle cx="176" cy="244" r="9" fill="#fff"/><circle cx="158" cy="266" r="4" fill="#fff"/>
+  <path d="M92 300 C104 318 124 320 136 308" fill="none" stroke="#6a4000" stroke-width="6" stroke-linecap="round"/>
+  <!-- sparkles -->
+  <g fill="#ffffff">
+    <path d="M90 120 l7 17 17 7 -17 7 -7 17 -7 -17 -17 -7 17 -7z"/><path d="M400 90 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/>
+    <path d="M300 220 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/><path d="M80 380 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"/><path d="M420 440 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z"/>
+  </g>
+  <circle cx="50" cy="240" r="10" fill="#ffe066" stroke="#a37400" stroke-width="3"/><text x="50" y="245" font-size="12" font-weight="900" text-anchor="middle" fill="#8a5a00" font-family="Arial">G</text>
+</svg>

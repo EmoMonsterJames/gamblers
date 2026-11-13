@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bx" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5a2a7a"/><stop offset="100%" stop-color="#1a0a2a"/></linearGradient>
+    <radialGradient id="face" cx="45%" cy="40%" r="65%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d8d0e0"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a02aff" stop-opacity=".45"/><stop offset="100%" stop-color="#a02aff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity=".4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="300" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="490" rx="160" ry="14" fill="url(#sh)"/>
+  <!-- lid flung open, hanging -->
+  <path d="M96 306 L60 230 L120 214 L150 300 Z" fill="#3a1a5a" stroke="#0a0014" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M84 256 L112 248" stroke="#c0102a" stroke-width="10"/>
+  <!-- evil box -->
+  <path d="M110 306 L402 306 L392 476 L120 476 Z" fill="url(#bx)" stroke="#0a0014" stroke-width="6" stroke-linejoin="round"/>
+  <rect x="236" y="306" width="40" height="170" fill="#a0102a" stroke="#50000a" stroke-width="4"/>
+  <!-- box face: angry eyes + jagged mouth -->
+  <path d="M150 354 L210 372 L150 384 Z M362 354 L302 372 L362 384 Z" fill="#ff2a2a"/>
+  <path d="M146 420 L170 404 L190 432 L214 404 L236 430 M276 430 L298 404 L322 432 L342 404 L366 420" fill="none" stroke="#ff2a2a" stroke-width="6" stroke-linejoin="round"/>
+  <!-- spring -->
+  <path d="M256 306 C220 296 220 282 256 276 C292 270 292 256 256 250 C220 244 220 230 256 224 C292 218 292 204 256 198" fill="none" stroke="#b8b8c8" stroke-width="10" stroke-linecap="round">
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -6;0 0" dur=".9s" repeatCount="indefinite"/>
+  </path>
+  <!-- clown head -->
+  <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -10;0 0" dur=".9s" repeatCount="indefinite"/>
+    <!-- wild hair -->
+    <g fill="#ff3a3a" stroke="#8a0010" stroke-width="4"><circle cx="160" cy="100" r="40"/><circle cx="352" cy="100" r="40"/><circle cx="140" cy="140" r="30"/><circle cx="372" cy="140" r="30"/></g>
+    <!-- hat -->
+    <path d="M220 52 L256 -2 L292 52 Z" fill="#2a0a3a" stroke="#0a0014" stroke-width="4"/><circle cx="256" cy="0" r="10" fill="#ffe066"/>
+    <ellipse cx="256" cy="120" rx="100" ry="84" fill="url(#face)" stroke="#0a0014" stroke-width="6"/>
+    <!-- diamond eye paint + eyes -->
+    <path d="M208 76 L222 100 L208 132 L194 100 Z M304 76 L318 100 L304 132 L290 100 Z" fill="#4a1a8a"/>
+    <circle cx="208" cy="104" r="12" fill="#ffe600"/><circle cx="304" cy="104" r="12" fill="#ffe600"/>
+    <ellipse cx="208" cy="104" rx="3" ry="9" fill="#000"/><ellipse cx="304" cy="104" rx="3" ry="9" fill="#000"/>
+    <path d="M186 80 L228 92 M326 80 L284 92" stroke="#0a0014" stroke-width="6" stroke-linecap="round"/>
+    <!-- red nose -->
+    <circle cx="256" cy="128" r="16" fill="#ff1a1a" stroke="#8a0010" stroke-width="4"/><circle cx="251" cy="122" r="4" fill="#fff" opacity=".8"/>
+    <!-- huge creepy grin -->
+    <path d="M176 148 C210 196 302 196 336 148 C310 166 202 166 176 148 Z" fill="#c0102a" stroke="#50000a" stroke-width="4"/>
+    <path d="M190 156 L198 172 L208 160 L216 176 L228 162 L236 178 L248 164 L256 180 L264 164 L276 178 L284 162 L296 176 L304 160 L314 172 L322 156" fill="none" stroke="#fffbe8" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+  <!-- leftover sparkles turned dark -->
+  <g fill="#c88aff">
+    <path d="M60 120 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"><animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/></path>
+    <path d="M450 220 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z"><animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite"/></path>
+  </g>
+</svg>

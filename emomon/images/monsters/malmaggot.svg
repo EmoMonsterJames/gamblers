@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d7ccc8"/><stop offset="100%" stop-color="#8d6e63"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#7b1fa2" stop-opacity=".4"/><stop offset="100%" stop-color="#7b1fa2" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a0a14" stop-opacity=".4"/><stop offset="100%" stop-color="#1a0a14" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="270" r="220" fill="url(#aura)"/>
+  <ellipse cx="256" cy="430" rx="190" ry="16" fill="url(#sh)"/>
+  <!-- segmented grub -->
+  <ellipse cx="400" cy="380" rx="44" ry="40" fill="url(#body)" stroke="#3e2723" stroke-width="7"/>
+  <ellipse cx="340" cy="360" rx="54" ry="54" fill="url(#body)" stroke="#3e2723" stroke-width="7"/>
+  <ellipse cx="270" cy="340" rx="62" ry="64" fill="url(#body)" stroke="#3e2723" stroke-width="7"/>
+  <circle cx="180" cy="290" r="88" fill="url(#body)" stroke="#3e2723" stroke-width="8"/>
+  <path d="M300 300 C310 330 310 360 300 390 M370 320 C378 344 378 370 370 396" fill="none" stroke="#6d4c41" stroke-width="5"/>
+  <!-- tiny evil horns -->
+  <path d="M130 214 L112 170 L150 206 Z M226 210 L246 166 L212 204 Z" fill="#4a148c" stroke="#1a0a14" stroke-width="5" stroke-linejoin="round"/>
+  <!-- red evil eyes -->
+  <path d="M130 272 C134 250 170 250 174 272 C170 290 134 290 130 272 Z" fill="#fff" stroke="#1a0a14" stroke-width="6"/>
+  <path d="M190 272 C194 250 230 250 234 272 C230 290 194 290 190 272 Z" fill="#fff" stroke="#1a0a14" stroke-width="6"/>
+  <circle cx="154" cy="272" r="9" fill="#d50000"/><circle cx="210" cy="272" r="9" fill="#d50000"/>
+  <path d="M120 246 L172 262 M244 246 L192 262" stroke="#1a0a14" stroke-width="7" stroke-linecap="round"/>
+  <!-- mandibles mouth -->
+  <path d="M150 326 C160 346 200 346 210 326 L200 340 L180 330 L160 340 Z" fill="#1a0a14"/>
+  <path d="M146 330 L132 350 M214 330 L228 350" stroke="#3e2723" stroke-width="6" stroke-linecap="round"/>
+  <!-- small legs -->
+  <path d="M250 400 L244 420 M290 400 L292 420 M330 410 L330 426 M370 412 L374 428" stroke="#3e2723" stroke-width="6" stroke-linecap="round"/>
+  <!-- rot flies -->
+  <circle cx="380" cy="200" r="6" fill="#1a0a14"/><path d="M374 196 C366 186 370 180 378 190 M386 196 C394 186 390 180 382 190" stroke="#9e9e9e" stroke-width="3" fill="none"/>
+  <circle cx="430" cy="250" r="5" fill="#1a0a14"/>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- GGG: a living arch woven from jade vines and emerald moss; flowers bloom and wither along its back and roots sprout beneath it -->
+  <defs>
+    <linearGradient id="jade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8af0a0"/><stop offset="1" stop-color="#1a7a3a"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#c8ffc8" stop-opacity=".55"/><stop offset="1" stop-color="#c8ffc8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- giant roots sprouting below -->
+  <path d="M150 470 C170 440 200 440 220 470 M250 476 C270 446 300 446 320 476 M180 470 C190 450 210 452 214 470" fill="none" stroke="#6a4a2a" stroke-width="10" stroke-linecap="round"/>
+  <!-- woven vine arch -->
+  <path d="M110 466 C66 300 136 112 276 98 C396 86 452 206 408 336 C398 366 382 398 364 424 L324 412 C354 362 370 316 368 268 C366 182 318 140 270 146 C174 154 134 300 166 466 Z" fill="url(#jade)" stroke="#0a3a1a" stroke-width="8" stroke-linejoin="round"/>
+  <g fill="none" stroke="#0a4a1a" stroke-width="5" stroke-linecap="round" opacity=".8">
+    <path d="M124 440 C100 320 150 170 270 120 C350 110 410 170 400 270"/><path d="M150 450 C126 330 170 200 260 140 C330 120 380 160 386 250"/>
+  </g>
+  <!-- moss tufts -->
+  <g fill="#3ad86a"><circle cx="140" cy="300" r="12"/><circle cx="180" cy="190" r="12"/><circle cx="260" cy="118" r="12"/><circle cx="360" cy="140" r="12"/><circle cx="408" cy="240" r="12"/></g>
+  <!-- blooming and withered flowers along the back -->
+  <g transform="translate(160 240)"><g fill="#ff7ac8"><circle cy="-10" r="8"/><circle cx="10" r="8"/><circle cy="10" r="8"/><circle cx="-10" r="8"/></g><circle r="6" fill="#ffe14d"/></g>
+  <g transform="translate(222 140)"><g fill="#fff"><circle cy="-10" r="8"/><circle cx="10" r="8"/><circle cy="10" r="8"/><circle cx="-10" r="8"/></g><circle r="6" fill="#ffe14d"/></g>
+  <g transform="translate(316 118)"><g fill="#b88a5a" opacity=".8"><ellipse cy="-8" rx="4" ry="8"/><ellipse cx="8" rx="8" ry="4"/></g><circle r="5" fill="#8a6a3a"/></g>
+  <g transform="translate(398 196)"><g fill="#ff9a3a"><circle cy="-10" r="8"/><circle cx="10" r="8"/><circle cy="10" r="8"/><circle cx="-10" r="8"/></g><circle r="6" fill="#ffe14d"/></g>
+  <!-- leafy head -->
+  <path d="M310 404 C306 370 334 348 372 350 C412 354 434 384 428 420 C422 456 388 474 350 468 C322 464 312 432 310 404 Z" fill="url(#jade)" stroke="#0a3a1a" stroke-width="7"/>
+  <path d="M340 356 C330 320 350 300 370 296 C370 320 362 340 354 356 Z M402 360 C420 330 444 326 458 334 C446 352 430 362 412 368 Z" fill="#3ad86a" stroke="#0a3a1a" stroke-width="5"/>
+  <circle cx="352" cy="400" r="10" fill="#fff" stroke="#0a3a1a" stroke-width="4"/><circle cx="400" cy="400" r="10" fill="#fff" stroke="#0a3a1a" stroke-width="4"/>
+  <circle cx="354" cy="402" r="5" fill="#0a2a10"/><circle cx="398" cy="402" r="5" fill="#0a2a10"/>
+  <path d="M362 436 Q376 446 390 436" fill="none" stroke="#0a3a1a" stroke-width="4" stroke-linecap="round"/>
+  <text x="62" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#2ac85a" stroke="#0a3a1a" stroke-width="3">G</text>
+</svg>

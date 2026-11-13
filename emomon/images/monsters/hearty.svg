@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- fluffy fur edge -->
+    <filter id="fur" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="body" cx="45%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#ffd3e0"/>
+      <stop offset="60%" stop-color="#f9a8c2"/>
+      <stop offset="100%" stop-color="#ec84a8"/>
+    </radialGradient>
+    <radialGradient id="limb" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#ffdbe6"/>
+      <stop offset="100%" stop-color="#f398b7"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#b8475f"/>
+      <stop offset="70%" stop-color="#6b1f33"/>
+      <stop offset="100%" stop-color="#3d0f1c"/>
+    </radialGradient>
+    <linearGradient id="horn" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#e9d9b8"/>
+      <stop offset="100%" stop-color="#fff8e6"/>
+    </linearGradient>
+    <linearGradient id="feather" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f3e6d6"/>
+    </linearGradient>
+    <!-- small heart, centred on 0,0, about 20 wide -->
+    <path id="h" d="M0 7 C-10 0 -10 -8 -4.5 -8 C-1.8 -8 0 -6 0 -4.5 C0 -6 1.8 -8 4.5 -8 C10 -8 10 0 0 7 Z"/>
+    <g id="wing">
+      <path d="M0 0 C-30 -38 -100 -48 -138 -18 Q-156 -2 -134 8 Q-152 24 -126 32 Q-140 50 -112 54 Q-120 74 -92 74 Q-96 94 -70 90 Q-64 112 -42 100 C-15 92 0 72 0 50 Z"
+            fill="url(#feather)" stroke="#e5d3bd" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M-14 6 C-60 -4 -100 0 -126 10 M-14 22 C-55 22 -90 28 -114 36 M-12 38 C-45 44 -75 52 -96 58 M-10 54 C-35 62 -55 72 -72 76"
+            fill="none" stroke="#e8d8c3" stroke-width="2" stroke-linecap="round"/>
+      <path d="M-20 -8 C-55 -28 -100 -30 -125 -14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+    </g>
+  </defs>
+
+  <!-- halo -->
+  <ellipse cx="256" cy="72" rx="72" ry="17" fill="none" stroke="#ffe48a" stroke-width="9" filter="url(#glow)"/>
+  <ellipse cx="256" cy="72" rx="72" ry="17" fill="none" stroke="#fff6cc" stroke-width="3"/>
+
+  <!-- wings (behind the body) -->
+  <use xlink:href="#wing" transform="translate(138 228) scale(0.92)"/>
+  <use xlink:href="#wing" transform="translate(374 240) scale(-0.92 0.92)"/>
+
+  <!-- tail -->
+  <path d="M322 405 C350 430 380 425 392 400" fill="none" stroke="#f398b7" stroke-width="9" stroke-linecap="round"/>
+  <use xlink:href="#h" transform="translate(402 392) rotate(-25) scale(2.4)" fill="#f7a3bf" stroke="#ec84a8" stroke-width="0.6"/>
+
+  <!-- horns -->
+  <path d="M164 166 C152 128 166 100 194 92 C186 118 198 142 214 156 Z" fill="url(#horn)" stroke="#d9c49c" stroke-width="2"/>
+  <path d="M348 166 C360 128 346 100 318 92 C326 118 314 142 298 156 Z" fill="url(#horn)" stroke="#d9c49c" stroke-width="2"/>
+
+  <!-- body: fluffy heart -->
+  <path filter="url(#fur)" fill="url(#body)"
+        d="M256 178 C222 118 110 112 100 215 C92 300 168 372 256 420 C344 372 420 300 412 215 C402 112 290 118 256 178 Z"/>
+  <path d="M150 170 C170 150 200 148 215 160" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- feet -->
+  <g filter="url(#fur)">
+    <ellipse cx="218" cy="420" rx="34" ry="38" fill="url(#limb)"/>
+    <ellipse cx="294" cy="420" rx="34" ry="38" fill="url(#limb)"/>
+  </g>
+  <use xlink:href="#h" transform="translate(218 432) scale(1.6)" fill="#f080a4"/>
+  <use xlink:href="#h" transform="translate(294 432) scale(1.6)" fill="#f080a4"/>
+
+  <!-- eyes -->
+  <ellipse cx="200" cy="248" rx="31" ry="34" fill="url(#eye)"/>
+  <ellipse cx="312" cy="248" rx="31" ry="34" fill="url(#eye)"/>
+  <use xlink:href="#h" transform="translate(206 238) scale(1.25)" fill="#fff"/>
+  <use xlink:href="#h" transform="translate(318 238) scale(1.25)" fill="#fff"/>
+  <circle cx="189" cy="262" r="4" fill="#fff" opacity=".8"/>
+  <circle cx="301" cy="262" r="4" fill="#fff" opacity=".8"/>
+
+  <!-- blush -->
+  <ellipse cx="158" cy="300" rx="20" ry="11" fill="#ff7fa6" opacity=".45"/>
+  <ellipse cx="354" cy="300" rx="20" ry="11" fill="#ff7fa6" opacity=".45"/>
+  <path d="M150 297 l4 -6 M158 299 l4 -6 M346 297 l4 -6 M354 299 l4 -6" stroke="#e05a85" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- open smile with little fangs -->
+  <path d="M222 280 Q256 288 290 280 Q286 330 256 332 Q226 330 222 280 Z" fill="#9c2a4a"/>
+  <path d="M234 318 Q256 300 278 318 Q268 331 256 332 Q244 331 234 318 Z" fill="#f27a9c"/>
+  <path d="M232 282 L238 296 L244 284 Z M268 284 L274 296 L280 282 Z" fill="#fff"/>
+
+  <!-- paws held up to the face -->
+  <g filter="url(#fur)">
+    <ellipse cx="218" cy="350" rx="30" ry="28" fill="url(#limb)"/>
+    <ellipse cx="294" cy="350" rx="30" ry="28" fill="url(#limb)"/>
+  </g>
+  <use xlink:href="#h" transform="translate(218 356) scale(1.4)" fill="#f080a4"/>
+  <use xlink:href="#h" transform="translate(294 356) scale(1.4)" fill="#f080a4"/>
+
+  <!-- sparkles -->
+  <path d="M400 110 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4 Z" fill="#fff3b0"/>
+  <path d="M110 120 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#fff3b0"/>
+</svg>

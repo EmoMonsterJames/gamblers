@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Jaberoo: a bigger, angry kangaroo whose boxing gloves blaze with fire -->
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9844a"/><stop offset="1" stop-color="#8f4a1c"/></linearGradient>
+    <radialGradient id="glove" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ff8a65"/><stop offset=".6" stop-color="#d32f2f"/><stop offset="1" stop-color="#6d0000"/></radialGradient>
+    <radialGradient id="fire" cx="50%" cy="80%" r="70%"><stop offset="0" stop-color="#fff59d"/><stop offset=".45" stop-color="#ffb300"/><stop offset="1" stop-color="#ff3d00" stop-opacity=".9"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff7043" stop-opacity=".45"/><stop offset="1" stop-color="#ff7043" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3e1000" stop-opacity=".4"/><stop offset="1" stop-color="#3e1000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="466" rx="170" ry="16" fill="url(#sh)"/>
+  <path d="M300 404 C370 412 430 424 488 458 C430 460 360 452 300 436 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M180 384 C160 424 136 444 100 458 L226 458 C238 432 234 402 222 384 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M332 384 C352 424 362 444 400 458 L286 458 C276 432 278 402 290 384 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="7" stroke-linejoin="round"/>
+  <!-- muscular body -->
+  <path d="M150 300 C150 220 200 196 256 196 C312 196 362 220 362 300 C362 380 320 420 256 420 C192 420 150 380 150 300 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="8"/>
+  <path d="M206 250 Q232 236 252 252 Q232 268 206 258 Z M306 250 Q280 236 260 252 Q280 268 306 258 Z" fill="#c2763c"/>
+  <ellipse cx="256" cy="345" rx="56" ry="62" fill="#f1c99a"/>
+  <path d="M226 322 H286 M222 346 H290 M226 370 H286" stroke="#c48a55" stroke-width="5"/>
+  <!-- ears -->
+  <path d="M190 112 C166 52 178 20 200 16 C220 42 226 88 220 124 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="7"/>
+  <path d="M322 112 C346 52 334 20 312 16 C292 42 286 88 292 124 Z" fill="url(#fur)" stroke="#4a2008" stroke-width="7"/>
+  <!-- head -->
+  <ellipse cx="256" cy="160" rx="86" ry="70" fill="url(#fur)" stroke="#4a2008" stroke-width="8"/>
+  <ellipse cx="256" cy="198" rx="46" ry="30" fill="#f1c99a" stroke="#4a2008" stroke-width="5"/>
+  <ellipse cx="256" cy="184" rx="15" ry="9" fill="#2a1000"/>
+  <path d="M234 214 Q256 202 278 214" fill="#7a1010" stroke="#2a1000" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M244 210 L248 218 L252 210 M260 210 L264 218 L268 210" fill="#fff"/>
+  <!-- angry eyes -->
+  <path d="M200 148 Q222 136 244 152 Q224 172 200 160 Z" fill="#fff" stroke="#2a1000" stroke-width="5"/>
+  <path d="M312 148 Q290 136 268 152 Q288 172 312 160 Z" fill="#fff" stroke="#2a1000" stroke-width="5"/>
+  <circle cx="228" cy="154" r="8" fill="#1a1a1a"/><circle cx="284" cy="154" r="8" fill="#1a1a1a"/>
+  <path d="M192 128 L246 144 M320 128 L266 144" stroke="#2a1000" stroke-width="9" stroke-linecap="round"/>
+  <!-- flaming gloves -->
+  <path d="M174 290 C152 262 140 236 146 222" stroke="#4a2008" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <path d="M338 290 C360 262 372 236 366 222" stroke="#4a2008" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <path d="M100 210 C90 160 120 140 112 100 C140 120 150 90 146 60 C176 96 196 120 190 170 C200 150 214 156 206 196 Z" fill="url(#fire)"/>
+  <path d="M412 210 C422 160 392 140 400 100 C372 120 362 90 366 60 C336 96 316 120 322 170 C312 150 298 156 306 196 Z" fill="url(#fire)"/>
+  <circle cx="146" cy="212" r="48" fill="url(#glove)" stroke="#4a0000" stroke-width="7"/>
+  <circle cx="366" cy="212" r="48" fill="url(#glove)" stroke="#4a0000" stroke-width="7"/>
+  <rect x="122" y="250" width="50" height="18" rx="5" fill="#ffd54f" stroke="#4a0000" stroke-width="5"/>
+  <rect x="340" y="250" width="50" height="18" rx="5" fill="#ffd54f" stroke="#4a0000" stroke-width="5"/>
+  <circle cx="60" cy="300" r="8" fill="#ffb300"/><circle cx="452" cy="290" r="7" fill="#ffb300"/><circle cx="80" cy="120" r="6" fill="#ff7043"/>
+</svg>

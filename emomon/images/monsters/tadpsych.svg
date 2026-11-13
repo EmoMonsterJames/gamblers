@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Tadpsych: an aquamarine tadpole floating upside down, a glowing psychic gem on its forehead -->
+  <defs>
+    <radialGradient id="body" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#b2fff0"/><stop offset=".6" stop-color="#26c6da"/><stop offset="1" stop-color="#00838f"/></radialGradient>
+    <radialGradient id="gem" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#ea80fc"/><stop offset="1" stop-color="#7b1fa2"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e1bee7" stop-opacity=".7"/><stop offset="1" stop-color="#80deea" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#004d55" stop-opacity=".3"/><stop offset="1" stop-color="#004d55" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="456" rx="120" ry="12" fill="url(#sh)"/>
+  <!-- psychic rings -->
+  <ellipse cx="236" cy="300" rx="190" ry="60" fill="none" stroke="#ce93d8" stroke-width="4" stroke-dasharray="14 10" opacity=".7"/>
+  <!-- wavy tail (upside down, curling up) -->
+  <path d="M300 250 C360 220 380 140 440 120 C470 110 480 80 460 64 C470 100 420 110 400 140 C380 170 360 230 300 280 Z" fill="url(#body)" stroke="#00606a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M330 230 C370 190 390 150 430 126" fill="none" stroke="#e0f7fa" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <!-- round body, belly up -->
+  <ellipse cx="220" cy="290" rx="120" ry="104" fill="url(#body)" stroke="#00606a" stroke-width="8"/>
+  <ellipse cx="220" cy="230" rx="70" ry="34" fill="#e0f7fa" opacity=".6"/>
+  <!-- upside-down face: eyes low, mouth high -->
+  <ellipse cx="176" cy="320" rx="22" ry="20" fill="#fff" stroke="#00606a" stroke-width="5"/>
+  <ellipse cx="256" cy="320" rx="22" ry="20" fill="#fff" stroke="#00606a" stroke-width="5"/>
+  <circle cx="178" cy="316" r="11" fill="#311b92"/><circle cx="258" cy="316" r="11" fill="#311b92"/>
+  <circle cx="182" cy="312" r="4" fill="#fff"/><circle cx="262" cy="312" r="4" fill="#fff"/>
+  <path d="M196 270 Q216 256 236 270" fill="none" stroke="#00606a" stroke-width="5" stroke-linecap="round"/>
+  <!-- glowing forehead gem (forehead is at the bottom now) -->
+  <circle cx="216" cy="366" r="26" fill="#ea80fc" opacity=".35"/>
+  <path d="M216 346 L232 366 L216 386 L200 366 Z" fill="url(#gem)" stroke="#4a0072" stroke-width="4" stroke-linejoin="round"/>
+  <!-- sparkles -->
+  <path d="M96 170 l6 -18 l6 18 l18 6 l-18 6 l-6 18 l-6 -18 l-18 -6 Z" fill="#ea80fc"/>
+  <path d="M380 380 l4 -12 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 Z" fill="#80deea"/>
+  <circle cx="110" cy="420" r="8" fill="none" stroke="#80deea" stroke-width="3"/><circle cx="90" cy="390" r="5" fill="none" stroke="#80deea" stroke-width="3"/>
+</svg>

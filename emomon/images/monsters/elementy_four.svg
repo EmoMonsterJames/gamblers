@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Elementy Four: a shapeless FIRE element glaring with blazing eyes -->
+  <defs>
+    <radialGradient id="fire" cx="50%" cy="70%" r="70%"><stop offset="0" stop-color="#fff6b0"/><stop offset=".4" stop-color="#ffb21a"/><stop offset=".8" stop-color="#ff4a1a"/><stop offset="1" stop-color="#c8100a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="55%" r="50%"><stop offset="0" stop-color="#ffc890" stop-opacity=".6"/><stop offset="1" stop-color="#ffc890" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="270" r="236" fill="url(#aura)"/>
+  <!-- flickering fire body -->
+  <path d="M256 40 C236 100 200 110 190 160 C176 130 150 120 140 100 C130 170 100 220 110 300 C120 390 180 440 256 440 C332 440 392 390 402 300 C412 220 382 170 372 100 C362 120 336 130 322 160 C312 110 276 100 256 40 Z" fill="url(#fire)" stroke="#a8200a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M256 180 C236 230 190 250 190 320 C190 380 224 410 256 410 C288 410 322 380 322 320 C322 260 276 230 256 180 Z" fill="#fff2a0" opacity=".85"/>
+  <!-- glaring blazing eyes -->
+  <path d="M176 270 L240 290 L232 314 L178 300 Z M336 270 L272 290 L280 314 L334 300 Z" fill="#fff" stroke="#6a0a00" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="214" cy="296" r="9" fill="#c8100a"/><circle cx="298" cy="296" r="9" fill="#c8100a"/>
+  <circle cx="214" cy="296" r="4" fill="#1a0000"/><circle cx="298" cy="296" r="4" fill="#1a0000"/>
+  <path d="M168 252 l76 22 M344 252 l-76 22" stroke="#6a0a00" stroke-width="8" stroke-linecap="round"/>
+  <path d="M226 360 h60" stroke="#6a0a00" stroke-width="7" stroke-linecap="round"/>
+  <!-- sparks -->
+  <g fill="#ffb21a"><circle cx="90" cy="200" r="6"/><circle cx="430" cy="190" r="5"/><circle cx="420" cy="380" r="4"/><circle cx="80" cy="360" r="4"/></g>
+</svg>

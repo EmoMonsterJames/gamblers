@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Elementy Three: a shapeless EARTH element with a very evil expression -->
+  <defs>
+    <radialGradient id="soil" cx="42%" cy="35%" r="65%"><stop offset="0" stop-color="#c8a070"/><stop offset=".55" stop-color="#7a5430"/><stop offset="1" stop-color="#3a240e"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#a87a5a" stop-opacity=".5"/><stop offset="1" stop-color="#a87a5a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- crumbling clump of earth -->
+  <path d="M120 340 C96 260 140 140 240 124 C320 112 400 170 402 260 C404 320 420 360 380 400 C340 440 290 420 256 436 C210 456 170 430 150 400 C120 396 110 370 120 340 Z" fill="url(#soil)" stroke="#1a0e04" stroke-width="7" stroke-linejoin="round"/>
+  <g fill="#5a3a1a" stroke="#1a0e04" stroke-width="3"><circle cx="170" cy="200" r="10"/><circle cx="350" cy="190" r="8"/><circle cx="380" cy="340" r="12"/><circle cx="150" cy="370" r="8"/></g>
+  <g fill="#8a8a92" stroke="#2a2a32" stroke-width="3"><path d="M210 150 l14 -8 l8 12 l-14 8 Z"/><path d="M320 400 l14 -6 l6 12 l-14 6 Z"/></g>
+  <path d="M96 470 l20 -24 l18 20 M386 476 l16 -22 l20 18" fill="none" stroke="#3a240e" stroke-width="6" stroke-linejoin="round"/>
+  <g fill="#7a5430"><circle cx="110" cy="460" r="8"/><circle cx="420" cy="456" r="7"/><circle cx="256" cy="476" r="9"/></g>
+  <!-- evil slanted glowing eyes and a jagged grin -->
+  <path d="M182 230 L246 254 L240 272 L184 256 Z M330 230 L266 254 L272 272 L328 256 Z" fill="#ff3a1a" stroke="#1a0e04" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M206 250 l6 12 M300 250 l-6 12" stroke="#1a0000" stroke-width="6" stroke-linecap="round"/>
+  <path d="M180 320 L210 340 L230 318 L256 344 L282 318 L302 340 L332 320 Q256 390 180 320 Z" fill="#1a0e04" stroke="#1a0e04" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M210 340 L218 356 L226 330 M282 330 L290 356 L302 340" fill="#e8e0d0"/>
+</svg>

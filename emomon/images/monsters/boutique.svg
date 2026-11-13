@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="r" cx="45%" cy="35%" r="70%"><stop offset="0%" stop-color="#ffd8e2"/><stop offset="55%" stop-color="#ff5d84"/><stop offset="100%" stop-color="#b3153f"/></radialGradient>
+    <radialGradient id="rw" cx="45%" cy="35%" r="70%"><stop offset="0%" stop-color="#fff"/><stop offset="60%" stop-color="#ffe3ec"/><stop offset="100%" stop-color="#f2a8be"/></radialGradient>
+    <linearGradient id="wrap" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff6e8"/><stop offset="100%" stop-color="#f2c9a0"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a2a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a2a" stop-opacity="0"/></radialGradient>
+    <g id="rose"><circle r="40" fill="url(#r)" stroke="#a3173c" stroke-width="4"/><path d="M0 -24 C18 -24 26 -10 16 0 C6 10 -14 6 -12 -6 C-10 -14 2 -14 4 -6" fill="none" stroke="#a3173c" stroke-width="5" stroke-linecap="round"/></g>
+    <g id="rosew"><circle r="38" fill="url(#rw)" stroke="#d6718f" stroke-width="4"/><path d="M0 -22 C16 -22 24 -9 15 0 C6 9 -13 5 -11 -5" fill="none" stroke="#d6718f" stroke-width="5" stroke-linecap="round"/></g>
+  </defs>
+  <ellipse cx="256" cy="482" rx="140" ry="14" fill="url(#sh)"/>
+  <path d="M120 200 L392 200 L300 470 L212 470 Z" fill="url(#wrap)" stroke="#c99062" stroke-width="5"/>
+  <path d="M120 200 L212 470 M392 200 L300 470" stroke="#e5b388" stroke-width="3"/>
+  <path d="M110 220 C70 170 80 120 120 110 C130 160 128 190 110 220 Z M402 220 C442 170 432 120 392 110 C382 160 384 190 402 220 Z" fill="#5dbb4a" stroke="#2f6e26" stroke-width="4"/>
+  <use xlink:href="#rose" x="160" y="170"/><use xlink:href="#rosew" x="226" y="130"/><use xlink:href="#rose" x="300" y="128"/><use xlink:href="#rosew" x="358" y="178"/>
+  <use xlink:href="#rose" x="200" y="210"/><use xlink:href="#rose" x="320" y="206"/><use xlink:href="#rosew" x="262" y="84"/>
+  <circle cx="132" cy="120" r="10" fill="#fff"/><circle cx="388" cy="96" r="9" fill="#fff"/><circle cx="196" cy="80" r="8" fill="#fff"/>
+  <circle cx="256" cy="196" r="66" fill="url(#r)" stroke="#a3173c" stroke-width="5"/>
+  <path d="M256 140 C286 140 300 160 286 176" fill="none" stroke="#a3173c" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="232" cy="198" rx="12" ry="15" fill="#fff"/><ellipse cx="280" cy="198" rx="12" ry="15" fill="#fff"/>
+  <ellipse cx="234" cy="202" rx="8" ry="10" fill="#3a1424"/><ellipse cx="282" cy="202" rx="8" ry="10" fill="#3a1424"/>
+  <circle cx="237" cy="198" r="3.5" fill="#fff"/><circle cx="285" cy="198" r="3.5" fill="#fff"/>
+  <ellipse cx="214" cy="222" rx="11" ry="6" fill="#ffb3c6"/><ellipse cx="298" cy="222" rx="11" ry="6" fill="#ffb3c6"/>
+  <path d="M244 226 C252 236 262 236 270 226" fill="none" stroke="#5a0f26" stroke-width="4" stroke-linecap="round"/>
+  <path d="M220 330 C180 300 150 320 160 352 C180 362 210 350 230 340 Z M292 330 C332 300 362 320 352 352 C332 362 302 350 282 340 Z" fill="#ff5d84" stroke="#a3173c" stroke-width="4"/>
+  <path d="M236 340 L210 420 L232 410 L244 430 L256 348 M276 340 L302 420 L280 410 L268 430 L256 348" fill="#ff7aa0" stroke="#a3173c" stroke-width="4"/>
+  <circle cx="256" cy="338" r="20" fill="#ff7aa0" stroke="#a3173c" stroke-width="4"/>
+  <path d="M248 334 c-4 -7 -14 -3 -10 5 l10 9 l10 -9 c4 -8 -6 -12 -10 -5z" fill="#fff"/>
+</svg>

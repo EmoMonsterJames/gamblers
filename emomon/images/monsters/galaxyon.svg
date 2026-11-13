@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    <radialGradient id="planet" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#ffe3fb"/>
+      <stop offset="30%" stop-color="#c9a2ff"/>
+      <stop offset="65%" stop-color="#7a5ae6"/>
+      <stop offset="100%" stop-color="#2e1f78"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8fe3ff" stop-opacity=".9"/>
+      <stop offset="50%" stop-color="#ffd1f4" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#b59cff" stop-opacity=".9"/>
+    </linearGradient>
+    <radialGradient id="moon" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#fffbe6"/>
+      <stop offset="100%" stop-color="#f3c9ff"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="50%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#8b6cff"/>
+      <stop offset="60%" stop-color="#3a2490"/>
+      <stop offset="100%" stop-color="#1a0f4a"/>
+    </radialGradient>
+    <clipPath id="body"><circle cx="256" cy="268" r="128"/></clipPath>
+    <path id="star" d="M0 -10 L2.5 -2.5 L10 0 L2.5 2.5 L0 10 L-2.5 2.5 L-10 0 L-2.5 -2.5 Z"/>
+  </defs>
+
+  <!-- dreamy glow -->
+  <circle cx="256" cy="268" r="150" fill="#b48cff" opacity=".45" filter="url(#blur)"/>
+
+  <!-- ring, back half -->
+  <g transform="rotate(-14 256 278)">
+    <path d="M60 278 A196 50 0 0 1 452 278" fill="none" stroke="url(#ring)" stroke-width="16" opacity=".75"/>
+    <path d="M78 278 A178 42 0 0 1 434 278" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>
+  </g>
+
+  <!-- planet body -->
+  <circle cx="256" cy="268" r="128" fill="url(#planet)"/>
+  <g clip-path="url(#body)">
+    <!-- swirling nebula bands -->
+    <ellipse cx="220" cy="350" rx="140" ry="30" fill="#ff9fe0" opacity=".45" filter="url(#soft)" transform="rotate(-12 220 350)"/>
+    <ellipse cx="300" cy="200" rx="120" ry="22" fill="#8fe3ff" opacity=".35" filter="url(#soft)" transform="rotate(-12 300 200)"/>
+    <ellipse cx="330" cy="330" rx="60" ry="40" fill="#5a3fd0" opacity=".45" filter="url(#soft)"/>
+    <path d="M140 300 C190 280 250 300 300 280 C340 265 370 270 390 260" fill="none" stroke="#ffd1f4" stroke-width="5" opacity=".35" stroke-linecap="round"/>
+    <!-- craters -->
+    <circle cx="335" cy="205" r="13" fill="#6a4bd8" opacity=".35"/>
+    <circle cx="180" cy="215" r="8" fill="#6a4bd8" opacity=".3"/>
+    <circle cx="352" cy="358" r="10" fill="#2e1f78" opacity=".35"/>
+    <!-- tiny stars inside -->
+    <g fill="#fff">
+      <circle cx="200" cy="190" r="2"/><circle cx="310" cy="175" r="1.6"/><circle cx="360" cy="260" r="2"/>
+      <circle cx="170" cy="340" r="1.6"/><circle cx="290" cy="372" r="2"/><circle cx="230" cy="168" r="1.4"/>
+    </g>
+    <!-- glossy highlight -->
+    <ellipse cx="205" cy="200" rx="42" ry="24" fill="#fff" opacity=".4" transform="rotate(-30 205 200)"/>
+  </g>
+  <circle cx="256" cy="268" r="128" fill="none" stroke="#e7d4ff" stroke-width="2" opacity=".6"/>
+
+  <!-- sleepy, dreamy eyes (half closed) -->
+  <path d="M190 268 Q217 262 244 268 A27 27 0 0 1 190 268 Z" fill="url(#eye)"/>
+  <path d="M268 268 Q295 262 322 268 A27 27 0 0 1 268 268 Z" fill="url(#eye)"/>
+  <use xlink:href="#star" transform="translate(226 281) scale(.6)" fill="#fff"/>
+  <use xlink:href="#star" transform="translate(304 281) scale(.6)" fill="#fff"/>
+  <circle cx="206" cy="284" r="2.5" fill="#fff" opacity=".8"/>
+  <circle cx="284" cy="284" r="2.5" fill="#fff" opacity=".8"/>
+  <!-- heavy eyelids with lashes -->
+  <path d="M187 269 Q217 258 247 269 M265 269 Q295 258 325 269" fill="none" stroke="#2a1a6e" stroke-width="4" stroke-linecap="round"/>
+  <path d="M189 269 l-8 5 M192 266 l-8 -1 M323 269 l8 5 M320 266 l8 -1" stroke="#2a1a6e" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- blush and soft smile -->
+  <ellipse cx="180" cy="300" rx="18" ry="9" fill="#ff9fd6" opacity=".55"/>
+  <ellipse cx="332" cy="300" rx="18" ry="9" fill="#ff9fd6" opacity=".55"/>
+  <path d="M246 308 Q256 316 266 308" fill="none" stroke="#2a1a6e" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- ring, front half -->
+  <g transform="rotate(-14 256 278)">
+    <path d="M60 278 A196 50 0 0 0 452 278" fill="none" stroke="url(#ring)" stroke-width="16"/>
+    <path d="M78 278 A178 42 0 0 0 434 278" fill="none" stroke="#fff" stroke-width="3" opacity=".6"/>
+    <circle cx="452" cy="278" r="6" fill="#fff" opacity=".8"/>
+  </g>
+
+  <!-- little moon -->
+  <circle cx="410" cy="120" r="24" fill="url(#moon)"/>
+  <circle cx="402" cy="114" r="5" fill="#e9b6f7" opacity=".6"/>
+  <circle cx="417" cy="128" r="3.5" fill="#e9b6f7" opacity=".6"/>
+
+  <!-- sparkles and dreamy z's -->
+  <use xlink:href="#star" transform="translate(110 130) scale(1.3)" fill="#fff3b0"/>
+  <use xlink:href="#star" transform="translate(90 400) scale(.9)" fill="#c8f1ff"/>
+  <use xlink:href="#star" transform="translate(440 420) scale(1.1)" fill="#ffd1f4"/>
+  <use xlink:href="#star" transform="translate(150 80) scale(.6)" fill="#fff"/>
+  <circle cx="460" cy="200" r="2.5" fill="#fff"/><circle cx="60" cy="230" r="2" fill="#fff"/><circle cx="350" cy="60" r="2" fill="#fff"/>
+  <g fill="none" stroke="#d8c6ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+    <path d="M330 120 h16 l-16 16 h16"/>
+    <path d="M356 92 h11 l-11 11 h11"/>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- RRR: a heavy crimson serpent dragon arched like a crescent, plated with red volcanic rock and rubies, smashing the ground with its head -->
+  <defs>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a4a"/><stop offset="1" stop-color="#7a0a10"/></linearGradient>
+    <radialGradient id="ruby" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffd0d8"/><stop offset=".5" stop-color="#ff1a4a"/><stop offset="1" stop-color="#6a0018"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb0a0" stop-opacity=".5"/><stop offset="1" stop-color="#ffb0a0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- shockwave cracks where the head hits -->
+  <path d="M300 470 l30 -20 l20 14 l30 -24 M300 470 l-20 -24 l-30 10" fill="none" stroke="#5a0a10" stroke-width="6" stroke-linejoin="round"/>
+  <ellipse cx="330" cy="470" rx="120" ry="12" fill="#3a0008" opacity=".3"/>
+  <!-- crescent body -->
+  <path d="M110 450 C70 300 130 120 270 100 C390 86 450 200 410 330 C400 360 380 400 360 430 L320 420 C350 370 370 320 370 270 C370 180 320 140 270 146 C170 156 130 300 160 450 Z" fill="url(#rock)" stroke="#3a0008" stroke-width="9" stroke-linejoin="round"/>
+  <!-- interlocking rock plates -->
+  <g fill="none" stroke="#3a0008" stroke-width="5" stroke-linecap="round">
+    <path d="M118 400 L160 396 M110 340 L156 344 M118 280 L164 296 M138 222 L180 248 M176 170 L206 210 M228 130 L240 176 M290 118 L282 164 M346 140 L320 178 M392 196 L352 214 M408 264 L366 268 M398 330 L360 318"/>
+  </g>
+  <g fill="url(#ruby)" stroke="#3a0008" stroke-width="4"><path d="M136 370 l10 -14 l10 14 l-10 14 Z"/><path d="M196 190 l10 -14 l10 14 l-10 14 Z"/><path d="M300 136 l10 -14 l10 14 l-10 14 Z"/><path d="M380 236 l10 -14 l10 14 l-10 14 Z"/></g>
+  <!-- tail tip -->
+  <path d="M110 450 L84 486 L140 460 Z" fill="#7a0a10" stroke="#3a0008" stroke-width="6" stroke-linejoin="round"/>
+  <!-- armored head crashing down -->
+  <path d="M300 400 C300 370 330 350 370 352 C410 356 432 384 428 420 C424 456 390 476 350 472 C318 468 300 440 300 400 Z" fill="url(#rock)" stroke="#3a0008" stroke-width="8"/>
+  <path d="M330 362 L318 330 L346 352 M398 360 L414 330 L386 352" fill="#7a0a10" stroke="#3a0008" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="342" cy="400" r="12" fill="#ffe14d" stroke="#3a0008" stroke-width="4"/><circle cx="396" cy="400" r="12" fill="#ffe14d" stroke="#3a0008" stroke-width="4"/>
+  <path d="M342 394 v14 M396 394 v14" stroke="#3a0008" stroke-width="5"/>
+  <path d="M340 446 L360 434 L376 446 L392 434 L408 446" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <text x="70" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#ff2a2a" stroke="#3a0008" stroke-width="3">R</text>
+</svg>

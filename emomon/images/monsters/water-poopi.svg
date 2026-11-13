@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="poo" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#d8a870"/><stop offset="55%" stop-color="#9a6634"/><stop offset="100%" stop-color="#5a3414"/></radialGradient>
+    <radialGradient id="puddle" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#b8e4ff"/><stop offset="70%" stop-color="#6ab0e0"/><stop offset="100%" stop-color="#3a7ab0"/></radialGradient>
+  </defs>
+  <!-- puddle -->
+  <ellipse cx="256" cy="440" rx="220" ry="54" fill="url(#puddle)" stroke="#2a5a8a" stroke-width="5"/>
+  <ellipse cx="200" cy="430" rx="60" ry="10" fill="#e8f6ff" opacity=".7"/>
+  <!-- melting body -->
+  <path d="M110 430 C90 380 120 330 160 320 C140 270 180 230 220 226 C210 190 236 150 270 140 C262 170 284 186 304 178 C330 200 326 230 312 240 C356 250 380 290 360 320 C410 330 430 390 400 430 C370 446 340 420 330 450 C320 470 300 440 290 460 C270 480 250 440 230 462 C210 478 196 440 180 456 C160 470 130 452 110 430 Z" fill="url(#poo)" stroke="#3a1e08" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M150 340 C200 330 260 330 320 338 M190 250 C230 244 270 244 300 250" fill="none" stroke="#f0c890" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <!-- drips -->
+  <path d="M140 400 C136 420 146 440 152 420 Z M370 390 C366 414 378 432 384 410 Z" fill="#7a4a1e"/>
+  <!-- face -->
+  <ellipse cx="214" cy="300" rx="20" ry="24" fill="#fff"/><ellipse cx="300" cy="300" rx="20" ry="24" fill="#fff"/>
+  <ellipse cx="216" cy="308" rx="11" ry="12" fill="#1a0e04"/><ellipse cx="302" cy="308" rx="11" ry="12" fill="#1a0e04"/>
+  <circle cx="220" cy="302" r="4" fill="#fff"/><circle cx="306" cy="302" r="4" fill="#fff"/>
+  <path d="M232 352 C246 340 268 340 282 352" fill="none" stroke="#3a1e08" stroke-width="5" stroke-linecap="round"/>
+  <!-- sweat drop + stink lines -->
+  <path d="M340 240 c0 -14 10 -24 10 -24 s10 10 10 24 a10 10 0 0 1 -20 0z" fill="#8ad0ff" stroke="#2a5a8a" stroke-width="2"/>
+  <path d="M170 150 C150 130 180 110 160 90 M120 200 C100 180 130 160 110 140 M380 170 C360 150 390 130 370 110" fill="none" stroke="#8ac85a" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+</svg>

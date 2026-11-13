@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- YYY: a jagged zigzag arch of sharp yellow crystals; lightning runs along its spine, linking head to tail in a buzzing loop -->
+  <defs>
+    <linearGradient id="cry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffbd0"/><stop offset=".5" stop-color="#ffe21a"/><stop offset="1" stop-color="#c89a00"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff3a0" stop-opacity=".6"/><stop offset="1" stop-color="#fff3a0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="476" rx="160" ry="10" fill="#3a3000" opacity=".25"/>
+  <!-- zigzag crystal arch -->
+  <path d="M100 470 L130 380 L106 330 L150 250 L140 200 L200 150 L210 104 L280 100 L320 70 L360 130 L410 140 L412 210 L440 260 L404 320 L420 380 L380 420 L340 400 L370 350 L350 300 L374 250 L340 210 L330 160 L280 150 L240 160 L230 200 L190 240 L198 300 L160 340 L180 400 L150 470 Z"
+        fill="url(#cry)" stroke="#6a5200" stroke-width="7" stroke-linejoin="round"/>
+  <!-- facets -->
+  <g stroke="#fff" stroke-width="4" opacity=".75" stroke-linecap="round"><path d="M126 380 L170 340 M150 250 L196 250 M210 104 L240 160 M320 70 L330 160 M412 210 L374 250 M420 380 L370 350"/></g>
+  <!-- buzzing lightning along the spine, head to tail -->
+  <path d="M120 440 L150 410 L136 380 L170 350 L156 310 L190 280 L176 240 L214 210 L206 170 L252 140 L290 130 L330 110 L350 150 L384 170 L392 220 L410 260 L380 300 L396 340"
+        fill="none" stroke="#3a8aff" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M120 440 L150 410 L136 380 L170 350 L156 310 L190 280 L176 240 L214 210 L206 170 L252 140 L290 130 L330 110 L350 150 L384 170 L392 220 L410 260 L380 300 L396 340"
+        fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+  <!-- crystal head -->
+  <path d="M330 420 L350 370 L400 360 L440 400 L420 450 L370 460 Z" fill="url(#cry)" stroke="#6a5200" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M356 404 L374 392 L380 410 Z M398 400 L416 392 L414 412 Z" fill="#1a3aff" stroke="#6a5200" stroke-width="3"/>
+  <path d="M368 438 L380 428 L392 438 L404 428" fill="none" stroke="#6a5200" stroke-width="4"/>
+  <!-- sparks flashing across the sky -->
+  <path d="M60 120 l20 -10 l-6 18 l22 -10 M450 80 l-18 14 l18 4 l-20 16" fill="none" stroke="#3a8aff" stroke-width="5" stroke-linejoin="round"/>
+  <text x="60" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#ffe21a" stroke="#6a5200" stroke-width="3">Y</text>
+</svg>

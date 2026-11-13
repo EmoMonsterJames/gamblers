@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="15"/></filter>
+    <radialGradient id="gold" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#fff0a0"/><stop offset="100%" stop-color="#ffaa1a"/>
+    </radialGradient>
+    <radialGradient id="cyan" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#bff6ff"/><stop offset="100%" stop-color="#1fa8e0"/>
+    </radialGradient>
+    <radialGradient id="pink" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#ffd0f0"/><stop offset="100%" stop-color="#e0459e"/>
+    </radialGradient>
+    <radialGradient id="ray" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffbe6"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -100 L12 -30 L70 -70 L30 -12 L100 0 L30 12 L70 70 L12 30 L0 100 L-12 30 L-70 70 L-30 12 L-100 0 L-30 -12 L-70 -70 L-12 -30 Z"/>
+    <g id="glare">
+      <path d="M-30 -6 L30 -18 Q32 22 0 26 Q-32 22 -30 -6 Z" fill="#fff" stroke="#2b2b4a" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="4" cy="6" r="13" fill="#1a1530"/>
+      <circle cx="-1" cy="1" r="4.5" fill="#fff"/>
+      <path d="M-36 -14 L34 -30" stroke="#2b2b4a" stroke-width="7" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <circle cx="256" cy="256" r="240" fill="url(#ray)" opacity=".9"/>
+
+  <!-- gold (top) -->
+  <use xlink:href="#star" transform="translate(256 160) scale(1.05)" fill="#ffd84d" opacity=".7"/>
+  <circle cx="256" cy="160" r="92" fill="#ffc83d" opacity=".5" filter="url(#glow)"/>
+  <circle cx="256" cy="160" r="64" fill="url(#gold)"/>
+  <use xlink:href="#glare" transform="translate(256 166) scale(1.05)"/>
+
+  <!-- cyan (bottom left): sharp diamond rays -->
+  <use xlink:href="#star" transform="translate(160 330) rotate(45) scale(1.05)" fill="#7fe3ff" opacity=".7"/>
+  <circle cx="160" cy="330" r="92" fill="#4fd2ff" opacity=".5" filter="url(#glow)"/>
+  <circle cx="160" cy="330" r="64" fill="url(#cyan)"/>
+  <use xlink:href="#glare" transform="translate(162 336) scale(1.05)"/>
+
+  <!-- pink (bottom right): soft round rays -->
+  <g transform="translate(352 330)" fill="#ff9fd8" opacity=".55">
+    <circle cx="0" cy="-86" r="16"/><circle cx="61" cy="-61" r="16"/><circle cx="86" cy="0" r="16"/><circle cx="61" cy="61" r="16"/>
+    <circle cx="0" cy="86" r="16"/><circle cx="-61" cy="61" r="16"/><circle cx="-86" cy="0" r="16"/><circle cx="-61" cy="-61" r="16"/>
+  </g>
+  <circle cx="352" cy="330" r="92" fill="#ff6fc4" opacity=".45" filter="url(#glow)"/>
+  <circle cx="352" cy="330" r="64" fill="url(#pink)"/>
+  <use xlink:href="#glare" transform="translate(350 336) scale(-1.05 1.05)"/>
+
+  <g fill="#fff"><circle cx="70" cy="140" r="6"/><circle cx="450" cy="150" r="6"/><circle cx="256" cy="460" r="7"/><circle cx="256" cy="40" r="5"/></g>
+</svg>

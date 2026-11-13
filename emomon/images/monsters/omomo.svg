@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9cc8ff"/><stop offset="100%" stop-color="#4a7ad8"/></linearGradient>
+    <linearGradient id="happy" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff2a0"/><stop offset="100%" stop-color="#ffb43a"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe9ff" stop-opacity=".6"/><stop offset="100%" stop-color="#ffe9ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a1a3a" stop-opacity=".32"/><stop offset="100%" stop-color="#1a1a3a" stop-opacity="0"/></radialGradient>
+    <clipPath id="face"><circle cx="256" cy="250" r="168"/></clipPath>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="462" rx="140" ry="14" fill="url(#sh)"/>
+  <!-- little feet -->
+  <ellipse cx="196" cy="430" rx="40" ry="20" fill="#3a5ab8" stroke="#1c2a5a" stroke-width="6"/>
+  <ellipse cx="316" cy="430" rx="40" ry="20" fill="#e08a1a" stroke="#6a3a08" stroke-width="6"/>
+  <!-- two faces stitched together: sad on the left, happy on the right -->
+  <g clip-path="url(#face)">
+    <rect x="60" y="60" width="200" height="400" fill="url(#sad)"/>
+    <rect x="252" y="60" width="210" height="400" fill="url(#happy)"/>
+  </g>
+  <path d="M256 82 L240 120 L268 160 L240 200 L268 240 L240 280 L268 320 L240 360 L256 418" fill="none" stroke="#5a3a7a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M248 120 l18 6 M248 200 l18 6 M248 280 l18 6 M248 360 l18 6" stroke="#5a3a7a" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="256" cy="250" r="168" fill="none" stroke="#2a1a4a" stroke-width="8"/>
+  <!-- sad side -->
+  <path d="M148 192 L196 206" stroke="#1c2a5a" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="176" cy="238" rx="18" ry="24" fill="#1c2a5a"/>
+  <circle cx="182" cy="230" r="6" fill="#fff"/>
+  <path d="M168 262 C162 284 160 296 168 304 C176 296 174 284 168 262 Z" fill="#bfe6ff" stroke="#4a8ad8" stroke-width="3"/>
+  <path d="M150 340 C170 318 210 318 226 336" fill="none" stroke="#1c2a5a" stroke-width="8" stroke-linecap="round"/>
+  <!-- happy side -->
+  <path d="M310 216 C322 196 348 196 360 216" fill="none" stroke="#5a2a08" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="364" cy="282" rx="22" ry="14" fill="#ff8a8a" opacity=".7"/>
+  <path d="M282 312 C300 362 352 362 372 312 Z" fill="#7a1a2a" stroke="#5a2a08" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M300 340 C316 352 340 352 354 340 C344 332 312 332 300 340 Z" fill="#ff7a8a"/>
+  <!-- tiny sparkle -->
+  <path d="M410 120 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6 Z" fill="#fff" opacity=".9"/>
+</svg>

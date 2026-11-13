@@ -6,7 +6,7 @@
 // (asset paths, escaping) and a `MonsterService` stub, set up here first.
 // Everything else in Gamblers waits for emoReady() before touching them.
 // =====================================================================
-const BASE = "EmoMonster/";
+const BASE = "emomon/";   // runtime copy of the EmoMonster files (tools/sync-emomon-assets.sh)
 const FILES = ["gameConfig.js", "typeChart.js", "statCalculator.js", "traitManager.js", "battleEngine.js", "spriteManager.js"];
 let ready = null;
 

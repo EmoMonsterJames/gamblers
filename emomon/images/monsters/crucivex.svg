@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Cruci-Vex: a huge ornate golden cross in a hot-pink and black psychic aura, a halo of spinning crystal shards,
+       and a glowing pink central eye -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff59d"/><stop offset=".45" stop-color="#ffc107"/><stop offset="1" stop-color="#8d5a00"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="45%" r="50%"><stop offset="0" stop-color="#ff4fd8" stop-opacity=".7"/><stop offset=".7" stop-color="#2a0030" stop-opacity=".5"/><stop offset="1" stop-color="#2a0030" stop-opacity="0"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#ff80df"/><stop offset="1" stop-color="#c2007a"/></radialGradient>
+    <linearGradient id="shard" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fce4ec"/><stop offset="1" stop-color="#f06292"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2a0030" stop-opacity=".4"/><stop offset="1" stop-color="#2a0030" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="248" fill="url(#aura)"/>
+  <ellipse cx="256" cy="486" rx="70" ry="8" fill="url(#sh)"/>
+  <!-- halo of crystal shards behind -->
+  <circle cx="256" cy="190" r="170" fill="none" stroke="#f8bbd0" stroke-width="3" stroke-dasharray="4 12"/>
+  <g fill="url(#shard)" stroke="#880e4f" stroke-width="4" stroke-linejoin="round">
+    <path d="M256 6 L268 30 L256 54 L244 30 Z"/><path d="M386 60 L392 88 L370 100 L366 72 Z"/><path d="M432 180 L410 196 L404 172 Z"/>
+    <path d="M126 60 L120 88 L142 100 L146 72 Z"/><path d="M80 180 L102 196 L108 172 Z"/><path d="M390 300 L366 304 L374 280 Z"/><path d="M122 300 L146 304 L138 280 Z"/>
+  </g>
+  <!-- ornate golden cross -->
+  <path d="M222 40 Q256 20 290 40 L294 420 Q300 460 256 476 Q212 460 218 420 Z" fill="url(#gold)" stroke="#5a3a00" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M60 156 Q40 190 60 224 L452 224 Q472 190 452 156 Z" fill="url(#gold)" stroke="#5a3a00" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="60" cy="190" r="20" fill="url(#gold)" stroke="#5a3a00" stroke-width="6"/><circle cx="452" cy="190" r="20" fill="url(#gold)" stroke="#5a3a00" stroke-width="6"/>
+  <circle cx="256" cy="40" r="20" fill="url(#gold)" stroke="#5a3a00" stroke-width="6"/>
+  <path d="M100 176 h80 M332 176 h80 M100 204 h80 M332 204 h80 M244 260 v170 M268 260 v170" stroke="#8d5a00" stroke-width="4"/>
+  <circle cx="256" cy="330" r="12" fill="#ff4fd8" stroke="#5a3a00" stroke-width="4"/><circle cx="256" cy="390" r="10" fill="#ff4fd8" stroke="#5a3a00" stroke-width="4"/>
+  <circle cx="130" cy="190" r="9" fill="#ff4fd8" stroke="#5a3a00" stroke-width="3"/><circle cx="382" cy="190" r="9" fill="#ff4fd8" stroke="#5a3a00" stroke-width="3"/>
+  <!-- the central eye -->
+  <circle cx="256" cy="190" r="50" fill="#2a0030" stroke="#5a3a00" stroke-width="7"/>
+  <ellipse cx="256" cy="190" rx="40" ry="30" fill="url(#eye)"/>
+  <circle cx="256" cy="190" r="13" fill="#2a0030"/><circle cx="262" cy="184" r="5" fill="#fff"/>
+  <!-- psychic tendrils -->
+  <path d="M190 260 Q150 300 170 350 M322 260 Q362 300 342 350" fill="none" stroke="#ff4fd8" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <path d="M170 270 Q120 320 140 380 M342 270 Q392 320 372 380" fill="none" stroke="#1a0020" stroke-width="6" stroke-linecap="round" opacity=".6"/>
+</svg>

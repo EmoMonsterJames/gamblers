@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a5a7a"/><stop offset="50%" stop-color="#2a4460"/><stop offset="51%" stop-color="#c8d4de"/><stop offset="100%" stop-color="#8a9aaa"/></linearGradient>
+    <radialGradient id="mouth" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1a0006"/><stop offset="100%" stop-color="#6a0a1a"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity=".45"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="490" rx="230" ry="18" fill="url(#sh)"/>
+  <!-- tail -->
+  <path d="M440 230 L508 130 C500 210 500 270 510 360 Z" fill="#2a4460" stroke="#0a1a2a" stroke-width="6" stroke-linejoin="round"/>
+  <!-- tall dorsal fin, scarred -->
+  <path d="M200 92 C220 40 250 14 300 2 C284 50 288 80 304 108 Z" fill="#2a4460" stroke="#0a1a2a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M262 30 L272 44 L260 50" fill="none" stroke="#0a1a2a" stroke-width="4"/>
+  <!-- huge body -->
+  <path d="M20 260 C20 140 140 84 270 84 C380 84 460 160 460 260 C460 380 380 450 250 450 C120 450 20 380 20 260 Z" fill="url(#bd)" stroke="#0a1a2a" stroke-width="7"/>
+  <!-- scars -->
+  <g stroke="#a8bccc" stroke-width="5" stroke-linecap="round" opacity=".8"><path d="M330 130 L370 170 M344 126 L332 142 M356 140 L344 156 M366 152 L354 168"/></g>
+  <!-- gills -->
+  <g fill="none" stroke="#0a1a2a" stroke-width="6" stroke-linecap="round"><path d="M370 200 C384 230 384 270 370 300"/><path d="M394 196 C408 228 408 272 394 304"/><path d="M418 200 C430 230 430 268 418 298"/></g>
+  <!-- giant open mouth -->
+  <path d="M40 220 C80 170 280 170 320 220 C330 300 300 400 180 410 C80 410 30 320 40 220 Z" fill="url(#mouth)" stroke="#0a1a2a" stroke-width="7" stroke-linejoin="round"/>
+  <!-- upper teeth -->
+  <path d="M52 220 L68 262 L84 214 L102 268 L120 208 L140 272 L160 206 L180 274 L200 206 L220 270 L240 208 L258 264 L276 212 L292 256 L306 218 C250 192 110 192 52 220 Z" fill="#fffbe8" stroke="#8a8a70" stroke-width="3" stroke-linejoin="round"/>
+  <!-- lower teeth -->
+  <path d="M70 352 L92 318 L104 364 L126 320 L140 378 L162 326 L176 388 L198 326 L212 384 L232 322 L246 370 L266 318 L276 354 L292 320 C276 380 240 404 180 404 C120 404 84 384 70 352 Z" fill="#fffbe8" stroke="#8a8a70" stroke-width="3" stroke-linejoin="round"/>
+  <!-- throat glow -->
+  <ellipse cx="180" cy="300" rx="50" ry="24" fill="#a01a2a" opacity=".6"/>
+  <!-- small fierce eyes -->
+  <path d="M300 150 L350 140 L346 166 Z" fill="#ff2a2a" stroke="#0a1a2a" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="334" cy="153" r="5" fill="#1a0000"/>
+  <path d="M290 132 L356 116" stroke="#0a1a2a" stroke-width="8" stroke-linecap="round"/>
+  <!-- side fin -->
+  <path d="M330 400 C350 450 380 474 420 482 C404 444 398 416 396 386 Z" fill="#2a4460" stroke="#0a1a2a" stroke-width="6" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Akasha: the fifth element - water, fire, air and earth elements gather round, ruled by one giant eyeball set in the middle -->
+  <defs>
+    <radialGradient id="space" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3a1a8a"/><stop offset=".7" stop-color="#140a3a"/><stop offset="1" stop-color="#140a3a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="iris" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#b8a8ff"/><stop offset=".7" stop-color="#5a2ad8"/><stop offset="1" stop-color="#1a0a5a"/></radialGradient>
+    <radialGradient id="ball" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d8d0e8"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="250" fill="url(#space)"/>
+  <ellipse cx="256" cy="256" rx="200" ry="200" fill="none" stroke="#8a7aff" stroke-width="4" stroke-dasharray="8 12" opacity=".7"/>
+  <g fill="#fff"><circle cx="70" cy="70" r="3"/><circle cx="450" cy="90" r="2.5"/><circle cx="440" cy="440" r="3"/><circle cx="60" cy="430" r="2.5"/></g>
+  <!-- WATER element (top) -->
+  <path d="M256 30 C230 70 222 90 222 106 C222 126 238 140 256 140 C274 140 290 126 290 106 C290 90 282 70 256 30 Z" fill="#3a9cff" stroke="#0a3a8a" stroke-width="5"/>
+  <circle cx="246" cy="110" r="4" fill="#0a2a6a"/><circle cx="266" cy="110" r="4" fill="#0a2a6a"/>
+  <!-- FIRE element (right) -->
+  <path d="M440 256 C420 230 410 210 420 180 C430 196 440 196 444 186 C460 210 470 236 462 262 C456 284 430 290 420 276 C412 266 424 262 440 256 Z" fill="#ff7a1a" stroke="#a8200a" stroke-width="5"/>
+  <path d="M410 300 C390 280 386 250 400 230 C404 250 414 256 424 252 C426 276 420 292 410 300 Z" fill="#ffd23a" stroke="#a8200a" stroke-width="4"/>
+  <!-- EARTH element (bottom) -->
+  <path d="M196 440 L222 392 L262 384 L300 400 L320 444 L282 470 L232 470 Z" fill="#8a5a2a" stroke="#3a1a08" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M230 420 l14 -6 l6 12 M276 418 l12 8" stroke="#3a1a08" stroke-width="4" fill="none"/>
+  <!-- AIR element (left) -->
+  <path d="M50 240 C50 210 80 200 100 214 C110 192 140 194 146 216 C170 214 176 244 158 254 C162 274 136 284 120 270 C100 286 70 276 72 256 C56 256 50 248 50 240 Z" fill="#e8f8ff" stroke="#7ab8d0" stroke-width="5"/>
+  <path d="M60 300 q20 -10 40 0 q20 10 40 0" fill="none" stroke="#bfe8ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- the ruling giant eyeball -->
+  <circle cx="256" cy="256" r="104" fill="url(#ball)" stroke="#1a0a3a" stroke-width="8"/>
+  <path d="M170 220 q30 -6 40 20 M330 300 q-20 10 -40 -6 M300 170 q10 20 -10 30" fill="none" stroke="#e05a6a" stroke-width="3"/>
+  <circle cx="256" cy="256" r="54" fill="url(#iris)" stroke="#1a0a3a" stroke-width="5"/>
+  <circle cx="256" cy="256" r="22" fill="#000"/>
+  <circle cx="240" cy="238" r="9" fill="#fff"/>
+  <!-- tendrils of control to each element -->
+  <g fill="none" stroke="#b8a8ff" stroke-width="3" stroke-dasharray="4 6"><path d="M256 152 V140 M360 256 H410 M256 360 V386 M152 256 H140"/></g>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+<linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0fbff"/><stop offset="100%" stop-color="#9ad8f0"/></linearGradient>
+<radialGradient id="au" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#c8f0ff" stop-opacity=".55"/><stop offset="100%" stop-color="#c8f0ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity=".3"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<g id="ankh"><circle cx="0" cy="-22" r="14" fill="none" stroke-width="8"/><path d="M0 -8 V34 M-20 2 H20" stroke-width="8" fill="none"/></g>
+<g id="eye"><path d="M-30 0 C-14 -18 14 -18 30 0 C14 14 -14 14 -30 0 Z" fill="none" stroke-width="6"/><circle r="7" stroke="none"/><path d="M-6 10 L-12 30 M8 8 C18 20 26 18 28 28" fill="none" stroke-width="5"/></g>
+<g id="bird"><path d="M-24 10 C-20 -14 4 -24 16 -12 L28 -14 L18 -4 C20 14 0 22 -24 10 Z M-4 18 V32 M6 16 V32" fill="none" stroke-width="5" stroke-linejoin="round"/></g>
+<g id="wave"><path d="M-30 -8 l10 -10 10 10 10 -10 10 10 10 -10 M-30 10 l10 -10 10 10 10 -10 10 10 10 -10" fill="none" stroke-width="5"/></g>
+<g id="feather"><path d="M0 -32 C18 -10 14 20 0 32 C-14 20 -18 -10 0 -32 Z M0 -26 V32" fill="none" stroke-width="5"/></g>
+<g id="sun"><circle r="12" fill="none" stroke-width="6"/><circle r="3" stroke="none"/></g>
+</defs>
+<circle cx="256" cy="256" r="250" fill="url(#au)"/>
+<ellipse cx="256" cy="494" rx="120" ry="12" fill="url(#sh)"/>
+
+<g fill="#6ac8f0" stroke="#6ac8f0" stroke-linecap="round">
+<g transform="translate(100 110) scale(1)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.4s" repeatCount="indefinite"/><use href="#eye"/></g></g><g transform="translate(412 110) scale(1)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.9s" repeatCount="indefinite"/><use href="#bird"/></g></g><g transform="translate(96 396) scale(1)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="3.3s" repeatCount="indefinite"/><use href="#wave"/></g></g><g transform="translate(420 400) scale(1)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.6s" repeatCount="indefinite"/><use href="#feather"/></g></g><g transform="translate(256 470) scale(.7)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="3.0s" repeatCount="indefinite"/><use href="#ankh"/></g></g>
+<g transform="translate(256 44) scale(1.3)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.2s" repeatCount="indefinite"/><use href="#sun"/></g></g><g transform="translate(70 250) scale(.9)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="3.1s" repeatCount="indefinite"/><use href="#ankh"/></g></g><g transform="translate(446 250) scale(.9)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.7s" repeatCount="indefinite"/><use href="#feather"/></g></g><g transform="translate(256 476) scale(.8)"><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -12;0 0" dur="2.5s" repeatCount="indefinite"/><use href="#eye"/></g></g>
+</g>
+<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -10;0 0" dur="3s" repeatCount="indefinite"/>
+<g opacity="1">
+<rect x="116" y="80" width="280" height="352" rx="140" fill="url(#st)" stroke="#2a6a8a" stroke-width="8"/>
+<rect x="134" y="98" width="244" height="316" rx="122" fill="none" stroke="#2a6a8a" stroke-width="4" opacity=".6"/>
+</g>
+<g fill="#2a6a8a" stroke="#2a6a8a" stroke-linecap="round">
+<g transform="translate(256 142) scale(.8)"><use href="#ankh"/></g>
+<g transform="translate(256 374) scale(.9)"><use href="#bird"/></g>
+</g>
+<ellipse cx="216" cy="250" rx="16" ry="20" fill="#1a1208"/><ellipse cx="296" cy="250" rx="16" ry="20" fill="#1a1208"/>
+<circle cx="222" cy="242" r="6" fill="#fff"/><circle cx="302" cy="242" r="6" fill="#fff"/>
+<path d="M196 226 C204 218 224 218 232 226 M280 226 C288 218 308 218 316 226" fill="none" stroke="#2a6a8a" stroke-width="5" stroke-linecap="round"/>
+<path d="M240 290 C250 298 262 298 272 290" fill="none" stroke="#1a1208" stroke-width="5" stroke-linecap="round"/>
+</g>
+<g stroke="#bfefff" stroke-width="5" stroke-linecap="round"><path d="M70 200 v40 M50 220 h40 M56 206 l28 28 M84 206 l-28 28"/><path d="M440 380 v40 M420 400 h40 M426 386 l28 28 M454 386 l-28 28"/></g><g fill="#ffffff"><circle cx="50" cy="260" r="4"><animate attributeName="cy" values="260;230;260" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="462" cy="300" r="4"><animate attributeName="cy" values="300;270;300" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="130" cy="470" r="4"><animate attributeName="cy" values="470;440;470" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="390" cy="40" r="4"><animate attributeName="cy" values="40;10;40" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="30" cy="150" r="4"><animate attributeName="cy" values="150;120;150" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="480" cy="440" r="4"><animate attributeName="cy" values="440;410;440" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="200" cy="20" r="4"><animate attributeName="cy" values="20;-10;20" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle><circle cx="320" cy="500" r="4"><animate attributeName="cy" values="500;470;500" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;1;.2" dur="2.3s" repeatCount="indefinite"/></circle></g>
+</svg>

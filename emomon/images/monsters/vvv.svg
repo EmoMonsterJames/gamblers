@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- VVV: an ethereal arch of glowing violet light with no solid body, held together by a ring of rotating magic runes -->
+  <defs>
+    <linearGradient id="vio" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0c8ff" stop-opacity=".85"/><stop offset=".5" stop-color="#b03aff" stop-opacity=".75"/><stop offset="1" stop-color="#5a0a9a" stop-opacity=".8"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e8b8ff" stop-opacity=".6"/><stop offset="1" stop-color="#e8b8ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="url(#aura)"/>
+  <!-- swirling vortex illusion -->
+  <g fill="none" stroke="#c86aff" stroke-width="4" opacity=".45"><circle cx="256" cy="256" r="200"/><circle cx="256" cy="256" r="170" stroke-dasharray="30 16"/></g>
+  <!-- light-only crescent -->
+  <path d="M114 460 C68 296 136 112 276 98 C396 86 452 206 408 336 C398 366 382 398 364 424 L324 412 C354 362 370 316 368 268 C366 182 318 140 270 146 C174 154 134 300 166 460 Z" fill="url(#vio)" stroke="#e8b8ff" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M140 430 C110 300 160 170 270 126 C350 112 404 170 392 270" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <!-- ring of glowing runes around it -->
+  <g fill="none" stroke="#fff6a8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 250 l14 -20 l14 20 l-14 20 Z"/><path d="M110 120 v28 M98 134 h24"/><path d="M220 46 q14 16 28 0"/><path d="M380 60 l18 18 M398 60 l-18 18"/>
+    <path d="M452 170 a12 12 0 1 0 0.1 0"/><path d="M462 300 l-16 22 h32 Z"/><path d="M60 360 q14 -16 28 0 q-14 16 -28 0"/>
+  </g>
+  <!-- head -->
+  <path d="M310 404 C306 370 334 348 372 350 C412 354 434 384 428 420 C422 456 388 474 350 468 C322 464 312 432 310 404 Z" fill="url(#vio)" stroke="#e8b8ff" stroke-width="6"/>
+  <path d="M342 396 q10 -10 20 0 M392 396 q10 -10 20 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M360 432 Q376 446 392 432" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M376 330 l6 -16 l6 16 l16 6 l-16 6 l-6 16 l-6 -16 l-16 -6 Z" fill="#fff6a8"/>
+  <text x="62" y="90" font-family="Arial Black, sans-serif" font-size="46" font-weight="900" fill="#b03aff" stroke="#3a0a6a" stroke-width="3">V</text>
+</svg>

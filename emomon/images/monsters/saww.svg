@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="steel" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#f5f7f9"/><stop offset="60%" stop-color="#a7b3bd"/><stop offset="100%" stop-color="#5f6c78"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d9c6ff" stop-opacity=".55"/><stop offset="100%" stop-color="#d9c6ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1f2a33" stop-opacity=".35"/><stop offset="100%" stop-color="#1f2a33" stop-opacity="0"/></radialGradient>
+    <g id="tooth"><path d="M-22 0 L0 -46 L30 -6 Z" fill="url(#steel)" stroke="#2a333c" stroke-width="6" stroke-linejoin="round"/></g>
+  </defs>
+  <circle cx="256" cy="250" r="240" fill="url(#aura)"/>
+  <ellipse cx="256" cy="458" rx="130" ry="14" fill="url(#sh)"/>
+  <g transform="translate(256 250)">
+    <use href="#tooth" transform="rotate(0) translate(0 -150)"/><use href="#tooth" transform="rotate(24) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(48) translate(0 -150)"/><use href="#tooth" transform="rotate(72) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(96) translate(0 -150)"/><use href="#tooth" transform="rotate(120) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(144) translate(0 -150)"/><use href="#tooth" transform="rotate(168) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(192) translate(0 -150)"/><use href="#tooth" transform="rotate(216) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(240) translate(0 -150)"/><use href="#tooth" transform="rotate(264) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(288) translate(0 -150)"/><use href="#tooth" transform="rotate(312) translate(0 -150)"/>
+    <use href="#tooth" transform="rotate(336) translate(0 -150)"/>
+  </g>
+  <circle cx="256" cy="250" r="152" fill="url(#steel)" stroke="#2a333c" stroke-width="8"/>
+  <circle cx="256" cy="250" r="118" fill="none" stroke="#7d8a96" stroke-width="4" stroke-dasharray="10 12"/>
+  <!-- odd purple scratch marks (Abnormal) -->
+  <path d="M170 170 L200 196 M320 330 L350 310 M330 160 L346 190" stroke="#8e44ad" stroke-width="6" stroke-linecap="round"/>
+  <!-- eyes: mismatched -->
+  <ellipse cx="214" cy="236" rx="30" ry="32" fill="#fff" stroke="#2a333c" stroke-width="7"/>
+  <ellipse cx="300" cy="230" rx="22" ry="40" fill="#fff" stroke="#2a333c" stroke-width="7"/>
+  <circle cx="220" cy="242" r="14" fill="#6a1b9a"/><circle cx="304" cy="240" r="12" fill="#6a1b9a"/>
+  <circle cx="225" cy="236" r="5" fill="#fff"/><circle cx="308" cy="232" r="4" fill="#fff"/>
+  <path d="M182 196 L240 210 M330 186 L280 202" stroke="#2a333c" stroke-width="8" stroke-linecap="round"/>
+  <!-- jagged grin -->
+  <path d="M206 300 L222 316 L238 300 L254 316 L270 300 L286 316 L302 300" fill="none" stroke="#2a333c" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="256" cy="250" r="10" fill="#5f6c78" stroke="#2a333c" stroke-width="4"/>
+</svg>

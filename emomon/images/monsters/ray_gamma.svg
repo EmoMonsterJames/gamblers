@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="16"/></filter>
+    <filter id="soft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+    <radialGradient id="evil" cx="45%" cy="40%" r="62%">
+      <stop offset="0%" stop-color="#ffe0f0"/><stop offset="35%" stop-color="#ff5fa2"/><stop offset="75%" stop-color="#9b1260"/><stop offset="100%" stop-color="#3d0428"/>
+    </radialGradient>
+    <radialGradient id="gold" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#fff0a0"/><stop offset="100%" stop-color="#ffaa1a"/>
+    </radialGradient>
+    <radialGradient id="cyan" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#bff6ff"/><stop offset="100%" stop-color="#1fa8e0"/>
+    </radialGradient>
+    <radialGradient id="green" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#d8ffc0"/><stop offset="100%" stop-color="#3cbf4a"/>
+    </radialGradient>
+    <radialGradient id="pink" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#ffd0f0"/><stop offset="100%" stop-color="#e0459e"/>
+    </radialGradient>
+    <radialGradient id="ray" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd6ec"/><stop offset="100%" stop-color="#ff6fb0" stop-opacity="0"/>
+    </radialGradient>
+    <path id="star" d="M0 -100 L12 -30 L70 -70 L30 -12 L100 0 L30 12 L70 70 L12 30 L0 100 L-12 30 L-70 70 L-30 12 L-100 0 L-30 -12 L-70 -70 L-12 -30 Z"/>
+  </defs>
+
+  <circle cx="256" cy="256" r="240" fill="url(#ray)" opacity=".6"/>
+
+  <!-- the devil light in the middle -->
+  <use xlink:href="#star" transform="translate(256 262) scale(1.7)" fill="#ff4f9a" opacity=".55"/>
+  <circle cx="256" cy="262" r="120" fill="#d61f7a" opacity=".55" filter="url(#glow)"/>
+  <!-- horns -->
+  <path d="M196 196 C180 160 186 130 204 112 C204 140 214 160 230 178 Z" fill="#5a0838" stroke="#2a0018" stroke-width="3"/>
+  <path d="M316 196 C332 160 326 130 308 112 C308 140 298 160 282 178 Z" fill="#5a0838" stroke="#2a0018" stroke-width="3"/>
+  <circle cx="256" cy="262" r="86" fill="url(#evil)"/>
+  <!-- glaring red eyes -->
+  <path d="M200 244 L244 256 Q240 284 218 284 Q198 280 200 244 Z" fill="#fff6e0" stroke="#2a0018" stroke-width="3"/>
+  <path d="M312 244 L268 256 Q272 284 294 284 Q314 280 312 244 Z" fill="#fff6e0" stroke="#2a0018" stroke-width="3"/>
+  <circle cx="224" cy="268" r="9" fill="#e00030"/><circle cx="288" cy="268" r="9" fill="#e00030"/>
+  <circle cx="224" cy="268" r="4" fill="#2a0018"/><circle cx="288" cy="268" r="4" fill="#2a0018"/>
+  <path d="M194 236 L248 250 M318 236 L264 250" stroke="#2a0018" stroke-width="7" stroke-linecap="round"/>
+  <!-- jagged grin -->
+  <path d="M216 304 L232 314 L244 304 L256 316 L268 304 L280 314 L296 304 Q284 330 256 332 Q228 330 216 304 Z" fill="#2a0018"/>
+  <path d="M232 314 l4 8 l4 -8 Z M268 314 l4 8 l4 -8 Z" fill="#fff"/>
+
+  <!-- four little lights, each with its own face -->
+  <!-- happy gold (top left) -->
+  <circle cx="104" cy="112" r="58" fill="#ffc83d" opacity=".55" filter="url(#soft)"/>
+  <circle cx="104" cy="112" r="42" fill="url(#gold)"/>
+  <path d="M84 108 q8 -10 16 0 M108 108 q8 -10 16 0" fill="none" stroke="#5a3a00" stroke-width="4" stroke-linecap="round"/>
+  <path d="M92 122 Q104 136 116 122 Z" fill="#c2410c"/>
+
+  <!-- surprised cyan (top right) -->
+  <circle cx="408" cy="112" r="58" fill="#4fd2ff" opacity=".55" filter="url(#soft)"/>
+  <circle cx="408" cy="112" r="42" fill="url(#cyan)"/>
+  <circle cx="394" cy="104" r="9" fill="#fff" stroke="#0b3a5a" stroke-width="2.5"/><circle cx="422" cy="104" r="9" fill="#fff" stroke="#0b3a5a" stroke-width="2.5"/>
+  <circle cx="394" cy="105" r="4" fill="#0b3a5a"/><circle cx="422" cy="105" r="4" fill="#0b3a5a"/>
+  <ellipse cx="408" cy="128" rx="6" ry="8" fill="#0b3a5a"/>
+
+  <!-- sleepy green (bottom left) -->
+  <circle cx="104" cy="402" r="58" fill="#5fe06a" opacity=".5" filter="url(#soft)"/>
+  <circle cx="104" cy="402" r="42" fill="url(#green)"/>
+  <path d="M84 398 q8 8 16 0 M108 398 q8 8 16 0" fill="none" stroke="#14501c" stroke-width="4" stroke-linecap="round"/>
+  <path d="M98 416 q6 4 12 0" fill="none" stroke="#14501c" stroke-width="3" stroke-linecap="round"/>
+  <path d="M140 352 h12 l-12 12 h12" fill="none" stroke="#14501c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- cheeky pink (bottom right): wink and tongue -->
+  <circle cx="408" cy="402" r="58" fill="#ff6fc4" opacity=".5" filter="url(#soft)"/>
+  <circle cx="408" cy="402" r="42" fill="url(#pink)"/>
+  <path d="M388 396 q8 -8 16 0" fill="none" stroke="#5a0838" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="424" cy="396" r="7" fill="#5a0838"/><circle cx="422" cy="394" r="2.5" fill="#fff"/>
+  <path d="M396 412 Q408 422 420 412" fill="none" stroke="#5a0838" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M404 416 q4 12 10 0 Z" fill="#ff5f8a"/>
+
+  <!-- links of light between them -->
+  <g stroke="#ffd6ec" stroke-width="4" stroke-linecap="round" opacity=".8" stroke-dasharray="2 12">
+    <path d="M140 145 L190 200 M372 145 L322 200 M140 370 L190 320 M372 370 L322 320"/>
+  </g>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Bunpsyche: buns split into two brain lobes, glowing ketchup and mustard tendrils hang below like nerves -->
+  <defs>
+    <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8c873"/><stop offset="1" stop-color="#c47a26"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ce93d8" stop-opacity=".7"/><stop offset="1" stop-color="#ce93d8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2a0a40" stop-opacity=".3"/><stop offset="1" stop-color="#2a0a40" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="230" r="236" fill="url(#aura)"/>
+  <ellipse cx="256" cy="476" rx="90" ry="10" fill="url(#sh)"/>
+  <!-- barrier ring -->
+  <ellipse cx="256" cy="220" rx="226" ry="196" fill="none" stroke="#e1bee7" stroke-width="5" stroke-dasharray="14 12" opacity=".8"/>
+  <!-- tendrils -->
+  <path d="M190 300 C180 360 200 390 184 450" fill="none" stroke="#e53935" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+  <path d="M230 310 C236 370 220 400 232 460" fill="none" stroke="#fdd835" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+  <path d="M282 310 C276 370 292 400 280 460" fill="none" stroke="#e53935" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+  <path d="M322 300 C332 360 312 390 328 450" fill="none" stroke="#fdd835" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+  <circle cx="184" cy="450" r="8" fill="#ff8a80"/><circle cx="232" cy="460" r="8" fill="#fff59d"/><circle cx="280" cy="460" r="8" fill="#ff8a80"/><circle cx="328" cy="450" r="8" fill="#fff59d"/>
+  <!-- patty base -->
+  <path d="M140 270 Q140 250 256 248 Q372 250 372 270 L372 290 Q372 314 256 316 Q140 314 140 290 Z" fill="#6d3b1c" stroke="#3a1a06" stroke-width="7"/>
+  <!-- two brain lobes -->
+  <path d="M250 258 C170 262 110 230 112 170 C114 110 160 70 210 74 C236 76 250 92 250 112 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M262 258 C342 262 402 230 400 170 C398 110 352 70 302 74 C276 76 262 92 262 112 Z" fill="url(#bun)" stroke="#6b3d0c" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M146 150 Q170 130 196 150 Q210 170 236 160 M140 200 Q170 186 200 204 Q222 220 240 210" fill="none" stroke="#a0581c" stroke-width="6" stroke-linecap="round"/>
+  <path d="M366 150 Q342 130 316 150 Q302 170 276 160 M372 200 Q342 186 312 204 Q290 220 272 210" fill="none" stroke="#a0581c" stroke-width="6" stroke-linecap="round"/>
+  <!-- calm closed eyes on the patty -->
+  <path d="M200 280 Q214 292 228 280 M284 280 Q298 292 312 280" fill="none" stroke="#f3e5f5" stroke-width="6" stroke-linecap="round"/>
+  <!-- telekinetic rocks -->
+  <path d="M60 330 L84 316 L100 334 L82 352 L62 348 Z" fill="#8d6e63" stroke="#4e342e" stroke-width="5"/>
+  <path d="M420 330 L446 320 L458 342 L436 356 Z" fill="#8d6e63" stroke="#4e342e" stroke-width="5"/>
+  <path d="M72 300 Q80 290 90 300 M432 300 Q440 290 450 300" fill="none" stroke="#e1bee7" stroke-width="4"/>
+</svg>

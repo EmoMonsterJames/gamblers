@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="egg" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="60%" stop-color="#fbf1dc"/><stop offset="100%" stop-color="#e2cfa6"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#3a2a1a" stop-opacity=".3"/><stop offset="100%" stop-color="#3a2a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="470" rx="120" ry="16" fill="url(#sh)"/>
+  <g transform="rotate(-8 256 300)">
+    <path d="M256 80 C346 80 400 220 400 320 C400 410 336 464 256 464 C176 464 112 410 112 320 C112 220 166 80 256 80 Z" fill="url(#egg)" stroke="#c4a87a" stroke-width="6"/>
+    <circle cx="190" cy="370" r="10" fill="#e8d4a8"/><circle cx="330" cy="400" r="14" fill="#e8d4a8"/><circle cx="310" cy="160" r="8" fill="#e8d4a8"/><circle cx="170" cy="200" r="6" fill="#e8d4a8"/>
+    <!-- crack peek hole with eyes -->
+    <path d="M150 250 L180 230 L200 256 L230 228 L256 258 L284 226 L310 256 L334 230 L362 252 L356 316 L156 316 Z" fill="#2a1a10" stroke="#8a6a3a" stroke-width="4" stroke-linejoin="round"/>
+    <ellipse cx="216" cy="282" rx="24" ry="26" fill="#fff"/><ellipse cx="296" cy="282" rx="24" ry="26" fill="#fff"/>
+    <ellipse cx="222" cy="286" rx="14" ry="16" fill="#1a1a1a"/><ellipse cx="302" cy="286" rx="14" ry="16" fill="#1a1a1a"/>
+    <circle cx="227" cy="278" r="6" fill="#fff"/><circle cx="307" cy="278" r="6" fill="#fff"/>
+    <path d="M140 140 C160 110 190 96 216 92" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity=".9"/>
+  </g>
+  <!-- wobble lines -->
+  <path d="M84 300 C70 320 70 350 84 370 M428 290 C442 310 442 340 428 360" fill="none" stroke="#c4a87a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M60 320 C52 334 52 348 60 360 M452 310 C460 324 460 338 452 350" fill="none" stroke="#c4a87a" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6a7486"/><stop offset="50%" stop-color="#c8d0dc"/><stop offset="100%" stop-color="#5a6476"/></linearGradient>
+    <linearGradient id="beamO" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff9a3a"/><stop offset="100%" stop-color="#d9600a"/></linearGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a1a2a" stop-opacity=".35"/><stop offset="100%" stop-color="#1a1a2a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="256" cy="484" rx="200" ry="16" fill="url(#sh)"/>
+  <!-- legs: girders -->
+  <g stroke="#3a4252" stroke-width="5">
+    <rect x="150" y="330" width="34" height="150" fill="url(#steel)"/><rect x="328" y="330" width="34" height="150" fill="url(#steel)"/>
+  </g>
+  <path d="M150 340 L184 380 L150 420 L184 460 M362 340 L328 380 L362 420 L328 460" fill="none" stroke="#3a4252" stroke-width="5"/>
+  <rect x="130" y="470" width="74" height="16" rx="4" fill="#3a4252"/><rect x="308" y="470" width="74" height="16" rx="4" fill="#3a4252"/>
+  <!-- body: lattice frame -->
+  <rect x="120" y="140" width="272" height="200" fill="none" stroke="url(#steel)" stroke-width="22"/>
+  <rect x="120" y="140" width="272" height="200" fill="none" stroke="#3a4252" stroke-width="4"/>
+  <path d="M130 150 L256 330 L382 150 M130 330 L256 150 L382 330" stroke="url(#steel)" stroke-width="14"/>
+  <path d="M256 150 L256 330 M130 240 L382 240" stroke="#3a4252" stroke-width="5"/>
+  <g fill="#2a3242"><circle cx="130" cy="150" r="7"/><circle cx="382" cy="150" r="7"/><circle cx="130" cy="330" r="7"/><circle cx="382" cy="330" r="7"/><circle cx="256" cy="240" r="9"/><circle cx="130" cy="240" r="6"/><circle cx="382" cy="240" r="6"/></g>
+  <!-- arms: orange I-beams -->
+  <path d="M110 170 L40 250 L60 340" fill="none" stroke="url(#beamO)" stroke-width="28" stroke-linejoin="round"/>
+  <path d="M402 170 L472 250 L452 340" fill="none" stroke="url(#beamO)" stroke-width="28" stroke-linejoin="round"/>
+  <path d="M110 170 L40 250 L60 340 M402 170 L472 250 L452 340" fill="none" stroke="#8a3a0a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M40 336 L30 370 M60 340 L64 376 M80 336 L94 366 M432 336 L418 366 M452 340 L448 376 M472 336 L482 370" stroke="#3a4252" stroke-width="8" stroke-linecap="round"/>
+  <!-- head: hard hat + face box -->
+  <rect x="186" y="50" width="140" height="96" rx="10" fill="url(#steel)" stroke="#3a4252" stroke-width="5"/>
+  <path d="M176 64 C176 20 336 20 336 64 Z" fill="#ffd23a" stroke="#a37400" stroke-width="5"/>
+  <rect x="166" y="60" width="180" height="14" rx="6" fill="#ffd23a" stroke="#a37400" stroke-width="4"/>
+  <rect x="210" y="88" width="34" height="30" rx="4" fill="#1a2232"/><rect x="268" y="88" width="34" height="30" rx="4" fill="#1a2232"/>
+  <circle cx="227" cy="103" r="8" fill="#ffb02a"/><circle cx="285" cy="103" r="8" fill="#ffb02a"/>
+  <path d="M230 132 L282 132" stroke="#1a2232" stroke-width="6" stroke-linecap="round"/>
+  <g fill="#2a3242"><circle cx="196" cy="136" r="4"/><circle cx="316" cy="136" r="4"/></g>
+</svg>

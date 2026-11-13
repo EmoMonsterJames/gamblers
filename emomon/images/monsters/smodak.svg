@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- S'modak: a bigger roaring campfire with cute marshmallows, chocolate and crackers gathered round; fairy light glitters over the s'more friends -->
+  <defs>
+    <linearGradient id="log" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8763a"/><stop offset="1" stop-color="#6a3a14"/></linearGradient>
+    <radialGradient id="fire" cx="50%" cy="75%" r="70%"><stop offset="0" stop-color="#fff6b0"/><stop offset=".4" stop-color="#ffb21a"/><stop offset=".8" stop-color="#ff4a1a"/><stop offset="1" stop-color="#c8100a"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd8f0" stop-opacity=".6"/><stop offset="1" stop-color="#ffd8f0" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#aura)"/>
+  <!-- logs -->
+  <g stroke="#3a1a08" stroke-width="7"><rect x="120" y="380" width="272" height="42" rx="21" fill="url(#log)" transform="rotate(-12 256 400)"/><rect x="120" y="380" width="272" height="42" rx="21" fill="url(#log)" transform="rotate(12 256 400)"/></g>
+  <!-- big roaring fire -->
+  <path d="M256 20 C226 90 150 120 150 230 C150 320 200 380 256 380 C312 380 362 320 362 230 C362 170 330 150 322 96 C304 136 298 156 282 166 C292 104 282 60 256 20 Z" fill="url(#fire)" stroke="#a8200a" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M256 140 C238 186 208 206 208 262 C208 316 232 344 256 344 C280 344 304 316 304 262 C304 228 288 206 280 186 C272 206 264 212 256 216 Z" fill="#fff2a0" opacity=".9"/>
+  <ellipse cx="236" cy="262" rx="10" ry="13" fill="#3a1000"/><ellipse cx="278" cy="262" rx="10" ry="13" fill="#3a1000"/>
+  <path d="M238 292 Q256 308 274 292" fill="none" stroke="#3a1000" stroke-width="6" stroke-linecap="round"/>
+  <!-- marshmallow on a stick -->
+  <path d="M60 230 L150 300" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/>
+  <rect x="34" y="196" width="56" height="50" rx="16" fill="#fffaf0" stroke="#a89a80" stroke-width="5" transform="rotate(-30 62 221)"/>
+  <circle cx="56" cy="216" r="4" fill="#3a2a1a"/><circle cx="74" cy="208" r="4" fill="#3a2a1a"/><path d="M60 228 q8 4 14 -4" fill="none" stroke="#3a2a1a" stroke-width="3"/>
+  <!-- chocolate bar friend -->
+  <rect x="384" y="300" width="80" height="100" rx="8" fill="#6a3a1a" stroke="#2a1000" stroke-width="5"/>
+  <path d="M384 334 h80 M384 366 h80 M424 300 v100" stroke="#4a2408" stroke-width="4"/>
+  <circle cx="410" cy="322" r="4" fill="#fff"/><circle cx="438" cy="322" r="4" fill="#fff"/><path d="M412 344 q12 8 24 0" fill="none" stroke="#fff" stroke-width="3"/>
+  <!-- graham cracker friend -->
+  <rect x="40" y="350" width="90" height="90" rx="8" fill="#e0a860" stroke="#7a4a1a" stroke-width="5"/>
+  <g fill="#a8702a"><circle cx="62" cy="372" r="3"/><circle cx="108" cy="372" r="3"/><circle cx="62" cy="420" r="3"/><circle cx="108" cy="420" r="3"/></g>
+  <circle cx="72" cy="392" r="4" fill="#3a2a1a"/><circle cx="98" cy="392" r="4" fill="#3a2a1a"/><path d="M74 408 q11 8 22 0" fill="none" stroke="#3a2a1a" stroke-width="3"/>
+  <!-- fairy light -->
+  <g fill="#ff8ad8"><path d="M140 160 l5 -14 l5 14 l14 5 l-14 5 l-5 14 l-5 -14 l-14 -5 Z"/><path d="M400 240 l5 -14 l5 14 l14 5 l-14 5 l-5 14 l-5 -14 l-14 -5 Z"/><path d="M90 300 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z"/><path d="M440 450 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z"/></g>
+  <g fill="#fff"><circle cx="380" cy="150" r="4"/><circle cx="110" cy="110" r="3"/><circle cx="430" cy="200" r="3"/></g>
+</svg>

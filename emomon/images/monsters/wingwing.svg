@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="r" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffd0e8"/><stop offset="100%" stop-color="#e8487a"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c8f0ff"/><stop offset="100%" stop-color="#2a8ad8"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8ffd0"/><stop offset="100%" stop-color="#3ab868"/></linearGradient>
+    <linearGradient id="y" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff8c8"/><stop offset="100%" stop-color="#f0a820"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e8e0ff" stop-opacity=".55"/><stop offset="100%" stop-color="#e8e0ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a1a3a" stop-opacity=".3"/><stop offset="100%" stop-color="#1a1a3a" stop-opacity="0"/></radialGradient>
+    <g id="w">
+      <path d="M0 0 C40 -70 130 -110 186 -96 C178 -56 160 -22 140 0 C116 30 60 44 0 26 Z" stroke="#2a1a4a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M16 18 C60 24 110 12 140 0 M26 2 C76 -6 126 -30 170 -62" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="url(#aura)"/>
+  <!-- hurricanes -->
+  <g fill="none" stroke="#9ab0d8" stroke-width="6" stroke-linecap="round" opacity=".8">
+    <path d="M70 120 C40 140 60 176 96 166 C124 158 118 124 92 128 C76 131 78 148 92 146"/>
+    <path d="M430 110 C460 130 444 168 408 160 C380 154 384 120 410 122 C426 124 426 140 412 140"/>
+    <path d="M60 380 C30 400 50 436 86 426 C114 418 108 384 82 388"/>
+    <path d="M440 390 C470 410 452 446 418 436 C392 428 398 396 422 398"/>
+    <path d="M30 260 C80 230 120 300 170 270 M342 270 C392 300 432 230 482 260"/>
+  </g>
+  <ellipse cx="256" cy="470" rx="150" ry="14" fill="url(#sh)"/>
+  <!-- many wings: upper pair, original pair, lower pair -->
+  <use href="#w" fill="url(#y)" transform="translate(270 230) rotate(-28) scale(.82)"/>
+  <use href="#w" fill="url(#y)" transform="translate(242 230) scale(-1 1) rotate(-28) scale(.82)"/>
+  <use href="#w" fill="url(#b)" transform="translate(270 270) rotate(-4)"/>
+  <use href="#w" fill="url(#r)" transform="translate(242 270) scale(-1 1) rotate(-4)"/>
+  <use href="#w" fill="url(#g)" transform="translate(268 304) rotate(26) scale(.78)"/>
+  <use href="#w" fill="url(#g)" transform="translate(244 304) scale(-1 1) rotate(26) scale(.78)"/>
+  <!-- eyes at the tips of the main pair -->
+  <g stroke="#1a1a3a" stroke-width="6">
+    <ellipse cx="452" cy="196" rx="28" ry="30" fill="#fff"/><ellipse cx="60" cy="196" rx="28" ry="30" fill="#fff"/>
+  </g>
+  <circle cx="458" cy="200" r="14" fill="#1a1a3a"/><circle cx="54" cy="200" r="14" fill="#1a1a3a"/>
+  <circle cx="463" cy="194" r="5" fill="#fff"/><circle cx="59" cy="194" r="5" fill="#fff"/>
+  <path d="M426 166 L480 162 M86 166 L32 162" stroke="#1a1a3a" stroke-width="6" stroke-linecap="round"/>
+  <!-- woven core -->
+  <ellipse cx="256" cy="282" rx="34" ry="46" fill="#fff4d8" stroke="#2a1a4a" stroke-width="7"/>
+  <path d="M232 258 C248 274 264 274 280 258 M232 284 C248 300 264 300 280 284 M232 310 C248 322 264 322 280 310" fill="none" stroke="#e8487a" stroke-width="5"/>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Chinchillord: a majestic giant chinchilla floating in a fur mantle like royal robes (terracotta near the tail),
+       circled by levitating crystal stones -->
+  <defs>
+    <radialGradient id="fur" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#f3e5f5"/><stop offset=".6" stop-color="#c39bd3"/><stop offset="1" stop-color="#8a5aa8"/></radialGradient>
+    <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d1b3e3"/><stop offset=".6" stop-color="#b48ac8"/><stop offset="1" stop-color="#c0703c"/></linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0f7fa"/><stop offset="1" stop-color="#4dd0e1"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e1bee7" stop-opacity=".8"/><stop offset="1" stop-color="#e1bee7" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#4a2a10" stop-opacity=".35"/><stop offset="1" stop-color="#4a2a10" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="256" cy="246" r="244" fill="url(#aura)"/>
+  <ellipse cx="256" cy="482" rx="140" ry="12" fill="url(#sh)"/>
+  <!-- earth barrier rising -->
+  <path d="M90 478 L120 430 L150 478 Z M362 478 L392 424 L424 478 Z" fill="#a1683a" stroke="#5a3010" stroke-width="5"/>
+  <!-- cloud tail -->
+  <path d="M330 420 C400 430 460 400 470 350 C440 370 420 350 440 320 C400 330 380 380 330 390 Z" fill="#d8b4a0" stroke="#7a4020" stroke-width="6"/>
+  <!-- royal robe mantle body -->
+  <path d="M120 270 C110 360 130 430 170 450 L342 450 C382 430 402 360 392 270 C360 230 152 230 120 270 Z" fill="url(#robe)" stroke="#5a2a7a" stroke-width="8"/>
+  <path d="M180 260 C176 340 190 410 200 446 M332 260 C336 340 322 410 312 446" fill="none" stroke="#f3e5f5" stroke-width="5" opacity=".7"/>
+  <path d="M150 450 Q200 430 256 446 Q312 430 362 450" fill="none" stroke="#c0703c" stroke-width="8"/>
+  <!-- ears -->
+  <ellipse cx="164" cy="96" rx="52" ry="70" fill="url(#fur)" stroke="#5a2a7a" stroke-width="7" transform="rotate(-22 164 96)"/>
+  <ellipse cx="348" cy="96" rx="52" ry="70" fill="url(#fur)" stroke="#5a2a7a" stroke-width="7" transform="rotate(22 348 96)"/>
+  <ellipse cx="166" cy="100" rx="30" ry="46" fill="#f8bbd0" transform="rotate(-22 166 100)"/>
+  <ellipse cx="346" cy="100" rx="30" ry="46" fill="#f8bbd0" transform="rotate(22 346 100)"/>
+  <!-- head -->
+  <ellipse cx="256" cy="196" rx="120" ry="104" fill="url(#fur)" stroke="#5a2a7a" stroke-width="8"/>
+  <!-- small crown of crystal -->
+  <path d="M216 100 L226 70 L240 92 L256 60 L272 92 L286 70 L296 100 Z" fill="url(#gem)" stroke="#00838f" stroke-width="5" stroke-linejoin="round"/>
+  <!-- wise half-closed eyes -->
+  <path d="M184 196 Q210 176 236 196 Q210 214 184 196 Z" fill="#ff4fa0" stroke="#4a0a3a" stroke-width="5"/>
+  <path d="M276 196 Q302 176 328 196 Q302 214 276 196 Z" fill="#ff4fa0" stroke="#4a0a3a" stroke-width="5"/>
+  <path d="M180 188 Q210 172 240 188 M272 188 Q302 172 332 188" fill="none" stroke="#5a2a7a" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="204" cy="194" r="4" fill="#fff"/><circle cx="296" cy="194" r="4" fill="#fff"/>
+  <path d="M246 234 L266 234 L256 246 Z" fill="#ff80ab" stroke="#4a0a3a" stroke-width="4"/>
+  <path d="M256 246 Q246 258 238 252 M256 246 Q266 258 274 252" fill="none" stroke="#4a0a3a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M220 240 L150 228 M292 240 L362 228" stroke="#5a2a7a" stroke-width="3"/>
+  <!-- orbiting crystal stones -->
+  <ellipse cx="256" cy="230" rx="236" ry="70" fill="none" stroke="#b2ebf2" stroke-width="3" stroke-dasharray="6 10" opacity=".8"/>
+  <path d="M28 240 L44 214 L60 240 L44 266 Z" fill="url(#gem)" stroke="#00838f" stroke-width="4"/>
+  <path d="M452 220 L470 196 L488 220 L470 244 Z" fill="url(#gem)" stroke="#00838f" stroke-width="4"/>
+  <path d="M96 300 L108 282 L120 300 L108 318 Z" fill="#a1683a" stroke="#5a3010" stroke-width="4"/>
+  <path d="M392 296 L404 278 L416 296 L404 314 Z" fill="url(#gem)" stroke="#00838f" stroke-width="4"/>
+  <circle cx="420" cy="150" r="4" fill="#fff"/><circle cx="90" cy="160" r="4" fill="#fff"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a3a5a"/><stop offset="100%" stop-color="#150a1f"/></linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e1bee7" stop-opacity=".85"/><stop offset="100%" stop-color="#6a1b9a" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="horn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff3e0"/><stop offset="100%" stop-color="#8d6e63"/></linearGradient>
+    <radialGradient id="aura" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#d50000" stop-opacity=".55"/><stop offset="60%" stop-color="#4a0072" stop-opacity=".35"/><stop offset="100%" stop-color="#4a0072" stop-opacity="0"/></radialGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffeb3b"/><stop offset="60%" stop-color="#d50000"/><stop offset="100%" stop-color="#3e0000"/></radialGradient>
+    <g id="w"><path d="M0 0 C40 -120 170 -180 240 -140 C200 -90 210 -40 170 0 C120 40 50 40 0 20 Z" fill="url(#wing)" stroke="#2a0a3a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M10 10 C80 0 140 -40 190 -100 M30 -20 C90 -60 150 -110 228 -138 M40 24 C100 20 150 0 170 0" fill="none" stroke="#2a0a3a" stroke-width="4"/></g>
+  </defs>
+  <circle cx="256" cy="240" r="256" fill="url(#aura)"/>
+  <!-- pentagram ring -->
+  <circle cx="256" cy="250" r="226" fill="none" stroke="#ff1744" stroke-width="4" opacity=".6"/>
+  <path d="M256 30 L388 432 L44 184 L468 184 L124 432 Z" fill="none" stroke="#ff1744" stroke-width="3" opacity=".35"/>
+  <use href="#w" transform="translate(300 230)"/><use href="#w" transform="translate(212 230) scale(-1 1)"/>
+  <!-- bug abdomen -->
+  <ellipse cx="256" cy="380" rx="70" ry="80" fill="url(#body)" stroke="#05000a" stroke-width="8"/>
+  <path d="M196 350 Q256 368 316 350 M190 390 Q256 410 322 390 M200 428 Q256 444 312 428" fill="none" stroke="#7b1fa2" stroke-width="6"/>
+  <!-- thorax + six legs -->
+  <ellipse cx="256" cy="272" rx="76" ry="56" fill="url(#body)" stroke="#05000a" stroke-width="8"/>
+  <path d="M186 270 L120 300 L100 350 M190 290 L140 340 L136 392 M326 270 L392 300 L412 350 M322 290 L372 340 L376 392" fill="none" stroke="#150a1f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- goat head -->
+  <path d="M196 150 C196 100 316 100 316 150 L300 220 C290 246 222 246 212 220 Z" fill="url(#body)" stroke="#05000a" stroke-width="8" stroke-linejoin="round"/>
+  <!-- horns -->
+  <path d="M210 120 C160 100 140 50 168 20 C174 60 196 80 230 100 Z" fill="url(#horn)" stroke="#3e2723" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M302 120 C352 100 372 50 344 20 C338 60 316 80 282 100 Z" fill="url(#horn)" stroke="#3e2723" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M196 140 L160 150 L192 166 Z M316 140 L352 150 L320 166 Z" fill="#2a1a3a" stroke="#05000a" stroke-width="5"/>
+  <!-- compound fly eyes -->
+  <circle cx="226" cy="160" r="22" fill="url(#eye)" stroke="#05000a" stroke-width="6"/>
+  <circle cx="286" cy="160" r="22" fill="url(#eye)" stroke="#05000a" stroke-width="6"/>
+  <path d="M212 152 L240 152 M212 166 L240 166 M272 152 L300 152 M272 166 L300 166" stroke="#3e0000" stroke-width="2"/>
+  <!-- goat beard + mandibles -->
+  <path d="M236 230 L256 270 L276 230 Z" fill="#2a1a3a" stroke="#05000a" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M226 214 L214 240 M286 214 L298 240" stroke="#05000a" stroke-width="7" stroke-linecap="round"/>
+  <!-- third eye -->
+  <path d="M246 118 C250 108 262 108 266 118 C262 128 250 128 246 118 Z" fill="#ffeb3b" stroke="#05000a" stroke-width="4"/>
+  <!-- swarm -->
+  <circle cx="60" cy="80" r="5" fill="#150a1f"/><circle cx="90" cy="60" r="4" fill="#150a1f"/><circle cx="440" cy="90" r="5" fill="#150a1f"/><circle cx="470" cy="130" r="4" fill="#150a1f"/><circle cx="60" cy="440" r="5" fill="#150a1f"/><circle cx="452" cy="452" r="5" fill="#150a1f"/>
+</svg>

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="ragged" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <radialGradient id="body" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#b6f25a"/>
+      <stop offset="55%" stop-color="#6cc232"/>
+      <stop offset="100%" stop-color="#2f6e1f"/>
+    </radialGradient>
+    <radialGradient id="eye" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fff3b0"/>
+      <stop offset="45%" stop-color="#ffbf3c"/>
+      <stop offset="100%" stop-color="#c76a12"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffcf5a" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#ffcf5a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="blade" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#4f9c2a"/>
+      <stop offset="100%" stop-color="#c4f76a"/>
+    </linearGradient>
+    <!-- one grass blade pointing up from the top of the body (body centre 256,270) -->
+    <path id="b1" d="M240 175 C244 150 250 128 258 104 C262 130 266 152 274 175 Z" fill="url(#blade)"/>
+    <path id="b2" d="M246 185 C250 168 254 152 262 136 C264 156 266 170 270 185 Z" fill="#3f8a24"/>
+    <!-- leg: hip at 0,0 going outwards to the left, claw at the end -->
+    <g id="leg">
+      <path d="M0 0 C-40 -40 -80 -30 -95 10 L-105 95" fill="none" stroke="#3d7f22" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M-30 -22 l-6 -16 M-60 -30 l-4 -17 M-88 -12 l-14 -8 M-98 30 l-14 -2" stroke="#7fcf3c" stroke-width="5" stroke-linecap="round"/>
+      <path d="M-112 88 L-100 130 L-96 92 Z" fill="#4a3426" stroke="#2b1d14" stroke-width="2"/>
+    </g>
+  </defs>
+
+  <!-- antennae -->
+  <path d="M215 175 C190 120 160 95 120 80" fill="none" stroke="#a6b04a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M300 165 C330 110 370 85 410 70" fill="none" stroke="#a6b04a" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- back legs -->
+  <use xlink:href="#leg" transform="translate(170 300)"/>
+  <use xlink:href="#leg" transform="translate(200 330) scale(.8)"/>
+  <use xlink:href="#leg" transform="translate(342 300) scale(-1 1)"/>
+  <use xlink:href="#leg" transform="translate(312 330) scale(-.8 .8)"/>
+
+  <!-- grass fur: blades all around the body -->
+  <g>
+    <use xlink:href="#b1" transform="rotate(-110 256 270)"/><use xlink:href="#b1" transform="rotate(-95 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(-80 256 270)"/><use xlink:href="#b1" transform="rotate(-64 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(-48 256 270)"/><use xlink:href="#b1" transform="rotate(-33 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(-18 256 270)"/><use xlink:href="#b1" transform="rotate(-4 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(10 256 270)"/><use xlink:href="#b1" transform="rotate(24 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(38 256 270)"/><use xlink:href="#b1" transform="rotate(53 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(68 256 270)"/><use xlink:href="#b1" transform="rotate(84 256 270)"/>
+    <use xlink:href="#b1" transform="rotate(100 256 270)"/><use xlink:href="#b1" transform="rotate(116 256 270)"/>
+    <use xlink:href="#b2" transform="rotate(-88 256 270)"/><use xlink:href="#b2" transform="rotate(-56 256 270)"/>
+    <use xlink:href="#b2" transform="rotate(-26 256 270)"/><use xlink:href="#b2" transform="rotate(3 256 270)"/>
+    <use xlink:href="#b2" transform="rotate(31 256 270)"/><use xlink:href="#b2" transform="rotate(60 256 270)"/>
+    <use xlink:href="#b2" transform="rotate(92 256 270)"/>
+  </g>
+
+  <!-- body -->
+  <ellipse cx="256" cy="275" rx="128" ry="108" fill="url(#body)" filter="url(#ragged)"/>
+  <g fill="none" stroke="#9fe04f" stroke-width="4" stroke-linecap="round" opacity=".8">
+    <path d="M200 200 l-8 -18 M232 188 l-3 -20 M268 186 l4 -20 M300 196 l10 -17 M330 215 l14 -12"/>
+    <path d="M160 260 l-14 -6 M352 258 l16 -6 M180 330 l-12 8 M336 330 l12 8"/>
+  </g>
+
+  <!-- front legs -->
+  <use xlink:href="#leg" transform="translate(185 345) scale(.75)"/>
+  <use xlink:href="#leg" transform="translate(327 345) scale(-.75 .75)"/>
+
+  <!-- glowing eyes -->
+  <circle cx="200" cy="248" r="46" fill="url(#glow)"/>
+  <circle cx="306" cy="240" r="50" fill="url(#glow)"/>
+  <circle cx="200" cy="248" r="24" fill="url(#eye)" stroke="#5a3a10" stroke-width="3"/>
+  <circle cx="306" cy="240" r="28" fill="url(#eye)" stroke="#5a3a10" stroke-width="3"/>
+  <ellipse cx="193" cy="240" rx="7" ry="5" fill="#fff" opacity=".9"/>
+  <ellipse cx="298" cy="231" rx="8" ry="6" fill="#fff" opacity=".9"/>
+
+  <!-- big toothy mouth -->
+  <path d="M190 286 Q256 270 324 284 Q312 362 256 368 Q200 362 190 286 Z" fill="#5a1626"/>
+  <path d="M214 342 Q256 318 300 340 Q284 362 256 365 Q228 362 214 342 Z" fill="#e57a8a"/>
+  <g fill="#fff6dc" stroke="#c9b48a" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M196 288 L204 312 L212 285 Z M214 284 L223 314 L232 282 Z M234 281 L243 312 L252 280 Z M254 280 L263 312 L272 280 Z M274 280 L283 311 L292 281 Z M294 282 L302 309 L310 283 Z M312 284 L317 302 L322 285 Z"/>
+    <path d="M210 344 L218 326 L226 350 Z M232 354 L240 332 L248 358 Z M256 358 L264 334 L272 357 Z M280 352 L287 330 L294 348 Z"/>
+  </g>
+</svg>
