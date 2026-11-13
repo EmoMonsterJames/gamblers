@@ -288,7 +288,7 @@ export function finishBattle(winner, loser) {
     const s = S();
     s.candidates = [winner, loser];
     s.results = { [winner]: { pass: true, battle: true }, [loser]: { pass: false, battle: true } };
-    log(`⚔️ 배틀 미션: ${name(winner)} 승리 (HP ${s.ps[winner].hp}), ${name(loser)} 패배`);
+    log(`⚔️ 배틀 미션: ${name(winner)} 승리 (HP ${Math.round(s.ps[winner].hp * 100) / 100}), ${name(loser)} 패배`);
     eliminate(loser);
 }
 
@@ -300,7 +300,7 @@ export function useHpItem(pid, itemId, amount) {
     const before = ps.hp;
     ps.hp = Math.min(CONFIG.START_HP, ps.hp + amount);
     ps.items[itemId]--;
-    log(`🧪 ${name(pid)} HP ${before} → ${ps.hp}`);
+    log(`🧪 ${name(pid)} HP ${Math.round(before * 100) / 100} → ${Math.round(ps.hp * 100) / 100}`);
     Store.saveSeason();
     return ps.hp - before;
 }

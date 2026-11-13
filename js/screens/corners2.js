@@ -41,13 +41,24 @@ export async function musicCorner(pid, turn) {
     bar.firstChild.style.transition = `width ${LISTEN}s linear`;
     let audio = null, synth = null;
     if (tr) {
-        audio = new Audio("audio/music/" + tr.file);
+        // Load the whole file as a blob: a blob: URL is always seekable, even when the
+        // web server ignores HTTP Range requests (then a plain URL can only play from 0:00).
+        const url = "audio/music/" + encodeURIComponent(tr.file);
+        let src = url;
+        try { const r = await fetch(url); if (r.ok) src = URL.createObjectURL(await r.blob()); } catch { }
+        audio = new Audio(src);
         audio.muted = Sound.muted;
         audio.volume = 0.2; // a quarter of the old 0.8 — quiet background listening
-        await new Promise(res => { audio.addEventListener("loadedmetadata", res, { once: true }); audio.addEventListener("error", res, { once: true }); setTimeout(res, 2500); });
+        await new Promise(res => { audio.addEventListener("loadedmetadata", res, { once: true }); audio.addEventListener("error", res, { once: true }); setTimeout(res, 4000); });
         const d = audio.duration;
-        if (isFinite(d) && d > LISTEN + 1) audio.currentTime = Math.random() * (d - LISTEN); // a random 30 s section
+        if (isFinite(d) && d > LISTEN + 1) {
+            const at = Math.random() * (d - LISTEN); // a random 30 s section
+            audio.currentTime = at;
+            await new Promise(res => { audio.addEventListener("seeked", res, { once: true }); setTimeout(res, 1500); });
+            if (audio.currentTime < 1 && at > 2) audio.currentTime = at; // retry once if the seek didn't stick
+        }
         audio.play().catch(() => { });
+        audio.addEventListener("pause", () => { if (src.startsWith("blob:")) URL.revokeObjectURL(src); }, { once: true });
     } else {
         synth = ["lounge_jazz", "synthwave", "monkey_funk", "tropical_steel", "bigband_swing"][Math.floor(Math.random() * 5)];
         Sound.bgm(synth, 0.125); // a quarter of the normal BGM level

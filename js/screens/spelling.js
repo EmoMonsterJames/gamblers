@@ -16,12 +16,27 @@ import { WORDS, spellHint2, spellPrize, SPELL_MIN, SPELL_MAX } from "../data/wor
 import * as G from "../game/season.js";
 import { letterCard } from "../ui/letterCard.js";
 
+const SPELL_FEE = 1000, SPELL_ADMIT = 0.5;
+
 export function spellingView(pid, loc, onChange) {
     const s = G.S(), ps = s.ps[pid];
     const wrap = h("div.spelling");
     const sp = ps.spell;
     const playedThisRound = ps.spellRound === s.round && !sp;
     const head = h("div.sb-head", h("span.sb-bee", "🐝"), h("div", h("b", "SPELLING BEE"), h("small", `알파벳권으로 단어를 완성하고 ${fmt(SPELL_MIN)}~${fmt(SPELL_MAX)} G 상금을 받으세요!`)));
+
+    // ---- 🎟️ entry gate: pay SPELL_FEE, then a random 50/50 allow / deny (no refund on deny)
+    if (!sp && !playedThisRound && ps.spellPass !== s.round) {
+        const denied = ps.spellDeny === s.round;
+        wrap.append(head,
+            h("div.sb-gate",
+                h("div.sb-gate-ico", denied ? "⛔" : "🎟️"),
+                h("b", denied ? "입장 거부! 1,000 G는 환불되지 않습니다." : "입장료를 내고 운을 시험하세요"),
+                h("p.muted", `입장료 ${fmt(SPELL_FEE)} G를 내면 랜덤으로 입장 허용 / 거부가 결정됩니다. 거부되면 입장료는 환불되지 않습니다.`),
+                h("button.btn.gold.big", { disabled: ps.money < SPELL_FEE, onclick: enter }, denied ? `🎟️ 다시 도전 (${fmt(SPELL_FEE)} G)` : `🎟️ 입장하기 (${fmt(SPELL_FEE)} G)`),
+                ps.money < SPELL_FEE ? h("p.notice", "💸 입장료가 부족합니다.") : ""));
+        return wrap;
+    }
 
     if (!sp) {
         const startBtn = h("button.btn.gold.big", { disabled: playedThisRound, onclick: start }, "▶ START");
@@ -65,6 +80,17 @@ export function spellingView(pid, loc, onChange) {
             h("button.btn.red", { onclick: giveUp }, "🏳️ 포기")));
     return wrap;
 
+    async function enter() {
+        if (ps.money < SPELL_FEE || ps.spellPass === s.round) return;
+        ps.money -= SPELL_FEE;
+        const ok = Math.random() < SPELL_ADMIT;
+        if (ok) { ps.spellPass = s.round; ps.spellDeny = null; } else ps.spellDeny = s.round;
+        G.log(`🐝 ${G.name(pid)} Spelling Bee 입장료 ${fmt(SPELL_FEE)}G → ${ok ? "입장 허용 ✅" : "입장 거부 ⛔ (환불 없음)"}`);
+        Store.saveSeason(true);
+        if (ok) { Sound.bonus(); toast("✅ 입장 허용! START를 눌러 도전하세요", "ok", 3000); }
+        else { Sound.lose(); toast(`⛔ 입장 거부! ${fmt(SPELL_FEE)} G는 환불되지 않습니다`, "warn", 3500); }
+        onChange();
+    }
     function start() {
         if (ps.spell || ps.spellRound === s.round) return;
         ps.spellLast = null;

@@ -134,7 +134,7 @@ export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChan
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
-            h("h4", "🎒 아이템", h("small.muted", ` · HP ${ps.hp} / ${CONFIG.START_HP}`)),
+            h("h4", "🎒 아이템", h("small.muted", ` · HP ${Math.round(ps.hp * 100) / 100} / ${CONFIG.START_HP}`)),
             h("div.inv-items",
                 itemBtn("time_ext", "⏱️ +5분 연장 사용", () => onUseTime?.()),
                 itemBtn("mission_pass", "🎫 미션완료권 사용", () => onMission?.()),

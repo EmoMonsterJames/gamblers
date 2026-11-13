@@ -212,6 +212,10 @@
 .am-chip button { background: none; border: 0; color: #f87171; font-size: 16px; cursor: pointer; padding: 0 4px; }
 .am-togs { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0; }
 .am-tog { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; }
+.am-tog.dim { opacity: .65; }
+.am-corners { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 4px; padding: 8px 10px; border-radius: 10px; background: #ffffff0d; }
+.am-corner { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #facc1522; border: 1px solid #facc1555; }
+.am-corner.rule { background: #ef444422; border-color: #ef444455; }
 .ag-card.off { opacity: .6; }
 .region-tabs { margin-bottom: 10px; flex-wrap: wrap; }
 

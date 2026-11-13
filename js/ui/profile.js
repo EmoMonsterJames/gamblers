@@ -73,7 +73,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                     badge(rec.avg ? `전적 평균 ${rec.avg.toFixed(1)}위 (${rec.seasons}시즌)` : "전적 없음", "rec"),
                     rec.wins ? badge(`👑 ${rec.wins}회 우승`, "crown") : null,
                     ps?.out ? badge(`탈락 · ${ps.rank}위`, "dead") : null),
-                ps ? h("div.hp", h("div.hp-bar", h("i", { style: { width: hpPct + "%" } })), h("span", `HP ${ps.hp}`)) : null)),
+                ps ? h("div.hp", h("div.hp-bar", h("i", { style: { width: hpPct + "%" } })), h("span", `HP ${Math.round(ps.hp * 100) / 100}`)) : null)),
         ps ? h("div.pcard-money",
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
             h("div.stat.pts", h("small", "포인트"), h("b", fmt(ps.points) + " P"))) : null,

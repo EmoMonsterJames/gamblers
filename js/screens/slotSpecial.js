@@ -434,10 +434,10 @@ export async function playSpecial(res, api) {
             if (b.stop) {
                 // the ball sticks to the bumper and cashes it in on the spot
                 stopPeg.classList.remove("hit"); void stopPeg.offsetWidth; stopPeg.classList.add("hit", "won");
-                ball.classList.add("stuck"); ball.textContent = b.tier ? `${p.glyph} JACKPOT!` : `${p.glyph} ${b.stop}!`;
+                ball.classList.add("stuck"); ball.textContent = b.tier ? `${p.glyph} ${b.tier}!` : `${p.glyph} ${b.stop}!`;
                 b.tier ? Sound.bonus() : Sound.cash();
                 api.shake?.(frame);
-                res = b.tier ? `${p.glyph} ${i + 1}: 💥 JACK 범퍼 즉시 당첨 → JACKPOT! ${fmt(b.amount || 0)} G` : `${p.glyph} ${i + 1}: 💥 ${b.stop} 범퍼 즉시 당첨 → ${fmt(b.value)} G`;
+                res = b.tier ? `${p.glyph} ${i + 1}: 💥 JACK 범퍼 즉시 당첨 → ${b.tier} JACKPOT! ${fmt(b.amount || 0)} G` : `${p.glyph} ${i + 1}: 💥 ${b.stop} 범퍼 즉시 당첨 → ${fmt(b.value)} G`;
             } else {
                 slots.children[b.slot]?.classList.add("hit");
                 Sound.coin();

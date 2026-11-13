@@ -5,7 +5,8 @@
 import { h } from "../core/util.js";
 import { toast, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, earnKinds } from "../data/catalog.js";
+import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds } from "../data/catalog.js";
+import { locationShops } from "../data/catalogAdmin.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
 import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
@@ -75,8 +76,28 @@ export function adminMapsPage() {
         const reqVal = rk === "country"
             ? h("select", { onchange: ev => setReq("country", ev.target.value) }, COUNTRIES.map(c => h("option", { selected: l.req.country === c }, c)))
             : ["points", "fee", "feePts"].includes(rk) ? h("input.num", { type: "number", min: 0, step: rk === "fee" ? 500 : 10, value: l.req[rk], onchange: ev => setReq(rk, ev.target.value) }) : null;
-        const toggle = (key, txt) => h("label.am-tog", h("input", { type: "checkbox", checked: !!l[key], onchange: ev => { e[key] = ev.target.checked; dirty(); } }), txt);
+        const toggle = (key, txt) => h("label.am-tog", h("input", { type: "checkbox", checked: !!l[key], onchange: ev => { e[key] = ev.target.checked; dirty(); draw(); } }), txt);
         const earn = earnKinds(l);
+        // shops: the map's own shop list + shops that admin item placements add (catalogAdmin)
+        const own = new Set(l.shops || []);
+        const viaItems = new Set(locationShops({ ...l, shops: [] }));
+        const shopToggles = Object.keys(SHOPS).filter(k => k !== "discount").map(k => h("label.am-tog" + (viaItems.has(k) && !own.has(k) ? ".dim" : ""), { title: viaItems.has(k) ? "상품 관리에서 이 맵에 배치한 아이템이 있어 항상 표시됩니다" : "" },
+            h("input", { type: "checkbox", checked: own.has(k) || viaItems.has(k), disabled: viaItems.has(k) && !own.has(k), onchange: ev => {
+                const next = new Set(loc(l.id).shops || []);
+                ev.target.checked ? next.add(k) : next.delete(k);
+                e.shops = Object.keys(SHOPS).filter(x => next.has(x)); dirty(); draw();
+            } }), `${SHOPS[k].icon} ${SHOPS[k].name}${viaItems.has(k) && !own.has(k) ? " (아이템 배치)" : ""}`));
+        // every corner a player will see on this map (same order as the in-game tabs)
+        const corners = [
+            ...locationShops(l).map(k => `${SHOPS[k].icon} ${SHOPS[k].name}`),
+            l.discount && "🏷️ 할인 상점",
+            ...earn.map(k => EARN_LABEL[k] || k),
+            l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
+        ].filter(Boolean);
+        const rules = [
+            l.crazy && "🤪 Crazy (입장 시 5분 차감)", l.evil && `😈 Evil (HP −${l.evil})`, l.donation && "🎁 기부 입장",
+            l.npcOnly && `💀 NPC 고정: ${NPCS.find(n => n.id === l.npcOnly)?.name || l.npcOnly}`,
+        ].filter(Boolean);
         return h("div.ag-card.am-loc" + (l.off ? ".off" : ""),
             h("div.row.between",
                 h("h3", `${l.emoji} ${l.name}`, h("small.muted", ` · ${l.id}`)),
@@ -90,13 +111,16 @@ export function adminMapsPage() {
                 h("label.cf", h("small", "입장 조건"), h("div.row", h("select", { onchange: ev => setReq(ev.target.value) }, REQS.map(([v, t]) => h("option", { value: v, selected: rk === v }, t))), reqVal))),
             chipPicker(l.slots || [], SLOTS, SLOT_BY_ID, "슬롯머신", ids => { e.slots = ids; dirty(); draw(); }),
             chipPicker(l.casino || [], CASINO_GAMES, CASINO_BY_ID, "카지노 게임", ids => { e.casino = ids; dirty(); draw(); }),
-            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"),
+            h("div.am-corners", h("small", `활성 코너 ${corners.length}개:`), corners.length ? corners.map(c => h("span.am-corner", c)) : h("span.muted", "없음"),
+                rules.length ? [h("small", " · 맵 규칙:"), rules.map(c => h("span.am-corner.rule", c))] : null),
+            h("div.am-togs", h("small", "상점:"), shopToggles),
+            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "돈벌기 코너:"), EARN_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: earn.includes(k), onchange: ev => {
                 const next = new Set(earnKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);
-                e.earn = next.size ? EARN_ALL.filter(x => next.has(x)) : false; dirty();
+                e.earn = next.size ? EARN_ALL.filter(x => next.has(x)) : false; dirty(); draw();
             } }), EARN_LABEL[k]))),
             !(l.slots?.length) ? h("p.notice", "⚠️ 슬롯이 하나도 없습니다.") : null);
     }

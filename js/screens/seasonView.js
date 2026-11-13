@@ -91,7 +91,7 @@ function sidebar(s) {
             const r = s.results[pid];
             const mark = s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
             const cand = s.status === "judge" && s.candidates.includes(pid);
-            const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`), h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${s.ps[pid].hp}`), h("span.mark", mark)]);
+            const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`), h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${Math.round(s.ps[pid].hp * 100) / 100}`), h("span.mark", mark)]);
             if (cand) el.classList.add("cand");
             el.onclick = () => modal(playerCard(pid, s.ps[pid]), { title: displayName(Store.player(pid)), wide: true });
             return el;
@@ -287,7 +287,7 @@ async function arrive(s, loc) {
     if (loc.evil) {
         const r = G.hpToll(pid, loc.evil, `${loc.emoji} ${loc.name}`);
         Sound.boom();
-        await alertBox("😈 EVIL TOWN", r.dead ? [`HP가 ${loc.evil} 이하인 상태로 Evil Town에 들어와… 사망했습니다! ☠️`] : [`Evil Town의 저주! HP −${loc.evil}`, `남은 HP ❤ ${r.hp}`], "warn evil");
+        await alertBox("😈 EVIL TOWN", r.dead ? [`HP가 ${loc.evil} 이하인 상태로 Evil Town에 들어와… 사망했습니다! ☠️`] : [`Evil Town의 저주! HP −${loc.evil}`, `남은 HP ❤ ${Math.round(r.hp * 100) / 100}`], "warn evil");
         if (r.dead) return false;
     }
     if (loc.donation) {
@@ -304,7 +304,7 @@ async function arrive(s, loc) {
         } else {
             const r = G.hpToll(pid, 10, `${loc.emoji} ${loc.name}`);
             Sound.boom();
-            await alertBox("🎁 기부할 아이템이 없습니다", r.dead ? ["기부할 아이템도 없고 HP도 10 이하… 사망했습니다! ☠️"] : ["기부 대신 HP −10", `남은 HP ❤ ${r.hp}`], "warn");
+            await alertBox("🎁 기부할 아이템이 없습니다", r.dead ? ["기부할 아이템도 없고 HP도 10 이하… 사망했습니다! ☠️"] : ["기부 대신 HP −10", `남은 HP ❤ ${Math.round(r.hp * 100) / 100}`], "warn");
             if (r.dead) return false;
         }
     }
@@ -406,7 +406,7 @@ function locationStage(s) {
             ps.loanGold > 0 || ps.loan ? h("div.stat.loan", h("small", "대출된 골드 (게임 전용)"), h("b", fmt(ps.loanGold || 0) + " G")) : null,
             ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
             h("div.stat.pts", h("small", "포인트"), h("b", ps.points + " P")),
-            h("div.stat", h("small", "HP"), h("b" + (ps.hp < 50 ? ".down" : ""), `❤ ${ps.hp}`)),
+            h("div.stat", h("small", "HP"), h("b" + (ps.hp < 50 ? ".down" : ""), `❤ ${Math.round(ps.hp * 100) / 100}`)),
             h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
@@ -472,7 +472,7 @@ function locationStage(s) {
         else if (id === "inv") content = inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
             onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } },
-            onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${r}`, "ok"); updateHud(); } },
+            onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${Math.round(r * 100) / 100}`, "ok"); updateHud(); } },
             onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
             onChange: () => side.replaceChildren(sideCard()),
             onPass: id => movePass(id),

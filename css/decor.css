@@ -309,6 +309,9 @@
 .sb-head small { font-weight: 700; }
 .sb-bee { font-size: 40px; animation: wobble 1.4s infinite; }
 .sb-rules { margin: 0; padding-left: 20px; line-height: 1.7; }
+.sb-gate { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 18px 14px; margin-top: 12px; border: 2px dashed #facc15; border-radius: 16px; background: #facc1512; }
+.sb-gate-ico { font-size: 44px; line-height: 1; }
+.sb-gate p { margin: 0; }
 .sb-info { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .sb-info > span { padding: 4px 12px; border-radius: 999px; background: #ffffff14; font-weight: 700; }
 .sb-pos { background: #7c3aed !important; color: #fff; }

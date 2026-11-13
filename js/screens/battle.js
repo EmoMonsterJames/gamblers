@@ -28,7 +28,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
     const F = [aId, bId].map(pid => ({ pid, ps: s.ps[pid], hp: Math.max(1, s.ps[pid].hp ?? CONFIG.START_HP), shield: false, sleep: 0 }));
     const side = i => {
         const f = F[i];
-        const hpI = h("i"), hpT = h("span", `${f.hp} / ${CONFIG.START_HP}`);
+        const hpI = h("i"), hpT = h("span", `${Math.round(f.hp * 100) / 100} / ${CONFIG.START_HP}`);
         const fig = h("div.fighter.f" + i, h("div.f-status"), avatar(f.pid, 170), f.ps.pet ? h("div.f-pet", petView(f.ps.pet, f.ps.petEffect, 70)) : null);
         f.el = fig; f.hpI = hpI; f.hpT = hpT;
         return h("div.fside.s" + i,
@@ -53,7 +53,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
 
     const W = ms => sleep(ms / speed);
     const say = (txt, cls = "") => { logEl.prepend(h("div" + (cls ? "." + cls : ""), txt)); };
-    const setHp = f => { f.hpI.style.width = Math.max(0, f.hp) / CONFIG.START_HP * 100 + "%"; f.hpT.textContent = `${Math.max(0, f.hp)} / ${CONFIG.START_HP}`; f.hpI.classList.toggle("low", f.hp <= 30); };
+    const setHp = f => { f.hpI.style.width = Math.max(0, f.hp) / CONFIG.START_HP * 100 + "%"; f.hpT.textContent = `${Math.round(Math.max(0, f.hp) * 100) / 100} / ${CONFIG.START_HP}`; f.hpI.classList.toggle("low", f.hp <= 30); };
     const status = f => { const st = f.el.querySelector(".f-status"); st.replaceChildren(f.shield ? h("span", "🛡️") : "", f.sleep ? h("span.zz", `💤${f.sleep}`) : "", f.sprayed > 0 ? h("span.sprayed", `🧴${f.sprayed}`) : ""); };
 
     async function run() {
@@ -177,7 +177,7 @@ export function battleView(aId, bId, onWin, { title = "🏆 FINAL BATTLE 🏆", 
         def.hp -= atk; setHp(def);
         floating(def, `-${atk}`, "dmg"); Sound.hit(); shake(def.el, "hit-shake");
         if (atk >= 50) { shake(arena, "big-shake"); Sound.boom(); }
-        say(`💥 ${name(def.pid)}에게 ${atk} 데미지! (HP ${Math.max(0, def.hp)})`, "bad");
+        say(`💥 ${name(def.pid)}에게 ${atk} 데미지! (HP ${Math.round(Math.max(0, def.hp) * 100) / 100})`, "bad");
     }
     // 🪄 마법: one random spell. Turning a weapon into No Move is permanent (it stays in the arsenal).
     async function castMagic(atk, def) {

@@ -93,7 +93,7 @@ const JOBS_RUN = {
         if (ps.hp <= 10) { toast("HP가 너무 낮아 헌혈할 수 없습니다 (HP 11 이상 필요)", "warn"); return null; }
         let give = randStep(10, 30, 1);
         give = Math.min(give, ps.hp - 1);
-        if (!(await confirmBox(`헌혈하면 HP가 10~30 줄어듭니다 (현재 HP ${ps.hp}). 진행할까요?`))) return null;
+        if (!(await confirmBox(`헌혈하면 HP가 10~30 줄어듭니다 (현재 HP ${Math.round(ps.hp * 100) / 100}). 진행할까요?`))) return null;
         const bag = h("div.blood-bag", h("i"));
         const ov = taskOverlay(h("div.task-scene", avatar(pid, 180), h("div.needle", "💉"), bag, h("div.task-label", "헌혈 중…")));
         Sound.whoosh();

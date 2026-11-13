@@ -1907,7 +1907,7 @@ function glacier(cfg, ctx) {
     if (doFreeze && !waysEval(cfg, grid, bet).win) grid = forceRun(cfg, grid, pickW(payKeys(cfg).map(k => [k, 1])), 3).grid;
     const kinds = [];
     const points = addPoints(grid);
-    const phases = [{ t: "spin", grid: clone(grid), antic: [] }, { t: "fx", name: "frost" }];
+    const phases = [{ t: "spin", grid: clone(grid), antic: [] }];
     endFeat();
     if (doAurora) {
         kinds.push("aurora"); feat(cfg, "aurora");
