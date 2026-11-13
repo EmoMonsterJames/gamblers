@@ -27,6 +27,10 @@ import { spellingView } from "./spelling.js";
 import { locationShops } from "../data/catalogAdmin.js";
 import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo } from "./corners.js";
 import { battleView } from "./battle.js";
+import { honorView } from "./honor.js";
+import { HONOR_KINDS, honorKinds } from "../data/honor.js";
+import { clawElimination, winnerCelebration } from "../ui/claw.js";
+import { Activity, activityBusy } from "../core/fx.js";
 
 let root = null, timer = null;
 
@@ -470,6 +474,7 @@ function locationStage(s) {
     const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
+        ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     let currentTab = "games";
     const tabBar = h("div.tabs");
@@ -499,6 +504,7 @@ function locationStage(s) {
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
         else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
+        else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === id) tabBody(id); } });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
@@ -577,12 +583,21 @@ function locationStage(s) {
         if (t.remaining <= 0) timeUp();
     }, 1000);
 
+    // ⏰ time up: anything that already started (a spin and its whole bonus, a casino hand,
+    // a corner, a shop purchase, an NPC visit, a map move) is played out first —
+    // its winnings count — and only then is the turn over. Nothing new can start (canPlay / corners check the clock).
+    let timingOut = false;
     async function timeUp() {
+        if (timingOut || finishing) return; timingOut = true;
         Sound.boom();
         await banner("⏰ TIME UP!", 1500, "timeup");
-        // let a running spin finish
-        let wait = 0;
-        while (root.querySelector(".game-screen .busy, .game-screen.busy") && wait++ < 120) await sleep(500);
+        if (activityBusy() || npcBusy || moving) {
+            const note = h("div.timeup-wait", "⏳ 플레이 시간 종료 — 진행 중인 플레이가 끝나면 턴이 종료됩니다");
+            root.querySelector(".location")?.prepend(note);
+            while (activityBusy() || npcBusy || moving) await sleep(400);
+            note.remove();
+            await sleep(600);
+        }
         finishTurn();
     }
     let finishing = false;
@@ -624,19 +639,13 @@ function locationStage(s) {
 function judgeStage(s) {
     const passed = s.order.filter(pid => s.results[pid]?.pass);
     const failed = s.order.filter(pid => !s.results[pid]?.pass);
-    const machine = reelMachine({ size: 130, label: "ELIMINATION" });
-    const candPlayers = s.candidates.map(id => Store.player(id));
-    machine.idle(candPlayers);
+    // 🕹️ claw machine: > 3 candidates → the claw pulls 3 balls → 1 saved → 1 of the last 2 is out
     let done = false;
-    const btn = h("button.btn.red.huge", { onclick: async () => {
-        if (done) return; done = true; btn.disabled = true;
-        const target = pick(s.candidates);
-        if (s.candidates.length === 1) { machine.show(target); await sleep(800); }
-        else await machine.spin(target, candPlayers, { tense: true });
-        Sound.boom();
-        G.eliminate(target);
+    const claw = clawElimination([...s.candidates], { onDone: loser => {
+        if (done) return; done = true;
+        G.eliminate(loser);
         render();
-    } }, s.candidates.length === 1 ? "💀 탈락 확정" : "💀 탈락자 뽑기");
+    } });
     return h("div.judge-stage",
         h("h2.stage-title", `ROUND ${s.round} 결과`),
         s.allPassed ? h("div.notice", "모두 미션 성공! 이번 라운드 손익 하위 3명이 탈락 후보가 됩니다.") : null,
@@ -645,9 +654,8 @@ function judgeStage(s) {
             h("div.jcol.ok", h("h3", `✅ 성공 ${passed.length}`), h("div.jlist", passed.map(pid => miniPlayer(pid, s.ps[pid], s.results[pid]?.exempt ? h("span.exempt-tag", { title: `${s.results[pid].exempt}으로 인해 면제` }, "⭐ 면제") : null)))),
             h("div.jcol.bad", h("h3", `❌ 실패 ${failed.length}`), h("div.jlist", failed.map(pid => miniPlayer(pid, s.ps[pid]))))),
         h("h3.center", `⚖️ 탈락 후보 ${s.candidates.length}명`),
-        h("div.cand-row", s.candidates.map(pid => h("div.cand-card", avatar(pid, 80), h("small", displayName(Store.player(pid)))))),
-        machine.el,
-        h("div.row.center", btn));
+        s.candidates.length > 3 ? h("div.cand-row", s.candidates.map(pid => h("div.cand-card", avatar(pid, 64, { effect: false }), h("small", displayName(Store.player(pid)))))) : null,
+        claw);
 }
 
 function eliminatedStage(s) {
@@ -672,18 +680,18 @@ function finalStage(s) {
     return battleView(a, b, win);
 }
 
+// champion: the whole roster lined up around the winner, balloons, fireworks, blinking WINNER
+// signs. The season is over for good only when the admin presses 🏁 시즌 종료.
 function doneStage(s) {
-    const pid = s.winnerId;
-    setTimeout(() => { confetti(150, ["👑", "🪙", "✨", "💰"]); Sound.fanfare(); }, 200);
-    return h("div.champ-stage",
-        h("div.champ-rays"),
-        h("div.champ-crown", "👑"),
-        avatar(pid, 220),
-        h("h1", displayName(Store.player(pid))),
-        h("p", `SEASON ${s.number} CHAMPION · 명예의 전당 등극!`),
-        h("div.row.center",
-            h("button.btn.gold.big", { onclick: () => { location.hash = "#/hall"; } }, "🏆 명예의 전당 보기"),
-            h("button.btn.ghost.big", { onclick: () => { Store.endSeasonLocal(); G.newSeason(); render(); } }, `🎰 시즌 ${s.number + 1} 시작`)));
+    const endBtn = h("button.btn.red.big", { onclick: async () => {
+        if (!(await confirmBox(`시즌 ${s.number}을(를) 최종 종료할까요?\n(결과와 명예의 전당 기록은 그대로 남습니다)`, "🏁 시즌 종료", "취소"))) return;
+        Store.endSeasonLocal();
+        toast(`🏁 시즌 ${s.number} 종료!`, "ok");
+        render();
+    } }, "🏁 시즌 종료");
+    return winnerCelebration(s, { actions: [
+        h("button.btn.gold.big", { onclick: () => { location.hash = "#/hall"; } }, "🏆 명예의 전당 보기"),
+        Store.canWrite ? endBtn : h("span.muted", "관리자 로그인 후 시즌을 종료할 수 있습니다")] });
 }
 
 // ------------------------------------------------------------------ loans

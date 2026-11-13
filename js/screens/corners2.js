@@ -6,7 +6,7 @@
 // =====================================================================
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
-import { confirmBox, confetti, modal } from "../core/fx.js";
+import { confirmBox, confetti, modal, Activity, toast } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry, LOC_BY_ID } from "../data/catalog.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
@@ -172,7 +172,12 @@ export function jobView(pid, turn, onChange, payout) {
         h("div.job-list", CAREERS.map(c => h("div.job-chip" + (ok.includes(c) ? "" : ".no"), h("span", c.emoji), h("b", c.name), h("small", `-${Math.round(c.cut / 60)}분 · ${fmt(c.min)}~${fmt(c.max)}G${c.card ? " 또는 알파벳 카드" : ""}`)))));
     if (!ok.length) { wrap.append(h("p.notice", "⏰ 남은 시간이 부족해 할 수 있는 직업이 없습니다.")); return wrap; }
     const btn = h("button.btn.gold.big", { onclick: async () => {
+        if (turn.remaining <= 0) return toast("⏰ 플레이 시간이 끝났습니다", "warn");
         btn.disabled = true;
+        const hold = Activity.hold();
+        try { await work(); } finally { hold(); }
+    } }, "💼 직업 뽑기");
+    async function work() {
         const chips = [...wrap.querySelectorAll(".job-chip:not(.no)")];
         const job = ok[Math.floor(Math.random() * ok.length)];
         for (let k = 0; k < 16; k++) { chips.forEach(c => c.classList.remove("hot")); chips[k % chips.length].classList.add("hot"); Sound.tick(); await sleep(70 + k * 12); }
@@ -192,7 +197,7 @@ export function jobView(pid, turn, onChange, payout) {
         turn.running = was;
         await payout(pid, gold, card ? `💼 보수 대신 알파벳 카드 ${card}를 받았다! (-${Math.round(job.cut / 60)}분)` : `💼 ${job.name} 보수 (-${Math.round(job.cut / 60)}분)`);
         onChange();
-    } }, "💼 직업 뽑기");
+    }
     wrap.append(h("div.row.center", btn));
     return wrap;
 }

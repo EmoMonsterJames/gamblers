@@ -6,6 +6,7 @@ import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
 import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
 import { shuffle, pick } from "../core/util.js";
+import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
 
 export const S = () => Store.season;
@@ -405,6 +406,59 @@ export function gainCard(pid, letter) {
     ps.items[cardId(letter)] = (ps.items[cardId(letter)] || 0) + 1;
     log(`🔤 ${name(pid)} 알파벳 카드 ${letter} 획득`);
     Store.saveSeason();
+}
+
+// ---------------------------------------------------------------- 🏅 Honorarium corners
+// past finishes (finished seasons only) at rank ≤ maxRank, oldest season first
+export const honorRecords = (pid, maxRank) => Store.results.filter(r => r.playerId === +pid && r.rank != null && r.rank <= maxRank).sort((a, b) => a.season - b.season || a.rank - b.rank);
+export const honorRecordText = (pid, maxRank) => honorRecords(pid, maxRank).map(r => maxRank === 1 ? `${r.season}시즌 우승` : `${r.season}시즌 ${r.rank}위`).join(" · ");
+// test mode: the test player may try every corner
+export const honorEligible = (pid, kind) => !!S()?.sandbox || honorRecords(pid, HONOR_KINDS[kind].rank).length > 0;
+// every other player who ever finished in the TOP N of any season
+export function honorPool(pid, kind) {
+    const n = HONOR_KINDS[kind].rank;
+    const ids = [...new Set(Store.results.filter(r => r.rank != null && r.rank <= n && r.playerId !== +pid).map(r => r.playerId))];
+    return ids.filter(id => Store.player(id)).sort((a, b) => a - b);
+}
+export const honorLeft = (pid, kind) => HONOR_KINDS[kind].uses - (S().ps[pid].honor?.[kind] || 0);
+// gold for someone who may not be playing right now: alive in this season → their purse,
+// otherwise their wallet (added when they join a season, like the survival corner)
+function giftGold(pid, gold) {
+    const s = S();
+    if (s.ps[pid] && !s.ps[pid].out) { s.ps[pid].money += gold; return "season"; }
+    if (s.sandbox) return "wallet"; // test mode: nothing is kept
+    Store.wallets[pid] = (Store.wallets[pid] || 0) + gold;
+    Store.saveWallets();
+    return "wallet";
+}
+export function grantPrize(pid, prize) {
+    const ps = S().ps[pid];
+    if (!prize || prize.kind === "none") return;
+    if (prize.kind === "gold") ps.money += +prize.gold || 0;
+    else if (prize.kind === "item" && prize.item) ps.items[prize.item] = (ps.items[prize.item] || 0) + Math.max(1, +prize.n || 1);
+}
+// Honor Me: everything is decided and paid at once (an interrupted show loses nothing).
+// → { buddy, gold?, prize?, others?, anvils?, total? }
+export function honorDraw(pid, kind) {
+    const s = S(), ps = s.ps[pid], K = HONOR_KINDS[kind];
+    if (!honorEligible(pid, kind) || honorLeft(pid, kind) <= 0) return null;
+    const pool = honorPool(pid, kind);
+    if (!pool.length) return null;
+    const buddy = pool[Math.floor(Math.random() * pool.length)];
+    (ps.honor ||= {})[kind] = (ps.honor[kind] || 0) + 1;
+    const out = { kind, buddy };
+    if (kind === "top10") { out.gold = 200 + Math.floor(Math.random() * 81) * 10; ps.money += out.gold; }
+    else if (kind === "top6") { out.prize = drawPrize(honorPrizes("wheel")); grantPrize(pid, out.prize); }
+    else if (kind === "top3") {
+        const list = honorPrizes("box");
+        out.prize = drawPrize(list); grantPrize(pid, out.prize);
+        out.others = [drawPrize(list), drawPrize(list)]; // what the two unopened boxes held (shown after)
+    } else { out.anvils = rollAnvils(); out.total = anvilTotal(out.anvils); ps.money += out.total; }
+    out.buddyTo = giftGold(buddy, HONOR_BUDDY_GOLD);
+    const got = out.gold != null ? `+${out.gold.toLocaleString()}G` : out.total != null ? `+${out.total.toLocaleString()}G (Anvil ${out.anvils}개)` : out.prize?.label || "꽝";
+    log(`${K.emoji} ${name(pid)} ${K.name} → 선배 ${name(buddy)} · ${got} (선배에게 ${HONOR_BUDDY_GOLD}G)`);
+    Store.saveSeason(true);
+    return out;
 }
 
 // ---------------------------------------------------------------- NPC corner

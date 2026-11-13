@@ -5,7 +5,9 @@
 import { h } from "../core/util.js";
 import { toast, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds } from "../data/catalog.js";
+import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds, ITEMS, isPass } from "../data/catalog.js";
+import { HONOR_KINDS, HONOR_ALL, honorKinds, honorPrizes } from "../data/honor.js";
+const HONOR_TAB = "_honor";
 import { locationShops } from "../data/catalogAdmin.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
@@ -36,7 +38,44 @@ export function adminMapsPage() {
         tabs.replaceChildren(...REGIONS.map(r0 => {
             const r = reg(r0.id);
             return h("button.tab" + (cur === r.id ? ".on" : "") + (r.off ? ".off" : ""), { onclick: () => { cur = r.id; draw(); } }, `${r.emoji} ${r.name} (${allLocs().filter(l => l.region === r.id).length})`);
-        }));
+        }), h("button.tab.am-honor-tab" + (cur === HONOR_TAB ? ".on" : ""), { onclick: () => { cur = HONOR_TAB; draw(); } }, `🏅 Honorarium 상품 · 배치 (${allLocs().filter(l => honorKinds(l).length).length})`));
+    }
+
+    // ---- 🏅 Honorarium: where the corners are + the Top 6 wheel / Top 3 box prizes
+    const prizeList = which => (work.honor?.[which] || structuredClone(honorPrizes(which)));
+    const setPrizes = (which, list) => { (work.honor ||= {})[which] = list; dirty(); draw(); };
+    const ITEM_OPTS = ITEMS.filter(i => !isPass(i.id));
+    function prizeEditor(which, title, hint) {
+        const list = prizeList(which);
+        const total = list.reduce((a, p) => a + Math.max(0, +p.weight || 0), 0);
+        const upd = (i, patch, redraw = false) => { const next = structuredClone(prizeList(which)); Object.assign(next[i], patch); (work.honor ||= {})[which] = next; dirty(); if (redraw) draw(); };
+        const row = (p, i) => h("div.am-prize",
+            h("input.am-p-label", { value: p.label, placeholder: "표시 이름", onchange: ev => upd(i, { label: ev.target.value.trim() || "?" }) }),
+            h("select", { onchange: ev => { const k = ev.target.value; upd(i, k === "gold" ? { kind: k, gold: p.gold || 1000, item: undefined } : k === "item" ? { kind: k, item: p.item || "hp_10", gold: undefined } : { kind: k, gold: undefined, item: undefined }, true); } },
+                [["gold", "💰 골드"], ["item", "🎒 아이템"], ["none", "💨 꽝"]].map(([v, t]) => h("option", { value: v, selected: p.kind === v }, t))),
+            p.kind === "gold" ? h("input.num", { type: "number", min: 0, step: 100, value: p.gold, onchange: ev => upd(i, { gold: Math.max(0, Math.round(+ev.target.value || 0)) }) })
+                : p.kind === "item" ? h("select", { onchange: ev => upd(i, { item: ev.target.value }) }, ITEM_OPTS.map(it => h("option", { value: it.id, selected: p.item === it.id }, `${it.emoji || ""} ${it.name}`)))
+                    : h("span.muted", "—"),
+            h("label.am-p-w", h("input.num", { type: "number", min: 0, step: 0.5, value: p.weight, onchange: ev => upd(i, { weight: Math.max(0, +ev.target.value || 0) }, true) }), h("small", total ? `= ${(Math.round((+p.weight || 0) / total * 1000) / 10)}%` : "")),
+            h("button.btn.small.ghost", { title: "삭제", disabled: list.length <= 2, onclick: () => setPrizes(which, list.filter((_, k) => k !== i)) }, "✕"));
+        return h("div.ag-card.am-prizes",
+            h("div.row.between", h("h3", title), h("div.row",
+                work.honor?.[which] ? h("button.btn.small.ghost", { onclick: async () => { if (await confirmBox(`${title}을(를) 기본 품목으로 되돌릴까요?`)) { delete work.honor[which]; dirty(); draw(); } } }, "↺ 기본값") : null,
+                h("button.btn.small.gold", { onclick: () => setPrizes(which, [...list, { label: "1,000G", kind: "gold", gold: 1000, weight: 5 }]) }, "+ 품목 추가"))),
+            h("p.muted", hint, ` · 확률 = 가중치 ÷ 합계 (현재 합계 ${Math.round(total * 10) / 10})`),
+            h("div.am-prize.head", h("small", "이름"), h("small", "종류"), h("small", "내용"), h("small", "가중치 → 확률"), h("small", "")),
+            list.map(row));
+    }
+    function honorPanel() {
+        const placed = HONOR_ALL.map(k => [k, allLocs().filter(l => honorKinds(l).includes(k))]);
+        return [
+            h("div.ag-card", h("h3", "🏅 Honorarium 코너 배치 현황"),
+                h("p.muted", "각 맵 카드의 '🏅 Honorarium 코너' 체크박스로 배치합니다. 입장 조건: 지난 시즌 TOP 10 / TOP 6 / TOP 3 / 우승 경력 · 이용은 시즌당 2회 (Winners는 1회)."),
+                h("div.am-honor-list", placed.map(([k, ls]) => h("div", h("b", `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`), " ",
+                    ls.length ? ls.map(l => h("button.am-corner", { onclick: () => { cur = l.region; draw(); } }, `${l.emoji} ${l.name}`)) : h("span.muted", "아직 배치된 맵 없음"))))),
+            prizeEditor("wheel", "🎡 TOP6 Honor Wheel 품목", "휠의 칸은 똑같은 크기로 보이지만 실제 당첨 확률은 가중치를 따릅니다"),
+            prizeEditor("box", "🎁 TOP3 Honor Box 품목", "3개의 박스 내용물은 각각 이 확률로 정해집니다")
+        ];
     }
 
     function regionCard() {
@@ -93,6 +132,7 @@ export function adminMapsPage() {
             l.discount && "🏷️ 할인 상점",
             ...earn.map(k => EARN_LABEL[k] || k),
             l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
+            ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`),
         ].filter(Boolean);
         const rules = [
             l.crazy && "🤪 Crazy (입장 시 5분 차감)", l.evil && `😈 Evil (HP −${l.evil})`, l.donation && "🎁 기부 입장",
@@ -117,6 +157,11 @@ export function adminMapsPage() {
             h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
+            h("div.am-togs", h("small", "🏅 Honorarium 코너:"), HONOR_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: honorKinds(l).includes(k), onchange: ev => {
+                const next = new Set(honorKinds(loc(l.id)));
+                ev.target.checked ? next.add(k) : next.delete(k);
+                e.honor = next.size ? HONOR_ALL.filter(x => next.has(x)) : false; dirty(); draw();
+            } }), `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`))),
             h("div.am-togs", h("small", "돈벌기 코너:"), EARN_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: earn.includes(k), onchange: ev => {
                 const next = new Set(earnKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);
@@ -127,6 +172,7 @@ export function adminMapsPage() {
 
     function draw() {
         drawTabs();
+        if (cur === HONOR_TAB) { body.replaceChildren(...honorPanel()); return; }
         const locs = allLocs().filter(l => l.region === cur);
         body.replaceChildren(regionCard(), h("h3", `맵 ${locs.length}곳`), ...locs.map(locCard),
             ...(!locs.length ? [h("p.muted", "이 지역에 맵이 없습니다. 다른 지역의 맵에서 '지역'을 바꿔 옮길 수 있습니다.")] : []));
@@ -135,6 +181,8 @@ export function adminMapsPage() {
     async function save() {
         // drop empty entries
         for (const k of ["regions", "locs"]) for (const [id, v] of Object.entries(work[k])) if (!Object.keys(v).length) delete work[k][id];
+        if (work.honor && !Object.keys(work.honor).length) delete work.honor;
+        for (const w of ["wheel", "box"]) if (work.honor?.[w] && !work.honor[w].some(p => +p.weight > 0)) return toast(`${w === "wheel" ? "Honor Wheel" : "Honor Box"}의 가중치가 모두 0입니다`, "warn");
         try {
             await Store.saveMaps(structuredClone(work));
             applyMaps();

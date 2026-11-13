@@ -6,7 +6,7 @@
 // =====================================================================
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
-import { toast, confirmBox, confetti, modal } from "../core/fx.js";
+import { toast, confirmBox, confetti, modal, Activity } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { catalogEntry, WEAPON_BY_ID, earnKinds } from "../data/catalog.js";
@@ -45,19 +45,22 @@ export function earnView(pid, onChange, { loc = null, turn = null } = {}) {
         if (busy) return;
         if (G.earnLeft(pid) <= 0) return toast(`돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지입니다`, "warn");
         busy = true;
+        const hold = Activity.hold();
         try {
             const r = await JOBS_RUN[job.id](pid, ps, turn);
             if (r) delete ps.earnPick; // done: the next one is drawn fresh
             if (r?.lost) { G.payEarn(pid, job.name, 0); await payout(pid, 0, r.msg); onChange(); }
             else if (r) { G.payEarn(pid, job.name, r.gold, r.extra); await payout(pid, r.gold, r.msg); onChange(); }
-        } finally { busy = false; draw(); }
+        } finally { busy = false; hold(); draw(); }
     };
     async function roll() {
         if (busy) return;
         if (G.earnLeft(pid) <= 0) return toast(`돈벌기는 시즌당 ${G.EARN_PER_SEASON}번까지입니다`, "warn");
         const pool = list.filter(can);
         if (!pool.length) return toast("지금 할 수 있는 돈벌기가 없습니다", "warn");
+        if (turn && turn.remaining <= 0) return toast("⏰ 플레이 시간이 끝났습니다", "warn");
         busy = true;
+        const hold = Activity.hold();
         const target = pool[Math.floor(Math.random() * pool.length)];
         const hot = i => cards.forEach((c, k) => c.classList.toggle("hot", k === i));
         const total = 10 + list.indexOf(target) + list.length;
@@ -68,7 +71,9 @@ export function earnView(pid, onChange, { loc = null, turn = null } = {}) {
         G.S() && Store.saveSeason();
         await sleep(700);
         busy = false;
-        run(target);
+        const next = run(target); // run() takes its own hold synchronously
+        hold();
+        await next;
     }
     function draw() {
         const d = drawn();
@@ -212,6 +217,7 @@ export function begView(pid, onChange) {
         if (done) return;
         if (input.value.replace(/\s/g, "") !== "돈주세요") { input.classList.remove("shake"); void input.offsetWidth; input.classList.add("shake"); return toast("'돈주세요'라고 정확히 입력하세요", "warn"); }
         done = true;
+        const hold = Activity.hold();
         const gold = randStep(0, 1000, 10);
         const bubble = h("div.beg-bubble", "");
         const basket = h("div.beg-basket", h("div.beg-face", avatar(pid, 120, { effect: false })), h("div.basket", "🧺"), h("div.beg-coins"));
@@ -227,6 +233,7 @@ export function begView(pid, onChange) {
         scene.querySelector(".beg-result").replaceChildren(gold ? h("b", `+${fmt(gold)} G 받았다!`) : h("b.down", "…아무도 돈을 주지 않았다 (0G)"));
         if (gold) Sound.cash(); else Sound.lose();
         await sleep(1500);
+        hold();
         onChange();
     }
     wrap.append(

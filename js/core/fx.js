@@ -111,5 +111,17 @@ export function floatText(el, text, cls = "") {
     setTimeout(() => f.remove(), 1600);
 }
 
+// ---------------------------------------------------------- "something is in progress"
+// A turn whose time runs out waits until every spin / bonus / casino hand /
+// corner / shop / NPC visit that already started has finished.
+// Flows without an overlay of their own take a hold: const done = Activity.hold(); … done();
+export const Activity = {
+    n: 0,
+    hold() { this.n++; let off = false; return () => { if (!off) { off = true; this.n = Math.max(0, this.n - 1); } }; },
+    async run(fn) { const done = this.hold(); try { return await fn(); } finally { done(); } }
+};
+const BUSY_SEL = ".game-screen.busy, .game-screen .busy, .modal-back:not(.out), .task-ov, .pay-ov, .poop-ov, .bigwin:not(.out), .honor-ov";
+export const activityBusy = () => Activity.n > 0 || !!document.querySelector(BUSY_SEL);
+
 export function shake(el, cls = "shake") { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 800); }
 export { fmt };
