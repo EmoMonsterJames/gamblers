@@ -605,3 +605,8 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .sw.rainbow { background: conic-gradient(#ff7b7b, #ffc56b, #fff07a, #8ef08e, #7ac8ff, #c49bff, #ff7b7b); }
 .sw.auto { width: auto; padding: 0 8px; border-radius: 999px; }
 .sw-pick { width: 30px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer; }
+.sel-quota { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 4px auto 10px; max-width: 900px; }
+.sel-quota > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; }
+.sel-quota small { opacity: .7; margin-right: 4px; }
+.sq-chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #ffffff12; border: 1px solid #ffffff22; }
+.sq-chip.ok { background: #22c55e2a; border-color: #22c55e77; }

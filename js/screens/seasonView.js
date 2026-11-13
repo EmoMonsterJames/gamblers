@@ -84,12 +84,15 @@ function showLog() {
 }
 
 function sidebar(s) {
-    const list = s.roster.length ? [...s.roster].sort((a, b) => (s.ps[a].out - s.ps[b].out) || (s.ps[b].money - s.ps[a].money)) : [];
+    // survivors first (richest on top), then the eliminated in the order they went out:
+    // the latest one right under the survivors … the first one out (20위) at the very bottom
+    const list = s.roster.length ? [...s.roster].sort((a, b) => (s.ps[a].out - s.ps[b].out)
+        || (s.ps[a].out ? (s.ps[a].rank || 99) - (s.ps[b].rank || 99) : s.ps[b].money - s.ps[a].money)) : [];
     return h("aside.roster",
         h("div.roster-title", `참가자 ${s.roster.length}명`),
         h("div.roster-list", list.map(pid => {
             const r = s.results[pid];
-            const mark = s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
+            const mark = s.ps[pid].out ? (s.ps[pid].rank ? `💀 ${s.ps[pid].rank}위` : "💀") : s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
             const cand = s.status === "judge" && s.candidates.includes(pid);
             const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`), h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${Math.round(s.ps[pid].hp * 100) / 100}`), h("span.mark", mark)]);
             if (cand) el.classList.add("cand");
@@ -111,7 +114,8 @@ function selectStage(s) {
     const spinBtn = h("button.btn.gold.huge", { onclick: async () => {
         if (spinning || G.rosterFull()) return;
         spinning = true; spinBtn.disabled = skipBtn.disabled = true;
-        const p = G.pickForSelection(G.selectionPool());
+        const p = G.nextSelection();
+        if (!p) { spinning = false; return render(); }
         await machine.spin(p.id, G.selectionPool(), { tense: true });
         G.addToRoster(p.id);
         await reveal(p.id);
@@ -120,14 +124,20 @@ function selectStage(s) {
     } }, "🎰 SPIN");
     const skipBtn = h("button.btn.ghost.big", { onclick: async () => {
         if (spinning) return;
-        const left = CONFIG.SEASON_SIZE - s.roster.length;
-        for (const p of G.pickManyForSelection(G.selectionPool(), left)) G.addToRoster(p.id);
+        for (const p of G.restSelection()) G.addToRoster(p.id);
         Sound.bonus(); confetti(60);
         render();
     } }, "⏭ SKIP (나머지 즉시 선발)");
     const full = G.rosterFull();
+    // quota board: 3 per country + 2 free · 10 male / 10 female · 10 JAMES / 10 DYLAN
+    const qc = G.selectionCounts(s.roster), half = CONFIG.SEASON_SIZE / 2;
+    const chip = (label, n, goal) => h("span.sq-chip" + (n >= goal ? ".ok" : ""), `${label} ${n}/${goal}`);
+    const quota = h("div.sel-quota",
+        h("div", h("small", "국가별 3명 + 자유 2명"), G.SELECT_COUNTRIES.map(c => chip(c, qc.country[c] || 0, G.SELECT_PER_COUNTRY))),
+        h("div", h("small", "성별 · 전담자"), chip("♂ 남자", qc.gender.male || 0, half), chip("♀ 여자", qc.gender.female || 0, half), chip("JAMES", qc.handler.JAMES || 0, half), chip("DYLAN", qc.handler.DYLAN || 0, half)));
     return h("div.select-stage",
         h("h2.stage-title", "🎰 시즌 참가자 선발 🎰", h("small", `${s.roster.length} / ${CONFIG.SEASON_SIZE}`)),
+        quota,
         G.prevSeasonPlayers().size ? h("p.muted.center", `지난 시즌 참가자는 다시 뽑힐 확률이 ${Math.round(G.REPICK_WEIGHT * 100)}%로 낮아집니다 (연속 출전 방지)`) : null,
         machine.el,
         full ? h("div.row.center", h("button.btn.gold.huge", { onclick: () => { G.startRound(); render(); } }, "▶ 라운드 1 시작")) : h("div.row.center", spinBtn, skipBtn),

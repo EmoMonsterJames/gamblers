@@ -46,6 +46,69 @@ export function pickManyForSelection(pool, n) {
     while (left.length && out.length < n) { const p = pickForSelection(left); out.push(p); left.splice(left.indexOf(p), 1); }
     return out;
 }
+// ---- quota draft: 3 per country (6 countries = 18) + 2 more from any of them = 20,
+// with exactly 10 male / 10 female and 10 JAMES / 10 DYLAN handlers.
+// A full valid roster is drawn up front (s.plan, weighted like pickForSelection);
+// SPIN reveals its members one at a time in random order.
+export const SELECT_COUNTRIES = ["Emo World", "MJ World", "Foggy Nation", "Polynesia", "Ground Town", "Dung Town"];
+export const SELECT_PER_COUNTRY = 3;
+const normC = c => String(c || "").toLowerCase().replace(/[^a-z]/g, "").replace(/^emworld$/, "emoworld");
+export const selCountry = p => SELECT_COUNTRIES.find(c => normC(c) === normC(p?.country)) || null;
+// fluid / trans (any gender other than female) count as male for the 10 / 10 split
+export const selGender = p => { const g = String(p?.gender || "").trim().toLowerCase(); return !g ? null : g === "female" ? "female" : "male"; };
+export const selHandler = p => { const x = String(p?.handler || "").trim().toUpperCase(); return x === "JAMES" || x === "DYLAN" ? x : null; };
+export function selectionCounts(ids) {
+    const c = { country: {}, gender: {}, handler: {} };
+    for (const id of ids) {
+        const p = Store.player(id);
+        const k = selCountry(p), g = selGender(p), hd = selHandler(p);
+        if (k) c.country[k] = (c.country[k] || 0) + 1;
+        if (g) c.gender[g] = (c.gender[g] || 0) + 1;
+        if (hd) c.handler[hd] = (c.handler[hd] || 0) + 1;
+    }
+    return c;
+}
+export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 400) {
+    const N = CONFIG.SEASON_SIZE, half = Math.floor(N / 2), need = N - fixed.length;
+    const elig = pool.filter(p => selCountry(p) && selGender(p) && selHandler(p));
+    if (need <= 0) return [];
+    // weighted random order in one pass (key = u^(1/w)): same odds as pickForSelection
+    const prev = prevSeasonPlayers();
+    const wOf = p => prev.has(p.id) ? REPICK_WEIGHT : 1;
+    for (let t = 0; t < tries; t++) {
+        const order = elig.map(p => [Math.pow(Math.random(), 1 / wOf(p)), p]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+        const c = selectionCounts(fixed), picked = [];
+        const take = p => { picked.push(p.id); const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; };
+        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half;
+        // 1) three from every country
+        for (const p of order) if (picked.length < need && (c.country[selCountry(p)] || 0) < SELECT_PER_COUNTRY && fits(p)) take(p);
+        if (SELECT_COUNTRIES.some(k => (c.country[k] || 0) < SELECT_PER_COUNTRY)) continue;
+        // 2) the rest (2) from any of the six countries
+        for (const p of order) if (picked.length < need && !picked.includes(p.id) && fits(p)) take(p);
+        if (picked.length === need && c.gender.male === half && c.gender.female === half && c.handler.JAMES === half && c.handler.DYLAN === half) return picked;
+    }
+    return null; // not enough players to meet every quota
+}
+// the next player for SPIN (null → quotas impossible, use the plain weighted draw)
+export function nextSelection() {
+    const s = S(), pool = selectionPool(), poolIds = new Set(pool.map(p => p.id));
+    if (!s.plan || s.plan.some(id => !poolIds.has(id) && !s.roster.includes(id))) s.plan = buildSelectionPlan(s.roster, pool) || [];
+    const left = (s.plan || []).filter(id => !s.roster.includes(id));
+    if (left.length) return Store.player(left[Math.floor(Math.random() * left.length)]);
+    return pool.length ? pickForSelection(pool) : null;
+}
+// everyone still to be drawn (SKIP)
+export function restSelection() {
+    const out = [], s = S();
+    while (s.roster.length < CONFIG.SEASON_SIZE) { // roster already holds the temporary picks
+        const p = nextSelection();
+        if (!p) break;
+        out.push(p);
+        s.roster.push(p.id); // temporarily, so the next call skips it
+    }
+    s.roster.splice(s.roster.length - out.length, out.length);
+    return out;
+}
 export function addToRoster(pid) {
     const s = S();
     if (s.roster.includes(pid) || s.roster.length >= CONFIG.SEASON_SIZE) return;
