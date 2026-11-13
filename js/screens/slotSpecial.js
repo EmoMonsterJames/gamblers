@@ -107,7 +107,52 @@ const FX = {
     strike: { icon: "🎳💥", text: "STRIKE!!!", snd: "boom", cls: "fire", shake: true },
     bingocoin: { icon: "🪙", text: "", snd: "coin", cls: "gold" },
     money: { icon: "💸", text: "", snd: "cash", cls: "gold" },
-    claw: { icon: "🦾✨", text: "CLAW TIME!", snd: "bonus", cls: "gold" }
+    claw: { icon: "🦾✨", text: "CLAW TIME!", snd: "bonus", cls: "gold" },
+    // ---- round 7 (skyEngine.js)
+    bolt: { icon: "🌩️⚡", text: "LIGHTNING CHAIN!", snd: "boom", cls: "bolt", shake: true },
+    updraft: { icon: "🌬️☁️⬆️", text: "UPDRAFT RESPIN!", snd: "whoosh", cls: "float" },
+    thunderhead: { icon: "🐓⛈️🐓", text: "THE STORM BEGINS!", snd: "boom", cls: "bolt", shake: true },
+    formation: { icon: "🛩️🛩️🛩️", text: "FORMATION WILDS!", snd: "whoosh", cls: "gold" },
+    barrel: { icon: "🛩️🌀", text: "BARREL ROLL x2!", snd: "whoosh", cls: "gold" },
+    radar: { icon: "📡🎯", text: "DOGFIGHT!", snd: "boom", cls: "beam", shake: true },
+    bridge: { icon: "🌈🌉🌈", text: "CROSSING BONUS!", snd: "bonus", cls: "sun" },
+    crumble: { icon: "🪨💥✨", text: "CRUMBLING TILES!", snd: "boom", cls: "gold", shake: true },
+    gate: { icon: "⛩️🗿", text: "GATEKEEPER'S TOLL!", snd: "boom", cls: "gold", shake: true },
+    thruster: { icon: "🔥🚀", text: "THRUSTER BOOST!", snd: "boom", cls: "rocket" },
+    stage: { icon: "🚀💨🧱", text: "STAGE SEPARATION!", snd: "boom", cls: "rocket", shake: true },
+    shootingstar: { icon: "🌠✨", text: "SHOOTING STAR WILDS!", snd: "whoosh", cls: "meteor" },
+    zodiac: { icon: "♈🔒", text: "ZODIAC LOCK!", snd: "bonus", cls: "moon" },
+    ripple: { icon: "〰️💧〰️", text: "RIPPLE ECHO!", snd: "splash", cls: "potion" },
+    dive: { icon: "🛟🛟🛟", text: "DEEP DIVE!", snd: "splash", cls: "potion", shake: true },
+    dragongate: { icon: "🎏⛩️🐉", text: "DRAGON GATE LEAP!", snd: "boom", cls: "gold", shake: true },
+    lotus: { icon: "💧🪷", text: "LOTUS BLOOM!", snd: "bonus", cls: "potion" },
+    frenzy: { icon: "🍡🎏🎏", text: "FEEDING FRENZY!", snd: "splash", cls: "gold" },
+    multiball: { icon: "🔱⚪⚪", text: "PINBALL MULTIBALL!", snd: "boom", cls: "beam", shake: true },
+    combo: { icon: "🔗🔥", text: "COMBO METER!", snd: "bonus", cls: "glitch" },
+    surge: { icon: "🔋⚡🏙️", text: "POWER SURGE!", snd: "boom", cls: "bolt", shake: true },
+    thumb: { icon: "👑👍", text: "EMPEROR'S THUMB!", snd: "bonus", cls: "gold" },
+    shieldwall: { icon: "🛡️🛡️🛡️", text: "SHIELD WALL!", snd: "boom", cls: "gold", shake: true },
+    chariot: { icon: "🏇🏇🏇", text: "CHARIOT RACE!", snd: "boom", cls: "fire", shake: true },
+    quest: { icon: "🗡️❗👾", text: "QUEST COMPLETE!", snd: "bonus", cls: "gold" },
+    haggle: { icon: "🧔📦📦📦", text: "MERCHANT HAGGLING!", snd: "coin", cls: "gold" },
+    raid: { icon: "❗🐉❗", text: "BOSS RAID!", snd: "boom", cls: "fire", shake: true },
+    lift: { icon: "⬆️🛗⬆️", text: "EXPRESS LIFT!", snd: "whoosh", cls: "beam" },
+    washer: { icon: "🤖🧽", text: "WINDOW WASHER!", snd: "whoosh", cls: "beam" },
+    party: { icon: "🔑🍾🥂", text: "PENTHOUSE PARTY!", snd: "boom", cls: "gold", shake: true }
+};
+// the spin mechanic of the round-7 machines: a cover over the reels that plays while they land
+const COVERS = {
+    clouds: n => Array.from({ length: n }, (_, i) => h("i", { style: { "--i": i } }, "☁️")),
+    radar: () => [h("b.cv-scope"), ...["🛩️", "🦅", "🛩️", "🦅", "🛩️"].map((e, i) => h("i", { style: { "--i": i } }, e))],
+    tiles: n => Array.from({ length: n }, (_, i) => h("i", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } })),
+    rockets: () => Array.from({ length: 5 }, (_, i) => h("i", { style: { "--i": i } }, "🚀")),
+    starlight: () => [h("b.cv-pulse"), ...Array.from({ length: 20 }, (_, i) => h("i", { style: { "--x": Math.random() * 92 + "%", "--y": Math.random() * 88 + "%", "--i": i } }, "✦"))],
+    ripple: () => [h("i.cv-meteor", "☄️"), ...[0, 1, 2].map(i => h("b.cv-ring", { style: { "--i": i } }))],
+    net: () => [...Array.from({ length: 12 }, (_, i) => h("i", { style: { "--i": i } }, i % 4 ? "🐟" : "🐠")), h("b.cv-net", "🥅")],
+    plunger: () => [h("i.cv-plunger", "🕹️"), h("b.cv-ball", "⚪")],
+    gate: () => [h("b.cv-bars")],
+    clock: () => [h("b.cv-clock", "🕰️"), ...["🧑‍🌾", "🧙", "🧝", "💂", "🧑‍🍳"].map((e, i) => h("i", { style: { "--i": i } }, e))],
+    elevator: () => [h("b.cv-floors", Array.from({ length: 8 }, (_, i) => h("span", `${(8 - i) * 25}F`)))]
 };
 
 export async function playSpecial(res, api) {
@@ -172,7 +217,10 @@ export async function playSpecial(res, api) {
                 case "spin": {
                     clearHl();
                     api.reelsBox.querySelectorAll(".spb").forEach(e => e.remove());
-                    await api.animateReels(p.grid, { anticipation: p.antic || [], nearMiss: p.near || null });
+                    const cov = cfg.cover ? spinCover(cfg.cover) : null;
+                    if (p.hour != null) api.meter("hour", p.hour);
+                    if (p.floor != null) api.meter("floor", p.floor);
+                    try { await api.animateReels(p.grid, { anticipation: p.antic || [], nearMiss: p.near || null }); } finally { cov?.remove(); }
                     for (const c of p.hold || []) api.reelsBox.children[c]?.classList.add("sp-held");
                     for (const [c, r] of p.frozen || []) cellsEl(c, r)?.classList.add("sp-frozen");
                     if (i === 0 && api.onLand) await api.onLand();
@@ -205,7 +253,8 @@ export async function playSpecial(res, api) {
                 }
                 case "drop": {
                     api.showGrid(p.grid);
-                    api.reelsBox.classList.remove("sp-drop"); void api.reelsBox.offsetWidth; api.reelsBox.classList.add("sp-drop");
+                    const dc = p.up ? "sp-rise" : "sp-drop";
+                    api.reelsBox.classList.remove("sp-drop", "sp-rise"); void api.reelsBox.offsetWidth; api.reelsBox.classList.add(dc);
                     Sound.stop();
                     await pace(380);
                     break;
@@ -225,7 +274,7 @@ export async function playSpecial(res, api) {
                     }
                     jpWins.push({ tier: p.tier, amount: p.amount });
                     run += p.amount;
-                    await api.bigWin(p.amount, bet, { jackpot: p.tier });
+                    await api.bigWin(p.amount, bet, { jackpot: p.tier, title: cfg.jpLabel?.[p.tier] || null });
                     winEl.textContent = fmt(run);
                     break;
                 }
@@ -253,6 +302,14 @@ export async function playSpecial(res, api) {
                 }
                 case "laser": await laser(p); break;
                 case "pickn": await pickN(p); break;
+                case "tap": await tapGame(p); break;
+                case "ball": await ballRun(p); break;
+                case "mega": {
+                    const box = h("div.sk-mega", { style: { "--c0": p.cols[0], "--cn": p.cols.length, "--cols": cfg.reels || 5 } }, h("span", cfg.syms[p.sym]?.e || "🛡️"));
+                    api.reelsBox.append(box); Sound.boom?.(); api.shake(frame);
+                    await pace(900); box.remove();
+                    break;
+                }
                 case "ladder": await ladder(p); break;
                 case "plinko": await plinko(p); break;
                 case "claw": await claw(p); break;
@@ -296,6 +353,148 @@ export async function playSpecial(res, api) {
         if (p.name === "goldbox") api.confetti(60, ["🎁", "🪙", "✨", "🎀"]);
         await pace(d.text ? 900 : 500);
         el.remove();
+    }
+
+    // ------------------------------------------------------------ round 7: spin covers, tap games, energy ball
+    // the spin mechanic (clouds blown away, radar flyby, tile wave …) drawn over the landing reels
+    function spinCover(kind) {
+        const n = (cfg.reels || 5) * (cfg.rows || 3);
+        const el = h("div.sk-cover.cv-" + kind, { style: { "--cols": cfg.reels || 5, "--rows": cfg.rows || 3 } }, ...(COVERS[kind]?.(n) || []));
+        if (api.turbo()) el.classList.add("fast");
+        frame.append(el);
+        if (kind === "clouds" || kind === "radar") Sound.whoosh?.();
+        if (kind === "rockets" || kind === "plunger" || kind === "elevator") Sound.boom?.();
+        if (kind === "gate") setTimeout(() => Sound.boom?.(), 250);
+        return el;
+    }
+    // Tap bonuses: the prizes were decided by the engine and are revealed in tap order;
+    // whatever is left when the timer runs out is collected automatically.
+    async function tapGame(p) {
+        const items = p.items || [];
+        let k = 0, done, timer = null;
+        const finished = new Promise(r => done = r);
+        const tally = h("div.tap-tally");
+        const left = h("small.tap-left", `${items.length}개 남음`);
+        const area = h("div.tap-area.tm-" + p.mode);
+        const wrap = h("div.tap-wrap.tw-" + p.mode, h("div.tap-head", p.title), left, area, tally);
+        overlay.append(wrap);
+        Sound.bonus();
+        const reveal = (el, auto = false) => {
+            if (k >= items.length) return null;
+            const it = items[k++];
+            if (el) { el.classList.add("open", "tp-" + (it.cls || "ok")); const f = el.querySelector("b"); if (f) f.textContent = it.text; }
+            tally.append(h("span.tp-chip.tp-" + (it.cls || "ok") + (auto ? ".auto" : ""), it.text));
+            left.textContent = `${items.length - k}개 남음`;
+            it.cls === "jp" ? Sound.bonus() : it.cls === "bad" ? (Sound.boom?.(), api.shake(frame)) : Sound.coin();
+            if (k >= items.length) setTimeout(done, 700);
+            return it;
+        };
+        const sec = (p.mode === "single" ? 4 : p.mode === "gauge" ? 6 : 9) * (api.turbo() ? 0.6 : 1);
+        const clock = h("b.tap-clock", sec.toFixed(1));
+        wrap.append(clock);
+        const t0 = performance.now();
+        timer = setInterval(() => { const l = Math.max(0, sec - (performance.now() - t0) / 1000); clock.textContent = l.toFixed(1); if (l <= 0) { clearInterval(timer); autoAll(); } }, 100);
+        let autoAll = () => { while (k < items.length) reveal(null, true); };
+        if (p.mode === "grid") {
+            const tiles = items.map((_, i) => h("button.tap-tile", { style: { "--i": i } }, h("span", p.icon), h("b")));
+            tiles.forEach(t => t.onclick = () => { if (!t.classList.contains("open")) reveal(t); });
+            area.append(...tiles);
+            autoAll = () => { for (const t of tiles) if (!t.classList.contains("open") && k < items.length) reveal(t, true); };
+        } else if (p.mode === "fall") {
+            // targets drop one by one; tap to catch, missed ones are swept up at the end
+            let spawned = 0;
+            const spawn = () => {
+                if (spawned >= items.length || k >= items.length) return;
+                spawned++;
+                const t = h("button.tap-faller", { style: { "--x": 6 + Math.random() * 80 + "%", "--d": (2.2 + Math.random() * 0.8) + "s" } }, h("span", p.icon), h("b"));
+                t.onclick = () => { if (!t.classList.contains("open")) { reveal(t); setTimeout(() => t.remove(), 600); } };
+                t.addEventListener("animationend", () => { if (!t.classList.contains("open")) t.remove(); });
+                area.append(t);
+            };
+            const iv = setInterval(() => { spawn(); if (spawned >= items.length) clearInterval(iv); }, Math.max(350, (sec * 1000 - 2600) / items.length));
+            spawn();
+        } else if (p.mode === "rapid" || p.mode === "boss") {
+            const hp = h("i.tap-hp");
+            const big = h("button.tap-big" + (p.mode === "boss" ? ".boss" : ""), h("span", p.icon), h("div.tap-hpbar", hp));
+            big.onclick = () => {
+                const it = reveal(null); if (!it) return;
+                hp.style.width = (100 - k / items.length * 100) + "%";
+                big.classList.remove("hit"); void big.offsetWidth; big.classList.add("hit");
+                const pop = h("b.tap-pop", { style: { "--x": (Math.random() * 60 - 30) + "px" } }, it.text); area.append(pop); setTimeout(() => pop.remove(), 800);
+            };
+            area.append(big);
+        } else if (p.mode === "single") {
+            const t = h("button.tap-single", h("span", p.icon), h("b"));
+            t.onclick = () => { if (!t.classList.contains("open")) { t.classList.add("go"); reveal(t); } };
+            area.append(t);
+            autoAll = () => { if (!t.classList.contains("open")) { t.classList.add("go"); reveal(t, true); } };
+        } else if (p.mode === "gauge") {
+            // tap-to-stop: the needle sweeps the gauge; a tap (or the timer) stops it on the engine's step
+            const steps = p.steps.map((s, i) => h("span.gg-step", { style: { "--i": i } }, s));
+            const needle = h("i.gg-needle"), rocket = h("b.gg-rocket", "🚀");
+            area.append(h("div.gg-track", steps, needle), rocket);
+            let stopped = false, pos = 0, dir = 1;
+            const iv = setInterval(() => { if (stopped) return; pos += dir * 0.06; if (pos > 1 || pos < 0) { dir *= -1; pos = Math.max(0, Math.min(1, pos)); } needle.style.left = pos * 100 + "%"; }, 30);
+            const stop = async auto => {
+                if (stopped) return; stopped = true; clearInterval(iv); area.onclick = null;
+                const target = (p.stop + 0.5) / p.steps.length;
+                needle.style.transition = "left .7s cubic-bezier(.2,.8,.3,1)"; needle.style.left = target * 100 + "%";
+                await sleep(800);
+                steps[p.stop].classList.add("on");
+                rocket.style.setProperty("--h", (20 + p.stop / (p.steps.length - 1) * 70) + "%"); rocket.classList.add("fly"); Sound.whoosh?.();
+                await sleep(900);
+                reveal(null, auto);
+            };
+            area.onclick = () => stop(false);
+            autoAll = () => stop(true);
+        } else if (p.mode === "race") {
+            // tap-to-whip race against two rivals; the finish order was decided by the engine
+            const lane = (e, me) => { const b = h("b.rc-cart" + (me ? ".me" : ""), e); return { el: h("div.rc-lane" + (me ? ".me" : ""), b), b }; };
+            const L = [lane("🏇", true), lane("🐎"), lane("🐎")];
+            const whip = h("button.btn.gold.big.rc-whip", "💥 채찍! (연타)");
+            area.append(h("div.rc-track", L.map(x => x.el), h("i.rc-goal", "🏁")), whip);
+            const finishPos = { 1: [100, 92, 85], 2: [93, 100, 84], 3: [84, 100, 92] }[p.place];
+            let pct = [0, 0, 0], taps = 0, over = false;
+            whip.onclick = () => { taps++; Sound.click?.(); L[0].b.classList.remove("whip"); void L[0].b.offsetWidth; L[0].b.classList.add("whip"); };
+            const dur = 4200 * (api.turbo() ? 0.6 : 1), tStart = performance.now();
+            await new Promise(res => {
+                const step = () => {
+                    const f = Math.min(1, (performance.now() - tStart) / dur);
+                    pct = finishPos.map((fp, i) => fp * f + (i === 0 && f < 1 ? Math.min(6, taps * 0.4) * Math.sin(f * Math.PI) : 0) + (i && f < 1 ? Math.sin(f * 9 + i) * 2 : 0));
+                    L.forEach((x, i) => x.b.style.left = Math.min(100, pct[i]) * 0.86 + "%");
+                    if (f < 1) requestAnimationFrame(step); else res();
+                };
+                requestAnimationFrame(step);
+            });
+            over = true; whip.remove(); clearInterval(timer);
+            reveal(null, false);
+        }
+        await finished;
+        clearInterval(timer);
+        await pace(500);
+        overlay.replaceChildren();
+    }
+    // Chain Reaction: the energy ball bounces from tile to tile and lights them (combo meter on the side)
+    async function ballRun(p) {
+        if (!p.keep) api.reelsBox.querySelectorAll(".sk-lit").forEach(e => e.classList.remove("sk-lit"));
+        const meter = h("div.sk-combo", "COMBO x1");
+        if (p.combo) frame.append(meter);
+        await Promise.all(p.paths.map(async (path, b) => {
+            const ball = h("b.sk-ball", "⚪");
+            frame.append(ball);
+            for (let i = 0; i < path.length; i++) {
+                const [c, r] = path[i], el = cellsEl(c, r);
+                if (!el) continue;
+                const fr = frame.getBoundingClientRect(), er = el.getBoundingClientRect();
+                ball.style.left = (er.left - fr.left + er.width / 2) + "px"; ball.style.top = (er.top - fr.top + er.height / 2) + "px";
+                await pace(170);
+                el.classList.add("sk-lit"); Sound.tick();
+                if (p.combo && !b) { const m = p.combo[i]; meter.textContent = `COMBO x${m}`; meter.className = "sk-combo m" + m; if (m > 1) Sound.coin(); }
+            }
+            ball.remove();
+        }));
+        await pace(400);
+        meter.remove();
     }
 
     // ------------------------------------------------------------ Food Critic boss battle
@@ -647,6 +846,25 @@ export function buildPanel(cfg, state = {}) {
     else if (E === "sp_quantum") aura("🐈‍⬛", "|ψ⟩ = α|WIN⟩ + β|LOSE⟩", "⚛️");
     else if (E === "sp_kindness") aura("🏮", "KINDNESS · SOUP KITCHEN & SANCTUARY", "🥣");
     else if (E === "sp_coinclaw") el.append(h("div.tp-claw", h("span.tc-arm", "🦾"), h("div.tc-balls", ["❓", "🎡", "FREE", "💰", "❓", "🎡", "FREE", "❓"].map((b, i) => h("i", { style: { "--i": i } }, b))), h("span.tc-spark", "✨")));
+    // ---- the 11 round-7 machines (skyEngine.js)
+    else if (E === "sp_cumulus") el.append(h("div.sk-strip.sk-clouds", h("i.sk-ship", "🛩️"), h("b", cfg.jpNote || "CUMULUS CASH"), h("i.sk-bolt", "🌩️")));
+    else if (E === "sp_aero") el.append(h("div.sk-strip.sk-tow", h("div.sk-plane", h("span", "🛩️"), h("i.sk-rope"), h("b.sk-banner", "AERO-ACE · 5 SKY LANES · 243 WAYS"))));
+    else if (E === "sp_crossing") aura("🏔️", "THE CROSSING · 왼쪽 절벽 → 오른쪽 절벽", "⛩️");
+    else if (E === "sp_orbital") el.append(h("div.sk-strip.sk-pad", h("i", "🚀"), h("b", "T-MINUS · 버튼을 눌렀다 떼면 발사!"), h("i", "🌕")));
+    else if (E === "sp_constellation") aura("🔭", "CONSTELLATION WEAVER · 별 4개 이상 = 별자리", "🌌");
+    else if (E === "sp_tide") aura("☄️", "COSMIC TIDE = 모든 잭팟 동시 지급!", "🪐");
+    else if (E === "sp_koi") aura("🎏", "KOI IN THE CLOUDS · 81 WAYS", "🪷");
+    else if (E === "sp_chain") el.append(h("span.spp-ico", "🏙️"), bar("batt", "🔋 TOWN BATTERY", "battery"));
+    else if (E === "sp_arena") aura("🏛️", "GLADIATOR'S ARENA · 25 LINES", "⚔️");
+    else if (E === "sp_quest") {
+        const clock = h("b.sk-hour", `🕗 ${String(state.hour ?? 8).padStart(2, "0")}:00`);
+        el.append(h("div.sk-strip.sk-town", h("i", "🏘️"), clock, h("span", "QUEST BOARD ❗"), h("i", "🐉")));
+        custom("hour", v => { clock.textContent = `${["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"][v % 12]} ${String(v).padStart(2, "0")}:00`; });
+    } else if (E === "sp_climb") {
+        const fl = h("b.sk-floor", `FLOOR ${state.floor || 1}`);
+        el.append(h("div.sk-strip.sk-tower", h("i", "🏙️"), fl, h("span", "PENTHOUSE ▲"), h("i", "🛗")));
+        custom("floor", v => { fl.textContent = `FLOOR ${v}`; });
+    }
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
         if (p.render) return p.render(value, max);
@@ -672,5 +890,6 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_vampire") set("bingo", state.board || []);
     if (E === "sp_payday") { set("fu", state.fu || 0, 100); set("dao", state.dao || 0, 100); }
     if (E === "sp_helm") { set("sailR", state.sailR || 0, 10); set("sailC", state.sailC || 0, 10); }
+    if (E === "sp_chain") set("batt", state.batt || 0, 10);
     return { el, set };
 }

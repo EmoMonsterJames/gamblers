@@ -31,6 +31,8 @@ export const Store = {
     maps: {},        // admin overrides for regions / maps: see data/mapAdmin.js
     wallets: {},     // pid -> gold won outside a season (survival corner), added when they join one
     bank: {},        // 🏦 accounts, 🏪 businesses, pending transfers, trend reports: see game/bank.js
+    emodex: {},      // 📖 EmoMon dex per player: { <pid>: { <speciesId>: { how, at, season } } } (persistent)
+    emomon: null,    // 🐾 EmoMonster catalog snapshot (settings "emomon", loaded on demand: emomon/data.js)
     season: null,    // current season object (see game/season.js)
     sandbox: null,   // test mode: { real } while an admin tries the maps with the test player
     seasonCount: 0,
@@ -53,6 +55,7 @@ export const Store = {
         this.maps = L.maps || {};
         this.wallets = L.wallets || {};
         this.bank = L.bank || {};
+        this.emodex = L.emodex || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -83,7 +86,7 @@ export const Store = {
         const [players, hall, results, jps, machines, seasons, hits, settings] = await Promise.all([
             q("players"), q("hall_of_fame"), q("season_results"), q("slot_jackpots"), q("slot_machine_state"),
             sb.from("seasons").select("*").order("number", { ascending: false }).limit(1).then(r => { if (r.error) throw r.error; return r.data; }),
-            q("jackpot_hits"), q("settings")
+            q("jackpot_hits"), sb.from("settings").select("*").neq("key", "emomon").then(r => { if (r.error) throw r.error; return r.data; })
         ]);
         if (players?.length) {
             this.setPlayers(players);
@@ -108,6 +111,7 @@ export const Store = {
         this.wallets = wl?.value || {}; // cloud is the source of truth (a reset leaves no row)
         const bk = settings.find(r => r.key === "bank");
         this.bank = bk?.value || {};
+        this.emodex = settings.find(r => r.key === "emodex")?.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -118,7 +122,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -191,6 +195,37 @@ export const Store = {
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "bank", value: this.bank, updated_at: new Date().toISOString() }));
     },
+    async saveEmodex() {
+        this.saveLocal();
+        clearTimeout(this._dexTimer);
+        this._dexTimer = setTimeout(() => this.write(sb => sb.from("settings").upsert({ key: "emodex", value: this.emodex, updated_at: new Date().toISOString() })), 1500);
+    },
+    // 🐾 EmoMonster catalog: cached in this browser, re-downloaded only when the cloud copy is newer
+    async loadEmomon() {
+        if (this.emomon) return this.emomon;
+        let cache = null;
+        try { cache = JSON.parse(localStorage.getItem(LS + ".emomon") || "null"); } catch { }
+        if (this.cloud && sb) {
+            try {
+                const { data: head } = await sb.from("settings").select("updated_at").eq("key", "emomon").maybeSingle();
+                if (head && (!cache || cache.updated_at !== head.updated_at)) {
+                    const { data } = await sb.from("settings").select("value,updated_at").eq("key", "emomon").maybeSingle();
+                    if (data?.value) { cache = { ...data.value, updated_at: data.updated_at }; try { localStorage.setItem(LS + ".emomon", JSON.stringify(cache)); } catch (e) { console.warn(e); } }
+                }
+            } catch (e) { console.warn("emomon load", e); }
+        }
+        this.emomon = cache;
+        return cache;
+    },
+    async saveEmomon(value) {
+        const updated_at = new Date().toISOString();
+        this.emomon = { ...value, updated_at };
+        try { localStorage.setItem(LS + ".emomon", JSON.stringify(this.emomon)); } catch (e) { console.warn(e); }
+        await this.write(sb => sb.from("settings").upsert({ key: "emomon", value, updated_at }));
+        return this.emomon;
+    },
+    // the same Supabase project, public schema (EmoMonster tables) — needs the admin sign-in
+    publicClient() { return sb ? sb.schema("public") : null; },
     async logout() { await sb?.auth.signOut(); this.user = null; },
 
     // ------------------------------------------------------------ players

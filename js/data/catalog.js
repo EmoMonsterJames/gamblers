@@ -6,6 +6,7 @@
 
 import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf } from "./regions.js";
 import { THEME_HOME } from "../slots/themeConfigs.js";
+import { SKY_HOME } from "../slots/skyConfigs.js";
 export { REGIONS, REGION_ITEMS };
 export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
@@ -145,7 +146,43 @@ export const MISSIONS = [
     { id: "k4_job", tier: 4, type: "job_min", v: 30000, text: "직업으로 번 돈이 30,000G 미만인 플레이어 탈락" },
     { id: "k4_earn", tier: 4, type: "earn_min", v: 3000, text: "돈벌기로 번 돈이 3,000G 미만인 플레이어 탈락" },
     { id: "k4_maps", tier: 4, type: "rank", rule: "fewmaps_round", text: "이번 라운드에 방문한 맵 종류가 가장 적은 플레이어(들)가 탈락 후보" },
-    { id: "k4_gear", tier: 4, type: "rank", rule: "fewgear", text: "장비가 필요한 맵(산소통·날개·우주복) 방문 횟수가 가장 적은 플레이어(들)가 탈락 후보" }
+    { id: "k4_gear", tier: 4, type: "rank", rule: "fewgear", text: "장비가 필요한 맵(산소통·날개·우주복) 방문 횟수가 가장 적은 플레이어(들)가 탈락 후보" },
+
+    // ---- 🐾 EmoMon missions -----------------------------------------------
+    // battle + emo: the two players' ⚔ battle monsters fight (no monster → Battlebot), the loser is out
+    // emo_has: players without such a monster are candidates (one goes out) · nature "?" is drawn when the mission is set
+    { id: "e0_battle", tier: 0, type: "battle", emo: true, rule: "random", text: "🐾 랜덤 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e0_b_poor2", tier: 0, type: "battle", emo: true, rule: "poor2", text: "🐾 골드가 가장 적은 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e0_types", tier: 0, type: "emo_has", what: "type", types: ["Fire", "Water", "Ice", "Earth", "Grass", "Electric", "Normal"], text: "🐾 불·물·얼음·땅·Grass·전기·노멀 중 아무 속성 몬스터도 없는 플레이어 중 1명 탈락" },
+    { id: "e0_r2", tier: 0, type: "emo_has", what: "rarity", v: 2, text: "🐾 ★2 이상 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e0_w2", tier: 0, type: "emo_has", what: "weapons2", text: "🐾 무기 2개 이상을 가진 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e1_battle", tier: 1, type: "battle", emo: true, rule: "random", text: "🐾 랜덤 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e1_b_lowpts2", tier: 1, type: "battle", emo: true, rule: "lowpts2", text: "🐾 포인트가 가장 적은 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e1_types", tier: 1, type: "emo_has", what: "type", types: ["Abnormal", "Magic", "Power", "Bug", "Air", "Fly", "Steel"], text: "🐾 Abnormal·Magic·Power·Bug·Air·Fly·Steel 중 아무 속성 몬스터도 없는 플레이어 중 1명 탈락" },
+    { id: "e1_r3", tier: 1, type: "emo_has", what: "rarity", v: 3, text: "🐾 ★3 이상 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e1_trait", tier: 1, type: "emo_has", what: "trait", text: "🐾 특성을 넣은 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e1_noevo", tier: 1, type: "emo_has", what: "noevo", text: "🐾 진화가 없는 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e2_battle", tier: 2, type: "battle", emo: true, rule: "random", text: "🐾 랜덤 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e2_b_fewmons", tier: 2, type: "battle", emo: true, rule: "fewmons", text: "🐾 몬스터 수가 가장 적은 플레이어 중 랜덤 2인 몬스터 배틀" },
+    { id: "e2_types", tier: 2, type: "emo_has", what: "type", types: ["Angel", "Evil", "Ghost"], text: "🐾 Angel·Evil·Ghost 중 아무 속성 몬스터도 없는 플레이어 중 1명 탈락" },
+    { id: "e2_r4", tier: 2, type: "emo_has", what: "rarity", v: 4, text: "🐾 ★4 이상 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e2_nature", tier: 2, type: "emo_has", what: "nature", nature: "?", text: "🐾 랜덤으로 정해지는 Nature(성격)의 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e2_evolved", tier: 2, type: "emo_has", what: "evolved", text: "🐾 진화시킨 몬스터가 없는 플레이어 중 랜덤 1명 탈락" },
+    { id: "e2_multi", tier: 2, type: "emo_has", what: "multitype", v: 2, text: "🐾 속성이 2개 이상인 몬스터가 없는 플레이어 중 랜덤 1명 탈락" },
+    { id: "e3_battle", tier: 3, type: "battle", emo: true, rule: "random", text: "🐾 랜덤 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e3_b_fewweap", tier: 3, type: "battle", emo: true, rule: "fewemoweapons", text: "🐾 몬스터 무기 총 개수가 가장 적은 플레이어 중 랜덤 2인 몬스터 배틀" },
+    { id: "e3_types", tier: 3, type: "emo_has", what: "type", types: ["Fairy", "Light", "Robot"], text: "🐾 Fairy·Light·Robot 중 아무 속성 몬스터도 없는 플레이어 중 1명 탈락" },
+    { id: "e3_r5", tier: 3, type: "emo_has", what: "rarity", v: 5, text: "🐾 ★5 이상 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e3_r1", tier: 3, type: "emo_has", what: "rarity1", text: "🐾 ★1 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e3_nature", tier: 3, type: "emo_has", what: "nature", nature: "?", text: "🐾 랜덤으로 정해지는 Nature(성격)의 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e3_mono", tier: 3, type: "emo_has", what: "mono", text: "🐾 단일 속성 몬스터가 없는 플레이어 중 랜덤 1명 탈락" },
+    { id: "e4_battle", tier: 4, type: "battle", emo: true, rule: "random", text: "🐾 랜덤 2인 몬스터 배틀 (진 사람 탈락)" },
+    { id: "e4_b_fewtraits", tier: 4, type: "battle", emo: true, rule: "fewemotraits", text: "🐾 몬스터 특성 총 개수가 가장 적은 플레이어 중 랜덤 2인 몬스터 배틀" },
+    { id: "e4_types", tier: 4, type: "emo_has", what: "type", types: ["Space", "Mind"], text: "🐾 Space·Mind 중 아무 속성 몬스터도 없는 플레이어 중 1명 탈락" },
+    { id: "e4_r6", tier: 4, type: "emo_has", what: "rarity", v: 6, text: "🐾 ★6 몬스터가 없는 플레이어 중 1명 탈락" },
+    { id: "e4_final", tier: 4, type: "emo_has", what: "final", text: "🐾 최종 진화형 몬스터가 없는 플레이어 중 랜덤 1명 탈락" },
+    { id: "e4_tri", tier: 4, type: "emo_has", what: "multitype", v: 3, text: "🐾 속성이 3개인 몬스터가 없는 플레이어 중 랜덤 1명 탈락" }
+
 ];
 // brand names are compared loosely ("CLOVER TECH" = "CLOVER-TECH", "YG Gaming" = "YG GAMING")
 export const brandKey = b => String(b || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -503,6 +540,8 @@ const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: 
 for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id === lid)?.slots.push(sid);
 // the 15 theme machines (round 4) — js/slots/themeConfigs.js
 for (const [sid, lid] of Object.entries(THEME_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
+// the 11 sky / space / arena machines (round 7) — js/slots/skyConfigs.js
+for (const [sid, lid] of Object.entries(SKY_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 
 // earn corners: `earn: true` (old saves) = the classic four
 export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];
@@ -549,6 +588,20 @@ for (const id of SPELL_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l
 // 🏦 Business Bank / 🏪 Self-Business corners (admin can move them in 🌍 지역·맵 관리)
 export const BANK_MAPS = ["highlimit", "highroller", "wealthy", "space_lake", "star_sky", "sky_pond", "dungdung", "downtown", "dungeon", "ghost", "winners", "celebrity", "crazy_casino", "picky", "ocean_town", "npc_town"];
 export const BIZHUB_MAPS = ["riches", "diamond_casino", "goldbar", "sky_tower", "death_casino", "combo_town", "wingers", "spacetown", "shipwreck", "space_center", "western", "twins"];
+// 🐾 EmoMon corners: 🔍 Capture on (almost) every map, 🏥 Monster Hospital / 🧪 Monster Lab on a few (admin can change each map)
+export const EMO_HOSPITAL_MAPS = ["cloud", "stars", "seaside", "downtown", "magic", "underground", "graveyard", "bubble", "igloo", "plaza", "wealthy", "games_only", "slots_only", "npc_town", "island"];
+export const EMO_LAB_MAPS = ["zodiac", "emo", "fantasy", "dungeon", "coffin", "rtp_town", "diamond_casino", "colosseum"];
+export const EMO_NO_CAPTURE_REGIONS = [];
+// maps without an EmoMon Capture corner (admin can still turn it on per map)
+export const EMO_NO_CAPTURE_MAPS = ["sky_casino", "balloon", "celebrity", "cosmic", "oink", "noluck", "downtown", "super", "rainbow", "fantasy", "underground", "spooky", "coffin", "bubble", "igloo", "plaza", "rtp_town", "beggar_shelter", "wealthy", "games_only", "noslot_casino", "slots_only", "noc_casino", "npc_casino", "npc_town"];
+// 🛒 Monster Shop corner (balls · potions · tickets · weapons · traits)
+export const EMO_SHOP_MAPS = ["dove", "winners", "spacetown", "lucky", "gamblers", "emo2", "eastern", "magic", "blackout", "ghost", "deepsea_casino", "ice", "random_casino", "highroller", "picky", "redblue", "evil_town", "island"];
+for (const l of LOCATIONS) {
+    if (!EMO_NO_CAPTURE_REGIONS.includes(l.region) && !EMO_NO_CAPTURE_MAPS.includes(l.id)) l.capture = true;
+    if (EMO_SHOP_MAPS.includes(l.id)) l.emoshop = true;
+    if (EMO_HOSPITAL_MAPS.includes(l.id)) l.hospital = true;
+    if (EMO_LAB_MAPS.includes(l.id)) l.lab = true;
+}
 for (const id of BANK_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bank = true; }
 for (const id of BIZHUB_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bizhub = true; }
 

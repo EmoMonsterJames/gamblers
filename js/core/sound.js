@@ -269,6 +269,29 @@ const SONGS = {
             const BOX = { 0: 76, 2: 76, 4: 76, 8: 76, 10: 76, 12: 76, 16: 76, 18: 79, 20: 72, 23: 74, 24: 76, 32: 77, 34: 77, 36: 77, 39: 77, 40: 77, 42: 76, 44: 76, 46: 76, 48: 76, 50: 74, 52: 74, 54: 76, 56: 74, 60: 79 };
             if (BOX[s]) { bgmVoice(a, out, t, { freq: midi(BOX[s] + 12), type: "sine", dur: len * 2.2, vol: 0.05, cut: 9000, cutEnd: 4000, attack: 0.001 }); bgmVoice(a, out, t, { freq: midi(BOX[s] + 12) * 3.01, type: "sine", dur: len * 0.6, vol: 0.01, cut: 9000, cutEnd: 5000, attack: 0.001 }); }
         }
+    },
+    // The Crossing: Irish fiddle + tin-whistle jig in 6/8, 140 BPM (dotted quarter), D – G – D – A | D – G – A – D.
+    // One step = one jig eighth (6 per bar, 8 bars), bodhrán on the beats, bouzouki strums.
+    irish_jig: {
+        bpm: 140, step: 60 / 140 / 3, steps: 48,
+        play(a, out, s, t, len) {
+            const bar = Math.floor(s / 6), st = s % 6;
+            const ROOT = [50, 55, 50, 57, 50, 55, 57, 50][bar];
+            const TRI = r => r === 55 ? [55, 59, 62] : r === 57 ? [57, 61, 64] : [50, 54, 57];
+            // bodhrán: deep hit on each dotted-quarter beat, tipper ghost notes between
+            if (st === 0 || st === 3) { kick(a, out, t, st ? 0.22 : 0.32); bgmNoise(a, out, t, { dur: 0.08, vol: 0.06, hp: 700 }); }
+            else bgmNoise(a, out, t, { dur: 0.03, vol: 0.025, hp: 2500 });
+            // bouzouki: bass note + strummed triad
+            if (st === 0) bgmVoice(a, out, t, { freq: midi(ROOT - 12), type: "triangle", dur: len * 2.6, vol: 0.16, cut: 900, cutEnd: 250, attack: 0.003 });
+            if (st === 2 || st === 5) TRI(ROOT).forEach((n, i) => bgmVoice(a, out, t + i * 0.01, { freq: midi(n), type: "triangle", dur: len * 0.9, vol: 0.026, cut: 3600, cutEnd: 1200, attack: 0.002 }));
+            // fiddle tune (two detuned saws = bowed bite)
+            const MEL = [74, 76, 78, 81, 78, 76, 79, 78, 76, 74, 76, 78, 81, 83, 81, 78, 76, 74, 76, 74, 73, 76, 0, 0,
+                74, 76, 78, 81, 78, 81, 83, 81, 79, 78, 79, 81, 76, 78, 76, 73, 71, 69, 74, 0, 78, 74, 0, 0];
+            const n = MEL[s];
+            if (n) for (const dt of [-6, 6]) bgmVoice(a, out, t, { freq: midi(n), type: "sawtooth", dur: len * 1.15, vol: 0.022, cut: 3800, cutEnd: 1400, detune: dt, attack: 0.012 });
+            // tin whistle doubles the tune an octave up on the second half
+            if (n && bar >= 4) bgmVoice(a, out, t, { freq: midi(n + 12), type: "sine", dur: len * 0.95, vol: 0.03, cut: 9000, cutEnd: 5000, attack: 0.015 });
+        }
     }
 };
 function taiko(a, out, t, vol = 0.5) {
@@ -297,7 +320,7 @@ function bgmStart(name, vol = 0.5) {
     try {
         const a = ac(), gain = a.createGain();
         gain.gain.value = muted ? 0 : vol; gain.connect(a.destination);
-        const len = 60 / song.bpm / 4;
+        const len = song.step || 60 / song.bpm / 4;
         const b = bgm = { gain, step: 0, next: a.currentTime + 0.1, song, name, vol };
         b.timer = setInterval(() => {
             if (bgm !== b) return;

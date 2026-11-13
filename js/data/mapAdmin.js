@@ -13,7 +13,7 @@ import { REGIONS, LOCATIONS, LOC_BY_ID } from "./catalog.js";
 
 const ORIG_REGIONS = REGIONS.map(r => structuredClone(r));
 const ORIG_LOCS = LOCATIONS.map(l => structuredClone(l));
-export const LOC_FIELDS = ["off", "name", "emoji", "region", "slots", "casino", "shops", "job", "npc", "discount", "beg", "spell", "earn", "honor", "bank", "bizhub", "req"];
+export const LOC_FIELDS = ["off", "name", "emoji", "region", "slots", "casino", "shops", "job", "npc", "discount", "beg", "spell", "earn", "honor", "bank", "bizhub", "capture", "hospital", "lab", "emoshop", "req"];
 
 export const regionDefault = id => ORIG_REGIONS.find(r => r.id === id);
 export const locDefault = id => ORIG_LOCS.find(l => l.id === id);

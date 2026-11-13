@@ -2056,3 +2056,6 @@ export const THEME_MACHINES = Object.fromEntries(Object.entries({
     sp_cathedral: cathedral, sp_velvet: velvet, sp_astro: astro, sp_lilypad: lilypad, sp_gridlock: gridlock,
     sp_helm: helm, sp_bricks: bricks, sp_classic: classic, sp_mimic: mimic, sp_abyss: abyss, sp_glacier: glacier, sp_quantum: quantum, sp_kindness: kindness
 }).map(([k, fn]) => [k, wrap(fn)]));
+
+// shared with the round-7 sky machines (skyEngine.js)
+export { waysEval, linesEval, clusterEval, winP, refill, forceRun, nearMiss, freeLoop, cash, feat, endFeat, short, payKeys, highKeys, lowKeys, cellsAll, name, isW, cellsOf, txt };

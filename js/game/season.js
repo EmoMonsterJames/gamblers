@@ -8,6 +8,7 @@ import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK,
 import { shuffle, pick } from "../core/util.js";
 import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
+import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits } from "../emomon/game.js";
 
 export const S = () => Store.season;
 
@@ -277,6 +278,12 @@ export function setMission(m) {
         s.mission.letter = L;
         s.mission.text = `알파벳 카드 ${L} 없는 플레이어 탈락 (랜덤 추첨: ${L})`;
     }
+    // 🐾 random nature mission: the nature is drawn now
+    if (m.type === "emo_has" && m.nature === "?") {
+        const n = randomNatureSafe();
+        s.mission.nature = n;
+        s.mission.text = `🐾 Nature(성격)이 ${n}인 몬스터가 없는 플레이어 중 1명 탈락 (랜덤 추첨: ${n})`;
+    }
     m = s.mission;
     s.turnIdx = 0;
     if (m.type === "battle") {
@@ -305,6 +312,9 @@ const METRIC = {
     // this round (mission rank rules): distinct maps / visits to gear-only maps
     roundMaps: pid => (S().results[pid]?.stats?.locs || []).length,
     roundGear: pid => S().results[pid]?.stats?.gearVisits || 0
+,
+    // 🐾 EmoMon
+    emoMons: pid => emoMons(pid).length, emoWeapons: pid => emoWeapons(pid), emoTraits: pid => emoTraits(pid)
 };
 // players at the extreme of a metric (ties included), widened until there are `min` of them
 function extremeGroup(list, metric, dir = 1, min = 2) {
@@ -336,7 +346,9 @@ function battlePair(rule) {
         // groups
         nopet: () => live.filter(p => !hasPetGear(p)), noframe: () => live.filter(p => !hasFrameGear(p)),
         fewweapons: () => extremeGroup(live, "weapons", 1), lowhp: () => extremeGroup(live, "hp", 1), highhp: () => extremeGroup(live, "hp", -1),
-        fewmaps: () => extremeGroup(live, "maps", 1), fewitems: () => extremeGroup(live, "items", 1)
+        fewmaps: () => extremeGroup(live, "maps", 1), fewitems: () => extremeGroup(live, "items", 1),
+        // 🐾 EmoMon
+        fewmons: () => extremeGroup(live, "emoMons", 1), fewemoweapons: () => extremeGroup(live, "emoWeapons", 1), fewemotraits: () => extremeGroup(live, "emoTraits", 1)
     };
     let pool = rules[rule]?.() || live;
     if (pool.length < 2) pool = live;
@@ -843,6 +855,7 @@ export function missionMet(m, st) {
         case "spell": return !!st.spellOk;
         case "card": return !!st.cardUsed;
         case "has": return st.pid != null && hasThing(st.pid, m.what);
+        case "emo_has": return st.pid != null && emoHas(st.pid, m);
         case "rank": return true;
         case "bonus_in": return !!st.bonusAt && st.bonusAt <= m.v;
         case "brand_win": return (st.brandWin?.[brandKey(m.brand)] || 0) >= m.v;
@@ -874,6 +887,7 @@ export function missionProgress(m, st) {
         case "spell": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐝 Spelling Bee 성공!" : "🐝 Spelling Bee 코너가 있는 맵에서 단어를 맞히세요" };
         case "card": return { cur: met ? 1 : 0, goal: 1, label: met ? `카드 ${m.letter} 사용!` : `카드 ${m.letter}: 턴 종료 때 사용 여부를 묻습니다` };
         case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? "보유 중 — 안전" : m.what === "pet" ? "펫 없음 (상점에서 구매 가능)" : "펫·펫효과·프레임·효과 없음" };
+        case "emo_has": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐾 해당 몬스터 보유 중 — 안전" : "🐾 해당 몬스터가 없습니다 — EmoMon Capture · Lab에서 준비하세요" };
         case "rank": return { cur: 0, goal: 1, label: "라운드 끝에 판정" };
         case "bonus_in": {
             const sp = st.spins || 0;

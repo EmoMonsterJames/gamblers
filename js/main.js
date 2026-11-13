@@ -16,6 +16,7 @@ import { adminMapsPage } from "./screens/adminMaps.js";
 import { adminSimPage } from "./screens/adminSim.js";
 import { adminResourcesPage } from "./screens/adminResources.js";
 import { adminBankPage } from "./screens/adminBank.js";
+import { adminEmoPage } from "./screens/adminEmo.js";
 import { applyMaps } from "./data/mapAdmin.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
 
@@ -23,7 +24,7 @@ const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
-    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage
 };
 
 function nav(active) {

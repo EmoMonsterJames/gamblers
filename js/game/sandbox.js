@@ -21,7 +21,7 @@ export function testPlayer(country = "Emo World") {
     };
 }
 
-export function startSandbox({ country, mission, money = 1000000, points = 500, kit = true } = {}) {
+export function startSandbox({ country, mission, money = 8000000, points = 2000, kit = true, startLoc = null } = {}) {
     if (!Store.sandbox) Store.sandbox = { real: Store.season };
     Store.allPlayers = Store.allPlayers.filter(p => p.id !== TEST_PID);
     Store.allPlayers.push(testPlayer(country));
@@ -35,6 +35,7 @@ export function startSandbox({ country, mission, money = 1000000, points = 500, 
         number: 0, sandbox: true, status: "turns", startedAt: new Date().toISOString(),
         roster: [TEST_PID], round: 1, mission: null, order: [TEST_PID], turnIdx: 0, turn: null,
         results: {}, candidates: [], history: [], log: [],
+        sandboxStart: startLoc,
         ps: {
             [TEST_PID]: {
                 money, points, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items, loanGold: 0, loan: null,

@@ -9,7 +9,7 @@ import { Sound } from "../core/sound.js";
 import { toast, confetti, banner, confirmBox, modal, bigWin } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { TIERS, MISSIONS, ITEM_BY_ID, LOCATIONS, LOC_BY_ID, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
+import { TIERS, MISSIONS, ITEM_BY_ID, LOCATIONS, LOC_BY_ID, REGIONS, SHOPS, LOANS, REGION_BY_ID, earnKinds, ALPHABET } from "../data/catalog.js";
 import { sandboxTools, exitSandbox } from "../game/sandbox.js";
 // alphabet card (G·A·M·B·L·E·R·S) chance per slot spin: 0.04% at the top bet down to 0.01% at the lowest
 const CARD_RATE = (bet, bets) => { const l = [...new Set(bets || [bet])].sort((a, b) => a - b); const i = Math.max(0, l.findIndex(b => b >= bet)); return 0.0001 + 0.0003 * (l.length > 1 ? i / (l.length - 1) : 0); };
@@ -34,6 +34,8 @@ import { Activity, activityBusy } from "../core/fx.js";
 import { bankView, remoteBank } from "./bank.js";
 import { bizHubView, bizHubHere, bizTabs, bizView, remoteBiz, reportList } from "./business.js";
 import { account as bankAccount, reportsOf } from "../game/bank.js";
+import { captureView, hospitalView, labView, monsterShopView, emoDexTab, emoPartySide, emoBattleStage, emoBoot } from "./emoCorners.js";
+import { emoInventory } from "../emomon/ui.js";
 
 let root = null, timer = null;
 
@@ -43,10 +45,12 @@ export function seasonScreen() {
     return root;
 }
 
+let emoBooting = null;
 function render() {
     clearInterval(timer);
     const s = G.S();
     if (!s) { root.replaceChildren(noSeason()); return; }
+    if (!emoBooting) emoBooting = emoBoot().catch(e => console.warn("EmoMon", e)); // EmoMon missions / party need the catalog
     const stage = {
         select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage, battle: battleMissionStage,
         eliminated: eliminatedStage, final: finalStage, done: doneStage
@@ -65,7 +69,32 @@ function sandboxBar(s) {
         tool("💰 +100만G", () => sandboxTools.gold()), tool("💎 +100P", () => sandboxTools.points()), tool("❤️ HP 회복", () => sandboxTools.heal()),
         tool("⏱️ +10분", () => sandboxTools.time()), tool("👹 이번 라운드 모든 맵 NPC", () => sandboxTools.npcEverywhere()),
         h("label", "미션 ", sel),
+        sandboxMapPicker(s),
         h("button.btn.small.red", { onclick: exitSandbox }, "테스트 종료"));
+}
+// 🧪 jump straight to any region / map (no roulette, no entry rules)
+function sandboxMapPicker(s) {
+    const cur = s.turn?.loc || s.sandboxStart || "";
+    const mapSel = h("select");
+    const regSel = h("select", { onchange: () => fill() }, REGIONS.filter(r => !r.off).map(r => h("option", { value: r.id, selected: LOC_BY_ID[cur]?.region === r.id }, `${r.emoji} ${r.name}`)));
+    const fill = () => mapSel.replaceChildren(...LOCATIONS.filter(l => l.region === regSel.value && !l.off).map(l => h("option", { value: l.id, selected: l.id === cur }, `${l.emoji || ""} ${l.name}`)));
+    fill();
+    return h("label", "📍 ", regSel, mapSel, h("button.btn.small.gold", { onclick: () => sandboxJump(s, mapSel.value) }, "이동"));
+}
+async function sandboxJump(s, locId) {
+    const loc = LOC_BY_ID[locId];
+    if (!loc) return;
+    s.sandboxStart = locId;
+    if (!s.turn) return toast("턴이 시작되면 이 맵으로 바로 들어갑니다", "info");
+    if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
+    clearInterval(timer);
+    gameLayer?.remove(); gameLayer = null;
+    s.turn.region = loc.region;
+    G.setLocation(loc.id, { teleport: true });
+    s.turn.running = true;
+    await banner(`🧪 ${loc.emoji || ""} ${loc.name}`, 900, "loc");
+    await arrive(s, loc);
+    render();
 }
 export function rerender() { if (root && document.body.contains(root)) render(); }
 
@@ -95,7 +124,10 @@ function sidebar(s) {
     // the latest one right under the survivors … the first one out (20위) at the very bottom
     const list = s.roster.length ? [...s.roster].sort((a, b) => (s.ps[a].out - s.ps[b].out)
         || (s.ps[a].out ? (s.ps[a].rank || 99) - (s.ps[b].rank || 99) : s.ps[b].money - s.ps[a].money)) : [];
-    return h("aside.roster",
+    // during a turn the player's EmoMon party sits on top; the participant list shrinks to a minimum
+    const emoPid = s.status === "turns" && s.turn?.pid != null && !s.turn.done ? s.turn.pid : null;
+    return h("aside.roster" + (emoPid != null ? ".emo-on" : ""),
+        emoPid != null ? emoPartySide(emoPid, () => document.dispatchEvent(new Event("emo:change"))) : null,
         h("div.roster-title", `참가자 ${s.roster.length}명`),
         h("div.roster-list", list.map(pid => {
             const r = s.results[pid];
@@ -359,6 +391,7 @@ function regionStage(s) {
     } }, `🗺️ 랜덤 맵으로 이동 ×${ps.items.map_random}`)) : null;
     return h("div.map-stage",
         h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${Store.player(pid).country} · 선택 가능한 지역 ${avail.length}곳`)), btn),
+        s.sandbox && LOC_BY_ID[s.sandboxStart] ? h("div.pass-row", h("b", "🧪 테스트:"), h("button.btn.gold", { onclick: () => sandboxJump(s, s.sandboxStart) }, `📍 ${LOC_BY_ID[s.sandboxStart].emoji || ""} ${LOC_BY_ID[s.sandboxStart].name}(으)로 바로 입장`)) : null,
         passRow, randomRow,
         rmap.el,
         h("p.muted.center", "☁️ 하늘나라 = 🪽 날개 · 🪐 우주 = 🧑‍🚀 우주복 · 🌊 심해 = 🤿 산소통이 있어야 뽑힐 수 있어요 (입장 시 소모 · 일반 상점) · 🧩 콤보랜드 = 셋 중 하나만 있어도 뽑힘 (맵마다 필요한 장비를 입장 시 사용)"));
@@ -480,7 +513,10 @@ function locationStage(s) {
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
+        ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
+    const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
+    const invWrap = el => h("div", el, emoInventory(pid, emoChanged));
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -494,7 +530,7 @@ function locationStage(s) {
             ...loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
                 h("div.gc-kind", "CASINO GAME"), h("div.gc-ico", g.icon), h("div.gc-name", g.name), h("div.gc-desc", g.desc)); }));
         else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
-        else if (id === "inv") content = inventoryView(pid, {
+        else if (id === "inv") content = invWrap(inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
             onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } },
             onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${Math.round(r * 100) / 100}`, "ok"); updateHud(); } },
@@ -506,7 +542,7 @@ function locationStage(s) {
             onRemoteBank: () => remoteBank(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
             onRemoteBiz: () => remoteBiz(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
             onReports: () => reportList(pid)
-        });
+        }));
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
@@ -516,6 +552,11 @@ function locationStage(s) {
         else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "emo:capture") content = captureView(pid, loc, { turn: t, onChange: emoChanged });
+        else if (id === "emo:hospital") content = hospitalView(pid, { onChange: emoChanged });
+        else if (id === "emo:lab") content = labView(pid, { onChange: emoChanged });
+        else if (id === "emo:shop") content = monsterShopView(pid, loc, { onChange: emoChanged });
+        else if (id === "emo:dex") content = emoDexTab(pid);
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
@@ -821,6 +862,8 @@ function battleMissionStage(s) {
     }
     // old saves (no draw state) go straight to the arena
     if (s.battleDrawn === false) return battleDrawStage(s);
+    if (s.mission.emo) return emoBattleStage(a, b, (winner, loser) => { G.finishBattle(winner, loser); render(); },
+        { title: `🐾 ROUND ${s.round} EmoMon 배틀 미션`, sub: `${s.mission.text} · 각자의 ⚔ 배틀 몬스터가 싸웁니다 (몬스터가 없으면 Battlebot) · 지면 탈락!` });
     return battleView(a, b, (winner, loser) => {
         G.finishBattle(winner, loser);
         render();

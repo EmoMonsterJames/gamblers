@@ -1,7 +1,7 @@
 // Admin: map simulation with the test player (see game/sandbox.js)
 import { h } from "../core/util.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, TIERS, COUNTRIES } from "../data/catalog.js";
+import { MISSIONS, TIERS, COUNTRIES, REGIONS, LOCATIONS } from "../data/catalog.js";
 import { startSandbox, exitSandbox, isSandbox } from "../game/sandbox.js";
 
 export function adminSimPage() {
@@ -11,11 +11,16 @@ export function adminSimPage() {
     const country = h("select", COUNTRIES.map(c => h("option", { value: c }, c)));
     const mission = h("select", [0, 1, 2, 3, 4].map(t => h("optgroup", { label: `난이도 ${TIERS[t]}` },
         playable.filter(m => m.tier === t).map(m => h("option", { value: m.id }, m.text)))));
-    const money = h("input.num", { type: "number", min: 0, step: 10000, value: 1000000 });
-    const points = h("input.num", { type: "number", min: 0, step: 10, value: 500 });
+    const money = h("input.num", { type: "number", min: 0, step: 10000, value: 8000000 });
+    const points = h("input.num", { type: "number", min: 0, step: 10, value: 2000 });
     const kit = h("input", { type: "checkbox", checked: true });
+    // start map: pick a region + map, or leave it on the roulette
+    const mapSel = h("select");
+    const regSel = h("select", { onchange: () => fillMaps() }, h("option", { value: "" }, "🎯 룰렛으로 (선택 안 함)"), REGIONS.filter(r => !r.off).map(r => h("option", { value: r.id }, `${r.emoji} ${r.name}`)));
+    const fillMaps = () => mapSel.replaceChildren(...(regSel.value ? LOCATIONS.filter(l => l.region === regSel.value && !l.off).map(l => h("option", { value: l.id }, `${l.emoji || ""} ${l.name}`)) : [h("option", { value: "" }, "—")]));
+    fillMaps();
     const go = () => {
-        startSandbox({ country: country.value, mission: MISSIONS.find(m => m.id === mission.value), money: +money.value || 0, points: +points.value || 0, kit: kit.checked });
+        startSandbox({ country: country.value, mission: MISSIONS.find(m => m.id === mission.value), money: +money.value || 0, points: +points.value || 0, kit: kit.checked, startLoc: mapSel.value || null });
         location.hash = "#/season";
     };
     return h("div.page.admin-sim",
@@ -29,6 +34,7 @@ export function adminSimPage() {
                 h("label.cf", h("small", "시작 골드"), money),
                 h("label.cf", h("small", "시작 포인트"), points)),
             h("label.cf", h("small", "미션 (배틀·순위 미션은 여러 명이 필요해 제외)"), mission),
+            h("div.am-grid", h("label.cf", h("small", "📍 체험할 지역"), regSel), h("label.cf", h("small", "📍 체험할 맵 (턴이 시작되면 이 맵으로 바로 들어갑니다 · 테스트 중에도 상단 바에서 바꿀 수 있어요)"), mapSel)),
             h("label.am-tog", kit, "지역 입장 아이템 · 알파벳 카드 · 연장권 등 테스트 키트 지급"),
             h("div.row", h("button.btn.gold.big", { onclick: go }, "🧪 시뮬레이션 시작"))));
 }

@@ -1,6 +1,8 @@
 // Small DOM + formatting helpers shared by every screen.
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+// replaceChildren that skips null / false and flattens arrays (h() style)
+export const put = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter(k => k != null && k !== false));
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 export const fmt = n => Math.round(n || 0).toLocaleString("en-US");
 export const gold = n => `${fmt(n)} G`;

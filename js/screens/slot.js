@@ -62,6 +62,12 @@ export function openSlot(cfg, ctx) {
     if (special) { reelsBox.classList.add("sp-reels", "spr-" + reelsN); reelsBox.style.gridTemplateColumns = `repeat(${reelsN}, 1fr)`; }
     const overlay = h("div.slot-overlay");
     const spinBtn = h("button.spin-btn", { onclick: () => doSpin() }, egg ? "TAP!" : cfg.spinLabel || "SPIN");
+    // hold-and-release launch (Orbital Launch): holding charges the thrusters, the release (click) fires
+    if (cfg.holdSpin) {
+        const off = () => spinBtn.classList.remove("charging");
+        spinBtn.addEventListener("pointerdown", () => { if (!busy) { spinBtn.classList.add("charging"); Sound.tease(); } });
+        for (const ev of ["pointerup", "pointerleave", "pointercancel"]) spinBtn.addEventListener(ev, off);
+    }
     const autoBtn = h("button.btn.ghost.small", { onclick: () => { auto = auto ? 0 : 25; autoBtn.classList.toggle("on", !!auto); autoBtn.textContent = auto ? `AUTO ${auto}` : "AUTO"; if (auto && !busy) doSpin(); } }, "AUTO");
     const turboBtn = h("button.btn.ghost.small", { onclick: () => { turbo = !turbo; turboBtn.classList.toggle("on", turbo); } }, "⚡ TURBO");
     const logo = BRAND_LOGO[cfg.brand] ? h("img.brand-logo", { src: BRAND_LOGO[cfg.brand], alt: cfg.brand }) : h("span.brand-text", cfg.brand);
@@ -107,7 +113,7 @@ export function openSlot(cfg, ctx) {
         if (cfg.jpText) { jpBar.replaceChildren(h("div.jp.classic-jp", cfg.jpText)); return; }
         if (!cfg.jp) { jpBar.replaceChildren(h("div.jp.classic-jp", "MAX WIN x20 WHEEL · 7 FREE GAMES · MONEY MATCH")); return; }
         const pool = Store.pool(cfg.id);
-        jpBar.replaceChildren(...TIER_ORDER.filter(t => cfg.jp[t]).map(t => h("div.jp.jp-" + t.toLowerCase(), h("small", t), h("b", fmt(jackpotValue(cfg, t, bet, pool))))));
+        jpBar.replaceChildren(...TIER_ORDER.filter(t => cfg.jp[t]).map(t => h("div.jp.jp-" + t.toLowerCase(), h("small", cfg.jpLabel?.[t] || t), h("b", fmt(jackpotValue(cfg, t, bet, pool))))));
     }
 
     // ------------------------------------------------------------ meters
@@ -824,6 +830,16 @@ export function openSlot(cfg, ctx) {
         if (!o) return;
         await sleep(200);
         const rnd = Math.random;
+        // any omen may also shake the reels (o.shake) or the whole cabinet (o.screen)
+        if (o.screen) { cabinet.classList.add("omen-quake"); Sound.boom(); setTimeout(() => cabinet.classList.remove("omen-quake"), 1300); if (o.fx === "shake" && !o.text) { await sleep(1300); return; } }
+        if (o.shake && o.fx !== "shake") { frame.classList.add("omen-shake"); setTimeout(() => frame.classList.remove("omen-shake"), 1100); }
+        if (o.fx === "pop" && o.chars) o = { ...o, fx: "_pop" };
+        if (o.fx === "_pop") {
+            const l = h("div.omen-pop", Array.from({ length: Math.max(14, o.chars.length) }, (_, i) => h("i", { style: { left: 4 + rnd() * 90 + "%", top: 10 + rnd() * 75 + "%", "--d": (i * 0.08) + "s", "--r": (rnd() * 40 - 20) + "deg" } }, o.chars[i % o.chars.length])));
+            cabinet.append(l); if (o.text) { const t = h("div.omen-text", o.text); cabinet.append(t); setTimeout(() => t.remove(), 1700); }
+            for (let i = 0; i < 5; i++) setTimeout(() => Sound.click(), i * 140); await sleep(1800); l.remove();
+            return;
+        }
         // the special machines' omens map onto the shared effects below
         const MAP = {
             smoke: { fx: "wind", chars: ["💨", "☁️", "💨", "🌫️"] }, notes: { fx: "rain", chars: ["🎵", "🎶", "🎧"] },

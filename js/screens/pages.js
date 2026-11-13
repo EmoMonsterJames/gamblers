@@ -182,6 +182,7 @@ export function adminPage() {
         h("div.admin-card", h("h3", "🎰 슬롯·카지노게임 관리"), h("p.muted", "슬롯머신의 RTP(배당 배율)·보너스 확률 조정, 보너스 삭제, RTP 시뮬레이션, 카지노게임 RTP·노출 여부·최대 당첨금을 관리합니다."), h("a.btn.gold", { href: "#/admin-games" }, "관리하기")),
         h("div.admin-card", h("h3", "🌍 지역·맵 관리"), h("p.muted", "지역·맵 켜기/끄기, 이름·입장 조건·소속 지역 변경, 맵별 슬롯/카지노 게임 배치와 코너(직업·구걸·할인·NPC·돈벌기)를 관리합니다."), h("a.btn.gold", { href: "#/admin-maps" }, "관리하기")),
         h("div.admin-card", h("h3", "🏦 은행 · Self-Business 관리"), h("p.muted", "Business Bank 계좌(코드·Business Gold), 대기 중인 송금, 지금까지 개설된 비즈니스(소유자·위치·매출)를 관리합니다."), h("a.btn.gold", { href: "#/admin-bank" }, "관리하기")),
+        h("div.admin-card", h("h3", "🐾 몬스터 관리 (EmoMon)"), h("p.muted", "몬스터 생성기, 몬스터 · 무기 · 속성 · 특성 · 몬스터 아이템 관리, 맵별 Capture 설정, EmoMonster 데이터 가져오기."), h("a.btn.gold", { href: "#/admin-emo" }, "관리하기")),
         h("div.admin-card", h("h3", "📊 리소스 대시보드"), h("p.muted", "Supabase DB·GitHub 저장소·Cloudflare Pages 한도·브라우저 사용량을 한도 대비로 점검하고, 가장 부하가 큰 지표와 과부하 여부를 보여줍니다."), h("a.btn.gold", { href: "#/admin-resources" }, "점검하기")),
         h("div.admin-card", h("h3", "🧪 맵 시뮬레이션"), h("p.muted", "테스트 플레이어로 지역·맵·상점·코너·NPC·미션을 실제처럼 체험합니다. 테스트 중에는 아무것도 저장되지 않습니다."), h("a.btn.gold", { href: "#/admin-sim" }, "체험하기")),
         h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),
