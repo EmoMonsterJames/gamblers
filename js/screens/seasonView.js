@@ -92,9 +92,14 @@ function sidebar(s) {
         h("div.roster-title", `참가자 ${s.roster.length}명`),
         h("div.roster-list", list.map(pid => {
             const r = s.results[pid];
-            const mark = s.ps[pid].out ? (s.ps[pid].rank ? `💀 ${s.ps[pid].rank}위` : "💀") : s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
+            const out = s.ps[pid].out;
+            const mark = out ? "" : s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
             const cand = s.status === "judge" && s.candidates.includes(pid);
-            const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`), h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${Math.round(s.ps[pid].hp * 100) / 100}`), h("span.mark", mark)]);
+            // eliminated: the rank sits small under the heart, so the name keeps its width
+            const hp = h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${Math.round(s.ps[pid].hp * 100) / 100}`);
+            const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`),
+                out ? h("span.hp-col", hp, h("small.out-rank", s.ps[pid].rank ? `💀 ${s.ps[pid].rank}위` : "💀")) : hp,
+                mark ? h("span.mark", mark) : null]);
             if (cand) el.classList.add("cand");
             el.onclick = () => modal(playerCard(pid, s.ps[pid]), { title: displayName(Store.player(pid)), wide: true });
             return el;

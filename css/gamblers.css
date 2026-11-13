@@ -491,6 +491,11 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 /* ---------------------------------------------------------- v3: roster number / hp */
 .mini .rno { font-family: var(--display); font-size: 11px; color: var(--muted); margin-left: auto; }
 .mini .hp { font-size: 11px; color: #f87171; white-space: nowrap; } .mini .hp.low { color: #ef4444; font-weight: 900; }
+.mini .hp-col { display: flex; flex-direction: column; align-items: center; line-height: 1.15; flex: none; }
+.mini .out-rank { font-size: 10px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+.roster-list .mini { gap: 6px; }
+.roster-list .mini .rno, .roster-list .mini .hp, .roster-list .mini .mark { flex: none; }
+.roster-list .mini-t b { white-space: normal; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; font-size: 13px; }
 
 /* ---------------------------------------------------------- v3: money-making corner */
 .earn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
