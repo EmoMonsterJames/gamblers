@@ -2,11 +2,12 @@
 import { h, fmt, esc } from "../core/util.js";
 import { particles } from "../core/fx.js";
 import { Store } from "../core/store.js";
+import { lang } from "../core/i18n.js";
 import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK, attackCount } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 import { frameDeco } from "./frames.js";
 
-export function displayName(p) { return p ? (p.name_ko || p.player_name) : "?"; }
+export function displayName(p) { return p ? ((lang() === "en" && p.player_name) || p.name_ko || p.player_name) : "?"; } // EN mode: the English name
 
 // Avatar with decorative frame + profile effect (no gameplay effect)
 export function avatar(pid, size = 64, { effect = true, frame = true, cls = "" } = {}) {

@@ -43,6 +43,13 @@ export function adminSimPage() {
 }
 
 // 🧪 test season: up to 20 players, all starting from zero, nothing saved
+export function adminTestPage() {
+    if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🏁 테스트 시즌"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
+    return h("div.page.admin-sim",
+        h("div.row.between", h("h2.page-title", "🏁 테스트 시즌"), h("a.btn.ghost", { href: "#/admin" }, "← 관리자")),
+        isSandbox() ? h("div.notice", "🧪 테스트 진행 중입니다. ", h("a.btn.small.gold", { href: "#/season" }, "계속하기"), " ", h("button.btn.small.red", { onclick: exitSandbox }, "테스트 종료")) : null,
+        testSeasonCard());
+}
 function testSeasonCard() {
     const picked = new Set();
     const count = h("b", "0");

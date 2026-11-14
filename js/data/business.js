@@ -14,6 +14,7 @@
 //           one random pick per player per round
 // =====================================================================
 import { SHOPS } from "./catalog.js";
+import { REGIONS } from "./regions.js";
 import { emoItem } from "../emomon/data.js";
 import { saleOf } from "./catalogAdmin.js";
 
@@ -43,7 +44,8 @@ export const TX_MIN_ALIVE = 4; // 3 or fewer players left → only the fast tran
 export const TX_DELAY_ROUNDS = 2; // paid when this round and the next one are over
 
 const R = (region, tax, maps = "all") => ({ region, tax, maps });
-const ALL_REGIONS = ["cl1", "cl2", "sky", "space", "fantasy", "under", "spooky", "deepsea", "arctic", "randomland", "richland", "noslot", "nocasino", "npcland", "combo"];
+// every region on the map (new ones included automatically) — "모든 지역 / 모든 맵" businesses
+const ALL_REGIONS = REGIONS.map(r => r.id);
 
 export const BIZ_TYPES = {
     icecream: { id: "icecream", name: "Ice Cream Shop", ko: "아이스크림 가게", emoji: "🍦", color: "#f9a8d4", price: 300000, pts: 30, max: 3, rank: 6,
@@ -166,3 +168,18 @@ export const marketPrice = g => {
 };
 // purchase price text: "500,000 G + 50 P"
 export const bizPriceText = (gold, pts) => `${gold.toLocaleString()} G${pts ? ` + ${pts} P` : ""}`;
+
+// 🏪 a map with a Self-Business corner that no business lists gets one business for sale —
+// picked "at random" from the map id (stable: every device / reload shows the same one).
+// Runs after the admin's map settings are applied (main.js), so newly switched-on corners are covered.
+export function fillEmptyBizCorners(locations) {
+    const hash = s => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const filled = [];
+    for (const l of locations) {
+        if (!l.bizhub || l.off || BIZ_LIST.some(T => T.listed.includes(l.id))) continue;
+        const T = BIZ_LIST[hash(l.id) % BIZ_LIST.length];
+        T.listed.push(l.id);
+        filled.push([l.id, T.id]);
+    }
+    return filled;
+}

@@ -13,11 +13,12 @@ import { slotGenPage } from "./screens/slotGen.js";
 import { adminPlayersPage } from "./screens/adminPlayers.js";
 import { slotdexPage } from "./screens/slotdex.js";
 import { adminMapsPage } from "./screens/adminMaps.js";
-import { adminSimPage } from "./screens/adminSim.js";
+import { adminSimPage, adminTestPage } from "./screens/adminSim.js";
 import { adminResourcesPage } from "./screens/adminResources.js";
 import { adminBankPage } from "./screens/adminBank.js";
 import { adminEmoPage } from "./screens/adminEmo.js";
 import { applyMaps } from "./data/mapAdmin.js";
+import { fillEmptyBizCorners } from "./data/business.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
 import { lang, setLang, startI18n } from "./core/i18n.js";
 import { REGIONS, LOCATIONS } from "./data/catalog.js";
@@ -26,7 +27,7 @@ const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
-    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage
 };
 
 function nav(active) {
@@ -56,8 +57,9 @@ function route() {
     applyCatalog();
     applyGames();
     applyMaps();
+    fillEmptyBizCorners(LOCATIONS); // 🏪 empty Self-Business corners get a business
     document.getElementById("boot")?.remove();
-    startI18n([...REGIONS.map(r => [r.name, r.en]), ...LOCATIONS.map(l => [l.name, l.en])]);
+    await startI18n([...REGIONS.map(r => [r.name, r.en]), ...LOCATIONS.map(l => [l.name, l.en])]);
     window.addEventListener("hashchange", route);
     document.addEventListener("auth", () => route());
     route();

@@ -6,6 +6,7 @@ import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
 import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
 import { shuffle, pick } from "../core/util.js";
+import { lang } from "../core/i18n.js";
 import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
 import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits } from "../emomon/game.js";
@@ -126,7 +127,7 @@ export function addToRoster(pid) {
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
 export const alive = () => S().roster.filter(pid => !S().ps[pid].out);
-export const name = pid => { const p = Store.player(pid); return p ? `${p.name_ko || p.player_name}` : "?"; };
+export const name = pid => { const p = Store.player(pid); return p ? `${(lang() === "en" && p.player_name) || p.name_ko || p.player_name}` : "?"; };
 export function log(msg) { const s = S(); if (!s) return; s.log.unshift({ t: Date.now(), msg }); s.log = s.log.slice(0, 200); }
 
 // ---------------------------------------------------------------- rounds

@@ -62,13 +62,47 @@ const PHRASES = {
 let KEYS = Object.keys(PHRASES).sort((a, b) => b.length - a.length);
 const HANGUL = /[가-힣]/;
 const cache = new Map();
+// ---- i18n/en.tsv: the full sentence list (Korean<TAB>English, made by tools/i18n_extract.awk).
+// {0} {1} … stand for values the game fills in (names, numbers…) — matched as wildcards.
+const DICT = new Map();      // whole sentences
+let PATS = [];               // sentences with {n}: { re, en, key }
+let SUBS = [];               // fallback: sentences / words swapped inside longer text, longest first
+const unesc = s => s.replace(/\\(n|t|"|'|`|\\)/g, (_, c) => ({ n: "\n", t: "\t" }[c] || c));
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+async function loadDict() {
+    let text = "";
+    try { const r = await fetch("i18n/en.tsv", { cache: "no-cache" }); if (r.ok) text = await r.text(); } catch { return; }
+    for (const line of text.split(/\r?\n/)) {
+        if (!line || line[0] === "#") continue;
+        const tab = line.indexOf("\t");
+        if (tab < 0) continue;
+        const ko = unesc(line.slice(0, tab)).trim(), en = unesc(line.slice(tab + 1)).trim();
+        if (!ko || !en || !HANGUL.test(ko)) continue;
+        if (/\{\d+\}/.test(ko)) {
+            const parts = ko.split(/\{\d+\}/);
+            PATS.push({ re: new RegExp("^" + parts.map(reEsc).join("([\\s\\S]+?)") + "$"), en, key: parts.reduce((a, b) => b.length > a.length ? b : a, "").trim(), n: parts.join("").length });
+        } else DICT.set(ko, en);
+    }
+    PATS.sort((a, b) => b.n - a.n);
+    SUBS = [...DICT.keys()].filter(k => k.length >= 2).sort((a, b) => b.length - a.length);
+}
 function tr(s) {
     if (!HANGUL.test(s)) return s;
     if (cache.has(s)) return cache.get(s);
     const t = s.trim();
     let out;
-    if (EXACT[t]) out = s.replace(t, EXACT[t]);
-    else { out = s; for (const k of KEYS) if (out.includes(k)) out = out.split(k).join(PHRASES[k]); }
+    if (DICT.has(t)) out = s.replace(t, DICT.get(t));
+    else if (EXACT[t]) out = s.replace(t, EXACT[t]);
+    else {
+        let m = null;
+        const p = PATS.find(p => t.includes(p.key) && (m = p.re.exec(t)));
+        if (p) out = s.replace(t, p.en.replace(/\{(\d+)\}/g, (_, i) => tr(m[+i + 1] ?? "")));
+        else {
+            out = s;
+            for (const k of SUBS) if (out.includes(k)) out = out.split(k).join(DICT.get(k));
+            for (const k of KEYS) if (out.includes(k)) out = out.split(k).join(PHRASES[k]);
+        }
+    }
     // Korean particles left dangling after a swap (을/를/이/가/은/는/의/에/으로/로) — drop the common ones glued to Latin text
     out = out.replace(/([A-Za-z0-9)%])(을|를|이|가|은|는|의|에서|에|으로|로)(?=[\s.,!?)]|$)/g, "$1");
     if (cache.size > 5000) cache.clear();
@@ -92,11 +126,12 @@ function fixNode(n) {
     }
 }
 // extra: [[korean, english], …] from game data (region names, …)
-export function startI18n(extra = []) {
+export async function startI18n(extra = []) {
     for (const [k, v] of extra) if (k && v && HANGUL.test(k) && !PHRASES[k]) PHRASES[k] = v;
     KEYS = Object.keys(PHRASES).sort((a, b) => b.length - a.length);
     document.documentElement.lang = lang();
     if (lang() !== "en") return;
+    await loadDict();
     fixNode(document.body);
     new MutationObserver(recs => {
         for (const r of recs) {

@@ -69,7 +69,7 @@ export const sandboxTools = {
 };
 
 export function exitSandbox() {
-    location.hash = "#/admin-sim";
+    location.hash = Store.season?.testSeason ? "#/admin-test" : "#/admin-sim";
     location.reload();
 }
 
