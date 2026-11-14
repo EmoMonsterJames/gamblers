@@ -120,7 +120,7 @@ export function adminBankPage() {
                         } }, "이동")),
                         h("td", `${dateOf(z.openedAt)} · S${z.season}`),
                         h("td", `${fmt(z.revenue || 0)} BG`),
-                        h("td", `입장 ${z.entries || 0} · 구매 ${z.buys || 0}`),
+                        h("td", `입장 ${z.entries || 0} · 거절 ${z.tries || 0} (${fmt(z.tryProfit || 0)} BG) · 구매 ${z.buys || 0}`),
                         h("td.ab-acts",
                             h("button.btn.small.ghost", { onclick: async () => {
                                 if (!(await confirmBox(`${T.name}의 판매 기록(${(z.sales || []).length}건)을 비울까요? (누적 수익 숫자는 유지)`))) return;

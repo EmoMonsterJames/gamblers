@@ -22,7 +22,7 @@ const CHOICES = {
     gender: ["male", "female", "trans", "fluid"],
     preference: ["Straight", "Gay", "Bi", "Bi-Curious", "Tran-Curious"],
     school: [],
-    ethnicity: ["Human", "Rabbit", "Bear", "Ant", "Smile", "Cloud", "Kalisto", "Devil", "Angel", "Ghost", "Invisible", "Jiangshi", "Donglee", "Triangle", "Square", "Rectangle", "Trapezoid"]
+    ethnicity: ["Human", "Rabbit", "Bunny", "Bear", "Ant", "Smile", "Cloud", "Kalisto", "Devil", "Angel", "Ghost", "Invisible", "Jiangshi", "Donglee", "Triangle", "Square", "Rectangle", "Trapezoid"]
 };
 const CUSTOM_OK = ["school", "ethnicity"]; // "직접 입력…" allowed
 function choices(k, current) {

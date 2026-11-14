@@ -2,7 +2,7 @@
 // Player image generator — pure functions, no DOM. buildAvatar(opts)
 // returns a 256x256 SVG string drawn from the chosen options; the same
 // options + seed always give the same picture ("다시 생성" = new seed).
-// Humanoid races (torso + head, neck, arms/hands, legs): rabbit, bear,
+// Humanoid races (torso + head, neck, arms/hands, legs): rabbit, bunny, bear,
 // human, cloud, kalisto, devil, angel, invisible, jiangshi, other.
 // Shape races (a body with arms/legs only, like Melon Donglee): ant,
 // smile, donglee, triangle, square, rectangle, trapezoid (+ ghost).
@@ -31,14 +31,14 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 // ------------------------------------------------------------ option lists
 // [id, label, body kind (h = humanoid, s = shape), default skin]
 export const RACES = [
-    ["rabbit", "토끼", "h", "#ffffff"], ["bear", "곰돌이", "h", "#b98455"], ["human", "인간", "h", "#f6d3b0"], ["ant", "개미", "s", "#5a5462"],
+    ["rabbit", "토끼", "h", "#ffffff"], ["bunny", "버니", "h", "#ffe4ee"], ["bear", "곰돌이", "h", "#b98455"], ["human", "인간", "h", "#f6d3b0"], ["ant", "개미", "s", "#5a5462"],
     ["smile", "스마일", "s", "#ffd83b"], ["cloud", "구름", "h", "#eaf6ff"], ["kalisto", "칼리스토", "h", "#5cc469"], ["devil", "데빌", "h", "#e2463f"],
     ["angel", "엔젤", "h", "#fff3d6"], ["ghost", "고스트", "s", "#f4f4ff"], ["invisible", "투명인간", "h", "#cfe9ff"], ["jiangshi", "강시", "h", "#b7d9c2"],
     ["donglee", "동글이", "s", "#a8e070"], ["triangle", "삼각형", "s", "#ff9f43"], ["square", "사각형 (정사각형)", "s", "#5fa8ff"], ["rectangle", "직사각형", "s", "#b388ff"],
     ["trapezoid", "사다리꼴", "s", "#4dd0b1"], ["other", "기타 (직접 입력)", "h", "#f6d3b0"]
 ];
 const RACE = Object.fromEntries(RACES.map(r => [r[0], { id: r[0], ko: r[1], kind: r[2], skin: r[3] }]));
-const ETH = { rabbit: "rabbit", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid" };
+const ETH = { rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid" };
 export const raceFromEthnicity = e => ETH[String(e || "").trim().toLowerCase()] || "other";
 
 export const HUMAN_TYPES = [["asian", "동양인"], ["western", "서양인"], ["black", "흑인 (피부색 자동)"]];
@@ -382,6 +382,8 @@ export function buildAvatar(opts = {}) {
     let headExtraBack = "", headExtraFront = "";
     const stH = () => `stroke="${line}" stroke-width="${sw(3.6)}" stroke-linejoin="round"`;
     if (race.id === "rabbit") headExtraBack = [-1, 1].map(s => `<path d="M${s * 24} -28C${s * 38} -66 ${s * 4} -70 ${s * 8} -32Z" fill="${skinL}" ${stH()}/><path d="M${s * 21} -36C${s * 29} -58 ${s * 10} -61 ${s * 12} -38Z" fill="#ffb3c7"/>`).join("");
+    // 🐰 Bunny: long lop ears hanging down beside the cheeks, a little heart inside each
+    if (race.id === "bunny") headExtraBack = [-1, 1].map(s => `<path d="M${s * 18} -30C${s * 46} -48 ${s * 60} -6 ${s * 52} 34C${s * 48} 46 ${s * 34} 44 ${s * 34} 30C${s * 38} 4 ${s * 32} -14 ${s * 14} -22Z" fill="${skinL}" ${stH()}/><path d="M${s * 24} -26C${s * 44} -36 ${s * 52} -4 ${s * 47} 28C${s * 45} 36 ${s * 39} 36 ${s * 39} 28C${s * 42} 6 ${s * 38} -10 ${s * 24} -20Z" fill="#ffb3c7"/><path d="M${s * 44} 6c0 -3 -4.5 -3 -4.5 0c0 2.5 3 4 4.5 6c1.5 -2 4.5 -3.5 4.5 -6c0 -3 -4.5 -3 -4.5 0Z" fill="#ff4f9a"/>`).join("");
     if (race.id === "bear") headExtraBack = [-1, 1].map(s => `<circle cx="${s * 28}" cy="-28" r="13" fill="${skinL}" ${stH()}/><circle cx="${s * 28}" cy="-28" r="6.5" fill="${rainbow ? "#fff" : shade(skin, 0.4)}"/>`).join("");
     if (race.id === "kalisto") headExtraBack = [-1, 1].map(s => `<path d="M${s * 34} -8L${s * 78} -26C${s * 70} -6 ${s * 54} 10 ${s * 33} 15Z" fill="${skinL}" ${stH()}/><path d="M${s * 38} -3L${s * 64} -14C${s * 58} -2 ${s * 49} 6 ${s * 37} 10Z" fill="${rainbow ? "#fff" : shade(skin, -0.18)}" opacity=".8"/>`).join("");
     if (race.id === "human" || race.id === "other" || race.id === "jiangshi" || race.id === "devil" || race.id === "angel") headExtraBack = [-1, 1].map(s => `<circle cx="${s * 37}" cy="2" r="6.5" fill="${skinL}" ${stH()}/>`).join("");
@@ -518,7 +520,7 @@ export function buildAvatar(opts = {}) {
             face.push(cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}" stroke="${line}" stroke-width="8"/>`).join("") + cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}"/>`).join(""));
         } else face.push(`<ellipse cx="0" cy="0" rx="38" ry="36" ${hs}/>`);
         if (race.id === "bear") face.push(`<ellipse cx="0" cy="13" rx="14" ry="10" fill="${rainbow ? "#fff" : shade(skin, 0.45)}"/><ellipse cx="0" cy="7" rx="5" ry="3.6" fill="#2a1a1e"/>`);
-        if (race.id === "rabbit") face.push(`<path d="M-3.5 6h7l-3.5 4.5Z" fill="#ff8fa8" stroke="${OUT}" stroke-width="1"/><path d="M-30 8L-20 10M-30 15L-20 13M30 8L20 10M30 15L20 13" stroke="${ink}" stroke-width="1.1" opacity=".55" stroke-linecap="round"/>`);
+        if (race.id === "rabbit" || race.id === "bunny") face.push(`<path d="M-3.5 6h7l-3.5 4.5Z" fill="#ff8fa8" stroke="${OUT}" stroke-width="1"/><path d="M-30 8L-20 10M-30 15L-20 13M30 8L20 10M30 15L20 13" stroke="${ink}" stroke-width="1.1" opacity=".55" stroke-linecap="round"/>`);
         if (human || race.id === "other" || race.id === "jiangshi") face.push(`<path d="M-1 4Q3 9 -1 10" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`);
         if (race.id === "jiangshi") face.push([-1, 1].map(s => `<ellipse cx="${s * 15}" cy="0" rx="10" ry="9" fill="#5a4a6a" opacity=".28"/>`).join(""));
     }

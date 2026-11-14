@@ -248,6 +248,7 @@ export function ownerAdmin(pid, bizId, { turn = null, onChange = () => { }, remo
                 h("div", h("small", "누적 수익"), h("b", `${fmt(biz.revenue)} BG`)),
                 h("div", h("small", "이번 시즌 수익"), h("b", `${fmt(thisSeason)} BG`)),
                 h("div", h("small", "입장 손님"), h("b", fmt(biz.entries || 0))),
+                h("div", { title: "입장을 거절당한 손님이 낸 입장료 (돌려주지 않음)" }, h("small", "입장 시도 수익"), h("b", `${fmt(biz.tryProfit || 0)} BG`), h("small.muted", ` 거절 ${fmt(biz.tries || 0)}명`)),
                 h("div", h("small", "구매"), h("b", fmt(biz.buys || 0))),
                 h("div", h("small", "계좌 잔액"), h("b.bk-bg", `${fmt(a?.bgold || 0)} BG`))),
             h("h4", "💰 Business Gold 기록"),
@@ -330,7 +331,8 @@ export async function trendBoard(snap, { seconds = 0 } = {}) {
             h("div", h("small", "누적 수익"), h("b", `${fmt(snap.revenue)} BG`)),
             h("div", h("small", "손님 매출"), h("b", `${fmt(snap.gross)} G`)),
             h("div", h("small", "방문 플레이어"), h("b", fmt(snap.visitors))),
-            h("div", h("small", "입장 → 구매"), h("b", `${snap.entries} → ${snap.buys} (${Math.round(snap.conv * 100)}%)`))),
+            h("div", h("small", "입장 → 구매"), h("b", `${snap.entries} → ${snap.buys} (${Math.round(snap.conv * 100)}%)`)),
+            h("div", h("small", "입장 시도 수익"), h("b", `${fmt(snap.tryProfit || 0)} BG`), h("small.muted", ` 거절 ${fmt(snap.tries || 0)}명`))),
         h("div.bz-tr-cols",
             h("div.bz-tr-box", h("h4", "📈 아이템 트렌드"),
                 snap.items.length ? snap.items.map(x => h("div.bz-bar-row", h("span", x.label), h("div.bz-bar", h("i", { style: { width: x.n / max * 100 + "%" } })), h("b", `${x.n}회`))) : h("p.muted", "아직 팔린 메뉴가 없습니다"),
@@ -339,7 +341,7 @@ export async function trendBoard(snap, { seconds = 0 } = {}) {
                 snap.rounds.length ? h("div.bz-cols", snap.rounds.map(x => h("div.bz-col", { title: `${x.k} · ${fmt(x.cut)} BG` }, h("i", { style: { height: Math.max(4, x.cut / rmax * 100) + "%" } }), h("small", x.k.replace("·", " "))))) : h("p.muted", "기록 없음"))),
         h("div.bz-tr-box", h("h4", "🧾 손님 기록"),
             snap.customers.length ? h("table.bz-table", h("tr", h("th", "시즌"), h("th", "라운드"), h("th", "시간 / 날짜"), h("th", "손님"), h("th", "아이템"), h("th", "금액")),
-                snap.customers.map(x => h("tr", h("td", x.season), h("td", x.round), h("td", new Date(x.t).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })), h("td", nameOf(x.pid)), h("td", x.kind === "entry" ? "🚪 입장료" : x.label), h("td", `${fmt(x.price)} G`)))) : h("p.muted", "아직 손님이 없습니다")),
+                snap.customers.map(x => h("tr", h("td", x.season), h("td", x.round), h("td", new Date(x.t).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })), h("td", nameOf(x.pid)), h("td", x.kind === "entry" ? "🚪 입장료" : x.kind === "entry_try" ? "🙅 입장 시도 수익 (거절)" : x.label), h("td", `${fmt(x.price)} G`)))) : h("p.muted", "아직 손님이 없습니다")),
         h("div.bz-tr-box.advice", h("h4", "💡 이런 전략이 필요합니다"), h("ul", snap.advice.map(a => h("li", a)))));
     const m = modal(body, { title: "📊 매출 트렌드 대시보드", wide: true, closable: !seconds, cls: "bk-modal.bz-trend-modal" });
     if (seconds) {

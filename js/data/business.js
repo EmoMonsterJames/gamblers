@@ -8,7 +8,7 @@
 //   listed: maps whose 🏪 Self-Business corner sells it
 //   open:   [{ region, tax, maps: "all" | [locIds] }] — where it can run
 //   entry:  { fee, chance } (chance < 1 → the door may refuse; the fee is kept)
-//   cut:    share of every menu sale sent to the owner's account (100k 0.3% · 300k 0.4% · 500k 0.5% · clinic 0.1%)
+//   cut:    share of every menu sale sent to the owner's account (100k 0.3% · 300k 0.4% · 500k 0.5% · clinic 0.4%)
 //   menu:   [{ id, name, emoji, hp | "full" }] (eaten on the spot)
 //           or market: [{ cat, id }] — goods for the bag at shop price +5%,
 //           one random pick per player per round
@@ -136,7 +136,7 @@ export const BIZ_TYPES = {
     clinic: { id: "clinic", name: "Player Clinic", ko: "플레이어 클리닉", emoji: "🏥", color: "#f87171", price: 500000, pts: 50, max: 3, rank: 6,
         listed: ["games_only", "noc_casino", "sky_tower", "evil_town", "deep_ocean", "super"],
         open: ALL_REGIONS.map(r => R(r, 20000)),
-        entry: { fee: 0, chance: 0.4 }, cut: 0.001,
+        entry: { fee: 0, chance: 0.4 }, cut: 0.004,
         menu: [
             { id: "hp10", name: "HP +10 회복", emoji: "🩹", hp: 10, price: 12000 },
             { id: "hp50", name: "HP +50 회복", emoji: "💉", hp: 50, price: 43000 },

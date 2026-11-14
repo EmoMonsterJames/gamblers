@@ -3,7 +3,8 @@
 // season) in Store.bank, saved like the wallets (settings "bank"):
 //   accounts:  { <pid>: { pid, code, openedAt, season, bgold, history: [{ t, kind, amount, note }] } }
 //   biz:       [{ id, type, owner, code, loc, openedAt, season, revenue, entries, buys,
-//                 sales: [{ t, season, round, pid, kind: "entry"|"buy", label, price, cut }], moves: [],
+//                 tries, tryProfit (refused at the door — fee kept),
+//                 sales: [{ t, season, round, pid, kind: "entry"|"entry_try"|"buy", label, price, cut }], moves: [],
 //                 closed?, closedAt? }]   (closed = greyed '폐업' slot, owner data removed)
 //   transfers: [{ id, pid, code, amount, fee, season, round, due, fast, done, paidAt, to }]
 //   reports:   { <pid>: [{ id, bizId, type, loc, at, snap }] }
@@ -192,8 +193,11 @@ function sale(biz, pid, kind, label, price, cut) {
     const s = S();
     biz.sales = [{ t: now(), season: s.number, round: s.round, pid: +pid, kind, label, price, cut }, ...(biz.sales || [])].slice(0, 400);
     biz.revenue = (biz.revenue || 0) + cut;
-    if (kind === "entry") biz.entries = (biz.entries || 0) + 1; else biz.buys = (biz.buys || 0) + 1;
-    deposit(biz.code, cut, `${BIZ_TYPES[biz.type].name} ${kind === "entry" ? "입장료" : label} (${name(pid)})`);
+    // "entry" = admitted guest · "entry_try" = refused at the door (the fee is kept → 입장 시도 수익)
+    if (kind === "entry") biz.entries = (biz.entries || 0) + 1;
+    else if (kind === "entry_try") { biz.tries = (biz.tries || 0) + 1; biz.tryProfit = (biz.tryProfit || 0) + cut; }
+    else biz.buys = (biz.buys || 0) + 1;
+    deposit(biz.code, cut, `${BIZ_TYPES[biz.type].name} ${kind === "entry" ? "입장료" : kind === "entry_try" ? "입장 시도 수익 (거절)" : label} (${name(pid)})`);
 }
 const useOf = (pid, biz) => { const ps = S().ps[pid], r = S().round; const u = (ps.bizUse ||= {})[biz.id]; return u?.round === r ? u : (ps.bizUse[biz.id] = { round: r }); };
 export const bizUse = (pid, biz) => useOf(pid, biz);
@@ -204,7 +208,7 @@ export function enterBiz(pid, biz) {
     if (ps.money < T.entry.fee) return { ok: false, why: "입장료가 부족합니다" };
     ps.money -= T.entry.fee;
     u.paid = true; u.in = Math.random() < T.entry.chance;
-    sale(biz, pid, "entry", "입장료", T.entry.fee, T.entry.fee);
+    sale(biz, pid, u.in ? "entry" : "entry_try", u.in ? "입장료" : "입장 시도 수익", T.entry.fee, T.entry.fee);
     log(`${T.emoji} ${name(pid)} ${T.name} 입장료 ${T.entry.fee}G → ${u.in ? "입장" : "입장 거절"}`);
     save(); Store.saveSeason(true);
     return { ok: u.in, refused: !u.in };
@@ -264,7 +268,7 @@ export function closeBusiness(pid, biz, { admin = false } = {}) {
 // ---------------------------------------------------------------- trend report
 export function trendSnapshot(biz) {
     const T = BIZ_TYPES[biz.type], sales = biz.sales || [];
-    const buys = sales.filter(x => x.kind === "buy"), entries = sales.filter(x => x.kind === "entry");
+    const buys = sales.filter(x => x.kind === "buy"), entries = sales.filter(x => x.kind === "entry"), tries = sales.filter(x => x.kind === "entry_try");
     const byItem = {};
     for (const x of buys) { const o = (byItem[x.label] ||= { label: x.label, n: 0, gross: 0, cut: 0 }); o.n++; o.gross += x.price; o.cut += x.cut; }
     const byRound = {};
@@ -275,7 +279,7 @@ export function trendSnapshot(biz) {
     const visitors = new Set(sales.map(x => x.pid)).size;
     const allNames = (T.menu || T.market || []).map(m => m.name || m.label || m.id);
     return {
-        type: biz.type, name: T.name, loc: biz.loc, at: now(), revenue: biz.revenue || 0, entries: entries.length, buys: buys.length, visitors, conv,
+        type: biz.type, name: T.name, loc: biz.loc, at: now(), revenue: biz.revenue || 0, entries: entries.length, buys: buys.length, tries: tries.length, tryProfit: tries.reduce((a, x) => a + x.cut, 0), visitors, conv,
         gross: buys.reduce((a, x) => a + x.price, 0), items, rounds, unsold: allNames.filter(n => !byItem[n] && T.menu),
         customers: sales.slice(0, 60).map(x => ({ t: x.t, season: x.season, round: x.round, pid: x.pid, kind: x.kind, label: x.label, price: x.price })),
         advice: adviseFor(biz, { entries: entries.length, buys: buys.length, conv, items, refused: T.entry.chance < 1 })
