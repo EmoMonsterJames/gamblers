@@ -149,6 +149,7 @@ export const MISSIONS = [
     { id: "x4_handpay", tier: 4, type: "handpay", text: "🤲 Handpay를 받지 못한 플레이어 중 1명 탈락" },
     { id: "x4_deadland", tier: 4, type: "region_map", regions: ["deadland"], text: "☠️ Dead Land 맵을 방문하지 않은 플레이어 중 1명 탈락" },
     { id: "x4_kidnap", tier: 4, type: "kidnap_freed", text: "⛓️ Terror Casino에서 테러리스트에게 납치된 후 풀려난 플레이어만 성공 — 나머지는 탈락 후보" },
+    { id: "x4_promo_vote", tier: 4, type: "promo_vote", text: "🗳️ 커뮤니티 홍보 후보들에게 투표하지 않은 참가자 중에서 1명 탈락" },
 
     // ---- added missions (3) -------------------------------------------
     // card letter "*": drawn from the letters NOT in G A M B L E R S · spell: solve a Spelling Bee this turn

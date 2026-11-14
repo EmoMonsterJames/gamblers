@@ -190,3 +190,5 @@
 .ts-pick { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel2); cursor: pointer; color: inherit; min-width: 0; }
 .ts-pick small { overflow-wrap: anywhere; font-size: 11px; }
 .ts-pick.on { border-color: var(--gold); background: rgba(250, 204, 21, .15); }
+.pr-reward { padding: 8px 14px; border-radius: 999px; font-weight: 900; color: #1d1230; background: linear-gradient(90deg, #fde68a, #facc15); animation: prPulse 1.4s ease-in-out infinite; }
+@keyframes prPulse { 50% { transform: scale(1.05); box-shadow: 0 0 16px rgba(250, 204, 21, .6); } }

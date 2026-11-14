@@ -217,7 +217,7 @@ async function reveal(pid) {
 function missionStage(s) {
     const tier = G.tierForRound();
     const ms = G.missionDeck(tier);
-    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉", bonus_in: "⏱️", brand_win: "🏷️", job_done: "💼", bet_win: "💵", home_map: "🏠", region_map: "🧭", npc_hit: "👼", earn_min: "💪", spell: "🐝", cm_post: "💬", arena_win: "🏟️", sugar_max: "🍬", handpay: "🤲", kidnap_freed: "⛓️" }[m.type] || "📜"), h("div.mc-text", m.text)));
+    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉", bonus_in: "⏱️", brand_win: "🏷️", job_done: "💼", bet_win: "💵", home_map: "🏠", region_map: "🧭", npc_hit: "👼", earn_min: "💪", spell: "🐝", cm_post: "💬", arena_win: "🏟️", sugar_max: "🍬", handpay: "🤲", kidnap_freed: "⛓️", promo_vote: "🗳️" }[m.type] || "📜"), h("div.mc-text", m.text)));
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
@@ -349,6 +349,31 @@ function passConfirmText(it, loc, need) {
         loc.crazy ? "⚠️ Crazy Casino: 들어가면 플레이 시간 5분이 바로 차감됩니다!" : "", loc.evil ? `⚠️ Evil Town: HP −${loc.evil} (HP ${loc.evil} 이하면 사망)` : "",
         loc.donation ? "⚠️ Donation Casino: 아이템 1개를 기부해야 합니다 (없으면 HP −10)" : ""].filter(Boolean).join("\n");
 }
+// 🗺️ random map ticket: draw a map; if it asks for an entry fee or gear, ask first —
+// "Yes" pays and goes, "No, to other maps" goes to another random map with no fee / gear.
+const RANDOM_MAP_ASK = "랜덤 맵권을 사용해 모든 지역의 맵 중 한 곳으로 바로 이동할까요?\n• 국적 전용 · 제한구역 맵도 조건과 상관없이 나올 수 있습니다\n• 입장료나 장비(산소통·우주복·날개)가 필요한 맵이 나오면 낼지 먼저 물어봅니다";
+async function randomMapGo() {
+    const d = G.drawRandomMap();
+    if (!d) return null;
+    let loc = d.loc;
+    if (d.cost) {
+        const c = d.cost;
+        const lines = [c.fee ? `💰 입장료 ${fmt(c.fee)} G` : "", c.feePts ? `💎 입장료 ${c.feePts} P` : "", c.gear.length ? `🎒 사용 아이템: ${c.gear.map(G.gearName).join(" + ")}` : ""].filter(Boolean);
+        const yes = await new Promise(res => {
+            const m = modal(h("div.confirm",
+                h("p", h("b", `${loc.emoji || "🗺️"} ${loc.name}`), " 맵으로 이동을 위해 입장료를 내거나 아이템을 사용하겠습니까?"),
+                ...lines.map(t => h("p.small", t)),
+                h("div.row.end",
+                    h("button.btn.ghost", { onclick: () => { m.close(); res(false); } }, "No, to other maps"),
+                    h("button.btn.gold", { onclick: () => { m.close(); res(true); } }, "Yes"))), { title: "🗺️ 랜덤 맵권", closable: false });
+        });
+        if (!yes) {
+            loc = G.drawFreeRandomMap(loc.id);
+            if (!loc) { toast("입장료·아이템 조건이 없는 맵이 없어 이동하지 못했습니다 (랜덤 맵권은 그대로 남아 있습니다)", "warn", 4000); return null; }
+        }
+    }
+    return G.useRandomMap(loc.id);
+}
 async function tryPass(pid, it) {
     const loc = LOC_BY_ID[it.loc];
     const blocked = passBlocked(pid, loc);
@@ -423,8 +448,8 @@ function regionStage(s) {
         if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); await arrive(s, loc); render(); }
     } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`, passBlocked(pid, LOC_BY_ID[it.loc]) ? " 🔒" : ""))) : null;
     const randomRow = ps.items.map_random > 0 ? h("div.pass-row", h("b", "🗺️ 랜덤 맵권:"), h("button.btn.small.gold", { onclick: async () => {
-        if (!(await confirmBox("랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 바로 이동할까요?"))) return;
-        const loc = G.useRandomMap();
+        if (!(await confirmBox(RANDOM_MAP_ASK))) return;
+        const loc = await randomMapGo();
         if (!loc) return toast("이동할 수 있는 맵이 없습니다", "warn");
         s.turn.running = true; Sound.bonus(); await banner(`🗺️ ${loc.emoji} ${loc.name}`, 1400, "loc"); await arrive(s, loc); render();
     } }, `🗺️ 랜덤 맵으로 이동 ×${ps.items.map_random}`)) : null;
@@ -648,9 +673,9 @@ function locationStage(s) {
         if (moving) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
-        if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.`, "이동하기", "취소"))) return;
+        if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.\n${RANDOM_MAP_ASK.split("\n").slice(1).join("\n")}`, "이동하기", "취소"))) return;
         moving = true;
-        const to = G.useRandomMap();
+        const to = await randomMapGo();
         if (!to) { moving = false; return toast("이동할 수 있는 맵이 없습니다", "warn"); }
         clearInterval(timer);
         gameLayer?.remove(); gameLayer = null;

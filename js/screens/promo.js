@@ -27,7 +27,7 @@ export function promoView(pid, { onChange = () => { } } = {}) {
         const p = X.promo(), phase = X.promoPhase(), { shown, anon } = X.promoCounts();
         const ps = G.S()?.ps?.[pid];
         const head = [h("h2.pr-title", `✨ ${X.PROMO_TITLE} ✨`),
-            h("p.muted.small.center", `홍보 · 투표는 각각 시즌당 1회 · ${X.PROMO_FEE}P · 홍보 프로필 ${X.PROMO_SLOTS}칸이 차면 투표 ${X.PROMO_VOTES}번 → 1위는 선물 상자! (시즌이 끝나도 이어집니다)`)];
+            h("p.muted.small.center", `홍보(${X.PROMO_FEE}P) · 투표(무료 + ${X.PROMO_VOTE_REWARD}G 보상)는 각각 시즌당 1회 · 홍보 프로필 ${X.PROMO_SLOTS}칸이 차면 투표 ${X.PROMO_VOTES}번 → 1위는 선물 상자! (시즌이 끝나도 이어집니다)`)];
         let slots = Array.from({ length: X.PROMO_SLOTS }, (_, i) => p.entries[i]
             ? promoCard(p.entries[i], i, { shown: shown[i], anon: phase === "vote" && anon })
             : h("div.pr-card.empty", h("div.big-emoji", "➕"), h("small", "빈 자리")));
@@ -48,9 +48,10 @@ export function promoView(pid, { onChange = () => { } } = {}) {
             const n = p.votes.length, voted = X.promoUsed(pid, "vote"), anonNow = n >= X.PROMO_OPEN_VOTES;
             let ask;
             if (voted) ask = h("p.notice.small", "이번 시즌에는 이미 투표했습니다");
-            else if (anonNow) ask = h("p.small", `🗳️ 투표할 프로필을 눌러 고르세요 (${X.PROMO_FEE}P)`);
-            else ask = h("button.btn.gold.big", { onclick: () => vote(null) }, `🗳️ 투표하기 (${X.PROMO_FEE}P)`);
+            else if (anonNow) ask = h("p.small", `🗳️ 투표할 프로필을 눌러 고르세요 (무료 · 투표하면 ${X.PROMO_VOTE_REWARD}G 보상!)`);
+            else ask = h("button.btn.gold.big", { onclick: () => vote(null) }, `🗳️ 투표하기 (무료 · +${X.PROMO_VOTE_REWARD}G)`);
             action = h("div.pr-action",
+                voted ? null : h("div.pr-reward", `🎁 지금 투표하면 ${X.PROMO_VOTE_REWARD}G를 드립니다! (무료 · 시즌당 1회)`),
                 h("div.pr-votebar", h("i", { style: { width: n / X.PROMO_VOTES * 100 + "%" } }), h("span", `투표 ${n} / ${X.PROMO_VOTES}`)),
                 anonNow ? h("p.notice.warn.pr-anon", "🕶️ 이번 투표부터는 익명처리되었습니다")
                     : h("p.small.muted", `첫 ${X.PROMO_OPEN_VOTES}표는 '투표하기'를 누르면 6명 중 한 명에게 랜덤으로 들어갑니다`),
@@ -66,13 +67,14 @@ export function promoView(pid, { onChange = () => { } } = {}) {
     };
     async function vote(to) {
         const n = X.promo().votes.length;
-        const q = n < X.PROMO_OPEN_VOTES ? `${X.PROMO_FEE}P를 내고 투표할까요? (6명 중 한 명에게 랜덤으로 들어갑니다)` : `${X.PROMO_FEE}P를 내고 이 프로필에 익명으로 투표할까요?`;
+        const q = n < X.PROMO_OPEN_VOTES ? `투표할까요? (무료 · 6명 중 한 명에게 랜덤으로 들어갑니다 · 투표 보상 ${X.PROMO_VOTE_REWARD}G)` : `이 프로필에 익명으로 투표할까요? (무료 · 투표 보상 ${X.PROMO_VOTE_REWARD}G)`;
         if (!(await confirmBox(q, "투표", "취소"))) return;
         const r = X.promoVote(pid, to);
         if (!r.ok) return toast(r.why, "warn");
         Sound.coin();
-        if (r.open) toast(`🗳️ ${pname(X.promo().entries[r.to]?.pid)}에게 투표했습니다!`, "ok", 3000);
-        else toast("🗳️ 익명 투표 완료", "ok");
+        Sound.cash();
+        if (r.open) toast(`🗳️ ${pname(X.promo().entries[r.to]?.pid)}에게 투표했습니다! 보상 +${X.PROMO_VOTE_REWARD}G`, "ok", 3000);
+        else toast(`🗳️ 익명 투표 완료! 보상 +${X.PROMO_VOTE_REWARD}G`, "ok");
         onChange(); draw();
         if (r.finished) { await promoResult(r.finished, pid); onChange(); draw(); }
     }

@@ -832,21 +832,52 @@ export function usePassTeleport(itemId) {
     return true;
 }
 
-// 🗺️ 랜덤 맵권: straight to one random map among every map the player may enter, in every region they may pick
+// 🗺️ 랜덤 맵권: straight to one random map, in every open region.
+//  · nationality-only / restricted-zone maps: the ticket lets in a player who doesn't fit (no pass used)
+//  · the other door rules still count — EmoMonster owned · Type Casino attribute · points — and the map
+//    is only drawn when the player CAN pay its entry fee / gear (oxygen · wings · space suit).
+//    Such a map is offered first (pay & go, or "No" → another map with no fee or gear).
+const identityLocked = l => !!(l.req?.country || l.req?.who);
 export function randomMapPool(pid) {
     const cur = S().turn?.loc;
-    // maps that ask for gear or an entry fee are left out (the ticket can't ask for them)
-    return availableRegions(pid).flatMap(r => regionStatus(pid, r).locs).filter(l => { const ce = canEnter(pid, l); return l.id !== cur && !ce.gear && !ce.fee && !ce.feePts; });
+    const open = new Set(REGIONS.filter(r => !r.off).map(r => r.id));
+    return LOCATIONS.filter(l => {
+        if (l.off || l.kidnap || l.id === cur || !open.has(l.region)) return false;
+        const ce = canEnter(pid, l);
+        if (!(ce.ok && !ce.pass) && !(identityLocked(l) && (ce.ok || ce.pass || /전용/.test(ce.why || "")))) return false;
+        return passNeeds(pid, l).ok;
+    });
 }
-export function useRandomMap() {
+// a map asks for something at the door: entry fee (G / P) or gear that gets used up
+export function randomMapCost(pid, loc) {
+    const n = passNeeds(pid, loc);
+    return n.fee || n.feePts || n.gear.length ? n : null;
+}
+export const randomFreePool = (pid, exclude = null) => randomMapPool(pid).filter(l => l.id !== exclude && !randomMapCost(pid, l));
+// draw only — nothing is used until useRandomMap(locId)
+export function drawRandomMap() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     if (!(ps.items.map_random > 0)) return null;
     if (t.loc && LOC_BY_ID[t.loc]?.noPass) return null;
     const pool = randomMapPool(t.pid);
     if (!pool.length) return null;
     const loc = pool[Math.floor(Math.random() * pool.length)];
+    return { loc, cost: randomMapCost(t.pid, loc) };
+}
+export function drawFreeRandomMap(exclude) {
+    const pool = randomFreePool(S().turn.pid, exclude);
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+}
+// use the ticket and go to locId (from drawRandomMap / drawFreeRandomMap) — pays its fee / gear
+export function useRandomMap(locId) {
+    const s = S(), t = s.turn, ps = s.ps[t.pid];
+    if (!(ps.items.map_random > 0)) return null;
+    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return null;
+    const loc = locId ? LOC_BY_ID[locId] : drawRandomMap()?.loc;
+    if (!loc || !randomMapPool(t.pid).some(l => l.id === loc.id)) return null;
     ps.items.map_random--;
-    log(`🗺️ ${name(t.pid)} 랜덤 맵권 사용 → ${loc.name}!`);
+    payEntry(t.pid, passNeeds(t.pid, loc));
+    log(`🗺️ ${name(t.pid)} 랜덤 맵권 사용 → ${loc.name}!${identityLocked(loc) && !canEnter(t.pid, loc).ok ? " (전용 맵 입장)" : ""}`);
     t.region = loc.region; t.npc = null;
     setLocation(loc.id, { teleport: true });
     return loc;
@@ -957,6 +988,7 @@ export function missionMet(m, st) {
         case "sugar_max": return (st.sugarMax || 0) >= m.v;
         case "handpay": return (st.handpay || 0) > 0;
         case "kidnap_freed": return !!st.kidnapFreed;
+        case "promo_vote": return st.pid != null && !!S()?.ps?.[st.pid]?.promoVoted;
     }
     return false;
 }
@@ -998,6 +1030,7 @@ export function missionProgress(m, st) {
         case "sugar_max": return { cur: Math.min(st.sugarMax || 0, m.v), goal: m.v, label: `🍬 최고 Sugar Level ${st.sugarMax || 0}% / ${m.v}%` };
         case "handpay": return { cur: met ? 1 : 0, goal: 1, label: met ? "🤲 Handpay 달성 — 안전" : "🤲 베팅의 1000배 이상 당첨 또는 GRAND 잭팟" };
         case "kidnap_freed": return { cur: met ? 1 : 0, goal: 1, label: met ? "🕊️ 납치에서 풀려남 — 안전" : "⛓️ Terror Casino에서 납치된 뒤 풀려나야 합니다" };
+        case "promo_vote": return { cur: met ? 1 : 0, goal: 1, label: met ? "🗳️ 인기 투표 완료 — 안전" : "🗳️ 커뮤니티 📣 홍보하기에서 후보에게 투표하세요 (무료 · +500G)" };
         case "npc_hit": return { cur: met ? 1 : 0, goal: 1, label: met ? "👼 엔젤 도움 받음!" : `👼 엔젤에게 ${m.what === "hp" ? "HP 회복" : "돈"} 공격을 받아야 합니다` };
     }
     return { cur: 0, goal: 1, label: "" };

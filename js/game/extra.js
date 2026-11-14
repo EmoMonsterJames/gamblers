@@ -333,11 +333,12 @@ export const END_LOCK_LEFT = 300;
 export const endLocked = (loc, t) => !!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT;
 
 // ---------------------------------------------------------------- 📣 홍보하기 · 인기 투표 (persistent, Store.community.promo)
-//   6 profiles register (50P, once per season each) → 20 votes (50P, once per season each):
+//   6 profiles register (50P, once per season each) → 20 votes (free + 500G reward, once per season each):
 //   votes 1~10 go to a random profile and are counted in the open · votes 11~20 are anonymous
 //   (the voter picks; the board keeps showing the 10-vote count + "??") → after the 20th the winner
 //   is shown and picks 1 of 3 random gift boxes (right away if it's them, otherwise at their next turn)
 export const PROMO_SLOTS = 6, PROMO_VOTES = 20, PROMO_OPEN_VOTES = 10, PROMO_FEE = 50;
+export const PROMO_VOTE_REWARD = 500; // voting is free — the voter gets 500G (once per season)
 export const PROMO_TITLE = "Gamblers의 빛이 되고 싶어요!";
 export const PROMO_PRIZES = [
     { id: "ball", label: "마스터볼", emoji: "🟣", emo: "ITEM004" },
@@ -383,13 +384,12 @@ export function promoVote(pid, to = null) {
     if (!ps) return { ok: false, why: "시즌 참가자만 할 수 있습니다" };
     if (promoPhase() !== "vote") return { ok: false, why: "아직 투표 기간이 아닙니다 (홍보 프로필 6칸이 차야 합니다)" };
     if (promoUsed(pid, "vote")) return { ok: false, why: "이번 시즌에는 이미 투표했습니다 (시즌당 1회)" };
-    if (ps.points < PROMO_FEE) return { ok: false, why: `포인트가 부족합니다 (${PROMO_FEE}P)` };
     const open = p.votes.length < PROMO_OPEN_VOTES;
     if (!open && (to == null || !p.entries[to])) return { ok: false, why: "투표할 프로필을 고르세요" };
     const idx = open ? Math.floor(Math.random() * p.entries.length) : to;
-    ps.points -= PROMO_FEE; ps.promoVoted = true;
+    ps.money += PROMO_VOTE_REWARD; ps.promoVoted = true;
     p.votes.push({ by: +pid, to: idx, anon: !open, at: new Date().toISOString() });
-    log(`🗳️ ${name(pid)} 인기 투표 (${p.votes.length}/${PROMO_VOTES})${open ? ` → ${name(p.entries[idx].pid)}` : " (익명)"}`);
+    log(`🗳️ ${name(pid)} 인기 투표 (${p.votes.length}/${PROMO_VOTES}) +${PROMO_VOTE_REWARD}G${open ? ` → ${name(p.entries[idx].pid)}` : " (익명)"}`);
     let finished = null;
     if (p.votes.length >= PROMO_VOTES) finished = promoFinish();
     Store.saveSeason(true); savePromo();
