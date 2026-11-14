@@ -15,6 +15,7 @@ import { Store } from "../core/store.js";
 import { LOC_BY_ID, LOCATIONS, REGION_BY_ID } from "../data/catalog.js";
 import { BIZ_TYPES, TX_TIERS, TX_FREE_PER_SEASON, TX_EXTRA_MAX, TX_MIN_ALIVE, TX_DELAY_ROUNDS, BANK_OPEN_CHANCE } from "../data/business.js";
 import { S, alive, log, name, honorRecords, roundHooks, seasonEndHooks } from "./season.js";
+import { cure as cureDisease, DISEASES } from "./extra.js";
 
 export const B = () => {
     const b = (Store.bank ||= {});
@@ -28,7 +29,7 @@ const now = () => new Date().toISOString();
 
 // ---------------------------------------------------------------- eligibility
 export const topRank = pid => Math.min(Infinity, ...honorRecords(pid, 999).map(r => r.rank));
-export const hasTop = (pid, n) => !!S()?.sandbox || honorRecords(pid, n).length > 0;
+export const hasTop = (pid, n) => S()?.testSeason ? false : !!S()?.sandbox || honorRecords(pid, n).length > 0; // test season: no past records
 export const bankEligible = pid => hasTop(pid, 10);
 
 // ---------------------------------------------------------------- accounts
@@ -218,11 +219,13 @@ export function buyMenu(pid, biz, entry, price, give) {
     const T = BIZ_TYPES[biz.type], ps = S().ps[pid], u = useOf(pid, biz);
     if (!u.in) return { ok: false, why: "먼저 입장하세요" };
     if (u.bought) return { ok: false, why: "이번 라운드에는 이미 구매했습니다" };
+    if (entry.cure && !ps.dis?.[entry.cure]) return { ok: false, why: `${DISEASES[entry.cure]?.name || entry.cure}에 걸려 있지 않습니다` };
     if (ps.money < price) return { ok: false, why: "골드가 부족합니다" };
     ps.money -= price;
     u.bought = entry.name || entry.label;
     let hp = 0;
     if (entry.hp) { const before = ps.hp; ps.hp = entry.hp === "full" ? CONFIG.START_HP : Math.min(CONFIG.START_HP, ps.hp + entry.hp); hp = ps.hp - before; }
+    else if (entry.cure) cureDisease(pid, entry.cure, T.name);
     else give?.();
     const cut = Math.round(price * T.cut);
     sale(biz, pid, "buy", entry.name || entry.label, price, cut);

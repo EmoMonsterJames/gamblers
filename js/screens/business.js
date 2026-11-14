@@ -23,7 +23,7 @@ import { codeSearch, dateOf } from "./bank.js";
 
 const nameOf = pid => displayName(Store.player(pid));
 const locName = id => { const l = LOC_BY_ID[id]; return l ? `${l.emoji || ""} ${l.name}`.trim() : id; };
-const hpText = hp => hp === "full" ? "HP 전체 회복" : `HP +${hp}`;
+const hpText = (hp, m) => m?.cure ? "질병 치료" : hp === "full" ? "HP 전체 회복" : `HP +${hp}`;
 // a market good → { name, emoji, desc, e | emo } (never null names / icons; "emo" = an EmoMon bag item)
 const CAT_EMOJI = { pet: "🐾", frame: "🖼️", effect: "✨", weapon: "⚔️", item: "🎁" };
 function goodOf(g) {
@@ -72,7 +72,7 @@ export function bizHubView(pid, loc, { turn = null, onChange = () => { } } = {})
                 h("span", `TOP ${T.rank} 경력`), T.emoMin ? h("span", `🐾 EmoMon ${T.emoMin}마리 이상`) : null, h("span", "💳 계좌 필요"), h("span", `남은 매물 ${left}/${T.max}`),
                 h("span", doorText(T)), h("span", cutText(T)), h("span", "라운드당 1회 구매"),
                 T.nation ? h("span", `🏳️ ${T.nation} 5% 할인`) : null),
-            h("div.bz-menu", T.menu ? T.menu.map(m => h("span", `${m.emoji} ${m.name} · ${hpText(m.hp)} · ${fmt(m.price)}G`))
+            h("div.bz-menu", T.menu ? T.menu.map(m => h("span", `${m.emoji} ${m.name} · ${hpText(m.hp, m)} · ${fmt(m.price)}G`))
                 : T.market.map(g => { const x = goodOf(g), p = marketPrice(g); return x && p ? h("span", `${x.emoji} ${x.name} · ${fmt(p)}G`) : null; })),
             h("details.bz-open", h("summary", "📍 오픈 가능 지역 (지역세)"), BK.openSpots(T.id).map(r => h("div", h("b", `${r.emoji} ${r.name}`), h("small", ` ${fmt(r.tax)}G · `), h("small.muted", r.maps.map(m => m.loc.name + (m.taken ? "(사용중)" : "")).join(", "))))),
             h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, onclick: () => buyWizard(T) }, st.ok ? "매입하기" : st.why));
@@ -189,7 +189,7 @@ export function bizView(pid, bizId, { turn = null, onChange = () => { } } = {}) 
             return;
         }
         let goods;
-        if (T.menu) goods = T.menu.map(mn => ({ key: mn.id, label: mn.name, emoji: mn.emoji, sub: hpText(mn.hp), price: mn.price, entry: mn }));
+        if (T.menu) goods = T.menu.map(mn => ({ key: mn.id, label: mn.name, emoji: mn.emoji, sub: hpText(mn.hp, mn), price: mn.price, entry: mn }));
         // every good is on the shelf; a player buys one per round
         else goods = T.market.map(g => {
             const x = goodOf(g), p = marketPrice(g);
@@ -197,7 +197,7 @@ export function bizView(pid, bizId, { turn = null, onChange = () => { } } = {}) 
             const own = g.cat === "emo" ? M.bagN(pid, g.id) : null;
             return { key: g.id, label: x.name, emoji: x.emoji, e: x.e, emo: x.emo, cat: g.cat, price: p, entry: { label: x.name }, sub: `상점가 +5%${x.desc ? ` · ${x.desc}` : ""}${own != null ? ` · 보유 ${own}개` : ""}` };
         }).filter(Boolean);
-        const lead = T.id === "clinic" ? `치료는 바로 HP를 회복합니다 (최대 ${CONFIG.START_HP}) · 라운드당 1회 · 지금 HP ${Math.round(ps.hp * 100) / 100}`
+        const lead = T.id === "clinic" ? `치료는 바로 HP를 회복하거나 독감 · 암을 고칩니다 (최대 HP ${CONFIG.START_HP}) · 라운드당 1회 · 지금 HP ${Math.round(ps.hp * 100) / 100}`
             : T.menu ? `메뉴는 바로 먹어서 HP를 회복합니다 (최대 ${CONFIG.START_HP}) · 라운드당 1개 · HP ${Math.round(ps.hp * 100) / 100}`
             : `판매 상품 ${goods.length}가지 · 손님마다 라운드당 1개 구매 가능`;
         wrap.replaceChildren(head,

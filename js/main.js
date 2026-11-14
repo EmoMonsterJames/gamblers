@@ -19,6 +19,8 @@ import { adminBankPage } from "./screens/adminBank.js";
 import { adminEmoPage } from "./screens/adminEmo.js";
 import { applyMaps } from "./data/mapAdmin.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
+import { lang, setLang, startI18n } from "./core/i18n.js";
+import { REGIONS, LOCATIONS } from "./data/catalog.js";
 
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
@@ -34,6 +36,7 @@ function nav(active) {
         h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("summary", "시즌 요약"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
         h("div.navright",
             h("span.mode" + (Store.cloud ? (Store.user ? ".cloud" : ".ro") : ".local"), Store.cloud ? (Store.user ? "☁ 저장중" : "☁ 읽기전용") : "💾 로컬"),
+            h("button.icon-btn.lang-toggle", { "data-no-i18n": "", onclick: () => setLang(lang() === "en" ? "ko" : "en"), title: "Language / 언어" }, lang() === "en" ? "🌐 KO" : "🌐 EN"),
             h("button.icon-btn", { onclick: e => { e.currentTarget.textContent = Sound.toggle() ? "🔇" : "🔊"; }, title: "사운드" }, Sound.muted ? "🔇" : "🔊")));
 }
 
@@ -54,6 +57,7 @@ function route() {
     applyGames();
     applyMaps();
     document.getElementById("boot")?.remove();
+    startI18n([...REGIONS.map(r => [r.name, r.en]), ...LOCATIONS.map(l => [l.name, l.en])]);
     window.addEventListener("hashchange", route);
     document.addEventListener("auth", () => route());
     route();

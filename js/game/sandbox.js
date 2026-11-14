@@ -59,10 +59,11 @@ export function sandboxNextTurn() {
 }
 
 // test helpers shown in the season header
+const toolPid = () => Store.season.turn?.pid ?? (Store.season.testSeason ? (G.currentPid() ?? Store.season.roster[0]) : TEST_PID);
 export const sandboxTools = {
-    gold(n = 1000000) { Store.season.ps[TEST_PID].money += n; },
-    points(n = 100) { Store.season.ps[TEST_PID].points += n; },
-    heal() { Store.season.ps[TEST_PID].hp = CONFIG.START_HP; },
+    gold(n = 1000000) { Store.season.ps[toolPid()].money += n; },
+    points(n = 100) { Store.season.ps[toolPid()].points += n; },
+    heal() { Store.season.ps[toolPid()].hp = CONFIG.START_HP; },
     time(sec = 600) { const t = Store.season.turn; if (t) t.remaining = Math.max(t.remaining, 0) + sec; },
     npcEverywhere() { const s = Store.season; s.npc = { round: s.round, maps: LOCATIONS.filter(l => !l.off).map(l => l.id) }; }
 };
@@ -70,4 +71,30 @@ export const sandboxTools = {
 export function exitSandbox() {
     location.hash = "#/admin-sim";
     location.reload();
+}
+
+// =====================================================================
+// 🧪 TEST SEASON: the admin picks up to 20 real players and runs a whole
+// season (mission roulette → turns → judging → elimination → final) with
+// them. Every player starts from zero — no wallet gold, bank, EmoMon dex
+// or arena keepers from earlier seasons — and NOTHING is saved: finishing
+// or leaving reloads the page, which brings the real season back.
+// =====================================================================
+export const TEST_SEASON_MAX = 20;
+export function startTestSeason(pids) {
+    pids = [...new Set(pids.map(Number))].filter(id => Store.player(id)).slice(0, TEST_SEASON_MAX);
+    if (pids.length < 2) return { ok: false, why: "2명 이상 골라주세요" };
+    if (!Store.sandbox) Store.sandbox = { real: Store.season };
+    Store.sandbox.testSeason = true;
+    // past data out of the way (kept in memory only — the page reload on exit restores it)
+    Store.wallets = {}; Store.bank = {}; Store.emodex = {}; Store.emokeep = {};
+    const fresh = () => ({ money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } });
+    Store.season = {
+        number: 0, sandbox: true, testSeason: true, status: "select", startedAt: new Date().toISOString(),
+        roster: [...pids], ps: Object.fromEntries(pids.map(id => [id, fresh()])), round: 0, mission: null, order: [], turnIdx: 0, turn: null,
+        results: {}, candidates: [], history: [], log: []
+    };
+    G.log(`🧪 테스트 시즌 시작 — ${pids.length}명 · 아무것도 저장되지 않습니다`);
+    G.startRound();
+    return { ok: true };
 }

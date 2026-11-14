@@ -140,7 +140,9 @@ export const BIZ_TYPES = {
         menu: [
             { id: "hp10", name: "HP +10 회복", emoji: "🩹", hp: 10, price: 12000 },
             { id: "hp50", name: "HP +50 회복", emoji: "💉", hp: 50, price: 43000 },
-            { id: "full", name: "Full HP 회복", emoji: "❤️‍🩹", hp: "full", price: 100000 }] }
+            { id: "full", name: "Full HP 회복", emoji: "❤️‍🩹", hp: "full", price: 100000 },
+            { id: "flu", name: "독감 치료", emoji: "🤧", cure: "flu", price: 30000 },
+            { id: "cancer", name: "암 치료", emoji: "🎗️", cure: "cancer", price: 80000 }] }
 };
 export const BIZ_LIST = Object.values(BIZ_TYPES);
 

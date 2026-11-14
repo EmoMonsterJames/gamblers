@@ -26,7 +26,15 @@ export const REGIONS = [
     { id: "noslot",     name: "No Slot 랜드",      en: "NO SLOT LAND",    emoji: "🃏", color: "#22c55e" },
     { id: "nocasino",   name: "No Casino Game 랜드", en: "NO CASINO LAND", emoji: "🎰", color: "#ef4444" },
     { id: "npcland",    name: "NPC 랜드",          en: "NPC LAND",        emoji: "👹", color: "#7c3aed" },
-    { id: "combo",      name: "콤보랜드",          en: "COMBO LAND",      emoji: "🧩", color: "#14b8a6", needAny: ["wings", "space_suit", "oxygen"] }
+    { id: "combo",      name: "콤보랜드",          en: "COMBO LAND",      emoji: "🧩", color: "#14b8a6", needAny: ["wings", "space_suit", "oxygen"] },
+    // ---- 5 more regions (2026-11)
+    //   restricted: every map lets only one kind of player in (others need its map pass)
+    //   deadland:   the most dangerous region — a warning pops up when it is drawn
+    { id: "restricted", name: "제한구역",       en: "RESTRICTED ZONE", emoji: "🚧", color: "#facc15" },
+    { id: "deadland",   name: "Dead Land",      en: "DEAD LAND",       emoji: "☠️", color: "#7f1d1d", danger: true },
+    { id: "desert",     name: "사막",           en: "DESERT",          emoji: "🏜️", color: "#f59e0b" },
+    { id: "emoland",    name: "EmoMonster Land", en: "EMOMONSTER LAND", emoji: "🐾", color: "#34d399" },
+    { id: "difficult",  name: "Difficult Land", en: "DIFFICULT LAND",  emoji: "🧗", color: "#64748b" }
 ];
 
 // x / y = % on the region map. req: { country, pass } | { points } |
@@ -304,8 +312,83 @@ export const NEW_MAPS = [
       casinos: [cg("coinflip", "Pond Skip", "🪨", "물수제비 동전! x1.9"), cg("plinko", "Raindrop Plinko", "💧", "빗방울 플링코! 양 끝 x25")] },
     { id: "combo_town", region: "combo", name: "Combo Town", emoji: "🧩", color: "#14b8a6", x: 40, y: 84, shops: ["general", "weapon", "point", "pet"], req: { gear: ["wings", "space_suit", "oxygen"] }, job: true, discount: true,
       slots: [sl("Triple Combo", "Scrooge-Slots", "dragon", "🧩 🪽 🤿", "🧑‍🚀 🔗", "💥", "👁️", "#115e59", "#011513", "#5eead4")],
-      casinos: [cg("dice", "Combo Dice", "🧩", "콤보 주사위! 더블이면 대박"), cg("gacha", "Combo Capsule", "🔗", "콤보 캡슐 뽑기! 레전드 x50")] }
+      casinos: [cg("dice", "Combo Dice", "🧩", "콤보 주사위! 더블이면 대박"), cg("gacha", "Combo Capsule", "🔗", "콤보 캡슐 뽑기! 레전드 x50")] },
+
+    // =========================================================== 🚧 제한구역 (one kind of player only — everyone else needs the map pass)
+    // req.who: baby | female | male | senior | lgbt | vip | other  (see whoOk() in game/season.js)
+    { id: "baby_town", region: "restricted", name: "Baby Town", emoji: "🍼", color: "#f9a8d4", x: 18, y: 24, shops: ["general", "pet"], req: { who: "baby" },
+      slots: [sl("Baby Bottle Bonanza", "Rabbit-Gaming", "rabbit", "🍼 🧸 🐣", "🧷 🎈", "👶", "🌕", "#f9a8d4", "#500724", "#fbcfe8")],
+      casinos: [cg("pick", "Rattle Pick", "🪇", "딸랑이 4개 중 사탕이 든 딸랑이는?", { n: 4, closed: "🪇", prize: "🍭", miss: "🧷" })] },
+    { id: "no_girls", region: "restricted", name: "No Girls Casino", emoji: "🚺", color: "#f472b6", x: 46, y: 14, shops: ["general", "decor"], req: { who: "female" },
+      slots: [sl("Ladies Night", "DAEBAK", "pearl", "💄 👠 👛", "💅 🎀", "👑", "💰", "#be185d", "#1f0410", "#f9a8d4")],
+      casinos: [cg("wheel", "Lipstick Wheel", "💄", "립스틱 휠! 최대 x30")] },
+    { id: "no_boys", region: "restricted", name: "No Boys Casino", emoji: "🚹", color: "#60a5fa", x: 76, y: 22, shops: ["general", "weapon"], req: { who: "male" },
+      slots: [sl("Gentlemen's Club", "Scrooge-Slots", "dragon", "🎩 👔 ⌚", "🥃 🚬", "💼", "👁️", "#1e3a8a", "#030712", "#93c5fd", "'Rye', serif")],
+      casinos: [cg("dice", "Cigar Dice", "🎲", "신사의 주사위! 6-6 이면 x30")] },
+    { id: "senior_casino", region: "restricted", name: "Senior Casino", emoji: "👴", color: "#a8a29e", x: 22, y: 62, shops: ["general", "point"], req: { who: "senior" },
+      slots: [sl("Golden Years", "Classic Gaming", "ant", "👴 👵 🫖", "🧶 👓", "🦯", "🥫", "#78716c", "#1c1917", "#e7e5e4")],
+      casinos: [cg("lottery", "Bingo Hall", "🎱", "경로당 빙고 로또! 5개 다 맞히면 x300")] },
+    { id: "lgbt_nation", region: "restricted", name: "LGBT Nation", emoji: "🏳️‍🌈", color: "#c084fc", x: 50, y: 50, shops: ["general", "decor", "pet"], req: { who: "lgbt" },
+      slots: [sl("Pride Parade", "CLOVER-TECH", "rabbit", "🏳️‍🌈 🦄 💖", "🌈 ✨", "🎉", "🌕", "#7c3aed", "#1e0524", "#f0abfc")],
+      casinos: [cg("scratch", "Rainbow Scratch", "🌈", "무지개 스크래치! 하트 3개 x40", { syms: ["✨", "🌈", "🦄", "🎉", "💖"] })] },
+    { id: "vip_casino", region: "restricted", name: "VIP Casino (Top 10)", emoji: "🎖️", color: "#facc15", x: 78, y: 62, shops: ["general", "point", "weapon"], req: { who: "vip" },
+      slots: [sl("Top Ten Treasury", "YG GAMING", "dragon", "🎖️ 🏆 🥇", "🎗️ 🏅", "👑", "👁️", "#a16207", "#140c02", "#fde047", "'Rye', serif")],
+      casinos: [cg("hilo", "VIP Lounge Hi-Lo", "🎖️", "VIP 라운지 하이로우! 조커 x10")] },
+    { id: "other_casino", region: "restricted", name: "Other Casino", emoji: "👽", color: "#22d3ee", x: 46, y: 84, shops: ["general", "pet"], req: { who: "other" },
+      slots: [sl("Other Worlds", "IPEX", "ghost", "👽 🛸 🧿", "🌀 🫧", "❔", "🔮", "#0e7490", "#020617", "#67e8f9")],
+      casinos: [cg("gacha", "Mystery Capsule", "❔", "정체불명 캡슐 뽑기! 레전드 x50")] },
+
+    // =========================================================== ☠️ Dead Land (NPCs 100% — Dead Land NPCs only — except Sugar Casino)
+    // noPass: no map pass / random map ticket works here · endLock: the turn can only be ended with ≤ 5:00 left
+    { id: "death_door", region: "deadland", name: "Death Door", emoji: "🚪", color: "#450a0a", x: 18, y: 26, shops: ["general", "weapon"], npc: "always", deadNpc: true, deathWheel: true,
+      slots: [], casinos: [cg("wheel", "Door of Doom Wheel", "🚪", "죽음의 문 휠… 최대 x30"), cg("pick", "Which Door?", "🚪", "문 3개 중 살아남는 문은?", { n: 3, closed: "🚪", prize: "💰", miss: "💀" })] },
+    { id: "hell", region: "deadland", name: "Hell", emoji: "🔥", color: "#dc2626", x: 50, y: 14, shops: ["general", "weapon"], npc: "always", deadNpc: true, noPass: true, endLock: true,
+      slots: [], casinos: [cg("dice", "Hellfire Dice", "🔥", "지옥불 주사위! 6-6 이면 x30"), cg("plinko", "Lava Plinko", "🌋", "용암 플링코! 양 끝 x25")] },
+    { id: "sugar_casino", region: "deadland", name: "Sugar Casino", emoji: "🍬", color: "#f472b6", x: 80, y: 26, shops: ["general"], npc: "never", noPass: true, endLock: true, sugar: true,
+      slots: [], casinos: [cg("scratch", "Candy Crush Scratch", "🍬", "사탕 스크래치! 케이크 3개 x40", { syms: ["🍬", "🍭", "🍩", "🧁", "🎂"] }), cg("gacha", "Sugar Rush Gacha", "🍭", "설탕 캡슐 뽑기! 레전드 x50")] },
+    { id: "dark_space", region: "deadland", name: "Dark Space", emoji: "🌑", color: "#1e1b4b", x: 22, y: 66, shops: ["general"], npc: "always", deadNpc: true, dark: true, req: { gear: ["space_suit"] },
+      slots: [], casinos: [cg("hilo", "Black Hole Hi-Lo", "🕳️", "블랙홀 하이로우… 보이지 않는다"), cg("coinflip", "Dark Matter Flip", "🌑", "암흑 동전 던지기! x1.9")] },
+    { id: "magma_town", region: "deadland", name: "Magma Town", emoji: "🌋", color: "#ea580c", x: 52, y: 52, shops: ["general", "weapon"], npc: "always", deadNpc: true, magma: true,
+      slots: [], casinos: [cg("wheel", "Magma Wheel", "🌋", "마그마 휠! 최대 x30"), cg("scratch", "Lava Scratch", "🔥", "용암 스크래치! 화산 3개 x40", { syms: ["🪨", "💨", "🔥", "♨️", "🌋"] })] },
+    { id: "terror_casino", region: "deadland", name: "Terror Casino", emoji: "💣", color: "#57534e", x: 80, y: 70, shops: ["general"], npc: "always", npcOnly: "terrorist", noPass: true, endLock: true,
+      slots: [], casinos: [cg("pick", "Bomb Defuse", "💣", "전선 4개 중 하나를 끊어라!", { n: 4, closed: "🧨", prize: "💰", miss: "💥" }), cg("dice", "Hostage Dice", "🎲", "인질의 주사위…")] },
+
+    // =========================================================== 🏜️ 사막
+    { id: "desert_casino", region: "desert", name: "Desert Casino", emoji: "🏜️", color: "#f59e0b", x: 22, y: 30, shops: ["general", "weapon", "point"], job: true,
+      slots: [], casinos: [cg("wheel", "Sandstorm Wheel", "🌪️", "모래폭풍 휠! 최대 x30"), cg("dice", "Camel Dice", "🐪", "낙타 주사위!")] },
+    { id: "oasis", region: "desert", name: "Oasis", emoji: "🌴", color: "#22d3ee", x: 72, y: 26, shops: ["general", "pet", "decor"], req: { gear: ["oxygen"] },
+      slots: [], casinos: [cg("pick", "Palm Pick", "🌴", "야자수 4그루 중 보물은?", { n: 4, closed: "🌴", prize: "💧", miss: "🦂" }), cg("plinko", "Water Drop Plinko", "💧", "물방울 플링코! 양 끝 x25")] },
+    { id: "sand_castle", region: "desert", name: "Sand Castle", emoji: "🏰", color: "#fcd34d", x: 46, y: 70, shops: ["general", "point"],
+      slots: [], casinos: [cg("scratch", "Pharaoh Scratch", "🔺", "파라오 스크래치! 피라미드 3개 x40", { syms: ["🦂", "🐪", "🏺", "👁️", "🔺"] }), cg("hilo", "Sphinx Hi-Lo", "🦁", "스핑크스 하이로우")] },
+
+    // =========================================================== 🐾 EmoMonster Land (EmoMon Capture everywhere)
+    { id: "emo_casino", region: "emoland", name: "EmoMonster Casino", emoji: "🐾", color: "#34d399", x: 20, y: 26, shops: ["general", "pet"], capture: true, needMon: true,
+      slots: [], casinos: [cg("gacha", "EmoMon Capsule", "🐾", "이모몬 캡슐 뽑기! 레전드 x50"), cg("wheel", "Monster Ball Wheel", "🔴", "몬스터볼 휠! 최대 x30")] },
+    { id: "battle_town", region: "emoland", name: "Battle Town", emoji: "⚔️", color: "#ef4444", x: 50, y: 14, shops: ["general", "weapon"], capture: true, battleGate: true,
+      slots: [], casinos: [cg("dice", "Duel Dice", "⚔️", "결투 주사위! 6-6 이면 x30"), cg("coinflip", "Battle Flip", "🪙", "배틀 동전 던지기! x1.9")] },
+    { id: "emo_forest", region: "emoland", name: "EmoMonster Forest", emoji: "🌲", color: "#16a34a", x: 80, y: 26, shops: ["general", "pet"], capture: true, req: { fee: 2000, ask: true, freeTypes: ["Bug", "Grass"] },
+      slots: [], casinos: [cg("pick", "Bug Net Pick", "🪲", "풀숲 4곳 중 벌레가 숨은 곳은?", { n: 4, closed: "🌿", prize: "🪲", miss: "🍂" }), cg("scratch", "Forest Scratch", "🌳", "숲 스크래치! 나무 3개 x40", { syms: ["🍂", "🍄", "🐛", "🦋", "🌳"] })] },
+    { id: "monster_casino", region: "emoland", name: "Monster Casino", emoji: "👾", color: "#a855f7", x: 26, y: 66, shops: ["general", "point"], capture: true,
+      slots: [], casinos: [cg("hilo", "Monster Hi-Lo", "👾", "몬스터 하이로우!"), cg("plinko", "Monster Drop", "👾", "몬스터 플링코! 양 끝 x25")] },
+    { id: "type_casino", region: "emoland", name: "Type Casino", emoji: "🔷", color: "#3b82f6", x: 72, y: 66, shops: ["general"], capture: true, typeGate: true,
+      slots: [], casinos: [cg("wheel", "Type Wheel", "🔷", "속성 휠! 최대 x30"), cg("lottery", "Type Lotto", "🎱", "속성 로또! 5개 다 맞히면 x300")] },
+
+    // =========================================================== 🧗 Difficult Land (NPCs on every map but Hurry Up Town)
+    { id: "stuck_casino", region: "difficult", name: "Stuck Casino", emoji: "🪤", color: "#78716c", x: 18, y: 24, shops: ["general"], npc: "always", noPass: true,
+      slots: [], casinos: [] },
+    { id: "jail", region: "difficult", name: "Jail", emoji: "⛓️", color: "#475569", x: 44, y: 14, shops: ["general"], npc: "always", noPass: true, endLock: true,
+      slots: [], casinos: [cg("dice", "Cell Block Dice", "⛓️", "감방 주사위…"), cg("coinflip", "Parole Flip", "🪙", "가석방 동전 던지기! x1.9")] },
+    { id: "hurry_town", region: "difficult", name: "Hurry Up Town", emoji: "⏱️", color: "#f97316", x: 74, y: 18, shops: ["general"], npc: "never", hurry: true,
+      slots: [], casinos: [cg("coinflip", "Quick Flip", "⚡", "빨리빨리 동전 던지기! x1.9"), cg("hilo", "Rush Hi-Lo", "⏱️", "1분 하이로우!")] },
+    { id: "nothing_casino", region: "difficult", name: "Nothing Casino", emoji: "🫥", color: "#94a3b8", x: 86, y: 50, shops: [], npc: "always", bare: true,
+      slots: [], casinos: [] },
+    { id: "cursed_casino", region: "difficult", name: "Cursed Casino", emoji: "🥶", color: "#1e3a8a", x: 22, y: 64, shops: ["general"], npc: "always", noPass: true, endLock: true, cursed: true, fluChance: 0.3, rtpCut: 0.1,
+      slots: [], casinos: [cg("pick", "Frozen Coffin", "⚰️", "얼어붙은 관 3개 중 하나…", { n: 3, closed: "⚰️", prize: "💰", miss: "🥶" }), cg("wheel", "Blizzard Wheel", "❄️", "저주받은 눈보라 휠")] },
+    { id: "radioactive", region: "difficult", name: "Radioactive Town", emoji: "☢️", color: "#84cc16", x: 50, y: 82, shops: ["general"], npc: "always", noPass: true, endLock: true, cancerChance: 0.3,
+      slots: [], casinos: [cg("scratch", "Fallout Scratch", "☢️", "방사능 스크래치! 해골 3개 x40", { syms: ["🧪", "🦠", "☣️", "☢️", "💀"] }), cg("plinko", "Isotope Plinko", "⚛️", "동위원소 플링코! 양 끝 x25")] }
 ];
+// the room terrorists drag a kidnapped player into (not on any map — see game/extra.js)
+export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "never", kidnap: true, slots: [], casino: [] };
 
 // the 6 rule regions added last — their slots / casino games get their own odds
 export const RULE_REGIONS = ["randomland", "richland", "noslot", "nocasino", "npcland", "combo"];

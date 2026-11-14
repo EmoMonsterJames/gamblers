@@ -3,13 +3,14 @@
 // battle arena (EmoMonster BattleEngine events + SpriteManager effects) ·
 // 📖 Monster / Trait / Weapon Dex · Type Chart · inventory sections
 // =====================================================================
+import { emoSlots, EMO_FREE_SLOTS, EMO_MAX_SLOTS } from "../game/extra.js";
 import { h, fmt, sleep, put } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, modal, Activity } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { S } from "../game/season.js";
 import { E } from "./engine.js";
-import { EMO, cat, species, typesOfSpecies, monImg, emoItem, itemPic, isFirstStage, hasEvolution } from "./data.js";
+import { EMO, cat, species, typesOfSpecies, monImg, emoItem, itemPic, isFirstStage, hasEvolution, isSpecialEvo } from "./data.js";
 import * as M from "./game.js";
 
 export const typeChip = t => h("span.emo-type", { style: { "--tc": E.colors?.[t] || "#888" } }, String(t).toUpperCase());
@@ -39,27 +40,66 @@ export function partyPanel(pid, { onChange = () => { } } = {}) {
     const draw = () => {
         if (!cat()) { put(box, h("div.emo-party-head", "🐾 EmoMon"), h("p.muted.small", "EmoMon 데이터가 아직 없습니다 (관리자 → EmoMon 관리에서 동기화)")); return; }
         const e = M.emo(pid), list = e.mons, bm = M.battleMon(pid);
-        put(box, 
-            h("div.emo-party-head", h("b", "🐾 내 EmoMon"), h("small", `${list.length}/${EMO.MAX_MONS} · 이번 라운드 Capture ${M.findsLeft(pid)}/${EMO.CAPTURES_PER_ROUND}`)),
-            ...list.map(m => {
-                const s = M.sp(m), isB = bm?.uid === m.uid;
-                return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : ""), { onclick: () => monDetail(pid, m.uid, () => { draw(); onChange(); }) },
-                    monPic(s, 46),
-                    h("div.emo-pc-info",
-                        h("div.emo-pc-name", s?.name || "?", isB ? h("i.emo-btag", "⚔ BATTLE") : null),
-                        h("div.emo-pc-sub", stars(s?.rarity), ...typesOf(m).map(typeChip)),
-                        hpBar(m),
-                        h("div.emo-pc-w", `⚔ ${m.weapons.length}/${EMO.MAX_WEAPONS} · 🧬 ${m.traits.length}/${EMO.MAX_TRAITS}`, M.weaponRows(m).some(w => M.ppLeft(m, w) <= 0) ? h("span.emo-dis", "🔋 PP 0") : null, ...diseaseChips(m))));
-            }),
+        const refresh = () => { draw(); onChange(); };
+        // during a round only the battle monster is shown — the whole party opens from "내 이모몬"
+        const shown = bm || list[0];
+        const sickAny = list.some(m => (m.diseases || []).length);
+        put(box,
+            h("div.emo-party-head", h("b", "🐾 내 EmoMon"), h("small", `${list.length}/${emoSlots(pid)} · 이번 라운드 Capture ${M.findsLeft(pid)}/${EMO.CAPTURES_PER_ROUND}`)),
+            shown ? monCard(pid, shown, bm, refresh) : null,
+            list.length ? h("button.btn.small.gold.emo-all-btn", { onclick: () => partyModal(pid, refresh) }, `🐾 내 이모몬 (${list.length}/${emoSlots(pid)})`, sickAny ? h("span.emo-sick-warn", "⚠️") : null) : null,
             !list.length ? h("div.emo-pcard.bot", monPic(species(EMO.BOT_ID), 46), h("div.emo-pc-info", h("div.emo-pc-name", "EmoMon Battlebot"), h("div.emo-pc-desc", "몬스터가 없으면 Battlebot이 대신 싸웁니다 (명중률 30%)"))) : null,
             !bm && list.length ? h("p.notice.warn.small", "⚠️ 싸울 수 있는 몬스터가 없습니다 — Battlebot이 대신 싸웁니다. HP를 회복하세요!") : null);
     };
-    const typesOf = M.typesOf;
     draw();
     box.refresh = draw;
     const onEv = () => { if (!box.isConnected) return document.removeEventListener("emo:change", onEv); draw(); };
     document.addEventListener("emo:change", onEv);
     return box;
+}
+
+// one party card (sidebar + the "내 이모몬" list). ⚠️ blinks while the monster has a disease / status.
+function monCard(pid, m, bm, refresh, slotLabel = null) {
+    const s = M.sp(m), isB = bm?.uid === m.uid, sick = (m.diseases || []).length > 0;
+    return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : ""), { onclick: () => monDetail(pid, m.uid, refresh) },
+        monPic(s, 46),
+        h("div.emo-pc-info",
+            h("div.emo-pc-name", s?.name || "?", sick ? h("span.emo-sick-warn", { title: "질병 · 상태이상 — 치료할 때까지 표시됩니다" }, "⚠️") : null, isB ? h("i.emo-btag", "⚔ BATTLE") : null, slotLabel),
+            h("div.emo-pc-sub", stars(s?.rarity), ...M.typesOf(m).map(typeChip)),
+            hpBar(m),
+            h("div.emo-pc-w", `⚔ ${m.weapons.length}/${EMO.MAX_WEAPONS} · 🧬 ${m.traits.length}/${EMO.MAX_TRAITS}`, M.weaponRows(m).some(w => M.ppLeft(m, w) <= 0) ? h("span.emo-dis", "🔋 PP 0") : null, ...diseaseChips(m))));
+}
+// 🐾 내 이모몬: every slot (3 free + 확장 슬롯 up to 10)
+export function partyModal(pid, refresh = () => { }) {
+    const body = h("div.emo-party.full");
+    const mm = modal(body, { title: "🐾 내 이모몬", wide: true, cls: "emo-modal" });
+    const draw = () => {
+        const list = M.mons(pid), bm = M.battleMon(pid), slots = emoSlots(pid);
+        const ext = i => i >= EMO_FREE_SLOTS ? h("span.emo-slot-ext", "확장 슬롯") : null;
+        put(body,
+            h("p.muted.small", `슬롯 ${list.length}/${slots} · 기본 ${EMO_FREE_SLOTS}칸 + 확장 ${slots - EMO_FREE_SLOTS}칸 (최대 ${EMO_MAX_SLOTS}칸 · 이모몬스터 슬롯 확장권: 일반 상점 50,000G / 포인트 상점 300P)`),
+            ...Array.from({ length: slots }, (_, i) => list[i] ? monCard(pid, list[i], bm, () => { draw(); refresh(); }, ext(i)) : h("div.emo-slot-empty", `빈 슬롯 ${i + 1}`, ext(i))),
+            h("div.row.end", h("button.btn.ghost", { onclick: () => mm.close() }, "닫기")));
+    };
+    draw();
+    return mm;
+}
+// how a monster evolves (item / special method) — shown in the detail view
+function evoInfo(m) {
+    const rows = cat()?.evoFrom(m.sid) || [];
+    const lab = M.labEvoRules().filter(r => r.from === +m.sid || r.fuse?.includes(+m.sid));
+    if (!rows.length && !lab.length) return h("div.emo-evo-info.muted", "진화 없음 (최종 단계)");
+    const itemName = id => emoItem(id)?.name || id;
+    return h("div.emo-evo-info",
+        ...rows.map(e => {
+            const to = species(e.target_monster_id);
+            const need = [e.required_item_id, e.required_item2_id].filter(Boolean).map(itemName);
+            const how = [need.length ? `아이템: ${need.join(" + ")}` : null, Number(e.required_money) ? `${fmt(Number(e.required_money))}G` : null,
+                e.required_weapon_id ? `무기: ${cat()?.weapon[String(e.required_weapon_id)]?.name || e.required_weapon_id}` : null,
+                (e.evolve_chance ?? 100) < 100 ? `확률 ${e.evolve_chance}%` : null, isSpecialEvo(e) ? "🔬 특수 진화 (Monster Lab)" : "✨ 진화 탭"].filter(Boolean).join(" · ");
+            return h("div", `➡️ ${to?.name || "#" + e.target_monster_id}: ${how || "조건 없음"}`);
+        }),
+        ...lab.map(r => h("div", `🔬 ${r.text}`)));
 }
 
 // ---------------------------------------------------------------- monster detail / management
@@ -83,7 +123,8 @@ export function monDetail(pid, u, onChange = () => { }) {
                     h("div.emo-d-types", ...M.typesOf(m).map(typeChip), m.types ? h("small.muted", " (속성 Breaker로 바뀜)") : null),
                     h("div.muted.small", `성격: ${natureTxt(m.nature)} · ${M.evolvedMon(m) ? "진화한 몬스터" : hasEvolution(m.sid) ? "진화 가능 라인" : "진화 없음"}`),
                     s?.description ? h("p.emo-desc", s.description) : null,
-                    hpBar(m), h("div.emo-dis-row", ...diseaseChips(m)),
+                    hpBar(m), h("div.emo-dis-row", (m.diseases || []).length ? h("span.emo-sick-warn", "⚠️ 치료 필요") : null, ...diseaseChips(m)),
+                    evoInfo(m),
                     h("div.emo-stats", statRow("maxHp", "HP"), statRow("physAttack", "P.ATTK"), statRow("specAttack", "S.ATTK"), statRow("speed", "SPEED"), statRow("physDefense", "P.DEF"), statRow("specDefense", "S.DEF")))),
             h("h4", `🧬 특성 (${m.traits.length}/${EMO.MAX_TRAITS})`),
             h("div.emo-chips", m.traits.length ? M.traitRows(m).map(t => h("span.emo-chip", { title: E.traits.describe(t) }, `🧬 ${t.name}`, h("small", ` ${E.traits.describe(t)}`))) : h("span.muted", "특성 없음")),
@@ -106,7 +147,7 @@ export function monDetail(pid, u, onChange = () => { }) {
                         if (!ok) return toast(m.traits.length >= EMO.MAX_TRAITS ? "특성이 꽉 찼습니다 — 🧪 Monster Lab의 🔬 실험실에서 바꿀 수 있습니다" : `${s.name}은(는) ${t.name}을(를) 배울 수 없습니다 — 🧪 Monster Lab의 🔬 실험실을 이용하세요`, "warn", 3800);
                         act(M.learnTrait(pid, m.uid, t.id), `${t.name} 특성 습득!`);
                     } }, `🧬 ${t.name} 배우기 ×${n}${ok ? "" : " 🔒"}`); }),
-                M.bagN(pid, "EMO_MON_DEL") > 0 && M.mons(pid).length >= EMO.MAX_MONS ? h("button.btn.small.red", { onclick: async () => { if (await confirmBox(`몬스터 Release 권으로 ${s.name}을(를) 놓아 줄까요? 되돌릴 수 없습니다.`, "놓아 주기", "취소")) { if (act(M.release(pid, m.uid), "놓아 주었습니다")) mm.close(); } } }, "🚮 놓아 주기") : null),
+                M.bagN(pid, "EMO_MON_DEL") > 0 && M.mons(pid).length >= emoSlots(pid) ? h("button.btn.small.red", { onclick: async () => { if (await confirmBox(`몬스터 Release 권으로 ${s.name}을(를) 놓아 줄까요? 되돌릴 수 없습니다.`, "놓아 주기", "취소")) { if (act(M.release(pid, m.uid), "놓아 주었습니다")) mm.close(); } } }, "🚮 놓아 주기") : null),
             h("div.row.end", h("button.btn.ghost", { onclick: () => mm.close() }, "닫기")));
     }
     draw();

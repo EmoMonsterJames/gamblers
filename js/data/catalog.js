@@ -4,7 +4,8 @@
 // screen reads from these lists.
 // =====================================================================
 
-import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf } from "./regions.js";
+import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf, KIDNAP_ROOM } from "./regions.js";
+import { CM_GOODS } from "./community.js";
 import { THEME_HOME } from "../slots/themeConfigs.js";
 import { SKY_HOME } from "../slots/skyConfigs.js";
 import { REALM_HOME } from "../slots/realmConfigs.js";
@@ -136,6 +137,18 @@ export const MISSIONS = [
     { id: "m4_yg", tier: 4, type: "brand_win", brand: "YG GAMING", v: 1000, text: "슬롯 브랜드 YG Gaming 게임에서 1회 스핀으로 1,000G 벌기" },
     { id: "m4_bet3000", tier: 4, type: "bet_win", bets: [3000], v: 50000, text: "슬롯게임에서 3,000G 베팅으로 1회 스핀에 50,000G 이상 벌기" },
     { id: "m4_card", tier: 4, type: "card", letter: "?", text: "랜덤으로 정해지는 알파벳 카드 없는 플레이어 탈락 (G·A·M·B·L·E·R·S 중 하나)" },
+
+    // ---- added missions (3) -------------------------------------------
+    // cm_post: wrote a community comment this season · arena_win: won a 1:1 arena battle this turn
+    // sugar_max: Sugar Level reached ≥ v% at the Sugar Casino · handpay: got a handpay this turn
+    // kidnap_freed: kidnapped by the Terrorist and set free this turn
+    { id: "x1_comment", tier: 1, type: "cm_post", text: "💬 커뮤니티에 코멘트를 작성하지 않은 플레이어 중 1명 탈락" },
+    { id: "x2_arena", tier: 2, type: "arena_win", text: "🏟️ 아레나 1:1 배틀에서 승리하지 못한 플레이어 중 1명 탈락" },
+    { id: "x3_difficult", tier: 3, type: "region_map", regions: ["difficult"], text: "🧗 Difficult Land 맵을 방문하지 않은 플레이어 중 1명 탈락" },
+    { id: "x3_sugar", tier: 3, type: "sugar_max", v: 50, text: "🍬 Dead Land의 Sugar Casino에서 Sugar Level 50% 이상을 달성하지 못한 플레이어 중 1명 탈락" },
+    { id: "x4_handpay", tier: 4, type: "handpay", text: "🤲 Handpay를 받지 못한 플레이어 중 1명 탈락" },
+    { id: "x4_deadland", tier: 4, type: "region_map", regions: ["deadland"], text: "☠️ Dead Land 맵을 방문하지 않은 플레이어 중 1명 탈락" },
+    { id: "x4_kidnap", tier: 4, type: "kidnap_freed", text: "⛓️ Terror Casino에서 테러리스트에게 납치된 후 풀려난 플레이어만 성공 — 나머지는 탈락 후보" },
 
     // ---- added missions (3) -------------------------------------------
     // card letter "*": drawn from the letters NOT in G A M B L E R S · spell: solve a Spelling Bee this turn
@@ -352,7 +365,14 @@ export const ITEMS = [
     { id: "biz_move",   name: "매물 지역 바꾸기 권",   emoji: "🚚", biz: true, desc: "Owner Admin에서 운영 중인 비즈니스를 다른 오픈 가능 지역/맵으로 1회 옮깁니다 (지역세 별도)." },
     { id: "biz_trend",  name: "매출 트렌드 보기권",    emoji: "📊", biz: true, desc: "Owner Admin에서 매출 트렌드 대시보드를 30초 동안 봅니다. 리포트는 인벤토리에 저장됩니다." },
     { id: "biz_remote", name: "Remote Business 관리권", emoji: "🛰️", biz: true, desc: "비즈니스가 있는 맵에 가지 않아도 Owner Admin을 팝업으로 1회 엽니다." },
-    { id: "biz_close",  name: "폐업권",               emoji: "🪧", biz: true, desc: "Owner Admin에서 비즈니스를 폐업합니다. 남은 Business Gold는 소멸되니 먼저 은행에서 송금하세요." }
+    { id: "biz_close",  name: "폐업권",               emoji: "🪧", biz: true, desc: "Owner Admin에서 비즈니스를 폐업합니다. 남은 Business Gold는 소멸되니 먼저 은행에서 송금하세요." },
+    // 🤒 player diseases (game/extra.js)
+    { id: "flu_cure",    name: "독감치료제", emoji: "💉", cure: "flu",    desc: "플레이어가 걸린 독감을 바로 치료합니다." },
+    { id: "cancer_cure", name: "암치료제",   emoji: "💊", cure: "cancer", desc: "플레이어가 걸린 암을 바로 치료합니다." },
+    // 🐾 EmoMon slots: 3 free, +1 per ticket up to 10
+    { id: "emo_slot",    name: "이모몬스터 슬롯 확장권", emoji: "🧳", desc: "이모몬스터를 가질 수 있는 슬롯을 1칸 늘립니다 (기본 3칸 · 최대 10칸 · 인벤토리에서 사용)." },
+    // 💬 community shop goods (one comment each)
+    ...CM_GOODS.map(g => ({ id: g.id, name: g.name, emoji: g.emoji, desc: g.desc, cm: g.kind }))
 ];
 // 30 s boosters: the chance is at most 50% at the lowest bet and shrinks as the bet grows (→ 20% at the top bet)
 export const BOOST_SECONDS = 30;
@@ -392,6 +412,9 @@ export const SHOPS = {
             { cat: "item", id: "npc_block1", price: 10000 },
             { cat: "item", id: "npc_block5", price: 45000 },
             { cat: "item", id: "npc_block10", price: 95000 },
+            { cat: "item", id: "flu_cure", price: 30000 },
+            { cat: "item", id: "cancer_cure", price: 80000 },
+            { cat: "item", id: "emo_slot", price: 50000 },
             // 알파벳권 (each letter only at a few maps — see cardHomes() in catalogAdmin.js)
             ...EXTRA_LETTERS.filter(l => letterSale(l).shop === "general").map(l => ({ cat: "item", id: cardId(l), price: letterSale(l).price }))
             // map passes are appended below LOCATIONS (one per map)
@@ -428,6 +451,7 @@ export const SHOPS = {
             ...PROFILE_EFFECTS.filter(f => f.rare).map(f => ({ cat: "peffect", id: f.id, price: 50 })),
             { cat: "item", id: "slot_boost", price: 200 },
             { cat: "item", id: "casino_boost", price: 100 },
+            { cat: "item", id: "emo_slot", price: 300 },
             ...EXTRA_LETTERS.filter(l => letterSale(l).shop === "point").map(l => ({ cat: "item", id: cardId(l), price: letterSale(l).price })),
             ...ALPHABET.map(l => ({ cat: "item", id: cardId(l), price: 300, alt: true }))
         ]
@@ -538,6 +562,8 @@ for (const m of NEW_MAPS) {
     const { slot, casino, slots, casinos, ...loc } = m;
     LOCATIONS.push({ ...loc, slots: mapSlots(m).map((_, i) => slotIdOf(m, i)), casino: mapCasinos(m).map((_, i) => casinoIdOf(m, i)) });
 }
+// ⛓️ the kidnap room (no region roulette ever lands here)
+LOCATIONS.push({ ...KIDNAP_ROOM, slots: [], casino: [] });
 // the 7 special slots
 const SPECIAL_HOME = { monster_kitchen: "ground", dj_crypto: "poly", sol_umbra: "foggy", neon_cadets: "twins", four_pillars: "mj", gift: "balloon", chrono_heist: "oink" };
 for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id === lid)?.slots.push(sid);
@@ -561,7 +587,17 @@ export const passIdOf = loc => loc.req?.pass || "pass_" + loc.id;
 const passRnd = (() => { let h = 2166136261; for (const c of "gamblers-map-passes") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
 const passSellers = LOCATIONS.filter(l => l.shops.includes("general"));
 const passLoad = {};
+// pass prices: the new regions 45,000G · ☠️ Dead Land 10,000G · 🧗 Difficult Land 35,000G · 👹 NPC Land 40,000G (💀 Death Casino 35,000G) · older maps 45,000~50,000G
+const NEW_PASS_REGIONS = ["restricted", "desert", "emoland"];
+function passPrice(l) {
+    if (l.region === "deadland") return 10000;
+    if (l.region === "difficult") return 35000;
+    if (l.region === "npcland") return l.id === "death_casino" ? 35000 : 40000;
+    if (NEW_PASS_REGIONS.includes(l.region)) return 45000;
+    return null;
+}
 for (const l of LOCATIONS) {
+    if (l.kidnap) continue;
     const id = passIdOf(l);
     const ex = ITEMS.find(i => i.id === id);
     if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
@@ -575,7 +611,8 @@ for (const l of LOCATIONS) {
     const seller = cand[Math.floor(passRnd() * cand.length)];
     if (!seller) continue;
     passLoad[seller.id] = (passLoad[seller.id] || 0) + 1;
-    SHOPS.general.list.push({ cat: "item", id, price: 45000 + Math.round(passRnd() * 10) * 500, locs: [seller.id] });
+    const rndPrice = 45000 + Math.round(passRnd() * 10) * 500; // drawn for every map so older maps keep their prices
+    SHOPS.general.list.push({ cat: "item", id, price: passPrice(l) ?? rndPrice, locs: [seller.id] });
 }
 export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
 
@@ -598,17 +635,22 @@ export const BIZHUB_MAPS = ["riches", "diamond_casino", "goldbar", "sky_tower", 
 export const EMO_HOSPITAL_MAPS = ["cloud", "stars", "seaside", "downtown", "magic", "underground", "graveyard", "bubble", "igloo", "plaza", "wealthy", "games_only", "slots_only", "npc_town", "island"];
 export const EMO_LAB_MAPS = ["zodiac", "emo", "fantasy", "dungeon", "coffin", "rtp_town", "diamond_casino", "colosseum"];
 export const EMO_NO_CAPTURE_REGIONS = [];
+// 💬 Community / 🏟️ Arena corners: none by default — the admin places them (🌍 지역·맵 관리)
+export const COMMUNITY_MAPS = [];
+export const ARENA_MAPS = [];
 // maps without an EmoMon Capture corner (admin can still turn it on per map)
 export const EMO_NO_CAPTURE_MAPS = ["sky_casino", "balloon", "celebrity", "cosmic", "oink", "noluck", "downtown", "super", "rainbow", "fantasy", "underground", "spooky", "coffin", "bubble", "igloo", "plaza", "rtp_town", "beggar_shelter", "wealthy", "games_only", "noslot_casino", "slots_only", "noc_casino", "npc_casino", "npc_town"];
 // 🛒 Monster Shop corner (balls · potions · tickets · weapons · traits)
 export const EMO_SHOP_MAPS = ["dove", "winners", "spacetown", "lucky", "gamblers", "emo2", "eastern", "magic", "blackout", "ghost", "deepsea_casino", "ice", "random_casino", "highroller", "picky", "redblue", "evil_town", "island"];
 for (const l of LOCATIONS) {
-    if (!EMO_NO_CAPTURE_REGIONS.includes(l.region) && !EMO_NO_CAPTURE_MAPS.includes(l.id)) l.capture = true;
+    if (!EMO_NO_CAPTURE_REGIONS.includes(l.region) && !EMO_NO_CAPTURE_MAPS.includes(l.id) && !l.kidnap && !l.bare) l.capture = true;
     if (EMO_SHOP_MAPS.includes(l.id)) l.emoshop = true;
     if (EMO_HOSPITAL_MAPS.includes(l.id)) l.hospital = true;
     if (EMO_LAB_MAPS.includes(l.id)) l.lab = true;
 }
 for (const id of BANK_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bank = true; }
+for (const id of COMMUNITY_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.community = true; }
+for (const id of ARENA_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.arena = true; }
 for (const id of BIZHUB_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bizhub = true; }
 
 export const COUNTRIES = ["Emo World", "Polynesia", "Ground Town", "Foggy Nation", "MJ World", "Dung Town"];
@@ -644,11 +686,37 @@ export const NPCS = [
     { id: "robot",   name: "로봇",       emoji: "🤖", art: "📋", color: "#64748b", align: "evil", moves: [{ hp: -10 }, { idle: "No Move" }, { copy: true }] },
     { id: "hamster", name: "햄스터",     emoji: "🐹", art: "💛", color: "#fbbf24", moves: [{ idle: "애교부리기" }, { hp: 5 }, { give: [100, 500] }, { hope: true }] },
     { id: "croc",    name: "악어",       emoji: "🐊", art: "🦷", color: "#15803d", moves: [{ hp: -5 }, { hp: -10 }, { hp: -15 }, { hp: -20 }] },
-    { id: "peddler", name: "보따리상인", emoji: "🧳", art: "🎒", color: "#b45309", moves: [{ hp: -10 }, { gift: "hp_10" }, { hp: -5 }, { shop: true }] }
+    { id: "peddler", name: "보따리상인", emoji: "🧳", art: "🎒", color: "#b45309", moves: [{ hp: -10 }, { gift: "hp_10" }, { hp: -5 }, { shop: true }] },
+    // ☠️ Dead Land only (deadOnly: never shows up anywhere else) — `w` = the move's weight
+    { id: "space_monster", name: "우주괴물", emoji: "👾", art: "🛸", color: "#4c1d95", align: "evil", deadOnly: true,
+      moves: [{ hp: -20 }, { hp: -15 }, { hp: -30 }, { breakWeapon: true }, { kill: true }] },
+    { id: "evil_kid", name: "사악한 꼬마", emoji: "😈", art: "🧸", color: "#be123c", align: "evil", deadOnly: true,
+      moves: [{ stealPet: "fx", w: 10 }, { stealPet: "pet", w: 10 }, { stealPet: "sfx", w: 10 }, { stealPet: "spet", w: 10 }, { hp: -10, w: 60 }] },
+    { id: "death_hand", name: "죽음의손", emoji: "🫳", art: "🖤", color: "#111827", align: "evil", deadOnly: true,
+      moves: [{ kill: true, w: 10 }, { disease: "cancer", w: 20 }, { disease: "flu", w: 20 }, { stealAll: "gold", w: 10 }, { stealAll: "points", w: 10 }, { stealAll: "items", w: 10 }, { stealMon: true, w: 20 }] },
+    { id: "beggar_family", name: "거지가족", emoji: "👨‍👩‍👧‍👦", art: "🥫", color: "#78716c", align: "evil", deadOnly: true,
+      moves: [{ steal: [10000, 10000] }, { steal: [20000, 20000] }, { steal: [50000, 50000] }, { steal: [30000, 30000] }, { stealPts: 50 }, { stealPts: 100 }, { stealPts: 10 }, { steal: [5000, 5000] }, { stealAll: "bizGold" }, { stealAll: "loanGold" }] },
+    { id: "terrorist", name: "Terrorist", emoji: "🥷", art: "💣", color: "#3f3f46", align: "evil", deadOnly: true,
+      moves: [{ kill: true, w: 10 }, { hp: -15, w: 30 }, { kidnap: true, w: 40 }, { hp: -20, steal: [10000, 10000], w: 20 }] }
 ];
+// Dead Land maps (deadNpc): only these NPCs come — the four Dead Land NPCs + the reaper and the crocodile
+export const DEAD_NPC_IDS = ["space_monster", "reaper", "evil_kid", "death_hand", "croc", "beggar_family"];
+// who can show up on this map: npcOnly → that one · Dead Land → DEAD_NPC_IDS · anywhere else → the normal NPCs
+export function npcPool(loc) {
+    if (loc?.npcOnly) { const n = NPCS.find(x => x.id === loc.npcOnly); if (n) return [n]; }
+    if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
+    return NPCS.filter(n => !n.deadOnly);
+}
+// a move by its weight (w, default 1)
+export const moveChance = (npc, m) => (m.w ?? 1) / npc.moves.reduce((a, x) => a + (x.w ?? 1), 0);
+export function pickNpcMove(npc) {
+    let x = Math.random();
+    for (const m of npc.moves) { if ((x -= moveChance(npc, m)) < 0) return m; }
+    return npc.moves[npc.moves.length - 1];
+}
 export const HOPE_MESSAGES = ["잘될거에요", "대박나세요", "우승할거에요"];
 // a move is "harmful" when it can hurt the player (NPC 공격 Block 권 blocks these)
-export const npcHarmful = m => !!(m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse);
+export const npcHarmful = m => !!(m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
 // evil = harmful moves only · good = helpful only · neutral = both (curses / idling count as neither)
 export function npcAlign(n) {
     if (n.align) return n.align;

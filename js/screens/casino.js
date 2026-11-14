@@ -11,6 +11,7 @@ import { playCasino, gameRtp, topMult } from "../data/casino.js";
 import { Store } from "../core/store.js";
 import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
+import { isHandpay, handpay } from "../ui/handpay.js";
 
 export function openCasino(g, ctx) {
     let bet = g.bets.find(b => b <= ctx.money()) || g.bets[0];
@@ -58,6 +59,7 @@ export function openCasino(g, ctx) {
             if (top) await bigWin(res.payout, bet, { title: "JACKPOT!" });
             else if (res.mult >= 20 || res.payout >= 50000) await bigWin(res.payout, bet);
         } else { msg.innerHTML = `<span class="lose">꽝! 다음 기회에…</span>`; Sound.lose(); }
+        if (isHandpay(bet, res.payout)) await handpay(ctx.pid, res.payout); // 🤲 1000× the bet
         if (res.points) { floatText(stage, `+${res.points} P`, "pts"); Sound.coin(); }
         hist.prepend(h("span.hchip" + (res.payout ? ".w" : ""), res.payout ? `+${fmt(res.payout)}` : `-${fmt(bet)}`));
         while (hist.children.length > 14) hist.lastChild.remove();

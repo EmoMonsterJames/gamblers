@@ -10,8 +10,9 @@ import { CONFIG } from "../config.js";
 import { cardId } from "../data/catalog.js";
 import { Store } from "../core/store.js";
 import { S, log, name } from "../game/season.js";
+import { emoSlots, registerEmoHelpers } from "../game/extra.js";
 import { E } from "./engine.js";
-import { EMO, cat, species, typesOfSpecies, emoItem, captureConfig, isFirstStage, isFinalStage, hasEvolution, monOn, weaponOn, traitOn, isSpecialEvo } from "./data.js";
+import { EMO, cat, species, typesOfSpecies, emoItem, captureConfig, isFirstStage, isFinalStage, hasEvolution, monOn, weaponOn, traitOn, isSpecialEvo, TYPE_LIST } from "./data.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const pickOne = a => a[Math.floor(Math.random() * a.length)];
@@ -217,7 +218,7 @@ export function throwBall(pid, wild, ballId) {
     return { ok: true, caught, chance };
 }
 export function addMon(pid, mon) {
-    if (mons(pid).length >= EMO.MAX_MONS) return false;
+    if (mons(pid).length >= emoSlots(pid)) return false;
     mons(pid).push(mon);
     if (!emo(pid).battle) emo(pid).battle = mons(pid)[0].uid;
     seen(pid, mon.sid, mon.from === "evolve" ? "evolve" : "caught");
@@ -228,7 +229,7 @@ export function release(pid, u, { item = true } = {}) {
     const e = emo(pid), m = monByUid(pid, u);
     if (!m) return false;
     // players can never just let a monster go: only with all slots full and a Release ticket
-    if (item && mons(pid).length < EMO.MAX_MONS) return false;
+    if (item && mons(pid).length < emoSlots(pid)) return false;
     if (item && !useItem(pid, "EMO_MON_DEL")) return false;
     e.mons = e.mons.filter(x => x !== m);
     if (e.battle === u) e.battle = e.mons[0]?.uid || null;
@@ -457,4 +458,68 @@ export function emoHas(pid, m) {
 }
 export function randomNatureSafe() {
     try { return randomNature(); } catch { return pickOne(["Brave", "Calm", "Timid", "Jolly", "Modest", "Bold", "Adamant", "Hasty"]); }
+}
+
+// 🔗 Gamblers rules (game/extra.js) ask about monsters through these
+registerEmoHelpers({ ownsType, battleMon, TYPE_LIST, giveItem, giveWeapon, cat, emoItem });
+
+// ---------------------------------------------------------------- 🔬 Monster Lab special evolutions (Gamblers rules)
+//   from: one monster evolves (to: one id, or several = a random branch) · fuse: owning every listed monster merges them into `to`
+//   item is used up on every try (also when the 1% evolution fails)
+export const LAB_EVOS = [
+    { id: "lab154", from: 154, item: "MAT_DEFORMED_DNA", chance: 1, to: [155] },
+    { id: "lab161", from: 161, item: "MIX_MONSTER_EYEBALL", chance: 100, to: [162, 164] },
+    { id: "lab162", from: 162, item: "MAT_MAGIC_ORB", chance: 100, to: [163] },
+    { id: "lab164", from: 164, item: "MAT_MIND_ORB", chance: 100, to: [165] },
+    { id: "fuse200", fuse: [193, 194, 195, 196, 197, 198, 199], item: "MAT_MONSTER_DNA", chance: 100, to: [200] },
+    { id: "fuse217", fuse: [213, 214, 215, 216], item: "MAT_MONSTER_DNA", chance: 100, to: [217] }
+];
+const nm = id => species(id)?.name || "#" + id;
+export const labEvoRules = () => LAB_EVOS.map(r => ({ ...r,
+    text: r.fuse ? `${r.fuse.map(i => "#" + i).join(" · ")} 모두 보유 + ${emoItem(r.item)?.name || r.item} → #${r.to[0]} ${nm(r.to[0])} (합체 — 재료 몬스터는 사라집니다)`
+        : `${emoItem(r.item)?.name || r.item} → ${r.to.map(t => `#${t} ${nm(t)}`).join(" 또는 ")}${r.to.length > 1 ? ` (각 ${Math.round(100 / r.to.length)}%)` : ""}${r.chance < 100 ? ` · 성공 확률 ${r.chance}%` : ""}` }));
+// which special Lab evolutions this player can try right now (monster / item check)
+export function labEvoOptions(pid) {
+    const list = mons(pid);
+    return labEvoRules().map(r => {
+        const have = bagN(pid, r.item) > 0;
+        if (r.fuse) {
+            const got = r.fuse.map(id => list.find(m => +m.sid === id) || null);
+            return { r, mons: got.filter(Boolean), missing: r.fuse.filter((id, i) => !got[i]), have, ok: have && got.every(Boolean) };
+        }
+        const own = list.filter(m => +m.sid === r.from);
+        return { r, mons: own, missing: own.length ? [] : [r.from], have, ok: have && own.length > 0 };
+    }).filter(o => o.r.to.every(id => species(id)) && (o.r.fuse ? true : species(o.r.from)));
+}
+// run one: u = the monster (single evolutions) — fusions take every listed monster
+export function labEvolve(pid, rid, u = null) {
+    const o = labEvoOptions(pid).find(x => x.r.id === rid);
+    if (!o) return { ok: false, why: "이 진화를 찾을 수 없습니다" };
+    if (!o.have) return { ok: false, why: `${emoItem(o.r.item)?.name || o.r.item}이(가) 필요합니다` };
+    if (!o.ok) return { ok: false, why: `필요한 몬스터가 없습니다: ${o.missing.map(i => "#" + i).join(", ")}` };
+    useItem(pid, o.r.item);
+    if (Math.random() * 100 >= o.r.chance) { log(`🔬 ${name(pid)} 특수 진화 실패 (${o.r.id})`); Store.saveSeason(true); return { ok: true, failed: true }; }
+    const to = o.r.to[Math.floor(Math.random() * o.r.to.length)];
+    if (o.r.fuse) {
+        const e = emo(pid), gone = new Set(o.mons.map(m => m.uid));
+        e.mons = e.mons.filter(m => !gone.has(m.uid));
+        const mon = newMon(to, { from: "evolve" });
+        mon.line = o.r.fuse.slice();
+        e.mons.push(mon);
+        if (!e.battle || gone.has(e.battle)) e.battle = mon.uid;
+        seen(pid, to, "evolve");
+        log(`🧬 ${name(pid)} 몬스터 합체 → ${nm(to)}!`);
+        Store.saveSeason(true);
+        return { ok: true, to: species(to), fused: o.mons.length };
+    }
+    const m = (u && o.mons.find(x => x.uid === u)) || o.mons[0];
+    const before = sp(m);
+    m.line = [...(m.line || []), m.sid];
+    m.sid = to;
+    if (m.types) m.types = null;
+    m.hp = null;
+    seen(pid, to, "evolve");
+    log(`🔬 ${name(pid)} ${before?.name} → ${nm(to)} 특수 진화!`);
+    Store.saveSeason(true);
+    return { ok: true, from: before, to: species(to) };
 }

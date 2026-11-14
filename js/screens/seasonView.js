@@ -36,6 +36,9 @@ import { bizHubView, bizHubHere, bizTabs, bizView, remoteBiz, reportList } from 
 import { account as bankAccount, reportsOf } from "../game/bank.js";
 import { captureView, hospitalView, labView, monsterShopView, emoDexTab, emoPartySide, emoBattleStage, emoBoot } from "./emoCorners.js";
 import { emoInventory } from "../emomon/ui.js";
+import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
+import { promoAtTurn } from "./promo.js";
+import { endLocked, END_LOCK_LEFT } from "../game/extra.js";
 
 let root = null, timer = null;
 
@@ -65,10 +68,10 @@ function sandboxBar(s) {
     const sel = h("select", { onchange: e => { const t = s.turn; G.setMission(MISSIONS.find(m => m.id === e.target.value)); s.turn = t; render(); } },
         [0, 1, 2, 3, 4].map(tr => h("optgroup", { label: `난이도 ${TIERS[tr]}` }, playable.filter(m => m.tier === tr).map(m => h("option", { value: m.id, selected: s.mission?.id === m.id }, m.text)))));
     return h("div.sandbox-bar",
-        h("b", "🧪 테스트 모드"), h("small", "아무것도 저장되지 않습니다"),
+        h("b", s.testSeason ? `🧪 테스트 시즌 (${s.roster.length}명)` : "🧪 테스트 모드"), h("small", "아무것도 저장되지 않습니다"),
         tool("💰 +100만G", () => sandboxTools.gold()), tool("💎 +100P", () => sandboxTools.points()), tool("❤️ HP 회복", () => sandboxTools.heal()),
         tool("⏱️ +10분", () => sandboxTools.time()), tool("👹 이번 라운드 모든 맵 NPC", () => sandboxTools.npcEverywhere()),
-        h("label", "미션 ", sel),
+        s.testSeason ? null : h("label", "미션 ", sel),
         sandboxMapPicker(s),
         h("button.btn.small.red", { onclick: exitSandbox }, "테스트 종료"));
 }
@@ -214,7 +217,7 @@ async function reveal(pid) {
 function missionStage(s) {
     const tier = G.tierForRound();
     const ms = G.missionDeck(tier);
-    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉", bonus_in: "⏱️", brand_win: "🏷️", job_done: "💼", bet_win: "💵", home_map: "🏠", region_map: "🧭", npc_hit: "👼", earn_min: "💪", spell: "🐝" }[m.type] || "📜"), h("div.mc-text", m.text)));
+    const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", { bonus: "🎁", slot_net: "🎰", casino_net: "🃏", points: "💎", jackpot: "💰", battle: "⚔️", combo: "🎰🃏", five: "5️⃣", freespin: "🆓", slot_wins: "🏆", beg_max: "🥺", job_min: "💼", card: "🔤", has: "🐾", rank: "📉", bonus_in: "⏱️", brand_win: "🏷️", job_done: "💼", bet_win: "💵", home_map: "🏠", region_map: "🧭", npc_hit: "👼", earn_min: "💪", spell: "🐝", cm_post: "💬", arena_win: "🏟️", sugar_max: "🍬", handpay: "🤲", kidnap_freed: "⛓️" }[m.type] || "📜"), h("div.mc-text", m.text)));
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
@@ -237,6 +240,7 @@ function missionStage(s) {
     } }, "📜 미션 뽑기");
     return h("div.mission-stage",
         s.loanDeaths?.length ? h("div.loan-deaths", h("b", "☠️ 대출 미상환 사망"), s.loanDeaths.map(pid => h("div.cand-card", avatar(pid, 70, { effect: false }), h("small", displayName(Store.player(pid)))))) : null,
+        sickTickNotice(s),
         h("h2.stage-title", `ROUND ${s.round} 미션 추첨`, h("small.tier.t" + tier, `난이도 ${TIERS[tier]}`)),
         h("div.mcards", cards), h("div.row.center", btn),
         h("p.muted.center", "모든 생존자가 10분씩 플레이하며 같은 미션에 도전합니다. 미션 실패자 중 한 명이 탈락!"));
@@ -260,7 +264,7 @@ function preTurn(s) {
         h("h2.stage-title", `${s.turnIdx + 1}번째 플레이어`),
         playerCard(pid, ps),
         h("div.row.center",
-            h("button.btn.gold.huge", { onclick: () => { G.startTurn(); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
+            h("button.btn.gold.huge", { onclick: async () => { G.startTurn(); render(); await promoAtTurn(pid); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
             h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
 }
 
@@ -284,7 +288,14 @@ function mapStage(s) {
             const target = pick(pool);
             await map.roulette(pool, target.id);
             await banner(`${target.emoji} ${target.name}`, 1400, "loc");
-            const ok = await entryCheck(pid, target, pool.length > 1, fb && fb.id !== target.id ? fb : null);
+            let ok = await entryCheck(pid, target, pool.length > 1, fb && fb.id !== target.id ? fb : null);
+            // ⚔️ Battle Town gate · 🎡 Death Door wheel (death ends the turn right here)
+            if (ok) {
+                const ex = await extraEntry(pid, target);
+                if (ex === "dead" || !s.turn) { render(); return; }
+                ok = ex === "ok";
+                if (ok && target.deathWheel) s.turn.wheelAt = target.id;
+            }
             if (ok) {
                 G.setLocation(target.id);
                 s.turn.running = true;
@@ -349,6 +360,18 @@ async function tryPass(pid, it) {
 async function arrive(s, loc) {
     const pid = s.turn?.pid;
     if (!pid) return false;
+    // 🎡 Death Door reached by a map pass / random map ticket: the wheel still spins
+    if (loc.deathWheel && s.turn.wheelAt !== loc.id) {
+        s.turn.wheelAt = loc.id;
+        if (!(await deathWheel(pid, loc)) || !s.turn) return false;
+    }
+    const ok = await arriveBase(s, loc);
+    if (ok && s.turn) await arrivalExtra(s, loc);
+    return ok && !!s.turn;
+}
+async function arriveBase(s, loc) {
+    const pid = s.turn?.pid;
+    if (!pid) return false;
     if (loc.crazy) {
         const cut = G.crazyCut();
         if (cut) { Sound.boom(); await alertBox("🤪 CRAZY CASINO 경고!", [`Crazy Casino에 입장하여 플레이 시간 ${Math.round(cut / 60)}분이 바로 차감되었습니다!`, `남은 시간: ${fmtTime(s.turn.remaining)}`, "다른 맵으로 이동해도 남은 플레이 시간은 늘어나지 않습니다. (이 맵에서는 시간 연장권을 팔지 않습니다)"], "warn crazy"); }
@@ -391,6 +414,7 @@ function regionStage(s) {
         await rmap.roulette(avail, target.id);
         await banner(`${target.emoji} ${target.name}`, 1500, "loc");
         G.enterRegion(target.id);
+        await regionWarning(target);
         render();
     } }, "🌍 지역 룰렛 돌리기");
     const passRow = passes.length ? h("div.pass-row", h("b", "🎟️ 맵권 사용 → 바로 이동:"), passes.map(it => h("button.btn.small.gold", { onclick: async () => {
@@ -489,7 +513,12 @@ function locationStage(s) {
     updateHud();
 
     const pauseBtn = h("button.btn.ghost.small", { onclick: () => { t.running = !t.running; pauseBtn.textContent = t.running ? "⏸ 일시정지" : "▶ 재개"; updateHud(); Store.saveSeason(); } }, t.running ? "⏸ 일시정지" : "▶ 재개");
-    const endBtn = h("button.btn.red.small", { onclick: async () => { if (await confirmBox("턴을 종료할까요?")) finishTurn(); } }, "⏹ 턴 종료");
+    // 🔒 Hell · Sugar · Terror · Jail · Cursed · Radioactive: the turn can only end with ≤ 5 min left
+    const endBtn = h("button.btn.red.small", { onclick: async () => {
+        if (endLocked(loc, t)) return toast(`🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`, "warn", 3500);
+        if (await confirmBox("턴을 종료할까요?")) finishTurn();
+    } }, "⏹ 턴 종료");
+    const lockEnd = () => { const l = endLocked(loc, t); endBtn.classList.toggle("locked", l); endBtn.textContent = l ? `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)` : "⏹ 턴 종료"; };
 
     const ctx = kind => ({
         pid,
@@ -517,14 +546,15 @@ function locationStage(s) {
     function openGame(kind, id) {
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
         gameLayer?.remove();
-        const el = kind === "slot" ? openSlot(SLOT_BY_ID[id], ctx("slot")) : openCasino(CASINO_BY_ID[id], ctx("casino"));
+        // 🥶 Cursed Casino: the same game with 10% less RTP
+        const el = kind === "slot" ? openSlot(cursedConfig("slot", SLOT_BY_ID[id], loc), ctx("slot")) : openCasino(cursedConfig("casino", CASINO_BY_ID[id], loc), ctx("casino"));
         gameLayer = h("div.game-layer", el);
         root.querySelector(".loc-main").append(gameLayer);
     }
 
     // tabs
     // rebuilt on every tab change, so a business bought / moved / closed here shows up at once
-    const tabList = () => [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
+    const tabList = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
@@ -532,7 +562,7 @@ function locationStage(s) {
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
-    const invWrap = el => h("div", el, emoInventory(pid, emoChanged));
+    const invWrap = el => h("div", extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -542,7 +572,16 @@ function locationStage(s) {
         currentTab = id;
         refreshTabs();
         let content;
-        if (id === "games") content = h("div.game-list",
+        if (id === "games" && !loc.slots.length && !loc.casino.length) content = h("p.notice.center", loc.stuck ? "🧗 Stuck Casino: 게임이 하나도 없습니다… 시간이 끝날 때까지 갇혀 있어야 합니다." : "🫥 이 맵에는 게임이 없습니다.");
+        else if (id === "kidnap") content = kidnapView(pid, {
+            onChange: () => { updateHud(); side.replaceChildren(sideCard()); },
+            onDead: () => { clearInterval(timer); fx.stop(); render(); },
+            // 🕊️ free: back to the region roulette with the time that is left
+            onFreed: () => { clearInterval(timer); fx.stop(); t.loc = null; t.region = null; t.npc = null; t.running = false; Store.saveSeason(true); render(); }
+        });
+        else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
+        else if (id === "games") content = h("div.game-list",
             ...loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
                 h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand), h("div.gc-desc", c.desc)); }),
             ...loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
@@ -620,22 +659,25 @@ function locationStage(s) {
         await arrive(s, to);
         render();
     }
-    const passBtns = G.passesOf(pid).filter(it => it.loc !== loc.id);
-    tabBody("games");
+    // 🚫 no-pass maps (Hell · Sugar · Terror · Stuck · Jail · Cursed · Radioactive · kidnap room): no map passes here
+    const passBtns = loc.noPass || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
+    // 🍬 sugar · 🌑 dark · 🌋 magma
+    const fx = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+    tabBody(loc.kidnap ? "kidnap" : "games");
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
     const npcHere = G.npcActive(loc.id);
     if (npcHere && !t.npc) { t.npc = scheduleNpc(t.remaining, loc.npc === "always"); Store.saveSeason(); }
     let npcBusy = false;
     async function npcCheck() {
-        if (npcBusy || !t.npc?.length || t.remaining > t.npc[0]) return;
+        if (npcBusy || t.arena || !t.npc?.length || t.remaining > t.npc[0]) return; // 🏟️ no NPCs during an arena battle
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
         npcBusy = true;
         t.npc.shift();
         const was = t.running; t.running = false; updateHud();
         const out = await npcAttack(pid);
         npcBusy = false;
-        if (out?.kill) { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); return; }
+        if (out?.kill || out?.kidnap || !G.S().turn) { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; render(); return; }
         t.running = was; updateHud(); side.replaceChildren(sideCard());
         Store.saveSeason();
     }
@@ -643,12 +685,15 @@ function locationStage(s) {
     // timer loop
     let saveTick = 0;
     timer = setInterval(() => {
-        if (!document.body.contains(timeEl)) { clearInterval(timer); return; }
+        if (!document.body.contains(timeEl)) { clearInterval(timer); fx.stop(); return; }
+        lockEnd();
         if (!t.running || t.remaining <= 0) return;
         t.remaining -= 1;
         if (t.remaining <= 10 && t.remaining > 0) Sound.tick();
         if (++saveTick % 5 === 0) Store.saveLocal();
         updateHud();
+        fx.tick();
+        if (!G.S().turn) return;
         npcCheck();
         if (t.remaining <= 0) timeUp();
     }, 1000);
@@ -674,6 +719,7 @@ function locationStage(s) {
     async function finishTurn() {
         if (finishing) return; finishing = true;
         clearInterval(timer);
+        fx.stop();
         // card missions: a holder decides now whether to spend the card
         if (s.mission.type === "card" && !t.stats.cardUsed && ps.items["card_" + s.mission.letter] > 0
             && await confirmBox(`🔤 알파벳 카드 ${s.mission.letter}를 갖고 있습니다.\n이번 라운드에 사용할까요? (사용하면 미션 통과 · 카드는 사라집니다)`, "사용하기", "아끼기")) G.useMissionCard();
@@ -695,7 +741,9 @@ function locationStage(s) {
         render();
     }
 
-    return h("div.location", { style: { "--loc": loc.color } },
+    lockEnd();
+    return h("div.location" + (loc.cursed ? ".cursed" : "") + (loc.kidnap ? ".kidnapped" : "") + (loc.magma ? ".magma" : ""), { style: { "--loc": loc.color } },
+        fx.hud,
         h("div.loc-head",
             h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i"))),
             progEl,

@@ -78,7 +78,7 @@ export const itemImg = it => it?.image ? (/^(https?:|data:)/.test(it.image) ? it
 // ---------------------------------------------------------------- Gamblers monster goods
 // kind: ball · potion · cure · delete · breaker · evo · material. `src` = the EmoMonster item it is
 // (picture / description come from there); `gold` / `pts` = Gamblers price.
-const TYPE_LIST = ["Normal", "Abnormal", "Magic", "Power", "Water", "Fire", "Grass", "Electric", "Ice", "Angel", "Evil", "Air", "Fly", "Earth", "Bug", "Ghost", "Steel", "Fairy", "Space", "Robot", "Light", "Mind"];
+export const TYPE_LIST = ["Normal", "Abnormal", "Magic", "Power", "Water", "Fire", "Grass", "Electric", "Ice", "Angel", "Evil", "Air", "Fly", "Earth", "Bug", "Ghost", "Steel", "Fairy", "Space", "Robot", "Light", "Mind"];
 const CHEAP_ATTR = new Set(["Electric", "Water", "Fire", "Normal", "Grass", "Bug", "Steel", "Ice", "Earth"]);
 export const EMO_ITEMS = [
 // balls: `rate` = catch chance in % (an attribute ball: `rate` on its attribute, `rateOff` on others)
@@ -108,7 +108,9 @@ export const EMO_ITEMS = [
     { id: "EMO_TYPE_BREAKER", kind: "breaker", name: "속성 Breaker", emoji: "🔷", noSale: true, note: "🔬 LAB 실험실에서 몬스터 속성을 바꾸거나 추가할 때 필요 (LAB 조합으로만 얻음)" },
     { id: "ITEM_WEAPON_BREAKER", kind: "breaker", name: "무기 Breaker", emoji: "⚔️", noSale: true, img: "images/icons/g/weapon_breaker.svg", note: "🔬 LAB 실험실에서 못 배우는 무기를 가르칠 때 필요 (LAB 조합으로만 얻음)" },
     { id: "ITEM_TRAIT_BREAKER", kind: "breaker", name: "특성 Breaker", emoji: "🧬", noSale: true, note: "🔬 LAB 실험실에서 특성을 바꾸거나 배울 때 필요 (LAB 조합으로만 얻음)" },
-    { id: "EMO_NATURE_BREAKER", kind: "breaker", name: "Nature Breaker", emoji: "🎭", noSale: true, note: "🔬 LAB 실험실에서 몬스터 성격을 바꿀 때 필요 (LAB 조합으로만 얻음)" }
+    { id: "EMO_NATURE_BREAKER", kind: "breaker", name: "Nature Breaker", emoji: "🎭", noSale: true, note: "🔬 LAB 실험실에서 몬스터 성격을 바꿀 때 필요 (LAB 조합으로만 얻음)" },
+    // 🔮 Gamblers-only evolution orb (#164 Bunpsyche → #165 McBurger) — sold in LAB shops with the other orbs
+    { id: "MAT_MIND_ORB", kind: "evo", name: "Mind Orb", emoji: "🔮", orb: true, gold: 150000, note: "🔬 실험실 특수 진화: #164 Bunpsyche → #165 McBurger" }
 ];
 export const EMO_ITEM = Object.fromEntries(EMO_ITEMS.map(i => [i.id, i]));
 // lab-only results (never sold in any shop)
@@ -192,7 +194,7 @@ function autoStock() {
         out.shop[l.id].traits = ts.slice(ti, ti + nt); ti += nt;
     }
     const items = C?.items || [];
-    const orbs = shuffleSeed(items.filter(i => i.category === "evolution" && isOrb(i)).map(i => i.id), "emo-orbs");
+    const orbs = shuffleSeed([...items.filter(i => i.category === "evolution" && isOrb(i)).map(i => i.id), "MAT_MIND_ORB"], "emo-orbs");
     const evo = shuffleSeed(items.filter(i => i.category === "evolution" && !isOrb(i) && !LAB_ONLY.has(i.id)).map(i => i.id), "emo-evo");
     const mats = shuffleSeed(items.filter(i => i.category === "material").map(i => i.id), "emo-mats");
     const take = (list, start, k) => Array.from({ length: Math.min(k, list.length) }, (_, j) => list[(start + j) % list.length]);

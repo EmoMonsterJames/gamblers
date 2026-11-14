@@ -9,6 +9,7 @@ import { shuffle, pick } from "../core/util.js";
 import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
 import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits } from "../emomon/game.js";
+import { infect, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection } from "./extra.js";
 
 export const S = () => Store.season;
 
@@ -147,6 +148,9 @@ export function startRound() {
     s.turn = null;
     for (const pid of alive()) { const ps = s.ps[pid]; ps.use = { slot: 0, casino: 0 }; ps.extra = { slot: 0, casino: 0 }; }
     s.loanDeaths = s.round > 1 ? loanRoundTick() : [];
+    // 🤒 flu −5 / cancer −10 HP at every round start (HP 0 → dead)
+    s.sickTick = s.round > 1 ? diseaseTick() : [];
+    try { keepMons(); } catch (e) { console.warn(e); } // 🏟️ arena opponents for later seasons
     if (alive().length <= CONFIG.FINALISTS) s.status = "final";
     for (const f of roundHooks) try { f(s); } catch (e) { console.error(e); }
     Store.saveSeason(true);
@@ -429,7 +433,7 @@ export function gainCard(pid, letter) {
 export const honorRecords = (pid, maxRank) => Store.results.filter(r => r.playerId === +pid && r.rank != null && r.rank <= maxRank).sort((a, b) => a.season - b.season || a.rank - b.rank);
 export const honorRecordText = (pid, maxRank) => honorRecords(pid, maxRank).map(r => maxRank === 1 ? `${r.season}시즌 우승` : `${r.season}시즌 ${r.rank}위`).join(" · ");
 // test mode: the test player may try every corner
-export const honorEligible = (pid, kind) => !!S()?.sandbox || honorRecords(pid, HONOR_KINDS[kind].rank).length > 0;
+export const honorEligible = (pid, kind) => S()?.testSeason ? false : !!S()?.sandbox || honorRecords(pid, HONOR_KINDS[kind].rank).length > 0;
 // every other player who ever finished in the TOP N of any season
 export function honorPool(pid, kind) {
     const n = HONOR_KINDS[kind].rank;
@@ -522,7 +526,50 @@ export function npcHit(pid, npc, move) {
         Store.saveSeason(true);
         return out;
     }
-    if (move.idle) out.idle = move.idle;
+    if (move.hp && move.steal) {
+        // 🥷 Terrorist: HP and gold in one blow
+        const before = ps.hp; ps.hp = Math.max(1, ps.hp + move.hp); out.hp = ps.hp - before;
+        const g = Math.min(rnd(move.steal), Math.max(0, ps.money)); ps.money -= g; out.gold = -g;
+    }
+    else if (move.breakWeapon) {
+        // 👾 Monster Magic!: one of the player's weapons is gone for good
+        if (!ps.weapons.length) out.none = true;
+        else { const ix = Math.floor(Math.random() * ps.weapons.length); out.broke = ps.weapons[ix]; ps.weapons.splice(ix, 1); }
+    }
+    else if (move.stealPet) {
+        // 😈 evil kid: pet / pet effect / special pet / special pet effect (only if the player has that kind)
+        const k = move.stealPet, isFx = k === "fx" || k === "sfx", special = k === "spet" || k === "sfx";
+        const id = isFx ? ps.petEffect : ps.pet;
+        const row = id ? (isFx ? PETFX_BY_ID[id] : PET_BY_ID[id]) : null;
+        if (!row || (row.kind === "special") !== special) out.none = true;
+        else { if (isFx) ps.petEffect = null; else ps.pet = null; out.stolePet = { kind: k, id, name: row.name }; }
+    }
+    else if (move.disease) { out.disease = move.disease; if (!infect(pid, move.disease, npc.name)) out.already = true; }
+    else if (move.stealAll) {
+        const k = move.stealAll;
+        if (k === "gold") { if (ps.money > 0) { out.gold = -ps.money; ps.money = 0; } else out.none = true; }
+        else if (k === "points") { if (ps.points > 0) { out.pts = -ps.points; ps.points = 0; } else out.none = true; }
+        else if (k === "items") {
+            const n = Object.values(ps.items || {}).reduce((a, x) => a + Math.max(0, x || 0), 0);
+            if (n > 0) { out.items = n; ps.items = {}; ps.npcBlock = 0; } else out.none = true;
+        } else if (k === "bizGold") {
+            const acc = Store.bank?.accounts?.[pid];
+            if (acc?.bgold > 0) { out.bgold = -acc.bgold; acc.bgold = 0; (acc.history ||= []).push({ t: Date.now(), kind: "npc", amount: out.bgold, note: `${npc.name} 강탈` }); Store.saveBank?.(); } else out.none = true;
+        } else if (k === "loanGold") { if (ps.loanGold > 0) { out.loanGold = -ps.loanGold; ps.loanGold = 0; } else out.none = true; }
+    }
+    else if (move.stealMon) {
+        const list = ps.emo?.mons || [];
+        if (!list.length) out.none = true;
+        else {
+            const m = list[Math.floor(Math.random() * list.length)];
+            ps.emo.mons = list.filter(x => x !== m);
+            if (ps.emo.battle === m.uid) ps.emo.battle = ps.emo.mons[0]?.uid || null;
+            out.mon = m.sid;
+        }
+    }
+    else if (move.stealPts) { if (ps.points >= move.stealPts) { ps.points -= move.stealPts; out.pts = -move.stealPts; } else out.none = true; }
+    else if (move.kidnap) { out.kidnap = true; }
+    else if (move.idle) out.idle = move.idle;
     else if (move.hope) out.hope = HOPE_MESSAGES[Math.floor(Math.random() * HOPE_MESSAGES.length)];
     else if (move.gift) { ps.items[move.gift] = (ps.items[move.gift] || 0) + 1; out.gift = move.gift; }
     else if (move.shop) out.shop = true;
@@ -548,11 +595,15 @@ export function npcHit(pid, npc, move) {
     } else if (move.kill) { out.kill = true; }
     // mission stats: who hit the player during their turn and what it did
     if (s.turn?.pid === pid) (s.turn.stats.npc ||= []).push({ npc: npc.id, hp: !!move.hp, gold: out.gold > 0 });
-    const what = out.kill ? "즉사!" : out.none ? "효과 없음" : out.idle ? out.idle : out.hope ? `"${out.hope}"` : out.gift ? `${ITEM_BY_ID[out.gift]?.name} 선물` : out.shop ? "보따리상점 OPEN"
+    const what = out.kill ? "즉사!" : out.none ? "효과 없음" : out.kidnap ? "납치!" : out.broke ? `무기 ${WEAPON_BY_ID[out.broke]?.name || out.broke} 파괴`
+        : out.stolePet ? `${out.stolePet.name} 강탈` : out.disease ? `${out.disease === "flu" ? "독감" : "암"} 감염` : out.items ? `아이템 ${out.items}개 전부 강탈`
+        : out.bgold ? `Business Gold ${(-out.bgold).toLocaleString()} 강탈` : out.loanGold ? `대출 골드 ${(-out.loanGold).toLocaleString()} 강탈` : out.mon ? "이모몬스터 강탈"
+        : out.pts ? `${out.pts}P` : out.idle ? out.idle : out.hope ? `"${out.hope}"` : out.gift ? `${ITEM_BY_ID[out.gift]?.name} 선물` : out.shop ? "보따리상점 OPEN"
         : out.copied ? `${WEAPON_BY_ID[out.weapon]?.name} 복사 공격${out.hp ? ` HP ${out.hp}` : " (효과 없음)"}`
         : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주";
     log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${what}`);
     if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`);
+    else if (out.kidnap) kidnap(pid);
     else Store.saveSeason(true);
     return out;
 }
@@ -574,7 +625,7 @@ export function killPlayer(pid, why) {
 }
 function advanceTurn() {
     const s = S();
-    if (s.sandbox) { sandboxNextTurn(); return; } // test mode: no judging, just the next turn
+    if (s.sandbox && !s.testSeason) { sandboxNextTurn(); return; } // map test: no judging, just the next turn
     while (s.turnIdx < s.order.length && s.ps[s.order[s.turnIdx]].out) s.turnIdx++;
     if (s.turnIdx >= s.order.length) judge();
 }
@@ -585,6 +636,8 @@ export function startTurn() {
     const s = S();
     const pid = currentPid();
     s.turn = { pid, loc: null, region: null, remaining: CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
+    // ⛓️ kidnapped: no roulette — straight back into the terrorists' room (10 minutes as usual)
+    if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; }
     Store.saveSeason();
     return s.turn;
 }
@@ -617,8 +670,21 @@ export function canEnter(pid, loc) {
     const ps = S().ps[pid], p = Store.player(pid);
     if (loc.off) return { ok: false, why: "닫힘" };
     if (loc.crazy && !crazyTimeOk()) return { ok: false, why: "남은 시간 6분 30초 이상 필요" };
+    if (loc.kidnap) return { ok: false, why: "갈 수 없는 곳" };
+    // 🐾 EmoMonster Casino: monster owners only · 🔷 Type Casino: owners of this round's attribute only
+    if (loc.needMon && !ownsMon(pid)) return { ok: false, why: "이모몬스터가 있어야 입장" };
+    if (loc.typeGate) { const tp = typeGateType(); if (!ownsTypes(pid, [tp])) return { ok: false, why: `${tp} 속성 몬스터 보유자만` }; }
     const r = loc.req;
     if (!r) return { ok: true };
+    // 🚧 restricted zone: only that kind of player — anybody else needs the map pass (used up on entry)
+    if (r.who) {
+        if (whoOk(pid, r.who)) return { ok: true };
+        const pass = passIdOf(loc);
+        if ((ps.items[pass] || 0) > 0) return { ok: true, pass };
+        return { ok: false, why: `${WHO_TEXT[r.who] || r.who} 전용 (맵권으로 입장)` };
+    }
+    // 🌲 EmoMonster Forest: Bug / Grass monster owners walk in free
+    if (r.freeTypes && ownsTypes(pid, r.freeTypes)) return { ok: true, freeBy: r.freeTypes };
     const out = { ok: true };
     if (r.gear?.length) {
         const miss = r.gear.filter(g => !(ps.items[g] > 0));
@@ -656,7 +722,10 @@ export function passNeeds(pid, loc) {
     if (loc.crazy && !crazyTimeOk()) missing.push(`플레이 시간이 부족합니다 (남은 시간 ${Math.floor(CRAZY_MIN_LEFT / 60)}분 ${CRAZY_MIN_LEFT % 60}초 이상 필요) → 시간 연장권부터 사용하세요`);
     for (const g of gear) if (!(ps.items[g] > 0)) missing.push(`${gearName(g)} 부족 → ${ITEM_BY_ID[g]?.name || g}부터 갖추세요`);
     if (r.points != null && ps.points < r.points) missing.push(`포인트가 부족합니다 (${r.points}P 이상 필요) → 포인트부터 모으세요`);
-    const fee = r.fee || 0, feePts = r.feePts || 0;
+    if (loc.needMon && !ownsMon(pid)) missing.push("이모몬스터가 없습니다 → EmoMon Capture에서 몬스터부터 잡으세요");
+    if (loc.typeGate && !ownsTypes(pid, [typeGateType()])) missing.push(`이번 라운드 Type Casino는 ${typeGateType()} 속성 몬스터 보유자만 들어갈 수 있습니다`);
+    if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
+    const fee = r.freeTypes && ownsTypes(pid, r.freeTypes) ? 0 : (r.fee || 0), feePts = r.feePts || 0;
     if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
     if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
     return { ok: !missing.length, missing, gear, fee, feePts };
@@ -741,6 +810,9 @@ export function setLocation(locId, { teleport = false } = {}) {
     if (!(t.stats.locs ||= []).includes(locId)) t.stats.locs.push(locId);
     if (needsGear(loc)) t.stats.gearVisits = (t.stats.gearVisits || 0) + 1;
     log(`🗺️ ${name(t.pid)} → ${loc.name}`);
+    // arrival rules: infection rolls (UI shows t.arrival.sick) · ⏱️ Hurry Up Town (10 min → 1 min, once)
+    t.arrival = { loc: locId, sick: arrivalInfection(t.pid, loc) };
+    if (loc.hurry && !t.hurried) { t.hurried = true; t.remaining = Math.min(t.remaining, 60); t.arrival.hurry = true; }
     Store.saveSeason();
 }
 // map pass: skip both roulettes and go straight to that map
@@ -749,6 +821,7 @@ export function usePassTeleport(itemId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     const it = ITEM_BY_ID[itemId];
     if (!it?.loc || !(ps.items[itemId] > 0)) return false;
+    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return false;
     const need = passNeeds(t.pid, LOC_BY_ID[it.loc]);
     if (!need.ok) return false;
     ps.items[itemId]--;
@@ -768,6 +841,7 @@ export function randomMapPool(pid) {
 export function useRandomMap() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     if (!(ps.items.map_random > 0)) return null;
+    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return null;
     const pool = randomMapPool(t.pid);
     if (!pool.length) return null;
     const loc = pool[Math.floor(Math.random() * pool.length)];
@@ -827,6 +901,8 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     t.stats.points += points; ps.totals.points += points;
     if (extra.bonus) t.stats.bonus++;
     for (const jp of extra.jackpots || []) if (!t.stats.jackpot || JACKPOT_RANK[jp] > JACKPOT_RANK[t.stats.jackpot]) t.stats.jackpot = jp;
+    // 🤲 handpay (1000× the bet or a GRAND jackpot) — handpay missions
+    if ((bet > 0 && win >= bet * 1000) || (extra.jackpots || []).includes("GRAND")) { t.stats.handpay = (t.stats.handpay || 0) + 1; ps.handpays = (ps.handpays || 0) + 1; }
     Store.saveSeason();
 }
 
@@ -876,6 +952,11 @@ export function missionMet(m, st) {
         case "home_map": { const c = Store.player(st.pid)?.country; return !!c && (st.locs || []).some(id => LOC_BY_ID[id]?.req?.country === c); }
         case "region_map": return (st.locs || []).some(id => m.regions.includes(LOC_BY_ID[id]?.region));
         case "npc_hit": return (st.npc || []).some(x => x.npc === m.npc && x[m.what]);
+        case "cm_post": return st.pid != null && S()?.ps?.[st.pid]?.cmPosted === S()?.number;
+        case "arena_win": return (st.arenaWin || 0) > 0;
+        case "sugar_max": return (st.sugarMax || 0) >= m.v;
+        case "handpay": return (st.handpay || 0) > 0;
+        case "kidnap_freed": return !!st.kidnapFreed;
     }
     return false;
 }
@@ -911,7 +992,12 @@ export function missionProgress(m, st) {
         case "bet_win": { const b = bestOf(st.betWin, m.bets); return { cur: b, goal: m.v, label: `${m.bets.join("/")}G 베팅 1회 최고 ${b.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
         case "job_done": return { cur: Math.min(st.jobs || 0, m.v || 1), goal: m.v || 1, label: `직업 ${st.jobs || 0} / ${m.v || 1}회` };
         case "home_map": { const c = Store.player(st.pid)?.country; return { cur: met ? 1 : 0, goal: 1, label: met ? "본인 국적 맵 방문 완료!" : `${c || "?"} 국적 맵을 방문하세요` }; }
-        case "region_map": return { cur: met ? 1 : 0, goal: 1, label: met ? "방문 완료!" : "우주 · 심해 · 하늘나라의 맵을 방문하세요" };
+        case "region_map": return { cur: met ? 1 : 0, goal: 1, label: met ? "방문 완료!" : `${m.regions.map(r => REGIONS.find(x => x.id === r)?.name || r).join(" · ")}의 맵을 방문하세요` };
+        case "cm_post": return { cur: met ? 1 : 0, goal: 1, label: met ? "💬 코멘트 작성 완료 — 안전" : "💬 커뮤니티에 코멘트를 작성하세요" };
+        case "arena_win": return { cur: met ? 1 : 0, goal: 1, label: met ? "🏟️ 아레나 승리 — 안전" : "🏟️ 아레나 1:1 배틀에서 이기세요" };
+        case "sugar_max": return { cur: Math.min(st.sugarMax || 0, m.v), goal: m.v, label: `🍬 최고 Sugar Level ${st.sugarMax || 0}% / ${m.v}%` };
+        case "handpay": return { cur: met ? 1 : 0, goal: 1, label: met ? "🤲 Handpay 달성 — 안전" : "🤲 베팅의 1000배 이상 당첨 또는 GRAND 잭팟" };
+        case "kidnap_freed": return { cur: met ? 1 : 0, goal: 1, label: met ? "🕊️ 납치에서 풀려남 — 안전" : "⛓️ Terror Casino에서 납치된 뒤 풀려나야 합니다" };
         case "npc_hit": return { cur: met ? 1 : 0, goal: 1, label: met ? "👼 엔젤 도움 받음!" : `👼 엔젤에게 ${m.what === "hp" ? "HP 회복" : "돈"} 공격을 받아야 합니다` };
     }
     return { cur: 0, goal: 1, label: "" };
@@ -1039,6 +1125,8 @@ export async function crown(winnerId, snapshot) {
 export function luckOf(pid) {
     const ps = S()?.ps[pid];
     if (!ps) return { win: 0, bonus: 0, pct: 0, bonusPct: 0 };
+    // 🥶 Cursed Casino: pets, special pets and their effects do nothing here
+    if (LOC_BY_ID[S().turn?.loc]?.cursed && +S().turn?.pid === +pid) return { win: 0, bonus: 0, pct: 0, bonusPct: 0, pid, pet: null, petEffect: null, sources: [], cursed: true };
     const pet = ps.pet ? PET_BY_ID[ps.pet] : null;
     const fx = ps.petEffect ? PETFX_BY_ID[ps.petEffect] : null;
     let win = 0, bonus = 0;

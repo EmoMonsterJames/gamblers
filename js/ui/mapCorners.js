@@ -37,6 +37,8 @@ export function mapCorners(l, { detail = true } = {}) {
         l.hospital && "🏥 Monster Hospital",
         l.lab && d("🧪 Monster Lab", lab && `LAB 상점 ${lab.items.length}종`),
         l.emoshop && d("🛒 Monster Shop", st && `속성 볼 ${st.balls.map(id => emoItem(id)?.attr).filter(Boolean).join("·")} · 무기 ${st.weapons.length} · 특성 ${st.traits.length}`),
+        l.community && d("💬 커뮤니티", "500G · 시즌당 1회 · 입장 60%"),
+        l.arena && d("🏟️ 아레나", "1:1 EmoMon 배틀 · 시즌당 2회"),
         ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)
     ].filter(Boolean);
 }

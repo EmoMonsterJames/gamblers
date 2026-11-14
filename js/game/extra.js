@@ -1,0 +1,430 @@
+// =====================================================================
+// 2026-11 additions — pure rules (screens/extraCorners.js draws them):
+//   🤒 player diseases (flu / cancer)      🚧 restricted-zone doors
+//   ⛓️ terrorist kidnap room               🍬 Sugar Level · 🌋 Magma · 🎡 Death Wheel
+//   🏟️ Arena (1:1 EmoMon battle)           💬 Community board (persistent)
+//   🧳 EmoMon slot tickets                  🔷 Type Casino / ⚔️ Battle Town doors
+// State: ps.dis = { flu, cancer } · ps.kidnap = { round } · ps.arenaUsed · ps.cmPosted (season number)
+//        t.sugar (0~100) · s.typeGate = { round, type }
+// =====================================================================
+import { CONFIG } from "../config.js";
+import { Store } from "../core/store.js";
+import { LOC_BY_ID, ITEM_BY_ID } from "../data/catalog.js";
+import { KIDNAP_ROOM } from "../data/regions.js";
+import { CM_BY_ID, COMMENT_FEE, COMMUNITY_OK } from "../data/community.js";
+import { S, log, name, alive, killPlayer, setLocation } from "./season.js";
+
+const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const ps_ = pid => S()?.ps?.[pid];
+
+// ---------------------------------------------------------------- 🚧 restricted zone: who may walk in
+const norm = v => String(v || "").trim().toLowerCase();
+export const isVip = pid => Store.results.some(r => r.playerId === +pid && r.rank != null && r.rank <= 10);
+export const isChampion = pid => Store.results.some(r => r.playerId === +pid && r.rank === 1);
+export const WHO_TEXT = { baby: "Age가 Baby인 플레이어", female: "성별이 Female인 플레이어", male: "성별이 Male인 플레이어", senior: "Age가 Senior인 플레이어",
+    lgbt: "Preference가 Straight가 아닌 플레이어", vip: "시즌 TOP 10 전적이 있는 플레이어", other: "종족이 Other인 플레이어" };
+export function whoOk(pid, who) {
+    const p = Store.player(pid);
+    if (!p) return false;
+    switch (who) {
+        case "baby": return norm(p.age_group) === "baby";
+        case "senior": return norm(p.age_group) === "senior";
+        case "female": return genderLetter(p) === "F";
+        case "male": return genderLetter(p) === "M";
+        case "lgbt": return !!norm(p.preference) && norm(p.preference) !== "straight";
+        case "vip": return isVip(pid);
+        case "other": return ["other", "others"].includes(norm(p.ethnicity));
+    }
+    return true;
+}
+// profile corner letters: gender F / M / O · handler D / J
+export const genderLetter = p => { const g = norm(p?.gender); return ["female", "f", "여", "여성", "woman"].includes(g) ? "F" : ["male", "m", "남", "남성", "man"].includes(g) ? "M" : g ? "O" : ""; };
+export const handlerLetter = p => { const x = norm(p?.handler); return x === "dylan" ? "D" : x === "james" ? "J" : ""; };
+
+// ---------------------------------------------------------------- 🐾 EmoMon helpers (season state only — no import cycle)
+const monsOf = pid => ps_(pid)?.emo?.mons || [];
+// the EmoMon module fills these in (emomon/game.js → registerEmoHelpers) so this file never imports it at load time
+let EM = null;
+export function registerEmoHelpers(api) { EM = api; }
+export const ownsMon = pid => monsOf(pid).length > 0;
+export const ownsTypes = (pid, types) => !!EM && types.some(t => EM.ownsType(pid, t));
+
+// 🔷 Type Casino: one attribute per round (shown when the map is drawn)
+export function typeGateType() {
+    const s = S();
+    if (!s) return "Normal";
+    if (s.typeGate?.round !== s.round) {
+        const list = EM?.TYPE_LIST || ["Normal", "Fire", "Water", "Grass", "Electric"];
+        s.typeGate = { round: s.round, type: list[Math.floor(Math.random() * list.length)] };
+        Store.saveSeason();
+    }
+    return s.typeGate.type;
+}
+
+// ---------------------------------------------------------------- 🧳 EmoMon slots: 3 free + tickets, max 10
+export const EMO_FREE_SLOTS = 3, EMO_MAX_SLOTS = 10;
+export const emoSlots = pid => Math.min(EMO_MAX_SLOTS, EMO_FREE_SLOTS + (ps_(pid)?.emo?.extraSlots || 0));
+export function useSlotTicket(pid) {
+    const ps = ps_(pid);
+    if (!(ps?.items.emo_slot > 0)) return { ok: false, why: "이모몬스터 슬롯 확장권이 없습니다" };
+    if (emoSlots(pid) >= EMO_MAX_SLOTS) return { ok: false, why: `슬롯은 최대 ${EMO_MAX_SLOTS}칸입니다` };
+    ps.items.emo_slot--;
+    (ps.emo ||= {}).extraSlots = (ps.emo.extraSlots || 0) + 1;
+    log(`🧳 ${name(pid)} 이모몬스터 슬롯 확장 → ${emoSlots(pid)}칸`);
+    Store.saveSeason(true);
+    return { ok: true, slots: emoSlots(pid) };
+}
+
+// ---------------------------------------------------------------- 🤒 player diseases
+export const DISEASES = {
+    flu: { id: "flu", name: "독감", en: "Flu", emoji: "🤧", hp: 5, cure: "flu_cure" },
+    cancer: { id: "cancer", name: "암", en: "Cancer", emoji: "🎗️", hp: 10, cure: "cancer_cure" }
+};
+export const diseasesOf = pid => Object.keys(ps_(pid)?.dis || {}).filter(k => ps_(pid).dis[k] && DISEASES[k]);
+export const isSick = pid => diseasesOf(pid).length > 0;
+export function infect(pid, kind, why = "") {
+    const ps = ps_(pid);
+    if (!ps || ps.out || !DISEASES[kind]) return false;
+    if (ps.dis?.[kind]) return false; // already sick with it
+    (ps.dis ||= {})[kind] = true;
+    log(`${DISEASES[kind].emoji} ${name(pid)} ${DISEASES[kind].name}에 걸림${why ? ` (${why})` : ""}`);
+    Store.saveSeason(true);
+    return true;
+}
+export function cure(pid, kind, how = "") {
+    const ps = ps_(pid);
+    if (!ps?.dis?.[kind]) return false;
+    delete ps.dis[kind];
+    log(`💚 ${name(pid)} ${DISEASES[kind].name} 치료${how ? ` (${how})` : ""}`);
+    Store.saveSeason(true);
+    return true;
+}
+// 💉 / 💊 cure items (inventory)
+export function useCureItem(pid, itemId) {
+    const ps = ps_(pid), kind = ITEM_BY_ID[itemId]?.cure;
+    if (!kind || !(ps?.items[itemId] > 0)) return { ok: false, why: "치료제가 없습니다" };
+    if (!ps.dis?.[kind]) return { ok: false, why: `${DISEASES[kind].name}에 걸려 있지 않습니다` };
+    ps.items[itemId]--;
+    cure(pid, kind, ITEM_BY_ID[itemId].name);
+    return { ok: true, kind };
+}
+// new round: every sick player loses HP (flu −5 · cancer −10); HP 0 → dead
+export function diseaseTick() {
+    const s = S(), out = [];
+    for (const pid of alive()) {
+        const list = diseasesOf(pid);
+        if (!list.length) continue;
+        const ps = s.ps[pid];
+        const dmg = list.reduce((a, k) => a + DISEASES[k].hp, 0);
+        ps.hp -= dmg;
+        log(`🤒 ${name(pid)} ${list.map(k => DISEASES[k].name).join(" · ")} — HP −${dmg}`);
+        if (ps.hp <= 0) {
+            if (alive().length <= 1) { ps.hp = 1; continue; } // never kill the last one
+            const rank = alive().length;
+            Object.assign(ps, { out: true, outRound: s.round, rank, hp: 0 });
+            s.history.push({ round: s.round, npcDeath: true, eliminated: pid, rank, why: `${list.map(k => DISEASES[k].name).join("·")}으로 사망` });
+            log(`☠️ ${name(pid)} 질병으로 사망 (${rank}위)`);
+            out.push({ pid, dmg, dead: true, list });
+        } else out.push({ pid, dmg, list });
+    }
+    return out;
+}
+// a map's infection roll on arrival: Cursed Casino 30% flu · Radioactive Town 30% cancer · 북극 10% flu
+export function arrivalInfection(pid, loc) {
+    const got = [];
+    const flu = loc.fluChance || (loc.region === "arctic" ? 0.1 : 0);
+    if (flu && Math.random() < flu && infect(pid, "flu", loc.name)) got.push("flu");
+    if (loc.cancerChance && Math.random() < loc.cancerChance && infect(pid, "cancer", loc.name)) got.push("cancer");
+    return got;
+}
+
+// ---------------------------------------------------------------- 🎡 Death Door: the wheel of death
+// HP −30 15% · 즉사 15% · HP −10 10% · HP −20 15% · 바로 입장 25% · HP −50 5% · (the last 15%: 10,000G 강탈)
+export const DEATH_WHEEL = [
+    { id: "hp30", label: "HP −30", hp: 30, w: 15, c: "#b91c1c" },
+    { id: "kill", label: "☠️ 바로 사망", kill: true, w: 15, c: "#000" },
+    { id: "hp10", label: "HP −10", hp: 10, w: 10, c: "#ef4444" },
+    { id: "hp20", label: "HP −20", hp: 20, w: 15, c: "#dc2626" },
+    { id: "free", label: "🚪 바로 입장", w: 25, c: "#16a34a" },
+    { id: "hp50", label: "HP −50", hp: 50, w: 5, c: "#7f1d1d" },
+    { id: "gold", label: "💸 10,000G 강탈", gold: 10000, w: 15, c: "#a16207" }
+];
+export function spinDeathWheel() {
+    let x = Math.random() * DEATH_WHEEL.reduce((a, s) => a + s.w, 0);
+    for (const sl of DEATH_WHEEL) { if ((x -= sl.w) < 0) return sl; }
+    return DEATH_WHEEL[0];
+}
+// → { dead, hp, gold }
+export function applyHarm(pid, { hp = 0, gold = 0, kill = false } = {}, place = "") {
+    const ps = ps_(pid);
+    if (kill) { killPlayer(pid, `${place}에서 사망`); return { dead: true }; }
+    let lost = 0;
+    if (gold) { lost = Math.min(gold, Math.max(0, ps.money)); ps.money -= lost; log(`💸 ${name(pid)} ${place} ${lost.toLocaleString()}G 잃음`); }
+    if (hp) {
+        if (ps.hp <= hp) { killPlayer(pid, `${place}에서 HP가 바닥나 사망`); return { dead: true }; }
+        ps.hp -= hp; log(`💔 ${name(pid)} ${place} HP −${hp}`);
+    }
+    Store.saveSeason(true);
+    return { hp: ps.hp, gold: lost };
+}
+
+// ---------------------------------------------------------------- 🍬 Sugar Casino
+export const SUGAR_PLAY = [5, 30], SUGAR_IDLE = [5, 15];
+export function addSugar(pid, [a, b]) {
+    const t = S()?.turn;
+    if (!t || t.pid !== pid) return null;
+    const add = rint(a, b);
+    t.sugar = Math.min(100, (t.sugar || 0) + add);
+    t.stats.sugarMax = Math.max(t.stats.sugarMax || 0, t.sugar); // 🍬 sugar_max missions
+    if (t.sugar >= 100) { killPlayer(pid, "🍬 설탕중독으로 사망"); return { add, level: 100, dead: true }; }
+    Store.saveSeason();
+    return { add, level: t.sugar };
+}
+
+// ---------------------------------------------------------------- ⛓️ terrorist kidnap room
+export const KIDNAP_ID = KIDNAP_ROOM.id;
+export const isKidnapped = pid => !!ps_(pid)?.kidnap;
+export function kidnap(pid) {
+    const s = S(), ps = ps_(pid);
+    ps.kidnap = { round: s.round };
+    log(`🥷 ${name(pid)} 테러리스트에게 납치됨!`);
+    if (s.turn?.pid === pid) { s.turn.npc = null; setLocation(KIDNAP_ID, { teleport: true }); s.turn.region = "kidnap"; }
+    Store.saveSeason(true);
+}
+// the 6 escape buttons (weights in %) — the outcome is drawn when a button is pressed
+export const ESCAPE = [
+    { id: "pay_gold", label: "100,000G 지불 후 탈출", w: 30 },
+    { id: "pay_pts", label: "100P 지불 후 탈출", w: 25 },
+    { id: "kill", label: "플레이어 바로 사망", w: 5 },
+    { id: "hope", label: "희망이 보인다!!", w: 30 },
+    { id: "attack", label: "테러리스트 공격 (HP −20)", w: 5 },
+    { id: "rob", label: "테러리스트 돈뺏기 (−5,000G)", w: 5 }
+];
+export const HOPE_BOXES = [
+    { id: "gold", label: "3,000G 획득", emoji: "💰" }, { id: "pts", label: "5P 획득", emoji: "💎" },
+    { id: "free", label: "탈출하기", emoji: "🚪" }, { id: "hp", label: "HP +10 회복", emoji: "❤️" }
+];
+export const escapeTried = () => !!S()?.turn?.escapeTried;
+// → { kind, freed, dead, msg, hope }
+export function tryEscape(pid) {
+    const s = S(), t = s.turn, ps = ps_(pid);
+    if (!t || t.escapeTried) return null;
+    t.escapeTried = true;
+    let x = Math.random() * 100, pick = ESCAPE[0];
+    for (const e of ESCAPE) { if ((x -= e.w) < 0) { pick = e; break; } }
+    const out = { kind: pick.id, label: pick.label };
+    if (pick.id === "pay_gold") {
+        if (ps.money >= 100000) { ps.money -= 100000; out.freed = true; out.msg = "100,000G를 내고 풀려났다!"; }
+        else out.msg = "100,000G가 없어 탈출에 실패했다…";
+    } else if (pick.id === "pay_pts") {
+        if (ps.points >= 100) { ps.points -= 100; out.freed = true; out.msg = "100P를 내고 풀려났다!"; }
+        else out.msg = "100P가 없어 탈출에 실패했다…";
+    } else if (pick.id === "kill") { out.dead = true; out.msg = "테러리스트에게 처형당했다…"; }
+    else if (pick.id === "attack") { ps.hp = Math.max(1, ps.hp - 20); out.msg = "테러리스트의 공격! HP −20"; }
+    else if (pick.id === "rob") { const g = Math.min(5000, Math.max(0, ps.money)); ps.money -= g; out.msg = `테러리스트가 ${g.toLocaleString()}G를 뺏어 갔다`; }
+    else { out.hope = true; out.msg = "희망이 보인다!! 상자 4개 중 하나를 고르세요"; }
+    log(`⛓️ ${name(pid)} 탈출 시도 → ${out.msg}`);
+    if (out.freed) freeKidnap(pid);
+    if (out.dead) { killPlayer(pid, "⛓️ 납치 공간에서 처형"); return out; }
+    Store.saveSeason(true);
+    return out;
+}
+export function openHopeBox(pid) {
+    const ps = ps_(pid);
+    const box = HOPE_BOXES[Math.floor(Math.random() * HOPE_BOXES.length)];
+    if (box.id === "gold") ps.money += 3000;
+    else if (box.id === "pts") ps.points += 5;
+    else if (box.id === "hp") ps.hp = Math.min(CONFIG.START_HP, ps.hp + 10);
+    else freeKidnap(pid);
+    log(`🎁 ${name(pid)} 희망 상자 → ${box.label}`);
+    Store.saveSeason(true);
+    return box;
+}
+export function freeKidnap(pid) {
+    const ps = ps_(pid);
+    if (!ps?.kidnap) return;
+    ps.kidnap = null;
+    log(`🕊️ ${name(pid)} 납치 공간 탈출!`);
+    const t = S()?.turn; if (t?.pid === pid) t.stats.kidnapFreed = true; // ⛓️ kidnap_freed missions
+}
+
+// ---------------------------------------------------------------- 🏟️ Arena: 1:1 EmoMon battle (2 per season)
+export const ARENA_PER_SEASON = 2, ARENA_PRIZE = [8000, 30000], ARENA_NPC = 0.3;
+export const arenaLeft = pid => Math.max(0, ARENA_PER_SEASON - (ps_(pid)?.arenaUsed || 0));
+// remember every season player's battle monster, so later seasons can meet it (persistent)
+export function keepMons() {
+    const s = S();
+    if (!s || !EM || s.sandbox) return;
+    let n = 0;
+    for (const pid of s.roster || []) {
+        const m = EM.battleMon(pid) || monsOf(pid)[0];
+        if (!m) continue;
+        const { uid, sid, nature, types, weapons, traits } = m;
+        Store.emokeep[pid] = { uid, sid, nature, types, weapons: [...(weapons || [])], traits: [...(traits || [])], season: s.number };
+        n++;
+    }
+    if (n) Store.saveEmokeep();
+}
+// a random opponent player who owns a monster (season or not), never the player themself
+export function arenaPlayerPool(pid) {
+    const s = S(), out = new Map();
+    for (const id of s.roster || []) if (+id !== +pid && monsOf(id).length) out.set(+id, "season");
+    for (const id of Object.keys(Store.emokeep || {})) if (+id !== +pid && !out.has(+id) && Store.player(+id)) out.set(+id, "keep");
+    return [...out.keys()];
+}
+// the opponent's monster for the arena: a COPY at full HP / PP and no status — the real one is never touched
+export function arenaFoeMon(foePid) {
+    const live = EM?.battleMon(foePid) || monsOf(foePid)[0];
+    const src = live || Store.emokeep?.[foePid];
+    if (!src) return null;
+    return { ...structuredClone(src), uid: "arena-" + (src.uid || foePid), hp: null, pp: {}, diseases: [], from: "arena" };
+}
+export function useArena(pid) { const ps = ps_(pid); ps.arenaUsed = (ps.arenaUsed || 0) + 1; Store.saveSeason(true); }
+export function arenaWin(pid, foeLabel) {
+    const ps = ps_(pid);
+    const g = Math.round(rint(...ARENA_PRIZE) / 100) * 100;
+    ps.money += g;
+    log(`🏟️ ${name(pid)} 아레나 승리 vs ${foeLabel} → +${g.toLocaleString()}G`);
+    const t = S()?.turn; if (t?.pid === pid) t.stats.arenaWin = (t.stats.arenaWin || 0) + 1; // 🏟️ arena_win missions
+    Store.saveSeason(true);
+    return g;
+}
+export function arenaLose(pid, foeLabel) { log(`🏟️ ${name(pid)} 아레나 패 vs ${foeLabel}`); Store.saveSeason(true); }
+
+// ---------------------------------------------------------------- 💬 Community (persistent board)
+export const posts = () => (Store.community?.posts || []);
+export const postedThisSeason = pid => (ps_(pid)?.cmPosted === S()?.number) || posts().some(p => +p.pid === +pid && p.season === S()?.number);
+// the door: 60% in (kept for the round, so re-opening the tab doesn't re-roll)
+export function communityDoor(pid) {
+    const ps = ps_(pid), s = S();
+    if (ps.cmDoor?.round !== s.round) { ps.cmDoor = { round: s.round, ok: Math.random() < COMMUNITY_OK }; Store.saveSeason(); }
+    return ps.cmDoor.ok;
+}
+export const cmOwned = pid => Object.entries(ps_(pid)?.items || {}).filter(([k, n]) => n > 0 && CM_BY_ID[k]).map(([k, n]) => ({ ...CM_BY_ID[k], n }));
+// style: { color, effect, font, bold, underline, anim } — each a cm_* item id that is used up
+export function writePost(pid, text, style = {}) {
+    const ps = ps_(pid), s = S();
+    text = String(text || "").trim().slice(0, 200);
+    if (!text) return { ok: false, why: "코멘트를 입력하세요" };
+    if (postedThisSeason(pid)) return { ok: false, why: "이번 시즌에는 이미 코멘트를 남겼습니다 (시즌당 1회)" };
+    if (ps.money < COMMENT_FEE) return { ok: false, why: `골드가 부족합니다 (${COMMENT_FEE}G)` };
+    const used = {};
+    for (const [k, id] of Object.entries(style)) {
+        if (!id) continue;
+        if (!(ps.items[id] > 0) || !CM_BY_ID[id]) return { ok: false, why: "가지고 있지 않은 꾸미기 아이템입니다" };
+        used[k] = CM_BY_ID[id].ref;
+    }
+    for (const id of Object.values(style)) if (id) ps.items[id]--;
+    ps.money -= COMMENT_FEE;
+    ps.cmPosted = s.number;
+    const post = { id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid: +pid, season: s.number, text, style: used, at: new Date().toISOString() };
+    (Store.community ||= { posts: [] }).posts = [post, ...(Store.community.posts || [])].slice(0, 2000);
+    log(`💬 ${name(pid)} 커뮤니티에 코멘트 작성`);
+    Store.saveSeason(true);
+    Store.saveCommunity();
+    return { ok: true, post };
+}
+export const COMMENT = { FEE: COMMENT_FEE, OK: COMMUNITY_OK };
+
+// ---------------------------------------------------------------- map helpers
+export const locOfTurn = () => LOC_BY_ID[S()?.turn?.loc] || null;
+export const noPassHere = () => !!locOfTurn()?.noPass;
+export const END_LOCK_LEFT = 300;
+export const endLocked = (loc, t) => !!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT;
+
+// ---------------------------------------------------------------- 📣 홍보하기 · 인기 투표 (persistent, Store.community.promo)
+//   6 profiles register (50P, once per season each) → 20 votes (50P, once per season each):
+//   votes 1~10 go to a random profile and are counted in the open · votes 11~20 are anonymous
+//   (the voter picks; the board keeps showing the 10-vote count + "??") → after the 20th the winner
+//   is shown and picks 1 of 3 random gift boxes (right away if it's them, otherwise at their next turn)
+export const PROMO_SLOTS = 6, PROMO_VOTES = 20, PROMO_OPEN_VOTES = 10, PROMO_FEE = 50;
+export const PROMO_TITLE = "Gamblers의 빛이 되고 싶어요!";
+export const PROMO_PRIZES = [
+    { id: "ball", label: "마스터볼", emoji: "🟣", emo: "ITEM004" },
+    { id: "hpfull", label: "Full HP 약", emoji: "❤️‍🩹", emo: "EMO_HPFULL" },
+    { id: "radar", label: "Legendary Monster Radar", emoji: "🌟", emo: "RADAR_4" },
+    { id: "g50", label: "50,000G", emoji: "💰", gold: 50000 },
+    { id: "g30", label: "30,000G", emoji: "💰", gold: 30000 },
+    { id: "hit", label: "이모몬스터 무기 'Hit - Normal 속성'", emoji: "⚔️", weapon: "hit" },
+    { id: "p100", label: "100P", emoji: "💎", pts: 100 }
+];
+const savePromo = () => { if (!S()?.sandbox) Store.saveCommunity(); };
+export function promo() {
+    const c = (Store.community ||= { posts: [] });
+    return (c.promo ||= { cycle: 1, entries: [], votes: [], last: null, pending: {} });
+}
+export const promoPhase = () => { const p = promo(); return p.entries.length < PROMO_SLOTS ? "register" : "vote"; };
+const seasonNo = () => S()?.number ?? 0;
+export const promoUsed = (pid, kind) => !!S()?.ps?.[pid]?.[kind === "vote" ? "promoVoted" : "promoJoined"];
+// counts: real (every vote) and shown (open votes only)
+export function promoCounts() {
+    const p = promo(), real = p.entries.map(() => 0), shown = p.entries.map(() => 0);
+    p.votes.forEach((v, i) => { real[v.to]++; if (i < PROMO_OPEN_VOTES) shown[v.to]++; });
+    return { real, shown, anon: p.votes.length >= PROMO_OPEN_VOTES };
+}
+export function promoRegister(pid, text) {
+    const p = promo(), ps = S()?.ps?.[pid];
+    text = String(text || "").trim().slice(0, 80);
+    if (!ps) return { ok: false, why: "시즌 참가자만 할 수 있습니다" };
+    if (promoPhase() !== "register") return { ok: false, why: "홍보 프로필 6칸이 모두 찼습니다 — 지금은 투표 기간입니다" };
+    if (!text) return { ok: false, why: "홍보 문구를 입력하세요" };
+    if (promoUsed(pid, "join")) return { ok: false, why: "이번 시즌에는 이미 홍보했습니다 (시즌당 1회)" };
+    if (p.entries.some(e => +e.pid === +pid)) return { ok: false, why: "이미 홍보 게시판에 올라가 있습니다" };
+    if (ps.points < PROMO_FEE) return { ok: false, why: `포인트가 부족합니다 (${PROMO_FEE}P)` };
+    ps.points -= PROMO_FEE; ps.promoJoined = true;
+    p.entries.push({ pid: +pid, text, season: seasonNo(), at: new Date().toISOString() });
+    log(`📣 ${name(pid)} 홍보 등록 (${p.entries.length}/${PROMO_SLOTS})`);
+    Store.saveSeason(true); savePromo();
+    return { ok: true, full: p.entries.length >= PROMO_SLOTS };
+}
+// to: the chosen profile (anonymous votes) — ignored for the open votes, which are random
+export function promoVote(pid, to = null) {
+    const p = promo(), ps = S()?.ps?.[pid];
+    if (!ps) return { ok: false, why: "시즌 참가자만 할 수 있습니다" };
+    if (promoPhase() !== "vote") return { ok: false, why: "아직 투표 기간이 아닙니다 (홍보 프로필 6칸이 차야 합니다)" };
+    if (promoUsed(pid, "vote")) return { ok: false, why: "이번 시즌에는 이미 투표했습니다 (시즌당 1회)" };
+    if (ps.points < PROMO_FEE) return { ok: false, why: `포인트가 부족합니다 (${PROMO_FEE}P)` };
+    const open = p.votes.length < PROMO_OPEN_VOTES;
+    if (!open && (to == null || !p.entries[to])) return { ok: false, why: "투표할 프로필을 고르세요" };
+    const idx = open ? Math.floor(Math.random() * p.entries.length) : to;
+    ps.points -= PROMO_FEE; ps.promoVoted = true;
+    p.votes.push({ by: +pid, to: idx, anon: !open, at: new Date().toISOString() });
+    log(`🗳️ ${name(pid)} 인기 투표 (${p.votes.length}/${PROMO_VOTES})${open ? ` → ${name(p.entries[idx].pid)}` : " (익명)"}`);
+    let finished = null;
+    if (p.votes.length >= PROMO_VOTES) finished = promoFinish();
+    Store.saveSeason(true); savePromo();
+    return { ok: true, to: idx, open, finished };
+}
+function promoFinish() {
+    const p = promo(), { real } = promoCounts();
+    const top = Math.max(...real);
+    const tied = real.map((n, i) => n === top ? i : -1).filter(i => i >= 0);
+    const wi = tied[Math.floor(Math.random() * tied.length)];
+    const winner = p.entries[wi].pid;
+    const pool = [...PROMO_PRIZES].sort(() => Math.random() - 0.5).slice(0, 3).map(x => x.id);
+    p.last = { cycle: p.cycle, entries: p.entries, counts: real, winner, wi, offers: pool, at: new Date().toISOString(), season: seasonNo() };
+    (p.pending ||= {})[winner] = { cycle: p.cycle, offers: pool };
+    log(`🏆 인기 투표 종료 → ${name(winner)} (${top}표)`);
+    // a new round of promotion opens at once
+    p.cycle++; p.entries = []; p.votes = [];
+    return p.last;
+}
+export const promoPending = pid => promo().pending?.[pid] || null;
+// the winner opens one of the 3 boxes (needs to be in the running season)
+export function promoClaim(pid, box) {
+    const p = promo(), pend = p.pending?.[pid], ps = S()?.ps?.[pid];
+    if (!pend || !ps) return null;
+    const prize = PROMO_PRIZES.find(x => x.id === pend.offers[box]) || PROMO_PRIZES.find(x => x.id === pend.offers[0]);
+    if (prize.gold) ps.money += prize.gold;
+    if (prize.pts) ps.points += prize.pts;
+    if (prize.emo && EM?.giveItem) EM.giveItem(pid, prize.emo, 1);
+    if (prize.weapon && EM?.giveWeapon) {
+        const w = (EM.cat?.()?.weapons || []).find(w => /^hit$/i.test(String(w.name).trim()) && String(w.attribute).toLowerCase() === "normal")
+            || (EM.cat?.()?.weapons || []).find(w => /^hit\b/i.test(String(w.name)));
+        EM.giveWeapon(pid, w ? w.id : 2, 1); // #2 = Hit (Normal) — used when the EmoMon catalog is not loaded yet
+    }
+    delete p.pending[pid];
+    log(`🎁 ${name(pid)} 인기 투표 선물 → ${prize.label}`);
+    Store.saveSeason(true); savePromo();
+    return prize;
+}

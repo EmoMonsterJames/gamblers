@@ -347,7 +347,7 @@ export async function playSpecial(res, api) {
                 }
                 case "clear": {
                     for (const [c, r] of p.cells || []) cellsEl(c, r)?.classList.add("sp-smash");
-                    if (p.cells?.length) Sound.boom?.();
+                    if (p.cells?.length) Sound.chime?.(); // cascade clear: soft
                     await pace(380);
                     break;
                 }
@@ -355,7 +355,7 @@ export async function playSpecial(res, api) {
                     api.showGrid(p.grid);
                     const dc = p.up ? "sp-rise" : "sp-drop";
                     api.reelsBox.classList.remove("sp-drop", "sp-rise"); void api.reelsBox.offsetWidth; api.reelsBox.classList.add(dc);
-                    Sound.stop();
+                    Sound.settle?.(); // the board settles softly
                     await pace(380);
                     break;
                 }
@@ -477,15 +477,15 @@ export async function playSpecial(res, api) {
         const el = h("div.sk-cover.cv-" + kind, { style: { "--cols": cfg.reels || 5, "--rows": cfg.rows || 3 } }, ...(COVERS[kind]?.(n) || []));
         if (api.turbo()) el.classList.add("fast");
         frame.append(el);
-        if (kind === "clouds" || kind === "radar") Sound.whoosh?.();
-        if (kind === "rockets" || kind === "plunger" || kind === "elevator") Sound.boom?.();
-        if (kind === "gate") setTimeout(() => Sound.boom?.(), 250);
-        if (kind === "scythe" || kind === "doors" || kind === "pulse" || kind === "deal") Sound.whoosh?.();
-        if (kind === "coin") { Sound.coin?.(); setTimeout(() => Sound.splash?.(), 350); }
-        if (kind === "mugs" || kind === "lever" || kind === "pour") Sound.boom?.();
+        if (kind === "clouds" || kind === "radar") Sound.chime?.();
+        if (kind === "rockets" || kind === "plunger" || kind === "elevator") Sound.settle?.();
+        if (kind === "gate") setTimeout(() => Sound.settle?.(), 250);
+        if (kind === "scythe" || kind === "doors" || kind === "pulse" || kind === "deal") Sound.chime?.();
+        if (kind === "coin") { Sound.coin?.(); setTimeout(() => Sound.chime?.(), 350); }
+        if (kind === "mugs" || kind === "lever" || kind === "pour") Sound.settle?.();
         if (kind === "email" || kind === "prism") Sound.tick?.();
-        if (kind === "cube" || kind === "curtain" || kind === "ticker" || kind === "wand" || kind === "flashlight") Sound.whoosh?.();
-        if (kind === "ignition" || kind === "shovel" || kind === "organ") Sound.boom?.();
+        if (kind === "cube" || kind === "curtain" || kind === "ticker" || kind === "wand" || kind === "flashlight") Sound.chime?.();
+        if (kind === "ignition" || kind === "shovel" || kind === "organ") Sound.settle?.();
         if (kind === "bell" || kind === "chime" || kind === "whistle") { Sound.tick?.(); setTimeout(() => Sound.tick?.(), 180); }
         return el;
     }
@@ -499,7 +499,7 @@ export async function playSpecial(res, api) {
         overlay.append(h("div.tap-wrap.rl-choose", h("div.tap-head", p.title), h("div.rl-opts", btns), clock));
         Sound.bonus();
         const t0 = performance.now();
-        const timer = setInterval(() => { const l = Math.max(0, sec - (performance.now() - t0) / 1000); clock.textContent = l.toFixed(1); if (l <= 0) pick(p.auto); }, 100);
+        const timer = null; clock.textContent = "선택하세요"; // no timer — the player must choose
         const k = await done;
         clearInterval(timer);
         btns.forEach((b, i) => b.classList.toggle("chosen", p.options[i].k === k));
@@ -546,7 +546,10 @@ export async function playSpecial(res, api) {
         const clock = h("b.tap-clock", sec.toFixed(1));
         wrap.append(clock);
         const t0 = performance.now();
-        timer = setInterval(() => { const l = Math.max(0, sec - (performance.now() - t0) / 1000); clock.textContent = l.toFixed(1); if (l <= 0) { clearInterval(timer); autoAll(); } }, 100);
+        // pick-style modes (grid · single · gauge) wait for the player — only the real tap races (fall · rapid · boss) run on a clock
+        const untimed = ["grid", "single", "gauge"].includes(p.mode);
+        if (untimed) clock.textContent = "탭하세요!";
+        else timer = setInterval(() => { const l = Math.max(0, sec - (performance.now() - t0) / 1000); clock.textContent = l.toFixed(1); if (l <= 0) { clearInterval(timer); autoAll(); } }, 100);
         let autoAll = () => { while (k < items.length) reveal(null, true); };
         if (p.mode === "grid") {
             const tiles = items.map((_, i) => h("button.tap-tile", { style: { "--i": i } }, h("span", p.icon), h("b")));
@@ -694,7 +697,7 @@ export async function playSpecial(res, api) {
             const take = h("button.btn.gold.big", "받기 (DEAL)"), next = h("button.btn.ghost.big", "다음 상자 ▶");
             box.append(h("div.offer-btns", take, next));
             const auto = o.v >= 10 * bet; // the auto choice mirrors the engine's assumption
-            const ans = await Promise.race([new Promise(r => { take.onclick = () => r(true); next.onclick = () => r(false); }), sleep(9000).then(() => auto)]);
+            const ans = await new Promise(r => { take.onclick = () => r(true); next.onclick = () => r(false); });
             if (ans) taken = o;
         }
         overlay.replaceChildren();
@@ -724,7 +727,6 @@ export async function playSpecial(res, api) {
                 };
                 tiles.push(t); grid.append(t);
             }
-            (async () => { while (k < p.k) { await sleep(9000); if (k < p.k) tiles.find(x => !x.classList.contains("open"))?.click(); await sleep(700); } })();
         });
         // show what the other cards were
         let j = 0;
@@ -767,7 +769,7 @@ export async function playSpecial(res, api) {
         for (const [i, b] of p.balls.entries()) {
             const go = h("button.btn.gold", `${p.glyph} 구슬 ${i + 1} 떨어뜨리기`);
             tally.append(go);
-            await Promise.race([new Promise(r => go.onclick = r), sleep(5000)]);
+            await new Promise(r => go.onclick = r);
             go.remove();
             const ball = h("b.plk-ball", p.glyph);
             board.append(ball);
@@ -874,7 +876,7 @@ export async function playSpecial(res, api) {
         const btn = h("button.btn.gold.big", "🕹️ 집게 내리기!");
         const res = h("div.claw-res");
         overlay.append(h("div.claw-wrap", h("div.claw-head", p.title || "🦾 CLAW MACHINE · 버튼을 눌러 공을 뽑아라!"), h("div.claw-box", arm, balls), btn, res));
-        await Promise.race([new Promise(r => btn.onclick = r), sleep(7000)]);
+        await new Promise(r => btn.onclick = r);
         btn.remove();
         const target = balls.children[Math.floor(Math.random() * balls.children.length)];
         arm.style.setProperty("--x", target.offsetLeft + target.offsetWidth / 2 + "px");
@@ -909,7 +911,6 @@ export async function playSpecial(res, api) {
                 };
                 grid.append(n);
             }
-            (async () => { while (k < p.picks.length) { await sleep(8000); if (k < p.picks.length) [...grid.children].find(x => !x.classList.contains("open"))?.click(); await sleep(600); } })();
         });
         [...grid.children].filter(x => !x.classList.contains("open")).forEach(x => x.classList.add("dim"));
         await pace(600);

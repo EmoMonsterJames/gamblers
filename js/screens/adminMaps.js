@@ -18,7 +18,10 @@ import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
 const NEEDS = [["", "없음"], ["wings", "🪽 날개"], ["space_suit", "🧑‍🚀 우주복"], ["oxygen", "🤿 산소통"]];
 const REQS = [["", "누구나"], ["points", "포인트 보유"], ["country", "국적 전용"], ["fee", "입장료 (G)"], ["feePts", "입장료 (P)"], ["random", "랜덤 입장"]];
 const EARN_LABEL = { blood: "🩸 헌혈", labor: "⛏️ 노동", poop: "💩 똥", sell: "🛍️ 팔기", music: "🎧 음악", survival: "⚔️ 서바이벌", guess: "❓ 이름 맞추기" };
-const reqKind = r => !r ? "" : r.points != null ? "points" : r.country ? "country" : r.fee != null ? "fee" : r.feePts != null ? "feePts" : r.random ? "random" : "";
+const reqKind = r => !r ? "" : r.points != null ? "points" : r.country ? "country" : r.fee != null ? "fee" : r.feePts != null ? "feePts" : r.random ? "random" : r.who ? "who" : "";
+// 🚧 제한구역: who may walk in (others need the map pass)
+const WHO = [["baby", "Baby만"], ["female", "Female만"], ["male", "Male만"], ["senior", "Senior만"], ["lgbt", "Straight 아닌 플레이어만"], ["vip", "TOP 10 경력자만"], ["other", "종족 Other만"]];
+REQS.push(["who", "제한구역 (대상 전용)"]);
 
 export function adminMapsPage() {
     if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🌍 지역·맵 관리"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
@@ -110,12 +113,13 @@ export function adminMapsPage() {
     function locCard(l) {
         const e = led(l.id), rk = reqKind(l.req);
         const setReq = (k, v) => {
-            e.req = k === "" ? {} : k === "random" ? { random: true } : k === "country" ? { country: v || COUNTRIES[0], pass: "pass_" + l.id } : { [k]: +v || 0 };
+            e.req = k === "" ? {} : k === "random" ? { random: true } : k === "who" ? { who: v || "baby" } : k === "country" ? { country: v || COUNTRIES[0], pass: "pass_" + l.id } : { [k]: +v || 0 };
             if (k === "country" && locDefault(l.id).req?.pass) e.req.pass = locDefault(l.id).req.pass;
             dirty(); draw();
         };
         const reqVal = rk === "country"
             ? h("select", { onchange: ev => setReq("country", ev.target.value) }, COUNTRIES.map(c => h("option", { selected: l.req.country === c }, c)))
+            : rk === "who" ? h("select", { onchange: ev => setReq("who", ev.target.value) }, WHO.map(([v, t]) => h("option", { value: v, selected: l.req.who === v }, t)))
             : ["points", "fee", "feePts"].includes(rk) ? h("input.num", { type: "number", min: 0, step: rk === "fee" ? 500 : 10, value: l.req[rk], onchange: ev => setReq(rk, ev.target.value) }) : null;
         const toggle = (key, txt) => h("label.am-tog", h("input", { type: "checkbox", checked: !!l[key], onchange: ev => { e[key] = ev.target.checked; dirty(); draw(); } }), txt);
         const earn = earnKinds(l);
@@ -133,6 +137,10 @@ export function adminMapsPage() {
         const rules = [
             l.crazy && "🤪 Crazy (입장 시 5분 차감)", l.evil && `😈 Evil (HP −${l.evil})`, l.donation && "🎁 기부 입장",
             l.npcOnly && `💀 NPC 고정: ${NPCS.find(n => n.id === l.npcOnly)?.name || l.npcOnly}`,
+            l.deadNpc && "☠️ Dead Land NPC 전용", l.noPass && "🚫 맵권 사용 불가", l.endLock && "⏳ 5분 이하부터 턴 종료", l.deathWheel && "🎡 죽음의 휠", l.sugar && "🍬 Sugar Level",
+            l.dark && "🌑 암흑 화면", l.magma && "🌋 30초마다 HP −10", l.hurry && "⏱️ 1분 안에 플레이", l.bare && "🫥 기본 코너만", l.cursed && "🥶 펫 무효 · RTP −10%",
+            l.fluChance && `🤧 독감 ${Math.round(l.fluChance * 100)}%`, l.cancerChance && `☢️ 암 ${Math.round(l.cancerChance * 100)}%`,
+            l.needMon && "🐾 이모몬 보유자만", l.battleGate && "⚔️ 배틀러를 이겨야 입장", l.typeGate && "🔷 랜덤 속성 보유자만", l.req?.who && `🚧 ${l.req.who} 전용`,
         ].filter(Boolean);
         return h("div.ag-card.am-loc" + (l.off ? ".off" : ""),
             h("div.row.between",
@@ -153,7 +161,7 @@ export function adminMapsPage() {
             l.emoshop || l.lab ? h("div.am-togs", h("small", "🐾 EmoMon 상점 관리:"),
                 l.emoshop ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "shop", draw) }, "🛒 Monster Shop 재고 · 가격") : null,
                 l.lab ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "lab", draw) }, "🧪 LAB 상점 재고 · 가격") : null) : null,
-            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"),
+            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"), toggle("community", "💬 커뮤니티"), toggle("arena", "🏟️ 아레나"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "🏅 Honorarium 코너:"), HONOR_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: honorKinds(l).includes(k), onchange: ev => {

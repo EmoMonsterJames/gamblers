@@ -51,12 +51,17 @@ const REGION_BG = {
     richland: { bg: "radial-gradient(circle at 50% 30%,#fde68a,#b45309 55%,#1c0a02)", deco: ["💰", "💎", "🪙", "🏦", "💸", "👑"] },
     noslot: { bg: "radial-gradient(circle at 50% 40%,#16a34a,#14532d 60%,#052e16)", deco: ["🃏", "🎲", "🎡", "🚫", "♠️", "🎱"] },
     nocasino: { bg: "linear-gradient(135deg,#991b1b,#1e3a8a)", deco: ["🎰", "🍒", "7️⃣", "🔔", "🍋", "💎"] },
+    restricted: { bg: "repeating-linear-gradient(45deg,#facc15 0 24px,#1f2937 24px 48px)", deco: ["🚧", "🚫", "🔒", "🎖️", "🍼", "👴"] },
+    deadland: { bg: "radial-gradient(circle at 50% 30%,#7f1d1d,#1c0303 60%,#000)", deco: ["☠️", "💀", "🔥", "🪦", "👾", "🫳"] },
+    desert: { bg: "linear-gradient(180deg,#fde68a,#f59e0b 55%,#92400e)", deco: ["🏜️", "🐪", "🌵", "☀️", "🦂", "🏺"] },
+    emoland: { bg: "radial-gradient(circle at 50% 40%,#6ee7b7,#047857 60%,#022c22)", deco: ["🐾", "🔴", "🌲", "⚔️", "👾", "🔷"] },
+    difficult: { bg: "linear-gradient(180deg,#94a3b8,#334155 60%,#0f172a)", deco: ["🧗", "⛓️", "🪤", "☢️", "🥶", "⏱️"] },
     npcland: { bg: "radial-gradient(circle at 50% 20%,#7c3aed,#2e1065 55%,#0b0214)", deco: ["👹", "💀", "🤖", "🐊", "🧳", "🐹"] },
     combo: { bg: "linear-gradient(180deg,#7dd3fc 0 33%,#312e81 33% 66%,#0369a1 66%)", deco: ["🪽", "🧑‍🚀", "🤿", "🧩", "🏝️", "🌠"] }
 };
 const GEAR_ICON = { wings: "🪽", space_suit: "🧑‍🚀", oxygen: "🤿" };
 const reqLabel = r => !r ? null : [r.gear?.length ? r.gear.map(g => GEAR_ICON[g] || "🎒").join("") : null,
-    r.points ? `${r.points}P+` : r.country ? "국적" : r.fee ? `${r.fee.toLocaleString()}G` : r.feePts ? `${r.feePts}P 입장료` : r.random ? "랜덤 입장" : null].filter(Boolean).join(" ") || null;
+    r.points ? `${r.points}P+` : r.country ? "국적" : r.fee ? `${r.fee.toLocaleString()}G` : r.feePts ? `${r.feePts}P 입장료` : r.random ? "랜덤 입장" : r.who ? "🚧 전용" : null].filter(Boolean).join(" ") || null;
 
 export function worldMap({ onPick = null, locked = new Set(), small = false, region = "cl1" } = {}) {
     const R = REGION_BG[region];

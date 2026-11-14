@@ -15,6 +15,7 @@ import { JACKPOT_RANK, ALPHABET } from "../data/catalog.js";
 import { playSpecial, buildPanel } from "./slotSpecial.js";
 import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
+import { isHandpay, handpay } from "../ui/handpay.js";
 
 const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "LOTUS", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
 
@@ -544,6 +545,8 @@ export function openSlot(cfg, ctx) {
         }
         const jp = bestJackpot(res.jackpots);
         if (res.total >= bet * 15 && !jp) await bigWin(res.total, bet);
+        // 🤲 HANDPAY: 1000× the bet or a GRAND jackpot
+        if (isHandpay(bet, res.total, res.jackpots)) await handpay(ctx.pid, res.total);
         busy = false; cabinet.classList.remove("busy"); spinBtn.disabled = false;
         if (auto > 0 && !closed) {
             auto--; autoBtn.textContent = auto ? `AUTO ${auto}` : "AUTO"; autoBtn.classList.toggle("on", !!auto);
@@ -1147,9 +1150,6 @@ export function openSlot(cfg, ctx) {
                 };
                 grid.append(tile);
             }
-            // auto pick if the player waits too long (auto-spin / spectators)
-            const autoPick = async () => { while (idx < f.seq.length && !closed) { await sleep(9000); if (idx < f.seq.length) { const t = [...grid.children].find(x => !x.classList.contains("open")); t?.click(); await sleep(700); } } };
-            autoPick();
         });
         [...grid.children].filter(x => !x.classList.contains("open")).forEach(x => x.classList.add("dim"));
         overlay.replaceChildren();
@@ -1187,7 +1187,7 @@ export function openSlot(cfg, ctx) {
         const btn = h("button.btn.gold.big", "SPIN!");
         const wo = h("div.wheel-overlay", title ? h("div.wheel-title", title) : null, h("div.wheel-wrap", h("div.wheel-pointer", "▼"), wheel), btn);
         overlay.append(wo);
-        await Promise.race([new Promise(r => btn.onclick = r), sleep(6000)]);
+        await new Promise(r => btn.onclick = r); // only the player starts it
         btn.remove();
         const seg = 360 / n;
         const rot = 360 * 7 + (360 - (f.idx * seg + seg / 2));
@@ -1640,7 +1640,6 @@ export function openSlot(cfg, ctx) {
         if (isCat) { Sound.whoosh(); await sleep(900); }
         const chosen = await new Promise(res => {
             items.forEach((it, i) => it.onclick = () => res(i));
-            sleep(12000).then(() => res(Math.floor(Math.random() * f.n)));
         });
         items.forEach(it => it.onclick = null);
         const pick1 = items[chosen];
@@ -1674,7 +1673,7 @@ export function openSlot(cfg, ctx) {
             if (i === 2 && !free) { Sound.heartbeat(); cabinet.classList.add("teasing"); }
             await sleep(pace(free ? 420 : 700));
             st.removed.forEach(([c, r]) => cellsEl(c, r)?.classList.add("washed"));
-            Sound.splash();
+            Sound.chime(); // soft — the cascade used to make a waterfall noise
             await sleep(pace(340));
             st.after.forEach((col, c) => {
                 setReel(c, col, col.length);
@@ -1801,6 +1800,8 @@ export function openSlot(cfg, ctx) {
             h("div.pt-list", rowsHtml)), { title: cfg.name + " 배당표" });
     }
 
+    // tall special boards (Neon Blitz 8x6 …) start at the same compact size they keep after a spin
+    if (special && rows > 5) cabinet.classList.add("sp-tall");
     initReels(); renderJackpots(); renderMeter();
     // every machine has its own themed loop + SFX palette (core/gameAudio.js)
     const audio = gameAudio(cfg), songName = typeof audio.song === "string" ? audio.song : audio.song.name;

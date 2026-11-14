@@ -412,6 +412,9 @@ export const Sound = {
     boom() { noise(0.6, 0.25); tone(60, 0.5, "sine", 0.2, 0, -30); },
     fanfare() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, "square", 0.06, i * 0.15)); },
     whoosh() { noise(0.25, 0.06); },
+    // soft sounds for boards that break apart and settle (cascades / spin covers) — no crash, no waterfall
+    chime() { [784, 1175, 1568].forEach((f, i) => tone(f, 0.45, "sine", 0.03, i * 0.07)); },
+    settle() { [659, 523].forEach((f, i) => tone(f, 0.3, "sine", 0.03, i * 0.09)); },
     scream() { tone(980, 0.9, "sawtooth", 0.045, 0, -520); tone(1240, 0.7, "square", 0.02, 0.05, -600); noise(0.5, 0.05, 0.05); },
     // 뿌직뿌직: wet low burst + falling squelch
     poop() { noise(0.18, 0.14); tone(140 + Math.random() * 40, 0.16, "sawtooth", 0.07, 0, -90); tone(90, 0.12, "square", 0.05, 0.12, -40); noise(0.1, 0.1, 0.14); },

@@ -32,6 +32,8 @@ export const Store = {
     wallets: {},     // pid -> gold won outside a season (survival corner), added when they join one
     bank: {},        // 🏦 accounts, 🏪 businesses, pending transfers, trend reports: see game/bank.js
     emodex: {},      // 📖 EmoMon dex per player: { <pid>: { <speciesId>: { how, at, season } } } (persistent)
+    community: { posts: [] }, // 💬 community board (persistent across seasons): { posts: [{ id, pid, season, text, style, at }] }
+    emokeep: {},     // 🏟️ every player's last battle monster (persistent) — arena opponents outside the season
     emomon: null,    // 🐾 EmoMonster catalog snapshot (settings "emomon", loaded on demand: emomon/data.js)
     season: null,    // current season object (see game/season.js)
     sandbox: null,   // test mode: { real } while an admin tries the maps with the test player
@@ -56,6 +58,8 @@ export const Store = {
         this.wallets = L.wallets || {};
         this.bank = L.bank || {};
         this.emodex = L.emodex || {};
+        this.community = L.community || { posts: [] };
+        this.emokeep = L.emokeep || {};
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -112,6 +116,8 @@ export const Store = {
         const bk = settings.find(r => r.key === "bank");
         this.bank = bk?.value || {};
         this.emodex = settings.find(r => r.key === "emodex")?.value || {};
+        this.community = settings.find(r => r.key === "community")?.value || { posts: [] };
+        this.emokeep = settings.find(r => r.key === "emokeep")?.value || {};
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -122,7 +128,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -194,6 +200,17 @@ export const Store = {
     async saveBank() {
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "bank", value: this.bank, updated_at: new Date().toISOString() }));
+    },
+    async saveCommunity() {
+        if (this.sandbox) return;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "community", value: this.community, updated_at: new Date().toISOString() }));
+    },
+    async saveEmokeep() {
+        if (this.sandbox) return;
+        this.saveLocal();
+        clearTimeout(this._keepTimer);
+        this._keepTimer = setTimeout(() => this.write(sb => sb.from("settings").upsert({ key: "emokeep", value: this.emokeep, updated_at: new Date().toISOString() })), 1500);
     },
     async saveEmodex() {
         this.saveLocal();

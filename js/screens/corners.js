@@ -2,7 +2,7 @@
 // Location corners:
 //   💪 돈벌기 — blood donation / time labour / get pooped on / sell an item
 //               (any 2 per player per season)
-//   🥺 구걸   — type "돈주세요", get 0~1000 G (once per round)
+//   🥺 구걸   — press the button, get 0~1000 G (once per round)
 // =====================================================================
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
@@ -209,13 +209,10 @@ export function begView(pid, onChange) {
     const can = G.canBeg(pid);
     const wrap = h("div.beg-view");
     if (!can) { wrap.append(h("p.notice", "🥺 이번 라운드에는 이미 구걸했습니다. 다음 라운드에 다시 오세요.")); return wrap; }
-    const input = h("input.input.beg-input", { placeholder: "돈주세요", maxlength: 20 });
     const btn = h("button.btn.gold", { onclick: () => go() }, "🥺 구걸하기");
-    input.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
     let done = false;
     async function go() {
         if (done) return;
-        if (input.value.replace(/\s/g, "") !== "돈주세요") { input.classList.remove("shake"); void input.offsetWidth; input.classList.add("shake"); return toast("'돈주세요'라고 정확히 입력하세요", "warn"); }
         done = true;
         const hold = Activity.hold();
         const gold = randStep(0, 1000, 10);
@@ -237,9 +234,8 @@ export function begView(pid, onChange) {
         onChange();
     }
     wrap.append(
-        h("p.muted", "타이핑 칸에 '돈주세요'를 입력하면 지나가는 사람들이 0~1,000G를 바구니에 넣어줄지도…? (라운드당 1번)"),
+        h("p.muted", "버튼을 누르면 지나가는 사람들이 0~1,000G를 바구니에 넣어줄지도…? (라운드당 1번)"),
         h("div.beg-scene.idle", h("div.beg-basket", h("div.basket", "🧺"))),
-        h("div.row", input, btn));
-    setTimeout(() => input.focus(), 50);
+        h("div.row.center", btn));
     return wrap;
 }

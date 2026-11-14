@@ -3,6 +3,7 @@
 //   🔍 EmoMon Capture (every map unless turned off) · 🏥 Monster Hospital · 🧪 Monster Lab
 //   📖 EmoMon Dex (every map)
 // =====================================================================
+import { emoSlots } from "../game/extra.js";
 import { h, fmt, sleep, put } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, modal, confetti, Activity } from "../core/fx.js";
@@ -158,9 +159,9 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             Sound.boom();
             const balls = () => {
                 const own = EMO_ITEMS.filter(b => b.kind === "ball" && M.bagN(pid, b.id) > 0);
-                const full = M.mons(pid).length >= EMO.MAX_MONS;
+                const full = M.mons(pid).length >= emoSlots(pid);
                 put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${M.catchChance(wild.sid, b.id, wild)}%`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
-                    full ? h("p.notice.warn.small", `몬스터가 이미 ${EMO.MAX_MONS}마리입니다 — 잡으면 몬스터 Release 권으로 1마리를 놓아 주어야 데려올 수 있습니다.`) : null);
+                    full ? h("p.notice.warn.small", `몬스터가 이미 ${emoSlots(pid)}마리입니다 — 잡으면 몬스터 Release 권으로 1마리를 놓아 주어야 데려올 수 있습니다.`) : null);
                 put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"));
             };
             async function throwIt(b) {
@@ -190,10 +191,10 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
         }
         // a caught monster joins the party (full party → release one with a delete ticket, or let it go)
         async function keep(mon) {
-            while (M.mons(pid).length >= EMO.MAX_MONS) {
+            while (M.mons(pid).length >= emoSlots(pid)) {
                 const choice = await new Promise(res => {
                     const pm = modal(h("div.emo-pick",
-                        h("p", `몬스터는 최대 ${EMO.MAX_MONS}마리입니다. 몬스터 Release 권(보유 ${M.bagN(pid, "EMO_MON_DEL")}장)으로 1마리를 놓아 주거나, 새로 잡은 몬스터를 놓아 주세요.`),
+                        h("p", `몬스터는 최대 ${emoSlots(pid)}마리입니다. 몬스터 Release 권(보유 ${M.bagN(pid, "EMO_MON_DEL")}장)으로 1마리를 놓아 주거나, 새로 잡은 몬스터를 놓아 주세요.`),
                         ...M.mons(pid).map(m => h("button.emo-pick-mon", { disabled: M.bagN(pid, "EMO_MON_DEL") <= 0, onclick: () => { pm.close(); res(m.uid); } }, monPic(M.sp(m), 40), ` ${M.sp(m).name} 놓아 주기`)),
                         M.bagN(pid, "EMO_MON_DEL") <= 0 ? h("p.notice.warn.small", `몬스터 Release 권이 없습니다 (🛒 Monster Shop ${EMO.RELEASE_PTS}P)`) : null,
                         h("button.btn.ghost", { onclick: () => { pm.close(); res(null); } }, `새로 잡은 ${species(mon.sid).name}을(를) 놓아 주기`)), { title: "🐾 자리가 없습니다", closable: false, cls: "emo-modal" });
@@ -284,9 +285,25 @@ export function labView(pid, { loc = null, onChange = () => { } } = {}) {
             const tabs = [["evo", "✨ 진화"], ["mix", "⚗️ 조합"], ["exp", "🔬 실험실"], ["shop", "🛒 LAB 상점"]];
             put(wrap, h("div.emo-lab-head", h("div.big", "🧪"), h("div", h("h3", "Monster Lab"), h("p.muted.small", `진화 아이템으로 몬스터를 진화시키고 (진화 비용 ${EMO.EVOLVE_PTS}P), 재료를 섞어 Breaker를 만들고, 🔬 실험실에서 몬스터를 바꿉니다`))),
                 h("div.bk-tabs", tabs.map(([k, l]) => h("button.bk-tab" + (k === tab ? ".on" : ""), { onclick: () => { tab = k; draw(); } }, l))),
-                tab === "evo" ? evoTab() : tab === "mix" ? mixTab() : tab === "exp" ? expTab() : shopTab());
+                tab === "evo" ? h("div", evoTab(), labSpecials()) : tab === "mix" ? mixTab() : tab === "exp" ? expTab() : shopTab());
         };
         const need = id => { const it = emoItem(id); return h("span.emo-need" + (M.bagN(pid, id) > 0 ? ".ok" : ""), itemIcon(it, 18), ` ${it?.name || id} (${M.bagN(pid, id)})`); };
+        // 🔬 Gamblers special evolutions (#154 · #161 branch · #162 · #164 · fusions #200 / #217)
+        function labSpecials() {
+            const opts = M.labEvoOptions(pid);
+            if (!opts.length) return null;
+            return h("div.emo-lab-special", h("h4", "🔬 특수 진화 · 합체"),
+                ...opts.map(o => h("div.emo-evo-row", h("div", h("b", o.r.text), h("div.small", need(o.r.item), o.missing.length ? h("small.muted", ` · 필요한 몬스터: ${o.missing.map(i => `#${i} ${species(i)?.name || ""}`).join(", ")}`) : null)),
+                    h("button.btn.gold", { disabled: !o.ok, onclick: async () => {
+                        if (!(await confirmBox(`${o.r.text}
+${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?`, "진화", "취소"))) return;
+                        const r = M.labEvolve(pid, o.r.id);
+                        if (!r.ok) return toast(r.why, "warn", 3500);
+                        if (r.failed) { Sound.lose(); toast("🔬 특수 진화 실패… (아이템은 사용됨)", "warn", 3500); }
+                        else { Sound.fanfare(); confetti(60, ["✨", "🧬", "⭐"]); toast(`✨ ${r.to?.name} 탄생!`, "ok", 3500); }
+                        onChange(); draw();
+                    } }, o.r.fuse ? "🧬 합체!" : "🔬 진화!"))));
+        }
         function evoTab() {
             const list = M.mons(pid);
             if (!list.length) return h("p.muted", "몬스터가 없습니다");

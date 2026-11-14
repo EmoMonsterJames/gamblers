@@ -18,6 +18,18 @@ export function avatar(pid, size = 64, { effect = true, frame = true, cls = "" }
     const deco = frameDeco(fr, p?.profile_image);
     if (deco) el.append(deco);
     if (effect && d.effect && PEFFECT_BY_ID[d.effect]) el.append(particles(PEFFECT_BY_ID[d.effect].fx, Math.max(0.6, size / 110)));
+    // gender F/M/O (top-left) · handler D/J (top-right) · blinking warning while sick
+    if (size >= 34 && p) {
+        const g = String(p.gender || "").trim().toLowerCase(), hd = String(p.handler || "").trim().toLowerCase();
+        const gl = ["female", "f", "여", "여성", "woman"].includes(g) ? "F" : ["male", "m", "남", "남성", "man"].includes(g) ? "M" : g ? "O" : "";
+        const hl = hd.startsWith("dylan") || hd === "d" ? "D" : hd.startsWith("james") || hd === "j" ? "J" : "";
+        const fs = Math.max(9, Math.round(size * 0.16)) + "px";
+        if (gl) el.append(h("span.av-badge.av-g.g-" + gl, { style: { fontSize: fs } }, gl));
+        if (hl) el.append(h("span.av-badge.av-h", { style: { fontSize: fs } }, hl));
+        const dis = Store.season?.ps?.[pid]?.dis;
+        if (dis && Object.values(dis).some(Boolean) && !Store.season.ps[pid].out)
+            el.append(h("span.av-sick", { style: { fontSize: Math.max(10, Math.round(size * 0.2)) + "px" }, title: `질병: ${[dis.flu && "독감", dis.cancer && "암"].filter(Boolean).join(" · ")}` }, "⚠️"));
+    }
     return el;
 }
 // frame preview for shops / inventory (a smiley instead of a player)
