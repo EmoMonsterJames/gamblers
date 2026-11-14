@@ -318,6 +318,33 @@ const SONGS = {
             // harbour waves
             if (s === 0 || s === 32) bgmNoise(a, out, t, { dur: 2.4, vol: 0.03, hp: 400 });
         }
+    },
+    // Lunar New Year festival (D major pentatonic): erhu lead with vibrato, guzheng
+    // arpeggio sweeps, gong on each phrase, festival drum + small cymbals
+    lunar_festival: {
+        bpm: 120, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            const ROOT = [50, 47, 43, 45][bar];           // D – Bm – G – A
+            const PENTA = [62, 64, 66, 69, 71, 74, 76, 78];
+            // gong at the start of every phrase (low sine swell + noisy shimmer)
+            if (st === 0 && bar % 2 === 0) { bgmVoice(a, out, t, { freq: midi(38), type: "sine", dur: len * 14, vol: 0.12, attack: 0.02 }); bgmNoise(a, out, t, { dur: 1.6, vol: 0.04, hp: 2500 }); }
+            // festival drum + small cymbals
+            if (st % 4 === 0) taiko(a, out, t, st % 8 === 0 ? 0.32 : 0.18);
+            if (st % 4 === 2) bgmNoise(a, out, t, { dur: 0.05, vol: 0.05, hp: 7000 });
+            if (st === 14) bgmNoise(a, out, t, { dur: 0.25, vol: 0.06, hp: 5000 });
+            // bass
+            if (st === 0 || st === 6 || st === 8) bgmVoice(a, out, t, { freq: midi(ROOT - 12), type: "triangle", dur: len * 2, vol: 0.16, cut: 700, cutEnd: 250 });
+            // guzheng: a quick pentatonic sweep up at the end of each bar, plucks in between
+            if (st >= 12) bgmVoice(a, out, t, { freq: midi(PENTA[(st - 12) * 2 % PENTA.length] - 12 + (bar === 2 ? -3 : 0)), type: "triangle", dur: len * 2, vol: 0.05, cut: 4000, cutEnd: 900 });
+            else if (st % 2 === 1) bgmVoice(a, out, t, { freq: midi(PENTA[(s * 3) % 5] - 12), type: "triangle", dur: len * 1.5, vol: 0.035, cut: 3500, cutEnd: 800 });
+            // erhu lead: singing saw with a slow vibrato (two detuned voices)
+            const MEL = [74, 0, 0, 76, 78, 0, 76, 74, 71, 0, 0, 0, 69, 0, 71, 0,
+                71, 0, 0, 74, 71, 0, 69, 66, 64, 0, 0, 0, 66, 0, 0, 0,
+                67, 0, 0, 69, 71, 0, 74, 71, 69, 0, 67, 0, 64, 0, 0, 0,
+                66, 0, 69, 0, 71, 0, 74, 0, 76, 0, 0, 0, 74, 0, 0, 0];
+            if (MEL[s]) for (const dt of [-7, 7]) bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "sawtooth", dur: len * 2.8, vol: 0.022, cut: 2600, cutEnd: 1500, detune: dt, attack: 0.06 });
+        }
     }
 };
 function taiko(a, out, t, vol = 0.5) {

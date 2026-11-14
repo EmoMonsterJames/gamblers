@@ -774,3 +774,5 @@ export const REALM_MACHINES = Object.fromEntries(Object.entries({
     sp_death: death, sp_karma: karma, sp_tavern: tavern, sp_office: office, sp_retro: retro,
     sp_polarity: polarity, sp_yacht: yacht, sp_vip: vip, sp_foundry: foundry, sp_prism: prism
 }).map(([k, fn]) => [k, wrap(fn)]));
+// shared with the round-9 machines (wonderEngine.js)
+export { isZ, ladder, upOne, rank, extra, sumWins, forceLine, ensureLine, hexNb, HEXDIR };

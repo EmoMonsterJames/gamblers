@@ -118,7 +118,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             const balls = () => {
                 const own = EMO_ITEMS.filter(b => b.kind === "ball" && M.bagN(pid, b.id) > 0);
                 const full = M.mons(pid).length >= EMO.MAX_MONS;
-                put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${b.crazy ? `${b.rate}% 또는 0%` : M.catchChance(wild.sid, b.id) + "%"}`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
+                put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${M.catchChance(wild.sid, b.id)}%`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
                     full ? h("p.notice.warn.small", `몬스터가 이미 ${EMO.MAX_MONS}마리입니다 — 잡으면 몬스터 Release 권으로 1마리를 놓아 주어야 데려올 수 있습니다.`) : null);
                 put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"));
             };
@@ -414,7 +414,7 @@ export function monsterShopView(pid, loc, { onChange = () => { } } = {}) {
                 h("div.emo-lab-head", h("div.big", "🛒"), h("div", h("h3", `Monster Shop · ${loc.name}`), h("p.muted.small", "볼 · 회복약 · Release 권과 이 상점만의 속성 볼 · 몬스터 무기 · 특성을 팝니다. 상점마다 파는 물건이 다릅니다."))),
                 h("div.row", h("span.emo-limit" + (out ? ".out" : ""), `이번 시즌 남은 구매 ${left} / ${EMO.SHOP_BUYS}회`), h("small.muted", " (모든 Monster Shop 합산)")),
                 group("⚪ 볼", EMO_ITEMS.filter(i => i.kind === "ball" && !i.attr).map(i => emoItem(i.id))),
-                group("🔷 이 상점의 속성 볼 (해당 속성 몬스터 포획 25%)", st.balls.map(emoItem).filter(Boolean)),
+                group("🔷 이 상점의 속성 볼 (해당 속성 몬스터 포획 45%)", st.balls.map(emoItem).filter(Boolean)),
                 group("🧪 회복 · 치료", EMO_ITEMS.filter(i => ["potion", "pp", "cure"].includes(i.kind)).map(i => emoItem(i.id))),
                 group("🎫 티켓", EMO_ITEMS.filter(i => i.kind === "delete").map(i => emoItem(i.id))),
                 ws.length || ts.length ? h("h4", "⚔ 몬스터 무기 · 🧬 특성") : null,

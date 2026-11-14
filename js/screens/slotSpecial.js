@@ -170,7 +170,53 @@ const FX = {
     dynamite: { icon: "🧨🧨🧨", text: "MINT VAULT HEIST!", snd: "boom", cls: "fire", shake: true },
     refract: { icon: "🔆💠🔆", text: "LASER REFRACTION!", snd: "bonus", cls: "beam" },
     flawless: { icon: "💎💥✨", text: "FLAWLESS CUT!", snd: "boom", cls: "beam", shake: true },
-    crowns: { icon: "👑👑👑", text: "CROWN JEWEL VAULT!", snd: "boom", cls: "gold", shake: true }
+    crowns: { icon: "👑👑👑", text: "CROWN JEWEL VAULT!", snd: "boom", cls: "gold", shake: true },
+    // ---- round 9 (wonderEngine.js)
+    mystery: { icon: "❓❓❓", text: "MYSTERY BOX DROP!", snd: "bonus", cls: "glitch" },
+    portal: { icon: "🌀🔀🌀", text: "DIMENSION SCRAMBLE!", snd: "whoosh", cls: "glitch", shake: true },
+    dice: { icon: "🎲🎲", text: "DICE ROLL MULTIPLIER!", snd: "boom", cls: "gold", shake: true },
+    glitch: { icon: "⚠️👾⚠️", text: "GLITCH FREE SPINS!", snd: "boom", cls: "glitch", shake: true },
+    taxidermy: { icon: "🫙💥🦊", text: "TAXIDERMY SURPRISE!", snd: "boom", cls: "potion", shake: true },
+    oddone: { icon: "🦆🦆🦆🦆🌀", text: "ODD ONE OUT!", snd: "bonus", cls: "glitch" },
+    clockback: { icon: "🕰️⏪", text: "BACKWARD CLOCK!", snd: "whoosh", cls: "gold", rewind: true },
+    monocle: { icon: "🧐🧐🧐", text: "CURATOR'S VAULT!", snd: "boom", cls: "gold", shake: true },
+    bull: { icon: "⏫🐂📈", text: "BULL MARKET SURGE!", snd: "boom", cls: "beam", shake: true },
+    pctdrop: { icon: "％➗💎💎", text: "DIVIDEND DROP!", snd: "cash", cls: "gold" },
+    server: { icon: "🔑🖥️🔑", text: "ALGORITHM OVERLOAD!", snd: "boom", cls: "beam", shake: true },
+    parade: { icon: "🎺🥁🎷🎺", text: "STREET PARADE!", snd: "bonus", cls: "gold", shake: true },
+    firework: { icon: "🎇🚀💥", text: "FIREWORK FINALE!", snd: "boom", cls: "fire", shake: true },
+    splash: { icon: "⛲💦💦", text: "FOUNTAIN SPLASH!", snd: "splash", cls: "potion" },
+    market: { icon: "🎟️🏮🍢", text: "NIGHT MARKET!", snd: "boom", cls: "gold", shake: true },
+    rover: { icon: "🛻💨〰️", text: "ROVER EXPEDITION!", snd: "whoosh", cls: "gold" },
+    satlaser: { icon: "📡⚡📡", text: "SATELLITE LINK!", snd: "boom", cls: "beam", shake: true },
+    zerograv: { icon: "🧑‍🚀🪐🫧", text: "ZERO GRAVITY!", snd: "whoosh", cls: "float" },
+    countdown: { icon: "⏱️3️⃣2️⃣1️⃣🚀", text: "DEEP SPACE LAUNCH!", snd: "boom", cls: "beam", shake: true },
+    icecrack: { icon: "🧊💥🐠", text: "ICE BLOCK SMASH!", snd: "boom", cls: "bolt" },
+    snowball: { icon: "🐧❄️💥❄️🐧", text: "SNOWBALL FIGHT!", snd: "boom", cls: "bolt", shake: true },
+    marlin: { icon: "⛏️🕳️🐟", text: "FISHING HOLE · 10x!", snd: "splash", cls: "bolt", shake: true },
+    aurora9: { icon: "🌌💚🐧", text: "AURORA FREE SPINS!", snd: "bonus", cls: "moon" },
+    puffer: { icon: "🐡💥🫧", text: "PUFFERFISH INFLATE!", snd: "boom", cls: "potion", shake: true },
+    bubmerge: { icon: "🫧➕🫧", text: "BUBBLE MERGE!", snd: "coin", cls: "potion" },
+    chainpop: { icon: "💥🫧💥", text: "CHAIN POP!", snd: "boom", cls: "potion" },
+    bubblebath: { icon: "🪄🫧🛁", text: "BUBBLE BATH BONUS!", snd: "boom", cls: "potion", shake: true },
+    cannon: { icon: "💣💥📦", text: "CANNONBALL BLAST!", snd: "boom", cls: "fire", shake: true },
+    kraken: { icon: "🐙", text: "TENTACLE GRAB!", snd: "boom", cls: "potion", shake: true },
+    compassE: { icon: "🧭➡️💀", text: "COMPASS SPIN!", snd: "whoosh", cls: "gold" },
+    compassS: { icon: "🧭⬇️💀", text: "COMPASS SPIN!", snd: "whoosh", cls: "gold" },
+    keys: { icon: "🗝️🗝️🗝️", text: "CAPTAIN'S CHEST!", snd: "boom", cls: "gold", shake: true },
+    poltergeist: { icon: "👻💨🖼️", text: "POLTERGEIST POSSESSION!", snd: "whoosh", cls: "ghost" },
+    seance: { icon: "🔮🕯️👻", text: "SÉANCE TABLE!", snd: "boom", cls: "ghost", shake: true },
+    slime: { icon: "🟢💚🟢", text: "ECTOPLASM x3!", snd: "cash", cls: "potion" },
+    attic: { icon: "🗝️🧳👻", text: "ATTIC ESCAPE!", snd: "boom", cls: "ghost", shake: true },
+    wisp: { icon: "🔵✨🔵", text: "WILL-O'-THE-WISP!", snd: "bonus", cls: "beam" },
+    skeleton: { icon: "💀🦴💃", text: "SKELETON DANCE!", snd: "boom", cls: "ghost", shake: true },
+    dig: { icon: "⛏️🧰", text: "GRAVE ROBBER'S SHOVEL!", snd: "coin", cls: "gold" },
+    fullmoon: { icon: "🏮🌕🏮", text: "FULL MOON RESURRECTION!", snd: "boom", cls: "moon", shake: true },
+    batswarm: { icon: "🦇🦇🦇🦇", text: "BAT SWARM!", snd: "whoosh", cls: "fire", shake: true },
+    redmoon: { icon: "🌕🍷", text: "BLOOD MOON RISE!", snd: "boom", cls: "fire", shake: true },
+    bride: { icon: "⚰️👰", text: "VAMPIRE BRIDE!", snd: "boom", cls: "ghost", shake: true },
+    coffin: { icon: "⚰️💰", text: "COFFIN LID CREAK!", snd: "cash", cls: "gold" },
+    crypt: { icon: "✝️⚱️✝️", text: "CASTLE CRYPT BONUS!", snd: "boom", cls: "fire", shake: true }
 };
 // the spin mechanic of the round-7 machines: a cover over the reels that plays while they land
 const COVERS = {
@@ -195,7 +241,19 @@ const COVERS = {
     deal: n => Array.from({ length: n }, (_, i) => h("i.cv-card", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } })),
     doors: () => Array.from({ length: 5 }, (_, i) => h("i.cv-door", { style: { "--i": i } })),
     pour: n => [h("b.cv-chain", "⛓️"), ...Array.from({ length: n }, (_, i) => h("i.cv-mold", { style: { "--c": i % 4, "--r": Math.floor(i / 4) } }))],
-    prism: () => [h("b.cv-beam"), h("b.cv-prism", "🔺"), ...Array.from({ length: 7 }, (_, i) => h("i.cv-ray", { style: { "--i": i } }))]
+    prism: () => [h("b.cv-beam"), h("b.cv-prism", "🔺"), ...Array.from({ length: 7 }, (_, i) => h("i.cv-ray", { style: { "--i": i } }))],
+    // ---- round 9
+    cube: () => [h("b.cv-cube", ["U", "F", "R", "L", "B", "D"].map(f => h("i.cf.f-" + f)))],
+    curtain: n => [h("b.cv-cord", "🪢"), h("i.cv-curt.l"), h("i.cv-curt.r"), ...Array.from({ length: n }, (_, i) => h("i.cv-drawer", { style: { "--i": i } }))],
+    ticker: () => [h("b.cv-trade", "EXECUTE TRADE"), ...Array.from({ length: 5 }, (_, i) => h("i.cv-tick", { style: { "--i": i } }, ["▲ 2.4%", "▼ 0.7%", "▲ 9.9%", "▲ 42%", "▲ 1.1%"][i]))],
+    bell: () => [h("b.cv-bell", "🔔"), ...Array.from({ length: 12 }, (_, i) => h("i.cv-lantern", { style: { "--i": i, "--y": (i * 29) % 90 + "%" } }, "🏮"))],
+    ignition: () => [h("b.cv-switch", "🔴"), h("i.cv-sweep"), ...[0, 1, 2].map(i => h("i.cv-ring", { style: { "--i": i } }))],
+    whistle: () => [h("b.cv-whistle", "📯"), ...Array.from({ length: 15 }, (_, i) => h("i.cv-peng", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } }, "🐧"))],
+    wand: () => [h("b.cv-wand", "🪄"), ...Array.from({ length: 16 }, (_, i) => h("i.cv-bub", { style: { "--x": (i % 4) * 25 + 6 + "%", "--i": i } }, "🫧"))],
+    flashlight: n => [h("b.cv-light"), ...Array.from({ length: n }, (_, i) => h("i.cv-crate", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } }))],
+    chime: n => [h("b.cv-chime", "🔔"), ...Array.from({ length: n }, (_, i) => h("i.cv-frame", { style: { "--c": i % 4, "--r": Math.floor(i / 4) } }, "🖼️"))],
+    shovel: n => [h("b.cv-shovel", "⛏️"), ...Array.from({ length: n }, (_, i) => h("i.cv-stone", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } }, "🪦"))],
+    organ: n => [h("b.cv-organ", "🎹"), ...Array.from({ length: n }, (_, i) => h("i.cv-glass", { style: { "--c": i % 5, "--r": Math.floor(i / 5), "--h": (i * 47) % 360 } }))]
 };
 
 export async function playSpecial(res, api) {
@@ -426,6 +484,9 @@ export async function playSpecial(res, api) {
         if (kind === "coin") { Sound.coin?.(); setTimeout(() => Sound.splash?.(), 350); }
         if (kind === "mugs" || kind === "lever" || kind === "pour") Sound.boom?.();
         if (kind === "email" || kind === "prism") Sound.tick?.();
+        if (kind === "cube" || kind === "curtain" || kind === "ticker" || kind === "wand" || kind === "flashlight") Sound.whoosh?.();
+        if (kind === "ignition" || kind === "shovel" || kind === "organ") Sound.boom?.();
+        if (kind === "bell" || kind === "chime" || kind === "whistle") { Sound.tick?.(); setTimeout(() => Sound.tick?.(), 180); }
         return el;
     }
     // Reactor Overload style choice: two options, the timer takes the engine's `auto` pick
@@ -452,7 +513,7 @@ export async function playSpecial(res, api) {
         const a = cellsEl(p.c0, p.r0), b = cellsEl(p.c0 + p.n - 1, p.r0 + p.n - 1);
         if (!a || !b) return;
         const fr = frame.getBoundingClientRect(), ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
-        const blk = h("div.rl-block", { style: { left: ra.left - fr.left + "px", top: ra.top - fr.top + "px", width: rb.right - ra.left + "px", height: rb.bottom - ra.top + "px" } }, h("span", p.icon), h("b", p.text));
+        const blk = h("div.rl-block" + (p.cls ? ".rl-" + p.cls : ""), { style: { left: ra.left - fr.left + "px", top: ra.top - fr.top + "px", width: rb.right - ra.left + "px", height: rb.bottom - ra.top + "px" } }, h("span", p.icon), h("b", p.text));
         frame.append(blk);
         await pace(420); Sound.boom?.(); api.shake(frame);
         await pace(700);
@@ -480,7 +541,8 @@ export async function playSpecial(res, api) {
             if (k >= items.length) setTimeout(done, 700);
             return it;
         };
-        const sec = (p.mode === "single" ? 4 : p.mode === "gauge" ? 6 : 9) * (api.turbo() ? 0.6 : 1);
+        const sec = (p.sec || (p.mode === "single" ? 4 : p.mode === "gauge" ? 6 : 9)) * (api.turbo() ? 0.6 : 1);
+        if (p.up) area.classList.add("tm-up"); // bubbles float up instead of falling
         const clock = h("b.tap-clock", sec.toFixed(1));
         wrap.append(clock);
         const t0 = performance.now();
@@ -502,7 +564,7 @@ export async function playSpecial(res, api) {
                 t.addEventListener("animationend", () => { if (!t.classList.contains("open")) t.remove(); });
                 area.append(t);
             };
-            const iv = setInterval(() => { spawn(); if (spawned >= items.length) clearInterval(iv); }, Math.max(350, (sec * 1000 - 2600) / items.length));
+            const iv = setInterval(() => { spawn(); if (spawned >= items.length) clearInterval(iv); }, Math.max(items.length > 16 ? 180 : 350, (sec * 1000 - 2600) / items.length));
             spawn();
         } else if (p.mode === "rapid" || p.mode === "boss") {
             const hp = h("i.tap-hp");
@@ -971,6 +1033,28 @@ export function buildPanel(cfg, state = {}) {
     else if (E === "sp_vip") aura("🎫", "VIP PENTHOUSE STRIP · MEMBERS ONLY", "🕴️");
     else if (E === "sp_foundry") aura("🏭", "BULLION FOUNDRY · 12 MOLDS · 81 WAYS", "🔥");
     else if (E === "sp_prism") aura("🔺", "PRISM PALACE · HEX 4+ · DIAMOND = 모든 잭팟 합산", "👑");
+    // ---- the 11 round-9 machines (wonderEngine.js)
+    else if (E === "sp_cube") el.append(h("div.sk-strip.w9-escher", h("i.w9-spin", "🎲"), h("b", "CHAOS CUBE · ✚ 12 TILES · 64 WAYS"), h("i.w9-glitch", "⚠️")));
+    else if (E === "sp_curio") aura("🧐", "CABINET OF CURIOSITIES · 15 DRAWERS · 243 WAYS", "🦆");
+    else if (E === "sp_percent") {
+        el.append(h("span.spp-ico.w9-bull", "📊"), bar("rtp", "📈 RTP METER · 연속 당첨 +1x", "rtp"));
+        parts.rtp.fmt = (v, max) => `x${1 + Math.min(v, max)}`;
+    }
+    else if (E === "sp_festival") {
+        el.append(h("span.spp-ico", "🕰️"), bar("parade", "🎺 STREET PARADE · WILD 행진", "parade"));
+        parts.parade.fmt = v => v > 0 ? `${v}스핀` : "—";
+    }
+    else if (E === "sp_mission") el.append(h("div.sk-strip.w9-hud", h("i.w9-blink", "🛰️"), h("b", "MISSION CONTROL · T-MINUS · HEX 19"), h("i", "🛻")));
+    else if (E === "sp_slide") el.append(h("div.sk-strip.w9-snow", ...["🐧", "🐧", "🐧"].map((e, i) => h("i.w9-slide", { style: { "--i": i } }, e)), h("b", "GLACIER SLIDE · 243 WAYS")));
+    else if (E === "sp_pop") el.append(h("div.sk-strip.w9-reef", ...["🫧", "🐢", "🫧", "🐡", "🫧"].map((e, i) => h("i.w9-float", { style: { "--i": i } }, e)), h("b", "POP PARADISE · 256 WAYS")));
+    else if (E === "sp_galleon") aura("🔦", "SUNKEN GALLEON · 25 LINES · 수심 300m", "🐙");
+    else if (E === "sp_manor") aura("🕯️", "PHANTOM MANOR · 12 FRAMES · 🟢 점액 = 다음 당첨 x3", "👻");
+    else if (E === "sp_boneyard") aura("🌕", "MIDNIGHT BONEYARD · 15 HEADSTONES", "🪦");
+    else if (E === "sp_crimson") {
+        const moon = h("span.w9-moon", "🌑");
+        el.append(h("div.sk-strip.w9-gothic", h("i", "🦇"), h("b", "CRIMSON MOON · 1024 WAYS"), moon, h("i", "🦇")));
+        custom("moon", v => { moon.textContent = v ? "🌕" : "🌑"; moon.classList.toggle("on", !!v); });
+    }
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
         if (p.render) return p.render(value, max);
@@ -999,5 +1083,7 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_chain") set("batt", state.batt || 0, 10);
     if (E === "sp_death") set("souls", state.souls || 0, cfg.souls || 10);
     if (E === "sp_polarity") set("tug", 0);
+    if (E === "sp_percent") set("rtp", state.streak || 0, cfg.features?.compound?.max || 5);
+    if (E === "sp_festival") set("parade", state.parade || 0, cfg.features?.parade?.spins || 3);
     return { el, set };
 }

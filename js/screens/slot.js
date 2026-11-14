@@ -82,7 +82,7 @@ export function openSlot(cfg, ctx) {
     const forest = cfg.tree ? h("div.md-forest", { "aria-hidden": "true" },
         ["🌴", "🌳", "🌴", "🌳", "🌿", "🌿"].map((e, i) => h("span.mf-tree.t" + i, e)),
         h("span.mf-play.swing", "🐒"), h("span.mf-play.hop", "🐵"), h("span.mf-play.hop2", "🐒"), h("span.mf-play.banana", "🍌")) : null;
-    const cabinet = h("div.cabinet.theme-" + cfg.id + (cfg.skin ? ".skin-" + cfg.skin : ""), { style: { "--bg": cfg.theme.bg, "--accent": cfg.theme.accent, "--glow": cfg.theme.glow, "--font": cfg.theme.font } },
+    const cabinet = h("div.cabinet.theme-" + cfg.id + (cfg.skin ? ".skin-" + cfg.skin : "") + (cfg.dbl ? ".dbl-reels" : ""), { style: { "--bg": cfg.theme.bg, "--accent": cfg.theme.accent, "--glow": cfg.theme.glow, "--font": cfg.theme.font } },
         forest, themeDeco(),
         h("div.cab-top", logo, h("div.cab-title", cfg.name), h("div.cab-btns", testSel, jackpotButton(cfg.id, cfg.name), h("button.btn.ghost.small.info", { onclick: () => paytable() }, "ⓘ"))),
         jpBar, meterEl,
@@ -942,7 +942,7 @@ export function openSlot(cfg, ctx) {
         // The Rule of Death: blood pours down from the top of the cabinet
         if (o.fx === "blood") {
             const l = h("div.omen-flood.blood", h("div.of-wave"), h("div.of-wave.w2"), Array.from({ length: 18 }, () => h("i", { style: { left: rnd() * 100 + "%", "--d": rnd() * 0.8 + "s" } }, "🩸")));
-            cabinet.append(l); frame.classList.add("omen-shake"); Sound.splash(); Sound.heartbeat(); await sleep(1900); frame.classList.remove("omen-shake"); l.remove();
+            cabinet.append(l); frame.classList.add("omen-shake"); Sound.splash(); Sound.heartbeat(); if (o.scream) Sound.scream?.(); await sleep(1900); frame.classList.remove("omen-shake"); l.remove();
         }
         if (o.fx === "flood") {
             const l = h("div.omen-flood", h("div.of-wave"), h("div.of-wave.w2"), Array.from({ length: 16 }, () => h("i", { style: { left: rnd() * 100 + "%", "--d": rnd() * 0.8 + "s" } }, "💦")));

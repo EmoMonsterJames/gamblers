@@ -190,7 +190,7 @@ function findItem() {
     return emoItem(id);
 }
 // catch chance = the ball's own rate (Monster 5% · Super 10% · Hyper 30% · Master 100%;
-// attribute balls 25% on their attribute, 5% on others)
+// Crazy 70% · attribute balls 45% on their attribute, 5% on others)
 export function catchChance(sid, ballId) {
     const s = species(sid), b = emoItem(ballId);
     if (!s || !b) return 0;
@@ -202,7 +202,6 @@ export function throwBall(pid, wild, ballId) {
     const b = emoItem(ballId);
     if (!b || !useItem(pid, ballId)) return { ok: false, why: "볼이 없습니다" };
     let chance = catchChance(wild.sid, ballId);
-    if (b.crazy) chance = Math.random() < 0.5 ? b.rate : 0;
     const caught = Math.random() * 100 < chance;
     log(`🎯 ${name(pid)} ${b.name} → ${species(wild.sid)?.name} ${caught ? "포획 성공!" : "놓침"}`);
     Store.saveSeason();
