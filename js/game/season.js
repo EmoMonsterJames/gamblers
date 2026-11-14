@@ -996,6 +996,16 @@ export function finalists() {
     const worth = pid => s.ps[pid].money - (s.ps[pid].loan?.owed || 0);
     return alive().sort((a, b) => (worth(b) - worth(a)) || (s.ps[b].points - s.ps[a].points));
 }
+// 🏁 the final is two duels between the last 2 — EmoMon battle (emo) and weapon battle (weapon).
+// Win both → champion. 1 : 1 → the claw machine decides (claw). Kept on the season so a
+// reload resumes at the right duel.
+export const FINAL_LABEL = { emo: "🐾 EmoMon 배틀", weapon: "⚔️ 무기 대결", claw: "🕹️ 집게 결정전" };
+export function finalResult(kind, winner) {
+    const s = S();
+    (s.finalRes ||= {})[kind] = winner;
+    log(`🏁 결승 ${FINAL_LABEL[kind]}: ${name(winner)} 승리`);
+    Store.saveSeason(true);
+}
 export async function crown(winnerId, snapshot) {
     const s = S();
     const loser = alive().find(p => p !== winnerId);

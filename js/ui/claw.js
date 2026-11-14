@@ -7,7 +7,8 @@
 //   then 1 of the 3 is saved at random, and the last 2 face a tense draw.
 //   ≤ 3 candidates: no claw — straight to the save (3) / the final draw (2).
 //   onDone(eliminatedPid) is called once the loser is shown.
-// winnerCelebration(s, { actions }): the roster lined up left / right, the
+// clawChampion(two, { onDone }): the final tie-break — the claw decides the champion.
+// winnerCelebration(s, { actions }):the roster lined up left / right, the
 //   champion in the middle with blinking WINNER signs, balloons and fireworks.
 // =====================================================================
 import { h, sleep, shuffle } from "../core/util.js";
@@ -228,6 +229,147 @@ export function clawElimination(cands, { onDone = () => { } } = {}) {
     return wrap;
 }
 
+// ------------------------------------------------------------------ 🏁 final tie-break claw
+// The 2 finalists split the final 1 : 1, so the claw picks the champion: the ball it
+// drops into the WIN chute wins. Built for suspense — the claw hovers between the two
+// balls, a countdown, failed grabs that slip, a wobbling carry and a heartbeat that speeds up.
+export function clawChampion(two, { onDone = () => { } } = {}) {
+    const B = 104;
+    const winner = two[Math.random() < 0.5 ? 0 : 1], loser = two.find(p => p !== winner);
+    const status = h("p.claw-status", "두 결승 진출자의 공이 들어 있습니다. 집게가 WIN 구멍에 떨어뜨리는 공의 주인이 시즌 우승자!");
+    const btn = h("button.btn.gold.huge", "🕹️ 운명의 집게 작동");
+    const count = h("div.clawf-count");
+    const rope = h("div.claw-rope"), head = h("div.claw-head", h("i.claw-l"), h("i.claw-r"));
+    const claw = h("div.claw", rope, head);
+    const machine = h("div.claw-machine.clawf", { style: { "--b": B + "px" } }, h("div.claw-rail"), h("div.claw-chute", h("span", "WIN")), claw, count);
+    const balls = new Map();
+    two.forEach((pid, i) => {
+        const ball = h("div.claw-ball", { "data-id": pid }, avatar(pid, B - 10, { effect: false, frame: false }));
+        ball.style.left = `calc(${i ? 76 : 44}% - ${B / 2}px)`;
+        ball.style.top = `${380 - B - 6}px`;
+        ball.style.setProperty("--h", (pid * 47) % 360);
+        balls.set(pid, ball); machine.append(ball);
+    });
+    const tags = new Map(two.map(pid => [pid, h("div.clawf-name", avatar(pid, 64, { effect: false }), h("b", nm(pid)), h("i.claw-tag"))]));
+    const wrap = h("div.claw-wrap.claw-final", machine, h("div.clawf-names", [...tags.values()]), status, h("div.row.center", btn));
+    const alive = () => document.body.contains(wrap);
+
+    // heartbeat that speeds up as the moment gets closer
+    let beat = 1100, beating = false;
+    const heart = async () => { beating = true; while (beating && alive()) { Sound.heartbeat(); await sleep(beat); } };
+    const W = () => machine.clientWidth;
+    const ballX = pid => balls.get(pid).offsetLeft + B / 2;
+    const light = pid => tags.forEach((el, p) => el.classList.toggle("hot", p === pid));
+    function moveClaw(x, ms = MOVE) { claw.style.transitionDuration = ms + "ms"; claw.style.left = x + "px"; return sleep(ms + 50); }
+    function ropeTo(len) { rope.style.height = Math.max(10, len) + "px"; head.style.top = Math.max(10, len) + "px"; return sleep(MOVE + 50); }
+    function attach(ball) {
+        ball.style.transition = "none";
+        const top = ball.offsetTop, left = ball.offsetLeft, hx = claw.offsetLeft, hy = head.offsetTop;
+        head.append(ball);
+        ball.style.left = (left - hx) + "px"; ball.style.top = (top - hy) + "px";
+        void ball.offsetWidth;
+        ball.style.transition = "left .3s, top .3s";
+        ball.style.left = (HEAD_W / 2 - B / 2) + "px"; ball.style.top = (HEAD - B * 0.4) + "px";
+    }
+    function detach(ball) {
+        const m = machine.getBoundingClientRect(), r = ball.getBoundingClientRect();
+        ball.style.transition = "none";
+        machine.append(ball);
+        ball.style.left = (r.left - m.left - machine.clientLeft) + "px"; ball.style.top = (r.top - m.top - machine.clientTop) + "px";
+        void ball.offsetWidth;
+    }
+    async function lift(pid) {
+        const ball = balls.get(pid);
+        await moveClaw(ballX(pid), 1100);
+        status.textContent = `⬇️ ${nm(pid)}의 공으로 내려갑니다…`;
+        claw.classList.add("open"); Sound.whoosh();
+        await ropeTo(ball.offsetTop + B / 2 - HEAD);
+        claw.classList.remove("open"); Sound.click();
+        await sleep(700);
+        attach(ball); ball.classList.add("held");
+        status.textContent = `⬆️ ${nm(pid)}의 공을 잡았다…!`;
+        await ropeTo(14);
+        return ball;
+    }
+    async function slip(pid) {
+        const ball = balls.get(pid);
+        ball.classList.add("wobble"); status.textContent = "흔들… 흔들…";
+        await moveClaw(claw.offsetLeft + HEAD_W / 2 - W() * 0.12, 1300);
+        claw.classList.add("open");
+        detach(ball); ball.classList.remove("held", "wobble");
+        Sound.miss(); machine.classList.add("shake"); setTimeout(() => machine.classList.remove("shake"), 500);
+        status.textContent = `앗!!! ${nm(pid)}의 공이 떨어졌다!!!`;
+        ball.style.transition = "top .55s cubic-bezier(.5,0,1,1), left .55s";
+        ball.style.left = Math.min(W() - B, Math.max(W() * 0.32, ball.offsetLeft + (Math.random() * 50 - 25))) + "px";
+        ball.style.top = (380 - B - 6) + "px";
+        await sleep(600);
+        ball.classList.add("bounce"); setTimeout(() => ball.classList.remove("bounce"), 500); Sound.hit();
+        await sleep(900);
+        claw.classList.remove("open");
+    }
+    async function countdown() {
+        for (const n of ["3", "2", "1"]) {
+            count.textContent = n; count.classList.remove("go"); void count.offsetWidth; count.classList.add("go");
+            Sound.tick(); await sleep(900);
+        }
+        count.textContent = "";
+    }
+
+    btn.onclick = async () => {
+        btn.disabled = true; btn.textContent = "🕹️ 집게 작동 중…";
+        wrap.classList.add("tense"); heart();
+        // 1) the claw hesitates between the two balls, slower each time
+        status.textContent = "집게가 고민하고 있습니다… 👀";
+        const hovers = 5 + Math.floor(Math.random() * 2);
+        let first = two[Math.floor(Math.random() * 2)];
+        for (let i = 0; i < hovers; i++) {
+            const pid = (hovers - 1 - i) % 2 === 0 ? first : two.find(p => p !== first);
+            await moveClaw(ballX(pid), 600 + i * 260);
+            light(pid); Sound.tick();
+            status.textContent = `👀 ${nm(pid)} 쪽으로…?`;
+            await sleep(350 + i * 120);
+        }
+        // 2) countdown before the drop
+        beat = 800;
+        await countdown();
+        // 3) failed grabs (always when it goes for the loser first, sometimes even on the winner)
+        const tries = first === loser ? [loser] : Math.random() < 0.5 ? [winner] : [];
+        if (tries.length && Math.random() < 0.45) tries.push(tries[0] === loser ? winner : loser);
+        for (const pid of tries) {
+            light(pid); await lift(pid); await slip(pid);
+            beat = Math.max(420, beat - 150);
+            status.textContent = "🕹️ 다시 한 번…!"; await sleep(900);
+            const next = tries[tries.indexOf(pid) + 1] || winner;
+            light(next); await moveClaw(ballX(next), 1500);
+        }
+        // 4) the winning grab and a wobbly, painfully slow carry to the chute
+        beat = 380;
+        light(winner);
+        const ball = await lift(winner);
+        ball.classList.add("wobble"); status.textContent = "흔들… 흔들… 버텨라…!!";
+        await moveClaw(W() * 0.3, 2200);
+        await sleep(1300);
+        status.textContent = "조금만 더…!!!";
+        await moveClaw(W() * 0.1, 1600);
+        claw.classList.add("open"); Sound.whoosh();
+        detach(ball); ball.classList.remove("held", "wobble");
+        ball.style.transition = "top .5s cubic-bezier(.5,0,1,1)";
+        ball.style.top = (machine.clientHeight + 10) + "px";
+        await sleep(520);
+        beating = false;
+        Sound.boom(); machine.classList.add("flash");
+        wrap.classList.remove("tense");
+        tags.get(winner).classList.add("win"); tags.get(winner).querySelector(".claw-tag").textContent = "👑 CHAMPION";
+        tags.get(loser).classList.add("lose");
+        light(null);
+        status.textContent = `👑 ${nm(winner)} 시즌 우승!!!`;
+        Sound.fanfare(); confetti(160, ["👑", "🎉", "✨", "🪙"]);
+        await sleep(3000);
+        onDone(winner);
+    };
+    return wrap;
+}
+
 // ------------------------------------------------------------------ champion celebration
 export function winnerCelebration(s, { actions = [] } = {}) {
     const win = s.winnerId;
@@ -243,6 +385,8 @@ export function winnerCelebration(s, { actions = [] } = {}) {
     const stage = h("div.cel-stage", sky,
         h("h2.cel-title", `SEASON ${s.number} CHAMPION`),
         h("div.cel-line", left, center, right),
+        s.finalRes?.claw ? h("div.cel-how", "🤝 결승 1 : 1 접전 끝에 🕹️ 집게 결정전 승리!")
+            : s.finalRes?.emo && s.finalRes.emo === s.finalRes.weapon ? h("div.cel-how", "🐾 EmoMon 배틀 · ⚔️ 무기 대결 2 : 0 완승!") : null,
         h("p.cel-sub", `${s.roster.length}명의 갬블러 중 최후의 1인 · 명예의 전당 등극!`),
         acts);
     // balloons + fireworks while the page is open

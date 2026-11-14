@@ -29,7 +29,7 @@ import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo } from "./c
 import { battleView } from "./battle.js";
 import { honorView } from "./honor.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
-import { clawElimination, winnerCelebration } from "../ui/claw.js";
+import { clawElimination, clawChampion, winnerCelebration } from "../ui/claw.js";
 import { Activity, activityBusy } from "../core/fx.js";
 import { bankView, remoteBank } from "./bank.js";
 import { bizHubView, bizHubHere, bizTabs, bizView, remoteBiz, reportList } from "./business.js";
@@ -729,7 +729,44 @@ function finalStage(s) {
         return h("div.center-card", h("h2", "☠️ 최후의 생존자"), avatar(a, 160), h("p", `${displayName(Store.player(a))}만 살아남았습니다!`),
             h("button.btn.gold.huge", { onclick: () => win(a) }, "👑 우승 확정"));
     }
-    return battleView(a, b, win);
+    // 🏁 two duels: EmoMon battle, then weapon battle. 2 : 0 → champion, 1 : 1 → claw tie-break.
+    const R = s.finalRes || {};
+    const board = finalBoard(s, a, b, R);
+    const flow = (...kids) => h("div.final-flow", board, ...kids);
+    if (!R.emo) return flow(emoBattleStage(a, b, w => { G.finalResult("emo", w); render(); },
+        { title: "🐾 FINAL 1 · EmoMon 배틀", sub: "두 결승 진출자의 ⚔ 배틀 몬스터로 지정된 이모몬스터끼리 대결합니다 (몬스터가 없으면 Battlebot)" }));
+    if (!R.weapon) return flow(battleView(a, b, w => { G.finalResult("weapon", w); render(); },
+        { title: "⚔️ FINAL 2 · 무기 대결", sub: `EmoMon 배틀 승자: ${displayName(Store.player(R.emo))} · 이번엔 플레이어끼리 무기로 대결! (선공: 보유금액이 더 많은 플레이어)`, logLabel: "결승 무기 대결" }));
+    if (R.emo === R.weapon) return flow(finalSweep(R.emo, () => win(R.emo)));
+    if (R.claw) return flow(h("div.center-card", avatar(R.claw, 160), h("h2", `🕹️ ${displayName(Store.player(R.claw))} 집게 결정전 승리`),
+        h("button.btn.gold.huge", { onclick: () => win(R.claw) }, "👑 우승 확정")));
+    let done = false;
+    return flow(
+        h("div.final-tie", h("h2.stage-title", "🤝 1 : 1 무승부!", h("small", "두 대결을 하나씩 나눠 가졌습니다 — 이제 운명의 집게가 시즌 우승자를 뽑습니다")),),
+        clawChampion([a, b], { onDone: w => { if (done) return; done = true; G.finalResult("claw", w); win(w); } }));
+}
+
+// scoreboard above every final step: EmoMon ✓ / weapon ✓ per finalist
+function finalBoard(s, a, b, R) {
+    const score = pid => ["emo", "weapon"].filter(k => R[k] === pid).length;
+    const chip = k => h("span.fb-r" + (R[k] ? ".done" : ""), R[k] ? `${G.FINAL_LABEL[k]} · ${displayName(Store.player(R[k]))} 승` : `${G.FINAL_LABEL[k]} · 대기`);
+    const side = pid => h("div.fb-p" + (R.claw === pid ? ".claw" : ""), avatar(pid, 56, { effect: false }), h("b", displayName(Store.player(pid))));
+    return h("div.final-board", side(a), h("div.fb-mid", h("div.fb-score", `${score(a)} : ${score(b)}`),
+        h("div.fb-rounds", chip("emo"), chip("weapon"), R.emo && R.weapon && R.emo !== R.weapon ? chip("claw") : null)), side(b));
+}
+
+// 2 : 0 — both duels won: a celebration before the crown
+function finalSweep(pid, onCrown) {
+    const nm = displayName(Store.player(pid));
+    const btn = h("button.btn.gold.huge", { onclick: () => { btn.disabled = true; onCrown(); } }, "👑 우승 확정 · 시상식으로");
+    const el = h("div.final-sweep",
+        h("div.fs-title", "PERFECT VICTORY"),
+        h("div.fs-crown", "👑"), avatar(pid, 180), h("h2", nm),
+        h("div.fs-badges", h("span", "🐾 EmoMon 배틀 승리"), h("span", "⚔️ 무기 대결 승리")),
+        h("p", `${nm}이(가) 두 대결을 모두 이겨 시즌 우승자가 되었습니다! 축하합니다! 🎉`),
+        h("div.row.center", btn));
+    setTimeout(() => { if (document.body.contains(el)) { Sound.fanfare(); confetti(180, ["👑", "🎉", "🏆", "✨", "🪙"]); } }, 200);
+    return el;
 }
 
 // champion: the whole roster lined up around the winner, balloons, fireworks, blinking WINNER
