@@ -12,6 +12,9 @@ import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PED
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";
+import { cat as emoCat, emoItem } from "../emomon/data.js";
+import * as EM from "../emomon/game.js";
+import { itemIcon } from "../emomon/ui.js";
 
 export const skewLow = (min, max, step, k = 3) => Math.max(min, Math.round((min + (max - min) * Math.pow(Math.random(), k)) / step) * step);
 function taskOverlay(content) { const ov = h("div.task-ov", content); document.body.append(ov); return ov; }
@@ -267,10 +270,12 @@ export async function npcAttack(pid) {
 }
 
 // ------------------------------------------------------------------ 🧳 보따리상점 (peddler NPC)
+// EmoMon goods need the EmoMon catalog (loaded at season start); without it they are left out
+const peddlerEntry = it => it.cat === "emo" ? (emoCat() ? emoItem(it.id) : null) : it.cat === "emoweapon" ? (emoCat()?.weapon[String(it.id)] || null) : catalogEntry(it.cat, it.id);
 // 5 random goods from PEDDLER_STOCK, cheap. One purchase per player per season.
 export async function peddlerShop(pid) {
     const ps = G.S().ps[pid];
-    const stock = [...PEDDLER_STOCK].sort(() => Math.random() - 0.5).slice(0, 5);
+    const stock = [...PEDDLER_STOCK].filter(it => peddlerEntry(it)).sort(() => Math.random() - 0.5).slice(0, 5);
     const done = !!ps.peddlerBought;
     const grid = h("div.shop-grid");
     const m = modal(h("div.peddler",
@@ -278,16 +283,20 @@ export async function peddlerShop(pid) {
         h("p.wallet", `💰 ${fmt(ps.money)} G · 💎 ${fmt(ps.points)} P`),
         grid, h("div.row.center", h("button.btn.ghost", { onclick: () => m.close() }, "그냥 가기"))), { title: "🧳 보따리상점 OPEN", wide: true });
     const render = () => grid.replaceChildren(...stock.map(it => {
-        const e = catalogEntry(it.cat, it.id);
+        const e = peddlerEntry(it);
         if (!e) return null;
+        const emoGood = it.cat === "emo" || it.cat === "emoweapon";
         const cost = { pts: it.pts || 0, gold: it.gold || 0 };
         const ok = !ps.peddlerBought && canPay(ps, cost);
         return h("div.sitem" + (e.rare || e.kind === "special" ? ".rare" : ""),
-            h("div.sitem-art", shopArt(it.cat, e)), h("div.sitem-name", e.name), h("div.sitem-desc", shopDesc(it.cat, e)),
+            h("div.sitem-art", emoGood ? (it.cat === "emo" ? itemIcon(e, 56) : h("div.big-emoji", "⚔️")) : shopArt(it.cat, e)), h("div.sitem-name", e.name),
+            h("div.sitem-desc", emoGood ? (it.cat === "emo" ? "🐾 몬스터 아이템" : `🐾 몬스터 무기 · ${e.attribute} · 위력 ${e.power || 0} · 명중 ${e.accuracy ?? "-"}%`) : shopDesc(it.cat, e)),
             h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: async () => {
                 if (ps.peddlerBought || !canPay(ps, cost)) return;
-                if (!(await checkGoods(ps, it.cat, it.id, e))) return;
-                pay(ps, cost); giveGoods(pid, it.cat, it.id);
+                if (!emoGood && !(await checkGoods(ps, it.cat, it.id, e))) return;
+                if (emoGood && !(await confirmBox(`${e.name}을(를) ${priceLabel(cost)}에 살까요?`, "구매", "취소"))) return;
+                pay(ps, cost);
+                if (it.cat === "emo") EM.giveItem(pid, it.id); else if (it.cat === "emoweapon") EM.giveWeapon(pid, it.id); else giveGoods(pid, it.cat, it.id);
                 ps.peddlerBought = true;
                 G.log(`🧳 ${G.name(pid)} 보따리상점에서 ${e.name} 구매`);
                 Store.saveSeason(true);

@@ -552,9 +552,9 @@ function locationStage(s) {
         else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
-        else if (id === "emo:capture") content = captureView(pid, loc, { turn: t, onChange: emoChanged });
+        else if (id === "emo:capture") content = captureView(pid, loc, { turn: t, onChange: emoChanged, onLeave: () => tabBody("games") });
         else if (id === "emo:hospital") content = hospitalView(pid, { onChange: emoChanged });
-        else if (id === "emo:lab") content = labView(pid, { onChange: emoChanged });
+        else if (id === "emo:lab") content = labView(pid, { loc, onChange: emoChanged });
         else if (id === "emo:shop") content = monsterShopView(pid, loc, { onChange: emoChanged });
         else if (id === "emo:dex") content = emoDexTab(pid);
         else content = playerCard(pid, ps);

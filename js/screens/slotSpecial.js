@@ -138,7 +138,39 @@ const FX = {
     raid: { icon: "❗🐉❗", text: "BOSS RAID!", snd: "boom", cls: "fire", shake: true },
     lift: { icon: "⬆️🛗⬆️", text: "EXPRESS LIFT!", snd: "whoosh", cls: "beam" },
     washer: { icon: "🤖🧽", text: "WINDOW WASHER!", snd: "whoosh", cls: "beam" },
-    party: { icon: "🔑🍾🥂", text: "PENTHOUSE PARTY!", snd: "boom", cls: "gold", shake: true }
+    party: { icon: "🔑🍾🥂", text: "PENTHOUSE PARTY!", snd: "boom", cls: "gold", shake: true },
+    // ---- round 8 (realmEngine.js)
+    hourglass: { icon: "⏳🔄⌛", text: "CHEATING DEATH!", snd: "whoosh", cls: "ghost", rewind: true },
+    soulfly: { icon: "👻➡️🏮", text: "", snd: "coin", cls: "ghost" },
+    spectral: { icon: "🌊👻🌊", text: "SPECTRAL WAVE!", snd: "boom", cls: "ghost", shake: true },
+    afterlife: { icon: "🗝️💀🗝️", text: "AFTERLIFE VAULT!", snd: "boom", cls: "ghost", shake: true },
+    doves: { icon: "🔔🕊️🕊️🪶", text: "GOLDEN DOVE RELEASE!", snd: "whoosh", cls: "gold" },
+    goldwave: { icon: "🌊✨🌊", text: "RIPPLE OF GENEROSITY!", snd: "splash", cls: "gold" },
+    karma: { icon: "🎁🎁🎁", text: "TRIPLE KARMA!", snd: "boom", cls: "gold", shake: true },
+    bard: { icon: "🪕🎶🎶", text: "BARD'S SONG!", snd: "bonus", cls: "gold" },
+    brawl: { icon: "⚔️💥🍺", text: "BAR BRAWL!", snd: "boom", cls: "fire", shake: true },
+    bounty: { icon: "📜📜📜", text: "BOUNTY BOARD!", snd: "bonus", cls: "gold" },
+    shredder: { icon: "🗂️➡️🗑️", text: "PAPER SHREDDER!", snd: "boom", cls: "beam", shake: true },
+    coffee: { icon: "☕☕☕", text: "COFFEE BREAK!", snd: "bonus", cls: "gold" },
+    meeting: { icon: "📅📅📅", text: "PERFORMANCE REVIEW!", snd: "boom", cls: "beam", shake: true },
+    nudge: { icon: "⬆️⬇️", text: "NUDGE!", snd: "whoosh", cls: "glitch" },
+    neon: { icon: "⚡🌃⚡", text: "NEON OVERDRIVE!", snd: "boom", cls: "glitch", shake: true },
+    ferris: { icon: "7️⃣🎡7️⃣", text: "SUPER JACKPOT WHEEL!", snd: "boom", cls: "glitch", shake: true },
+    fusion: { icon: "🔴🧲🔵", text: "MAGNETIC FUSION!", snd: "boom", cls: "bolt", shake: true },
+    surgered: { icon: "🔴🔴🔴", text: "RED SURGE!", snd: "boom", cls: "fire", shake: true },
+    surgeblue: { icon: "🔵🔵🔵", text: "BLUE SURGE!", snd: "boom", cls: "beam", shake: true },
+    reactor: { icon: "☢️☢️☢️", text: "REACTOR OVERLOAD!", snd: "boom", cls: "bolt", shake: true },
+    blackcard: { icon: "💳✨", text: "UNLIMITED CREDIT!", snd: "bonus", cls: "gold" },
+    dividend: { icon: "🪙📈", text: "DIVIDEND x3!", snd: "cash", cls: "gold" },
+    auction: { icon: "🔨🏓🏓", text: "AUCTION HOUSE!", snd: "boom", cls: "gold", shake: true },
+    vipup: { icon: "🔦✨", text: "VIP UPGRADE!", snd: "bonus", cls: "gold" },
+    bouncer: { icon: "🕴️✋🕴️", text: "BOUNCER'S BLOCK!", snd: "boom", cls: "bass" },
+    champagne: { icon: "🥂🥂🥂", text: "CHAMPAGNE TOWER!", snd: "boom", cls: "gold", shake: true },
+    furnace: { icon: "🔥🧈🔥", text: "24-KARAT MELT!", snd: "boom", cls: "fire" },
+    dynamite: { icon: "🧨🧨🧨", text: "MINT VAULT HEIST!", snd: "boom", cls: "fire", shake: true },
+    refract: { icon: "🔆💠🔆", text: "LASER REFRACTION!", snd: "bonus", cls: "beam" },
+    flawless: { icon: "💎💥✨", text: "FLAWLESS CUT!", snd: "boom", cls: "beam", shake: true },
+    crowns: { icon: "👑👑👑", text: "CROWN JEWEL VAULT!", snd: "boom", cls: "gold", shake: true }
 };
 // the spin mechanic of the round-7 machines: a cover over the reels that plays while they land
 const COVERS = {
@@ -152,7 +184,18 @@ const COVERS = {
     plunger: () => [h("i.cv-plunger", "🕹️"), h("b.cv-ball", "⚪")],
     gate: () => [h("b.cv-bars")],
     clock: () => [h("b.cv-clock", "🕰️"), ...["🧑‍🌾", "🧙", "🧝", "💂", "🧑‍🍳"].map((e, i) => h("i", { style: { "--i": i } }, e))],
-    elevator: () => [h("b.cv-floors", Array.from({ length: 8 }, (_, i) => h("span", `${(8 - i) * 25}F`)))]
+    elevator: () => [h("b.cv-floors", Array.from({ length: 8 }, (_, i) => h("span", `${(8 - i) * 25}F`)))],
+    // ---- round 8
+    scythe: n => [...Array.from({ length: n }, (_, i) => h("i.cv-tomb", { style: { "--i": i } }, "🪦")), h("b.cv-scythe", "🪓")],
+    coin: () => [h("b.cv-coin", "🪙"), ...[0, 1, 2].map(i => h("i.cv-ring", { style: { "--i": i } }))],
+    mugs: n => Array.from({ length: n }, (_, i) => h("i.cv-mug", { style: { "--i": i } }, i % 3 ? "🍺" : "🂠")),
+    email: () => [h("b.cv-mail", "📧"), ...Array.from({ length: 10 }, (_, i) => h("i.cv-note", { style: { "--i": i, "--x": (i * 37) % 90 + "%" } }, i % 2 ? "🗒️" : "📊"))],
+    lever: () => [h("b.cv-lever", h("span", "🔴")), h("i.cv-flash")],
+    pulse: () => [h("b.cv-div"), ...Array.from({ length: 10 }, (_, i) => h("i.cv-tile" + (i % 2 ? ".b" : ".r"), { style: { "--i": i } }))],
+    deal: n => Array.from({ length: n }, (_, i) => h("i.cv-card", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } })),
+    doors: () => Array.from({ length: 5 }, (_, i) => h("i.cv-door", { style: { "--i": i } })),
+    pour: n => [h("b.cv-chain", "⛓️"), ...Array.from({ length: n }, (_, i) => h("i.cv-mold", { style: { "--c": i % 4, "--r": Math.floor(i / 4) } }))],
+    prism: () => [h("b.cv-beam"), h("b.cv-prism", "🔺"), ...Array.from({ length: 7 }, (_, i) => h("i.cv-ray", { style: { "--i": i } }))]
 };
 
 export async function playSpecial(res, api) {
@@ -210,9 +253,8 @@ export async function playSpecial(res, api) {
         await pace(found ? 600 : 400);
     }
     const setRows = n => { api.reelsBox.style.setProperty("--rows", n); cabinet.classList.toggle("sp-tall", n > 5); };
-    try {
-        for (let i = 0; i < res.phases.length; i++) {
-            const p = res.phases[i];
+    // one phase of the script (a "choose" phase plays the chosen branch through here too)
+    async function step(p, i) {
             switch (p.t) {
                 case "spin": {
                     clearHl();
@@ -323,8 +365,22 @@ export async function playSpecial(res, api) {
                 case "bingoline": await bingoLine(p); break;
                 case "panel": api.meter(p.key, p.value, p.hl); await pace(p.hl ? 700 : 250); break;
                 case "tease": msgEl.innerHTML = `<span class="tease">아깝다!! 😱</span>`; break;
+                // ---- round 8
+                case "choose": { const k = await choose(p); for (const q of p.branches[k] || []) await step(q, -1); break; }
+                case "block": await bullion(p); break;
+                case "nudge": {
+                    const reel = api.reelsBox.children[p.col];
+                    reel?.classList.remove("rl-nudge-d", "rl-nudge-u"); void reel?.offsetWidth;
+                    reel?.classList.add(p.dir > 0 ? "rl-nudge-d" : "rl-nudge-u");
+                    api.setReel(p.col, p.grid[p.col]);
+                    Sound.stop(); await pace(450);
+                    reel?.classList.remove("rl-nudge-d", "rl-nudge-u");
+                    break;
+                }
             }
-        }
+    }
+    try {
+        for (let i = 0; i < res.phases.length; i++) await step(res.phases[i], i);
     } finally {
         hud.remove();
         setRows(cfg.rows || 3);
@@ -350,6 +406,7 @@ export async function playSpecial(res, api) {
         cabinet.append(el);
         Sound[d.snd]?.();
         if (d.shake) api.shake(frame);
+        if (d.rewind) { cabinet.classList.add("sp-rewinding"); setTimeout(() => cabinet.classList.remove("sp-rewinding"), 800); }
         if (p.name === "goldbox") api.confetti(60, ["🎁", "🪙", "✨", "🎀"]);
         await pace(d.text ? 900 : 500);
         el.remove();
@@ -365,7 +422,41 @@ export async function playSpecial(res, api) {
         if (kind === "clouds" || kind === "radar") Sound.whoosh?.();
         if (kind === "rockets" || kind === "plunger" || kind === "elevator") Sound.boom?.();
         if (kind === "gate") setTimeout(() => Sound.boom?.(), 250);
+        if (kind === "scythe" || kind === "doors" || kind === "pulse" || kind === "deal") Sound.whoosh?.();
+        if (kind === "coin") { Sound.coin?.(); setTimeout(() => Sound.splash?.(), 350); }
+        if (kind === "mugs" || kind === "lever" || kind === "pour") Sound.boom?.();
+        if (kind === "email" || kind === "prism") Sound.tick?.();
         return el;
+    }
+    // Reactor Overload style choice: two options, the timer takes the engine's `auto` pick
+    async function choose(p) {
+        const sec = 8 * (api.turbo() ? 0.6 : 1);
+        const clock = h("b.tap-clock", sec.toFixed(1));
+        let pick;
+        const done = new Promise(r => pick = r);
+        const btns = p.options.map(o => h("button.rl-opt.k-" + o.k, { onclick: () => pick(o.k) }, h("span", o.icon), h("b", o.label), h("small", o.sub)));
+        overlay.append(h("div.tap-wrap.rl-choose", h("div.tap-head", p.title), h("div.rl-opts", btns), clock));
+        Sound.bonus();
+        const t0 = performance.now();
+        const timer = setInterval(() => { const l = Math.max(0, sec - (performance.now() - t0) / 1000); clock.textContent = l.toFixed(1); if (l <= 0) pick(p.auto); }, 100);
+        const k = await done;
+        clearInterval(timer);
+        btns.forEach((b, i) => b.classList.toggle("chosen", p.options[i].k === k));
+        Sound.boom?.(); api.shake(frame);
+        await pace(700);
+        overlay.replaceChildren();
+        return k;
+    }
+    // Heavy Metal Drop: a giant n×n gold block slams onto the molds
+    async function bullion(p) {
+        const a = cellsEl(p.c0, p.r0), b = cellsEl(p.c0 + p.n - 1, p.r0 + p.n - 1);
+        if (!a || !b) return;
+        const fr = frame.getBoundingClientRect(), ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+        const blk = h("div.rl-block", { style: { left: ra.left - fr.left + "px", top: ra.top - fr.top + "px", width: rb.right - ra.left + "px", height: rb.bottom - ra.top + "px" } }, h("span", p.icon), h("b", p.text));
+        frame.append(blk);
+        await pace(420); Sound.boom?.(); api.shake(frame);
+        await pace(700);
+        blk.remove();
     }
     // Tap bonuses: the prizes were decided by the engine and are revealed in tap order;
     // whatever is left when the timer runs out is collected automatically.
@@ -865,6 +956,21 @@ export function buildPanel(cfg, state = {}) {
         el.append(h("div.sk-strip.sk-tower", h("i", "🏙️"), fl, h("span", "PENTHOUSE ▲"), h("i", "🛗")));
         custom("floor", v => { fl.textContent = `FLOOR ${v}`; });
     }
+    // ---- the 10 round-8 machines (realmEngine.js)
+    else if (E === "sp_death") el.append(h("span.spp-ico.rl-reaper", "💀"), bar("souls", "🏮 SOUL LANTERN · 10 = 유령의 파도", "souls"));
+    else if (E === "sp_karma") el.append(h("div.sk-strip.rl-plaza", h("i.rl-bob", "🕊️"), h("b", "⛲ KARMA FOUNTAIN · 15 LILY PADS · 243 WAYS"), h("i.rl-bob", "🪷")));
+    else if (E === "sp_tavern") el.append(h("div.sk-strip.rl-inn", h("i", "🛎️"), h("b", "IDLE TAVERN · 16 TABLES · 256 WAYS"), h("i.rl-bob", "🍺")));
+    else if (E === "sp_office") el.append(h("div.sk-strip.rl-monitor", h("i", "🖥️"), h("b", "📥 Inbox (1) · RE: Q4 \"Totally Normal\" Report.xlsx"), h("i.rl-blink", "▮")));
+    else if (E === "sp_retro") el.append(h("div.sk-strip.rl-skyline", ...["🏢", "🎰", "🏬", "🎰", "🏙️"].map((e, i) => h("i", { style: { "--i": i } }, e)), h("b", "RETRO REEL CITY · 25 LINES")));
+    else if (E === "sp_polarity") {
+        const red = h("i.rl-red"), lab = h("b", "10 : 10");
+        el.append(h("div.rl-tug", h("span", "🔴"), h("div.rl-tugbar", red, h("i.rl-mid")), h("span", "🔵"), lab));
+        custom("tug", v => { red.style.width = Math.max(5, Math.min(95, 50 + v * 2.5)) + "%"; const r = Math.round((20 + v) / 2); lab.textContent = `${r} : ${20 - r}`; });
+    }
+    else if (E === "sp_yacht") aura("🛥️", "YACHT CLUB ROYALE · 🪙 도장 = 다음 당첨 x3", "🍾");
+    else if (E === "sp_vip") aura("🎫", "VIP PENTHOUSE STRIP · MEMBERS ONLY", "🕴️");
+    else if (E === "sp_foundry") aura("🏭", "BULLION FOUNDRY · 12 MOLDS · 81 WAYS", "🔥");
+    else if (E === "sp_prism") aura("🔺", "PRISM PALACE · HEX 4+ · DIAMOND = 모든 잭팟 합산", "👑");
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
         if (p.render) return p.render(value, max);
@@ -891,5 +997,7 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_payday") { set("fu", state.fu || 0, 100); set("dao", state.dao || 0, 100); }
     if (E === "sp_helm") { set("sailR", state.sailR || 0, 10); set("sailC", state.sailC || 0, 10); }
     if (E === "sp_chain") set("batt", state.batt || 0, 10);
+    if (E === "sp_death") set("souls", state.souls || 0, cfg.souls || 10);
+    if (E === "sp_polarity") set("tug", 0);
     return { el, set };
 }

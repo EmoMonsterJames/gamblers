@@ -14,7 +14,7 @@ import * as M from "./game.js";
 
 export const typeChip = t => h("span.emo-type", { style: { "--tc": E.colors?.[t] || "#888" } }, String(t).toUpperCase());
 export const stars = r => h("span.emo-stars", EMO.STARS(r));
-const natureTxt = n => n === "Default" ? "Default" : `${n} (${E.cfg.natureText(n)})`;
+export const natureTxt = n => n === "Default" ? "Default" : `${n} (${E.cfg.natureText(n)})`;
 
 // a still picture (lists) or an animated sprite (arena, detail)
 export function monPic(s, size = 64, { anim = false, flip = false, unseen = false } = {}) {
@@ -40,7 +40,7 @@ export function partyPanel(pid, { onChange = () => { } } = {}) {
         if (!cat()) { put(box, h("div.emo-party-head", "🐾 EmoMon"), h("p.muted.small", "EmoMon 데이터가 아직 없습니다 (관리자 → EmoMon 관리에서 동기화)")); return; }
         const e = M.emo(pid), list = e.mons, bm = M.battleMon(pid);
         put(box, 
-            h("div.emo-party-head", h("b", "🐾 내 EmoMon"), h("small", `${list.length}/${EMO.MAX_MONS} · Capture ${M.findsLeft(pid)}/${EMO.CAPTURES_PER_SEASON}`)),
+            h("div.emo-party-head", h("b", "🐾 내 EmoMon"), h("small", `${list.length}/${EMO.MAX_MONS} · 이번 라운드 Capture ${M.findsLeft(pid)}/${EMO.CAPTURES_PER_ROUND}`)),
             ...list.map(m => {
                 const s = M.sp(m), isB = bm?.uid === m.uid;
                 return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : ""), { onclick: () => monDetail(pid, m.uid, () => { draw(); onChange(); }) },
@@ -51,7 +51,7 @@ export function partyPanel(pid, { onChange = () => { } } = {}) {
                         hpBar(m),
                         h("div.emo-pc-w", `⚔ ${m.weapons.length}/${EMO.MAX_WEAPONS} · 🧬 ${m.traits.length}/${EMO.MAX_TRAITS}`, M.weaponRows(m).some(w => M.ppLeft(m, w) <= 0) ? h("span.emo-dis", "🔋 PP 0") : null, ...diseaseChips(m))));
             }),
-            !list.length ? h("div.emo-pcard.bot", monPic(species(EMO.BOT_ID), 46), h("div.emo-pc-info", h("b", "EmoMon Battlebot"), h("small.muted", "몬스터가 없으면 Battlebot이 대신 싸웁니다 (명중률 30%)"))) : null,
+            !list.length ? h("div.emo-pcard.bot", monPic(species(EMO.BOT_ID), 46), h("div.emo-pc-info", h("div.emo-pc-name", "EmoMon Battlebot"), h("div.emo-pc-desc", "몬스터가 없으면 Battlebot이 대신 싸웁니다 (명중률 30%)"))) : null,
             !bm && list.length ? h("p.notice.warn.small", "⚠️ 싸울 수 있는 몬스터가 없습니다 — Battlebot이 대신 싸웁니다. HP를 회복하세요!") : null);
     };
     const typesOf = M.typesOf;
@@ -95,43 +95,19 @@ export function monDetail(pid, u, onChange = () => { }) {
                 ...bagBtns("potion", id => act(M.usePotion(pid, m.uid, id), "HP 회복!")),
                 ...bagBtns("cure", id => act(M.usePotion(pid, m.uid, id), "치료 완료!")),
                 ...bagBtns("pp", id => act(M.usePotion(pid, m.uid, id), "🔋 PP 가득!")),
+                // fitting weapons / traits are learnt here; anything else is the 🧪 Monster Lab → 🔬 실험실
                 ...Object.entries(e.wbag).filter(([, n]) => n > 0).map(([wid, n]) => { const w = cat().weapon[wid]; if (!w) return null; const fits = M.canLearn(m, w);
-                    return h("button.btn.small" + (fits ? ".gold" : ".ghost"), { onclick: async () => {
-                        if (!fits && !(await confirmBox(`${s.name}은(는) ${w.name}을(를) 원래 배울 수 없습니다.\n무기 Breaker 1개를 사용해 배울까요?`, "배우기", "취소"))) return;
-                        act(M.learnWeapon(pid, m.uid, w.id, { breaker: !fits }), `${w.name} 습득!`);
+                    return h("button.btn.small" + (fits ? ".gold" : ".ghost"), { title: fits ? "" : "못 배우는 무기 — 🧪 Monster Lab 🔬 실험실에서 가르칠 수 있습니다", onclick: () => {
+                        if (!fits) return toast(`${s.name}은(는) ${w.name}을(를) 배울 수 없습니다 — 🧪 Monster Lab의 🔬 실험실에서 가르칠 수 있습니다`, "warn", 3800);
+                        act(M.learnWeapon(pid, m.uid, w.id), `${w.name} 습득!`);
                     } }, `⚔ ${w.name} 배우기 ×${n}${fits ? "" : " 🔒"}`); }),
-                ...Object.entries(e.tbag).filter(([, n]) => n > 0).map(([tid, n]) => { const t = cat().trait[tid]; if (!t) return null; const fits = M.canLearn(m, t);
-                    return h("button.btn.small" + (fits ? ".gold" : ".ghost"), { onclick: () => traitFlow(m, t, fits) }, `🧬 ${t.name} 배우기 ×${n}${fits ? "" : " 🔒"}`); }),
-                M.bagN(pid, "EMO_TYPE_BREAKER") > 0 ? h("button.btn.small.gold", { onclick: () => typeFlow(m) }, `🔷 속성 Breaker (${M.bagN(pid, "EMO_TYPE_BREAKER")})`) : null,
-                M.bagN(pid, "EMO_NATURE_BREAKER") > 0 ? h("button.btn.small.gold", { onclick: () => natureFlow(m) }, `🎭 Nature Breaker (${M.bagN(pid, "EMO_NATURE_BREAKER")})`) : null,
+                ...Object.entries(e.tbag).filter(([, n]) => n > 0).map(([tid, n]) => { const t = cat().trait[tid]; if (!t) return null; const ok = M.canLearn(m, t) && m.traits.length < EMO.MAX_TRAITS;
+                    return h("button.btn.small" + (ok ? ".gold" : ".ghost"), { title: ok ? "" : "🧪 Monster Lab 🔬 실험실에서 배우거나 바꿀 수 있습니다", onclick: () => {
+                        if (!ok) return toast(m.traits.length >= EMO.MAX_TRAITS ? "특성이 꽉 찼습니다 — 🧪 Monster Lab의 🔬 실험실에서 바꿀 수 있습니다" : `${s.name}은(는) ${t.name}을(를) 배울 수 없습니다 — 🧪 Monster Lab의 🔬 실험실을 이용하세요`, "warn", 3800);
+                        act(M.learnTrait(pid, m.uid, t.id), `${t.name} 특성 습득!`);
+                    } }, `🧬 ${t.name} 배우기 ×${n}${ok ? "" : " 🔒"}`); }),
                 M.bagN(pid, "EMO_MON_DEL") > 0 && M.mons(pid).length >= EMO.MAX_MONS ? h("button.btn.small.red", { onclick: async () => { if (await confirmBox(`몬스터 Release 권으로 ${s.name}을(를) 놓아 줄까요? 되돌릴 수 없습니다.`, "놓아 주기", "취소")) { if (act(M.release(pid, m.uid), "놓아 주었습니다")) mm.close(); } } }, "🚮 놓아 주기") : null),
             h("div.row.end", h("button.btn.ghost", { onclick: () => mm.close() }, "닫기")));
-    }
-    async function traitFlow(m, t, fits) {
-        let replace = null;
-        if (m.traits.length >= EMO.MAX_TRAITS) {
-            replace = await new Promise(res => {
-                const pm = modal(h("div.emo-pick", h("p", `특성이 꽉 찼습니다. ${t.name}(으)로 바꿀 특성을 고르세요 (특성 Breaker 1개 사용).`),
-                    ...M.traitRows(m).map(x => h("button.btn.gold", { onclick: () => { pm.close(); res(x.id); } }, `🧬 ${x.name}`))), { title: "특성 바꾸기", cls: "emo-modal" });
-                pm.closed.then(() => res(null));
-            });
-            if (replace == null) return;
-        } else if (!fits && !(await confirmBox(`${t.name}은(는) 이 몬스터가 원래 못 배우는 특성입니다.\n특성 Breaker 1개를 사용할까요?`, "사용", "취소"))) return;
-        act(M.learnTrait(pid, m.uid, t.id, { replace }), `${t.name} 특성 습득!`);
-    }
-    function typeFlow(m) {
-        const cur = M.typesOf(m);
-        const sel = h("select", E.types.filter(t => !cur.includes(t)).map(t => h("option", { value: t }, t)));
-        const from = h("select", cur.map(t => h("option", { value: t }, t)));
-        const pm = modal(h("div.emo-pick",
-            h("p", `지금 속성: ${cur.join(" / ")} (최대 ${EMO.MAX_TYPES}개)`),
-            h("label", "새 속성 ", sel),
-            h("div.row", cur.length < EMO.MAX_TYPES ? h("button.btn.gold", { onclick: () => { if (act(M.changeTypes(pid, m.uid, { add: sel.value }), "속성 추가!")) pm.close(); } }, "➕ 추가하기") : null,
-                h("span", " 또는 "), from, h("button.btn.gold", { onclick: () => { if (act(M.changeTypes(pid, m.uid, { from: from.value, to: sel.value }), "속성 변경!")) pm.close(); } }, "🔁 이 속성을 바꾸기"))), { title: "🔷 속성 Breaker", cls: "emo-modal" });
-    }
-    function natureFlow(m) {
-        const sel = h("select", Object.keys(E.cfg.NATURES).filter(n => n !== m.nature).map(n => h("option", { value: n }, `${n} — ${E.cfg.natureText(n)}`)));
-        const pm = modal(h("div.emo-pick", h("p", `지금 성격: ${natureTxt(m.nature)}`), sel, h("div.row.end", h("button.btn.gold", { onclick: () => { if (act(M.changeNature(pid, m.uid, sel.value), "성격 변경!")) pm.close(); } }, "바꾸기"))), { title: "🎭 Nature Breaker", cls: "emo-modal" });
     }
     draw();
     return mm;
@@ -217,23 +193,66 @@ export function dexView(pid) {
     draw();
     return wrap;
 }
+// ---------------------------------------------------------------- browsers (shared with the admin)
+// #1~100 · #101~200 … buttons → the list of that range
+export function rangeBrowser({ items, idOf = x => x.id, size = 100, count = null, render, search = null, searchText = null, placeholder = "검색" }) {
+    const wrap = h("div.emo-drill");
+    let range = null;
+    const q = search === false ? null : h("input.emo-q", { placeholder, oninput: () => draw() });
+    const ranges = [...new Set(items.map(x => Math.floor((idOf(x) - 1) / size)))].sort((a, b) => a - b);
+    const draw = () => {
+        const f = q?.value.trim().toLowerCase();
+        if (f) { put(wrap, q, h("div.emo-drill-list", ...items.filter(x => searchText?.(x)?.toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
+        const inR = r => items.filter(x => Math.floor((idOf(x) - 1) / size) === r);
+        put(wrap, q,
+            h("div.emo-drill-btns", ...ranges.map(r => h("button.emo-drill-b" + (r === range ? ".on" : ""), { onclick: () => { range = r === range ? null : r; draw(); } },
+                h("b", `#${r * size + 1} ~ ${(r + 1) * size}`), h("small", count ? count(inR(r)) : `${inR(r).length}종`)))),
+            range == null ? h("p.muted.small.center", "번호대를 누르면 목록이 나옵니다") : h("div.emo-drill-list", ...inR(range).map(render)));
+    };
+    draw();
+    return wrap;
+}
+// attribute → ★ → list (an item can sit under several attributes)
+export function typeStarBrowser({ items, typesOf, starOf, render, searchText, placeholder = "이름 검색", anyLabel = "공용" }) {
+    const wrap = h("div.emo-drill");
+    let type = null, star = null;
+    const q = h("input.emo-q", { placeholder, oninput: () => draw() });
+    const tlist = x => { const t = (typesOf(x) || []).filter(Boolean); return t.length ? t : [anyLabel]; };
+    const order = [...E.types, anyLabel];
+    const types = [...new Set(items.flatMap(tlist))].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    const draw = () => {
+        const f = q.value.trim().toLowerCase();
+        if (f) { put(wrap, q, h("div.emo-drill-list", ...items.filter(x => searchText(x).toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
+        const inT = items.filter(x => type && tlist(x).includes(type));
+        const stars = [...new Set(inT.map(starOf))].sort((a, b) => a - b);
+        put(wrap, q,
+            h("div.emo-drill-btns.types", ...types.map(t => h("button.emo-drill-b" + (t === type ? ".on" : ""), { onclick: () => { type = t === type ? null : t; star = null; draw(); } },
+                t === anyLabel ? h("b", `🌐 ${anyLabel}`) : typeChip(t), h("small", `${items.filter(x => tlist(x).includes(t)).length}`)))),
+            type == null ? h("p.muted.small.center", "속성을 누르면 별 등급별로 나뉩니다") :
+                h("div.emo-drill-btns", ...stars.map(s => h("button.emo-drill-b" + (s === star ? ".on" : ""), { onclick: () => { star = s === star ? null : s; draw(); } },
+                    h("b.emo-stars", EMO.STARS(s)), h("small", `${inT.filter(x => starOf(x) === s).length}개`)))),
+            type != null && star == null ? h("p.muted.small.center", "별 등급을 누르면 목록이 나옵니다") : null,
+            type != null && star != null ? h("div.emo-drill-list", ...inT.filter(x => starOf(x) === star).sort((a, b) => a.name.localeCompare(b.name)).map(render)) : null);
+    };
+    draw();
+    return wrap;
+}
+
 function monsterDex(pid) {
     const dex = M.dexOf(pid);
     for (const m of M.monsOf(pid)) if (!dex[m.sid]) M.seen(pid, m.sid, "own");
-    const q = h("input", { placeholder: "이름 / 속성 검색 (발견한 몬스터만)" });
-    const grid = h("div.emo-dex-grid");
-    const found = cat().mons.filter(m => dex[m.id]).length;
-    const fill = () => {
-        const f = q.value.trim().toLowerCase();
-        put(grid, ...cat().mons.filter(m => m.id !== EMO.BOT_ID || dex[m.id]).filter(m => !f || (dex[m.id] && (m.name.toLowerCase().includes(f) || typesOfSpecies(m).some(t => t.toLowerCase().includes(f))))).map(m => {
-            const d = dex[m.id];
-            return h("button.emo-dex-card" + (d ? ".found" : ".unseen"), { onclick: () => d ? speciesInfo(m, d, pid) : null },
-                h("small.emo-no", `#${m.id}`), monPic(m, 64, { unseen: !d }),
-                h("b", d ? m.name : "???"), h("small", d ? "FOUND" : "UNSEEN"), d ? h("div", ...typesOfSpecies(m).map(typeChip)) : null);
-        }));
+    const list = cat().mons.filter(m => m.id !== EMO.BOT_ID || dex[m.id]);
+    const found = list.filter(m => dex[m.id]).length;
+    const card = m => {
+        const d = dex[m.id];
+        return h("button.emo-dex-card" + (d ? ".found" : ".unseen"), { onclick: () => d ? speciesInfo(m, d, pid) : null },
+            h("small.emo-no", `#${m.id}`), monPic(m, 64, { unseen: !d }),
+            h("b", d ? m.name : "???"), h("small", d ? "FOUND" : "UNSEEN"), d ? h("div", ...typesOfSpecies(m).map(typeChip)) : null);
     };
-    q.oninput = fill; fill();
-    return h("div", h("div.emo-dex-head", h("b", `발견 ${found} / ${cat().mons.length}`), q), grid);
+    const br = rangeBrowser({ items: list, render: card, count: l => `발견 ${l.filter(m => dex[m.id]).length} / ${l.length}`,
+        placeholder: "이름 / 속성 검색 (발견한 몬스터만)", searchText: m => dex[m.id] ? `${m.name} ${typesOfSpecies(m).join(" ")}` : "" });
+    br.classList.add("grid-list");
+    return h("div", h("div.emo-dex-head", h("b", `발견 ${found} / ${list.length}`)), br);
 }
 function speciesInfo(s, d, pid) {
     const dex = M.dexOf(pid);
@@ -255,23 +274,68 @@ function speciesInfo(s, d, pid) {
             h("div.emo-chain-node", dex[x.id] || x.id === s.id ? [monPic(x, 56), h("small", x.name)] : [h("div.emo-q", "??")])])) : h("p.muted", "진화 없음")),
         { title: "📖 Monster Dex", wide: true, cls: "emo-modal" });
 }
+export const traitTypes = t => (Array.isArray(t.allowed_types) ? t.allowed_types : []).filter(Boolean);
+export function traitInfo(t) {
+    modal(h("div.emo-sinfo",
+        h("h3", `🧬 ${t.name} `, stars(t.rarity)),
+        h("div", ...(traitTypes(t).length ? traitTypes(t).map(typeChip) : [h("span.emo-chip", "🌐 공용")])),
+        h("p", E.traits.describe(t) || t.description || ""),
+        t.description && t.description !== E.traits.describe(t) ? h("p.muted.small", t.description) : null,
+        h("p.muted.small", E.traits.allowedText(t))), { title: "🧬 Trait Dex", cls: "emo-modal" });
+}
 function traitDex() {
-    return h("div.emo-list", cat().traits.slice().sort((a, b) => (a.rarity || 1) - (b.rarity || 1) || a.name.localeCompare(b.name)).map(t => h("div.emo-row",
-        h("b", `🧬 ${t.name}`), stars(t.rarity), h("small", E.traits.describe(t)), h("small.muted", E.traits.allowedText(t)))));
+    return typeStarBrowser({
+        items: cat().traits, typesOf: traitTypes, starOf: t => t.rarity || 1,
+        searchText: t => `${t.name} ${traitTypes(t).join(" ")}`, placeholder: "🔍 특성 이름 / 속성 검색",
+        render: t => { const ty = traitTypes(t);
+            return h("button.emo-row.click", { onclick: () => traitInfo(t) }, ...(ty.length ? ty.slice(0, 3).map(typeChip) : [h("span.emo-chip", "🌐 공용")]), ty.length > 3 ? h("small", `+${ty.length - 3}`) : null, stars(t.rarity), h("b", `🧬 ${t.name}`), h("small.emo-more", "설명 ›")); }
+    });
+}
+export function weaponInfo(w) {
+    modal(h("div.emo-sinfo",
+        h("h3", typeChip(w.attribute), ` ${w.name} `, stars(w.rarity)),
+        h("div.emo-kv", `위력 ${w.power || 0} · 명중 ${w.accuracy ?? "-"}% · PP ${w.max_uses ?? E.cfg.DEFAULT_WEAPON_USES}`),
+        w.effect_type && w.effect_type !== "none" ? h("div.emo-kv", `효과: ${E.cfg.WEAPON_EFFECTS[w.effect_type]?.label || w.effect_type}${w.effect_chance ? ` (${w.effect_chance}%)` : ""}`) : null,
+        w.description ? h("p", w.description) : null,
+        h("p.muted.small", E.traits.allowedText(w))), { title: "⚔ Weapon Dex", cls: "emo-modal" });
 }
 function weaponDex() {
-    const q = h("input", { placeholder: "이름 / 속성 검색" });
-    const list = h("div.emo-list");
-    const fill = () => { const f = q.value.trim().toLowerCase(); put(list, ...cat().weapons.filter(w => !f || w.name.toLowerCase().includes(f) || String(w.attribute).toLowerCase().includes(f)).slice(0, 400).map(w => h("div.emo-row", typeChip(w.attribute), ...weaponLine(w), stars(w.rarity), h("small.muted", E.traits.allowedText(w))))); };
-    q.oninput = fill; fill();
-    return h("div", q, list);
+    return typeStarBrowser({
+        items: cat().weapons.filter(w => !(w.allowed_monster_ids || []).map(Number).includes(EMO.BOT_ID)), typesOf: w => [w.attribute], starOf: w => w.rarity || 1,
+        searchText: w => `${w.name} ${w.attribute}`, placeholder: "🔍 무기 이름 / 속성 검색",
+        render: w => h("button.emo-row.click", { onclick: () => weaponInfo(w) }, typeChip(w.attribute), stars(w.rarity), ...weaponLine(w))
+    });
 }
+// 🔺 type chart: 1 attribute = the full table · 2 / 3 attributes = pick the defender's attributes
+const mult = (a, defs) => defs.reduce((x, d) => x * (E.chart[a]?.[d] ?? 1), 1);
+const multTxt = v => v === 0 ? "0" : v === 0.5 ? "½" : v === 0.25 ? "¼" : v === 0.125 ? "⅛" : String(+v.toFixed(3));
 function typeChart() {
+    const wrap = h("div.emo-tc-box");
+    let n = 1, picks = ["Fire", "Water", "Grass"];
     const T = E.types;
-    const cell = (a, d) => { const v = E.chart[a]?.[d] ?? 1; return h("td" + (v >= 2 ? ".x2" : v > 1 ? ".x15" : v === 0 ? ".x0" : v < 1 ? ".xh" : ""), v === 1 ? "" : v === 0.5 ? "½" : String(v)); };
-    return h("div.emo-tc-wrap", h("p.muted.small", "왼쪽 세로줄 = 공격 속성 · 위쪽 가로줄 = 방어 속성 · 2 = 효과 굉장 · ½ = 효과 별로 · 0 = 효과 없음 (여러 속성이면 곱해집니다)"),
-        h("table.emo-tc", h("tr", h("th", "공격 \\ 방어"), ...T.map(t => h("th", h("span.emo-vt", { style: { "--tc": E.colors[t] } }, t.slice(0, 3))))),
-            ...T.map(a => h("tr", h("th", typeChip(a)), ...T.map(d => cell(a, d))))));
+    const draw = () => {
+        const tabs = h("div.bk-tabs", [[1, "1개 속성"], [2, "2개 속성"], [3, "3개 속성"]].map(([k, l]) => h("button.bk-tab" + (k === n ? ".on" : ""), { onclick: () => { n = k; draw(); } }, l)));
+        if (n === 1) {
+            const cell = (a, d) => { const v = E.chart[a]?.[d] ?? 1; return h("td" + (v >= 2 ? ".x2" : v > 1 ? ".x15" : v === 0 ? ".x0" : v < 1 ? ".xh" : ""), v === 1 ? "" : multTxt(v)); };
+            put(wrap, tabs, h("div.emo-tc-wrap", h("p.muted.small", "왼쪽 세로줄 = 공격 속성 · 위쪽 가로줄 = 방어 속성 · 2 = 효과 굉장 · ½ = 효과 별로 · 0 = 효과 없음"),
+                h("table.emo-tc", h("tr", h("th", "공격 \\ 방어"), ...T.map(t => h("th", h("span.emo-vt", { style: { "--tc": E.colors[t] } }, t.slice(0, 3))))),
+                    ...T.map(a => h("tr", h("th", typeChip(a)), ...T.map(d => cell(a, d)))))));
+            return;
+        }
+        const defs = [...new Set(picks.slice(0, n))];
+        const sels = Array.from({ length: n }, (_, i) => h("select", { onchange: e => { picks[i] = e.target.value; draw(); } }, T.map(t => h("option", { value: t, selected: picks[i] === t }, t))));
+        const rows = T.map(a => ({ a, v: mult(a, defs) })).sort((x, y) => y.v - x.v);
+        const groups = [["💥 효과 굉장 (×2 이상)", r => r.v >= 2, "x2"], ["✨ 조금 강함", r => r.v > 1 && r.v < 2, "x15"], ["➖ 보통 (×1)", r => r.v === 1, ""], ["🛡 효과 별로 (×1 미만)", r => r.v > 0 && r.v < 1, "xh"], ["🚫 효과 없음 (×0)", r => r.v === 0, "x0"]];
+        // and what this attribute set does when it attacks (best of its attributes)
+        const atk = T.map(d => ({ d, v: Math.max(...defs.map(a => E.chart[a]?.[d] ?? 1)) })).filter(r => r.v >= 2);
+        put(wrap, tabs,
+            h("div.emo-tc-pick", h("b", "방어 몬스터 속성: "), ...sels, h("span", ...defs.map(typeChip)), defs.length < n ? h("small.bad", " 같은 속성은 한 번만 셉니다") : null),
+            h("p.muted.small", `${defs.join(" / ")} 몬스터가 공격을 받을 때 (속성 배율이 곱해집니다)`),
+            h("div.emo-tc-groups", ...groups.map(([label, f, cls]) => { const l = rows.filter(f); return l.length ? h("div.emo-tc-g." + (cls || "x1"), h("b", label), h("div", ...l.map(r => h("span.emo-tc-m", typeChip(r.a), h("small", "×" + multTxt(r.v)))))) : null; })),
+            h("p.muted.small", `${defs.join(" / ")} 몬스터가 공격할 때 효과 굉장인 속성: `, ...(atk.length ? atk.map(r => typeChip(r.d)) : [h("span", "없음")])));
+    };
+    draw();
+    return wrap;
 }
 
 // ---------------------------------------------------------------- inventory sections

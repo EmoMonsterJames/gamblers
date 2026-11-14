@@ -796,3 +796,6 @@ export const SKY_MACHINES = Object.fromEntries(Object.entries({
     sp_cumulus: cumulus, sp_aero: aero, sp_crossing: crossing, sp_orbital: orbital, sp_constellation: constellation,
     sp_tide: tide, sp_koi: koi, sp_chain: chain, sp_arena: arena, sp_quest: quest, sp_climb: climb
 }).map(([k, fn]) => [k, wrap(fn)]));
+
+// shared with the round-8 machines (realmEngine.js)
+export { gate as jpGate, jpName, pickTier, pushJp, forcedTier, tapBonus, payTap, scatterTease, spinPhase, tease, cellSet, split, ensureRun, anyPay, anyHigh, one, VALS, SMALL };

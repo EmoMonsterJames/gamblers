@@ -7,6 +7,7 @@
 import { REGIONS, NEW_MAPS, CL1_PATCH, REGION_ITEMS, mapSlots, mapCasinos, slotIdOf, casinoIdOf } from "./regions.js";
 import { THEME_HOME } from "../slots/themeConfigs.js";
 import { SKY_HOME } from "../slots/skyConfigs.js";
+import { REALM_HOME } from "../slots/realmConfigs.js";
 export { REGIONS, REGION_ITEMS };
 export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
@@ -542,6 +543,8 @@ for (const [sid, lid] of Object.entries(SPECIAL_HOME)) LOCATIONS.find(l => l.id 
 for (const [sid, lid] of Object.entries(THEME_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 // the 11 sky / space / arena machines (round 7) — js/slots/skyConfigs.js
 for (const [sid, lid] of Object.entries(SKY_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
+// the 10 round-8 machines — js/slots/realmConfigs.js
+for (const [sid, lid] of Object.entries(REALM_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 
 // earn corners: `earn: true` (old saves) = the classic four
 export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];
@@ -666,7 +669,11 @@ export const PEDDLER_STOCK = [
     { cat: "pet", id: "poop", gold: 25000 },
     { cat: "pet", id: "dove_trio", pts: 250 },
     { cat: "effect", id: "fx_clover", gold: 100000 },
-    { cat: "effect", id: "fx_moneyfire", pts: 250 }
+    { cat: "effect", id: "fx_moneyfire", pts: 250 },
+    // 🐾 EmoMon goods (emo = monster item · emoweapon = EmoMonster weapon id)
+    { cat: "emo", id: "EMO_HP10", gold: 5940 },
+    { cat: "emo", id: "EMO_HP50", gold: 21670 },
+    { cat: "emoweapon", id: 2, gold: 100978 }   // 무기 Hit
 ];
 export const CURSES = ["저주받아라!", "죽어라!", "돈 다 날려라!", "평생 꽝만 나와라!", "잭팟은 꿈도 꾸지 마라!", "네 펫이 도망갈 거다!", "다음 스핀은 무조건 꽝이다!", "가진 돈 전부 잃을 거다!"];
 

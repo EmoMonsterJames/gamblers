@@ -883,7 +883,7 @@ export function openSlot(cfg, ctx) {
             cabinet.append(l); Sound.bonus(); await sleep(1800); l.remove(); frame.classList.remove("omen-shake");
         }
         if (o.fx === "text") { const t = h("div.omen-text", o.text); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
-        if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); await sleep(1100); frame.classList.remove("omen-shake"); }
+        if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); if (o.scream) Sound.scream?.(); await sleep(1100); frame.classList.remove("omen-shake"); }
         if (o.fx === "rain") {
             const l = h("div.omen-coins.full", Array.from({ length: 28 }, (_, i) => h("i", { style: { left: 4 + rnd() * 92 + "%", "--d": rnd() * 0.9 + "s" } }, o.chars[i % o.chars.length])));
             cabinet.append(l); Sound.cash(); await sleep(1700); l.remove();
@@ -939,6 +939,11 @@ export function openSlot(cfg, ctx) {
             await sleep(400); eggStage?.el.classList.remove("omen-cracks");
         }
         // Niagara: the waterfall overflows and churns
+        // The Rule of Death: blood pours down from the top of the cabinet
+        if (o.fx === "blood") {
+            const l = h("div.omen-flood.blood", h("div.of-wave"), h("div.of-wave.w2"), Array.from({ length: 18 }, () => h("i", { style: { left: rnd() * 100 + "%", "--d": rnd() * 0.8 + "s" } }, "🩸")));
+            cabinet.append(l); frame.classList.add("omen-shake"); Sound.splash(); Sound.heartbeat(); await sleep(1900); frame.classList.remove("omen-shake"); l.remove();
+        }
         if (o.fx === "flood") {
             const l = h("div.omen-flood", h("div.of-wave"), h("div.of-wave.w2"), Array.from({ length: 16 }, () => h("i", { style: { left: rnd() * 100 + "%", "--d": rnd() * 0.8 + "s" } }, "💦")));
             cabinet.append(l); frame.classList.add("omen-shake"); Sound.splash(); await sleep(1900); frame.classList.remove("omen-shake"); l.remove();

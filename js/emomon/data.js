@@ -13,12 +13,23 @@ import { LOCATIONS } from "../data/catalog.js";
 
 export const EMO = {
     MAX_MONS: 3, MAX_WEAPONS: 6, MAX_TRAITS: 2, MAX_TYPES: 3,
-    CAPTURES_PER_SEASON: 10,
+    CAPTURES_PER_ROUND: 3,       // 🔍 Find presses per player per round
     BOT_ID: 219,                 // EmoMon Battlebot fights for a player without monsters
     BOT_ACC: 30,                 // its two weapons hit only 30%
     LEVEL: 50,                   // EmoMonster has no levels any more: stats are always taken at Lv 50
     HP: 100,                     // every monster has 100 HP
-    RELEASE_PRICE: 100000,       // 몬스터 Release 권 (only usable with all 3 slots full)
+    RELEASE_PTS: 455,            // 몬스터 Release 권 (only usable with all 3 slots full)
+    SHOP_BUYS: 5,                // 🛒 Monster Shop purchases per player per season (all shops together)
+    LAB_BUYS: 3,                 // 🧪 LAB 상점 purchases per player per season
+    EVOLVE_PTS: 100,             // every evolution costs 100P (plus its items)
+    // 🔬 Lab experiments: price + the breaker it needs
+    EXP: {
+        nature: { gold: 20000, item: "EMO_NATURE_BREAKER" },
+        weapon: { gold: 50000, item: "ITEM_WEAPON_BREAKER" },
+        type: { gold: 1000000, item: "EMO_TYPE_BREAKER" },
+        trait: { pts: 1000, item: "ITEM_TRAIT_BREAKER" },
+        special: { pts: 1000 }
+    },
     // Find item drops (weights): Monster Ball common, Super Ball / PP · HP potions rare, alphabet cards C D F I J K P
     FIND_ITEMS: [["ITEM001", 34], ["ITEM002", 5], ["EMO_PP", 5], ["EMO_HP10", 5], ["card:C", 7], ["card:D", 7], ["card:F", 7], ["card:I", 7], ["card:J", 7], ["card:K", 7], ["card:P", 7]],
     HOSPITAL_FEE: 1000, CAPTURE_FEE: 1000, CAPTURE_RANDOM_OK: 0.6,
@@ -69,50 +80,142 @@ export const itemImg = it => it?.image ? (/^(https?:|data:)/.test(it.image) ? it
 // (picture / description come from there); `gold` / `pts` = Gamblers price.
 const TYPE_LIST = ["Normal", "Abnormal", "Magic", "Power", "Water", "Fire", "Grass", "Electric", "Ice", "Angel", "Evil", "Air", "Fly", "Earth", "Bug", "Ghost", "Steel", "Fairy", "Space", "Robot", "Light", "Mind"];
 export const EMO_ITEMS = [
-    { id: "ITEM001", kind: "ball", name: "몬스터볼", en: "Monster Ball", emoji: "🔴", bonus: 10, gold: 3000, img: "images/icons/balls/monster.svg" },
-    { id: "ITEM002", kind: "ball", name: "Super Ball", emoji: "🔵", bonus: 22, gold: 8000, img: "images/icons/balls/super.svg" },
-    { id: "ITEM003", kind: "ball", name: "Hyper Ball", emoji: "🟡", bonus: 40, gold: 20000, img: "images/icons/balls/hyper.svg" },
-    { id: "ITEM008", kind: "ball", name: "Crazy Ball", emoji: "🌀", crazy: true, gold: 30000, img: "images/icons/balls/crazy.svg", note: "50% 확률로 +75%, 아니면 +0% — 모 아니면 도!" },
-    { id: "ITEM004", kind: "ball", name: "Master Ball", emoji: "🟣", bonus: 100, pts: 300, img: "images/icons/balls/master.svg", note: "무조건 잡힙니다" },
-    ...TYPE_LIST.map(t => ({ id: "BALL_" + t.toUpperCase(), kind: "ball", name: `${t} Ball`, emoji: "⚪", attr: t, bonus: 45, gold: 9000, img: `images/icons/balls/attr_${t.toLowerCase()}.svg`, note: `${t} 속성 몬스터에게 +45% (다른 몬스터는 +0%)` })),
-    { id: "EMO_HP10", kind: "potion", name: "몬스터 HP 약 +10", emoji: "🧪", hp: 10, gold: 2500 },
-    { id: "EMO_HP50", kind: "potion", name: "몬스터 HP 약 +50", emoji: "💉", hp: 50, gold: 11000 },
-    { id: "EMO_HPFULL", kind: "potion", name: "몬스터 FULL HP 약", emoji: "❤️‍🩹", hp: "full", gold: 24000 },
+// balls: `rate` = catch chance in % (an attribute ball: `rate` on its attribute, `rateOff` on others)
+    { id: "ITEM001", kind: "ball", name: "몬스터볼", en: "Monster Ball", emoji: "🔴", rate: 5, gold: 3000, img: "images/icons/balls/monster.svg", note: "포획 확률 5%" },
+    { id: "ITEM002", kind: "ball", name: "Super Ball", emoji: "🔵", rate: 10, gold: 8000, img: "images/icons/balls/super.svg", note: "포획 확률 10%" },
+    { id: "ITEM003", kind: "ball", name: "Hyper Ball", emoji: "🟡", rate: 30, gold: 20000, img: "images/icons/balls/hyper.svg", note: "포획 확률 30%" },
+    { id: "ITEM008", kind: "ball", name: "Crazy Ball", emoji: "🌀", crazy: true, rate: 50, gold: 30000, img: "images/icons/balls/crazy.svg", note: "50% 확률로 포획 확률 50%, 아니면 0% — 모 아니면 도!" },
+    { id: "ITEM004", kind: "ball", name: "Master Ball", emoji: "🟣", rate: 100, pts: 300, img: "images/icons/balls/master.svg", note: "무조건 잡힙니다" },
+    ...TYPE_LIST.map(t => ({ id: "BALL_" + t.toUpperCase(), kind: "ball", name: `${t} Ball`, emoji: "⚪", attr: t, rate: 25, rateOff: 5, gold: 9000, img: `images/icons/balls/attr_${t.toLowerCase()}.svg`, note: `${t} 속성 몬스터 포획 확률 25% (다른 몬스터는 5%)` })),
+    { id: "EMO_HP10", kind: "potion", name: "몬스터 HP 약 +10", emoji: "🧪", hp: 10, gold: 7940 },
+    { id: "EMO_HP50", kind: "potion", name: "몬스터 HP 약 +50", emoji: "💉", hp: 50, gold: 32670 },
+    { id: "EMO_HPFULL", kind: "potion", name: "몬스터 FULL HP 약", emoji: "❤️‍🩹", hp: "full", gold: 68230 },
     { id: "EMO_PP", kind: "pp", name: "PP 회복약", emoji: "🔋", gold: 12000, note: "몬스터 1마리의 모든 무기 PP를 가득 채웁니다 (PP는 배틀이 끝나도 회복되지 않습니다)" },
-    { id: "EMO_CURE", kind: "cure", name: "몬스터 만능 치료제", emoji: "💊", gold: 15000, note: "질병 · 상태이상을 모두 치료합니다 (HP는 그대로)" },
-    { id: "EMO_WEAPON_DEL", kind: "delete", name: "몬스터 무기 삭제권", emoji: "🗑️", gold: 8000 },
-    { id: "EMO_MON_DEL", kind: "delete", name: "몬스터 Release 권", emoji: "🚮", gold: 100000, note: "몬스터 3마리가 꽉 찼을 때만 사용 — 1마리를 놓아 주어 슬롯을 엽니다" },
-    { id: "EMO_TYPE_BREAKER", kind: "breaker", name: "속성 Breaker", emoji: "🔷", gold: 90000, note: "몬스터에게 속성을 추가(최대 3개)하거나 하나를 바꿉니다" },
-    { id: "ITEM_WEAPON_BREAKER", kind: "breaker", name: "무기 Breaker", emoji: "⚔️", gold: 60000, note: "몬스터가 원래 못 배우는 무기 1개를 배울 때 사용" },
-    { id: "ITEM_TRAIT_BREAKER", kind: "breaker", name: "특성 Breaker", emoji: "🧬", gold: 60000, note: "못 배우는 특성을 배우거나 특성을 바꿀 때 사용" },
-    { id: "EMO_NATURE_BREAKER", kind: "breaker", name: "Nature Breaker", emoji: "🎭", gold: 40000, note: "몬스터의 성격을 원하는 성격으로 바꿉니다" }
+    { id: "EMO_CURE", kind: "cure", name: "몬스터 만능 치료제", emoji: "💊", gold: 36780, note: "질병 · 상태이상을 모두 치료합니다 (HP는 그대로)" },
+    { id: "EMO_WEAPON_DEL", kind: "delete", name: "몬스터 무기 삭제권", emoji: "🗑️", gold: 167830 },
+    { id: "EMO_MON_DEL", kind: "delete", name: "몬스터 Release 권", emoji: "🚮", pts: 455, note: "몬스터 3마리가 꽉 찼을 때만 사용 — 1마리를 놓아 주어 슬롯을 엽니다" },
+    // breakers: only from LAB 조합 (never sold)
+    { id: "EMO_TYPE_BREAKER", kind: "breaker", name: "속성 Breaker", emoji: "🔷", noSale: true, note: "🔬 LAB 실험실에서 몬스터 속성을 바꾸거나 추가할 때 필요 (LAB 조합으로만 얻음)" },
+    { id: "ITEM_WEAPON_BREAKER", kind: "breaker", name: "무기 Breaker", emoji: "⚔️", noSale: true, note: "🔬 LAB 실험실에서 못 배우는 무기를 가르칠 때 필요 (LAB 조합으로만 얻음)" },
+    { id: "ITEM_TRAIT_BREAKER", kind: "breaker", name: "특성 Breaker", emoji: "🧬", noSale: true, note: "🔬 LAB 실험실에서 특성을 바꾸거나 배울 때 필요 (LAB 조합으로만 얻음)" },
+    { id: "EMO_NATURE_BREAKER", kind: "breaker", name: "Nature Breaker", emoji: "🎭", noSale: true, note: "🔬 LAB 실험실에서 몬스터 성격을 바꿀 때 필요 (LAB 조합으로만 얻음)" }
 ];
 export const EMO_ITEM = Object.fromEntries(EMO_ITEMS.map(i => [i.id, i]));
-// EmoMonster evolution items / materials join the list from the catalog (price: rarity based)
-// admin overrides (settings "maps" → emoAdmin): { offMons, offWeapons, offTraits: [ids], iPrice, wPrice, tPrice: { id: gold } }
+// lab-only results (never sold in any shop)
+export const LAB_ONLY = new Set(["EMO_TYPE_BREAKER", "ITEM_WEAPON_BREAKER", "ITEM_TRAIT_BREAKER", "EMO_NATURE_BREAKER", "ITEM_BANANA_SMOOTHIE"]);
+// admin overrides (settings "maps" → emoAdmin): { offMons, offWeapons, offTraits: [ids], iPrice, wPrice, tPrice: { id: price },
+//   specialEvo: { evolutionId: true|false } (special = only in the 🔬 실험실) }. A price is a number (gold) or "500P" (points).
 export const emoAdmin = () => Store.maps?.emoAdmin || {};
-const priced = (it, id) => { const g = emoAdmin().iPrice?.[id]; return g != null && it ? { ...it, gold: +g, pts: it.pts && g ? 0 : it.pts } : it; };
+export const parsePrice = v => { if (v == null || v === "") return null; const s = String(v).trim().toUpperCase(); return s.endsWith("P") ? { gold: 0, pts: Math.max(0, parseInt(s) || 0) } : { gold: Math.max(0, +s || 0), pts: 0 }; };
+export const priceText = p => p ? (p.pts ? `${p.pts}P` : String(p.gold)) : "";
+const priced = (it, id) => { const p = parsePrice(emoAdmin().iPrice?.[id]); return p && it ? { ...it, ...p } : it; };
 export const monOn = id => !(emoAdmin().offMons || []).map(String).includes(String(id));
 export const weaponOn = id => !(emoAdmin().offWeapons || []).map(String).includes(String(id));
 export const traitOn = id => !(emoAdmin().offTraits || []).map(String).includes(String(id));
 export function emoItem(id) { return priced(baseItem(id), id); }
+// LAB prices: orbs = gold (+100,000G) · other evolution items = 500~1000P · materials +30,000G and up
+const MAT_PRICE = {
+    MAT_VAMPIRE_BLOOD: { add: 50000 }, MAT_VAMPIRE_FANG: { add: 50000 },
+    MAT_MONSTER_BLOOD: { add: 100000 }, MAT_MONSTER_HAIR: { add: 100000 }, MAT_MONSTER_TOOTH: { add: 100000 }, MAT_MONSTER_NAIL: { add: 100000 }, MAT_MONSTER_CLAW: { add: 100000 },
+    MIX_MONSTER_EYEBALL: { pts: 500 }, MAT_MONSTER_DNA: { pts: 800 }, MAT_DEFORMED_DNA: { pts: 1000 }
+};
+export const isOrb = r => /\borb\b/i.test(r?.name || "");
 export function baseItem(id) {
     if (EMO_ITEM[id]) return { ...EMO_ITEM[id], src: C?.item[id] || null };
     const r = C?.item[id];
     if (!r) return null;
     const kind = r.category === "evolution" ? "evo" : r.category === "material" ? "material" : r.category === "ball" ? "ball" : "other";
-    return { id, kind, name: r.name, emoji: kind === "evo" ? "✨" : kind === "material" ? "🧱" : "🎒", img: r.image, src: r,
-        gold: kind === "evo" ? 40000 + (r.rarity || 1) * 10000 : 3000 + (r.rarity || 1) * 1500 };
+    const R = r.rarity || 1;
+    let gold = 0, pts = 0;
+    if (kind === "evo") { if (isOrb(r)) gold = 140000 + R * 10000; else pts = Math.min(1000, Math.max(500, 500 + (R - 2) * 150)); }
+    else if (kind === "material") { const m = MAT_PRICE[id]; if (m?.pts) pts = m.pts; else gold = 3000 + R * 1500 + (m?.add || 30000); }
+    else gold = 3000 + R * 1500;
+    return { id, kind, name: r.name, emoji: kind === "evo" ? "✨" : kind === "material" ? "🧱" : "🎒", img: r.image, src: r, gold, pts, orb: kind === "evo" && isOrb(r), noSale: LAB_ONLY.has(id) };
 }
 export const evoItems = () => (C?.items || []).filter(i => i.category === "evolution").map(i => emoItem(i.id));
 export const materials = () => (C?.items || []).filter(i => i.category === "material").map(i => emoItem(i.id));
 export const itemPic = it => it?.img ? "emomon/" + String(it.img).replace(/^\.?\.?\//, "") : it?.src?.image ? itemImg(it.src) : "";
 
-// monster weapons / traits as goods
-export const weaponPriceBase = w => Math.round((4000 + (w.rarity || 1) * 4000 + (Number(w.power) || 0) * 150) / 100) * 100;
-export const traitPriceBase = t => 10000 + (t.rarity || 1) * 10000;
-export const weaponPrice = w => +(emoAdmin().wPrice?.[w.id] ?? weaponPriceBase(w));
-export const traitPrice = t => +(emoAdmin().tPrice?.[t.id] ?? traitPriceBase(t));
+// monster weapons / traits as goods: weapons ≥100,000G, traits ≥200,000G; strong ones cost 300~1000P
+export const weaponScore = w => (Number(w.power) || 0) * (w.accuracy ?? 100) / 100;
+export function weaponPriceBase(w) {
+    const sc = weaponScore(w);
+    if (sc >= 45) return { gold: 0, pts: Math.min(1000, Math.round((300 + (sc - 45) * 28) / 50) * 50) };
+    return { gold: Math.round((100000 + (w.rarity || 1) * 10000 + sc * 1500) / 1000) * 1000, pts: 0 };
+}
+export function traitPriceBase(t) {
+    const r = t.rarity || 1;
+    if (r >= 4) return { gold: 0, pts: [0, 0, 0, 0, 300, 600, 1000][r] };
+    return { gold: 200000 + (r - 1) * 50000, pts: 0 };
+}
+export const weaponPrice = w => parsePrice(emoAdmin().wPrice?.[w.id]) || weaponPriceBase(w);
+export const traitPrice = t => parsePrice(emoAdmin().tPrice?.[t.id]) || traitPriceBase(t);
+
+// ---------------------------------------------------------------- 🛒 shop stock (fixed per map, admin can edit)
+// Monster Shop: every shop sells its own 2 attribute balls, 2~3 weapons and 1~2 traits (no two shops alike).
+// LAB 상점: up to 5 orbs, 5 materials and 5 other evolution items per Lab map.
+// Admin overrides: settings "maps".emoShop[locId] = { balls, weapons, traits } · .emoLabShop[locId] = { items }
+const shuffleSeed = (list, key) => { const r = seeded(key), a = [...list]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let stockCache = null;
+function autoStock() {
+    const key = (C?.at || "") + JSON.stringify([emoAdmin().offWeapons, emoAdmin().offTraits]) + LOCATIONS.filter(l => l.emoshop).map(l => l.id) + LOCATIONS.filter(l => l.lab).map(l => l.id);
+    if (stockCache?.key === key) return stockCache;
+    const shops = LOCATIONS.filter(l => l.emoshop), labs = LOCATIONS.filter(l => l.lab);
+    const out = { key, shop: {}, lab: {} };
+    // attribute balls: first round every shop gets 2 new ones; when they run out, new pairs (never the same pair twice)
+    const balls = shuffleSeed(TYPE_LIST.map(t => "BALL_" + t.toUpperCase()), "emo-balls");
+    const n = balls.length, half = Math.floor(n / 2);
+    shops.forEach((l, i) => { const k = i % half, lap = Math.floor(i / half); out.shop[l.id] = { balls: [balls[(2 * k) % n], balls[(2 * k + 1 + lap * 2) % n]] }; });
+    const ws = shuffleSeed((C?.weapons || []).filter(w => !(w.allowed_monster_ids || []).map(Number).includes(EMO.BOT_ID) && w.attribute && weaponOn(w.id)).map(w => w.id), "emo-weapons");
+    const ts = shuffleSeed((C?.traits || []).filter(t => traitOn(t.id)).map(t => t.id), "emo-traits");
+    let wi = 0, ti = 0;
+    for (const l of shops) {
+        const r = seeded("emo-shop-" + l.id);
+        const nw = 2 + (r() < 0.5 ? 1 : 0), nt = 1 + (r() < 0.5 ? 1 : 0);
+        out.shop[l.id].weapons = ws.slice(wi, wi + nw); wi += nw;
+        out.shop[l.id].traits = ts.slice(ti, ti + nt); ti += nt;
+    }
+    const items = C?.items || [];
+    const orbs = shuffleSeed(items.filter(i => i.category === "evolution" && isOrb(i)).map(i => i.id), "emo-orbs");
+    const evo = shuffleSeed(items.filter(i => i.category === "evolution" && !isOrb(i) && !LAB_ONLY.has(i.id)).map(i => i.id), "emo-evo");
+    const mats = shuffleSeed(items.filter(i => i.category === "material").map(i => i.id), "emo-mats");
+    const take = (list, start, k) => Array.from({ length: Math.min(k, list.length) }, (_, j) => list[(start + j) % list.length]);
+    let oi = 0, ei = 0, mi = 0;
+    for (const l of labs) {
+        const r = seeded("emo-lab-" + l.id);
+        const no = 2 + Math.floor(r() * 3), ne = 1 + Math.floor(r() * 2), nm = 3 + Math.floor(r() * 3); // orbs 2~4 · others 1~2 · materials 3~5
+        out.lab[l.id] = { items: [...take(orbs, oi, no), ...take(evo, ei, ne), ...take(mats, mi, nm)] };
+        oi += no; ei += ne; mi += nm;
+    }
+    stockCache = out;
+    return out;
+}
+export function shopStock(locId) {
+    const auto = autoStock().shop[locId] || { balls: [], weapons: [], traits: [] };
+    const ov = Store.maps?.emoShop?.[locId] || {};
+    return { balls: ov.balls ?? auto.balls, weapons: ov.weapons ?? auto.weapons, traits: ov.traits ?? auto.traits, auto, ov };
+}
+export function labStock(locId) {
+    const auto = autoStock().lab[locId] || { items: [] };
+    const ov = Store.maps?.emoLabShop?.[locId] || {};
+    return { items: (ov.items ?? auto.items).filter(id => !LAB_ONLY.has(id)), auto, ov };
+}
+
+// ---------------------------------------------------------------- ⚗️ LAB recipes (EmoMonster's + Gamblers' own)
+// cost: { gold, pts }. Nature / Type Breaker are Gamblers recipes; Weapon Breaker uses new ingredients;
+// every other recipe costs 100,000G.
+const G_RECIPES = [
+    { id: "g_nature", name: "Nature Breaker", result_item_id: "EMO_NATURE_BREAKER", result_qty: 1, ingredients: [{ id: "MAT_MONSTER_NAIL", qty: 1 }, { id: "MAT_MINERAL", qty: 1 }], gold: 24560, pts: 0 },
+    { id: "g_type", name: "Type Breaker (속성 Breaker)", result_item_id: "EMO_TYPE_BREAKER", result_qty: 1, ingredients: [{ id: "MAT_DEFORMED_DNA", qty: 1 }, { id: "MIX_CRYSTAL", qty: 1 }, { id: "MIX_MONSTER_EYEBALL", qty: 1 }], gold: 0, pts: 300 }
+];
+const R_FIX = { ITEM_WEAPON_BREAKER: { ingredients: [{ id: "MAT_MONSTER_DNA", qty: 1 }, { id: "MIX_BOTTLED_WATER", qty: 1 }, { id: "MAT_MONSTER_CLAW", qty: 1 }], gold: 205700, pts: 0 } };
+export function labRecipes() {
+    const base = (C?.recipes || []).filter(r => baseItem(r.result_item_id)).map(r => ({ ...r, gold: 100000, pts: 0, ...(R_FIX[r.result_item_id] || {}) }));
+    return [...G_RECIPES.filter(g => !base.some(b => b.result_item_id === g.result_item_id)), ...base];
+}
+// special evolutions only happen in the 🔬 실험실 (needs a weapon / two items, or picked by the admin)
+export const specialEvoAuto = e => !!(e.required_weapon_id || e.required_item2_id);
+export const isSpecialEvo = e => { const o = emoAdmin().specialEvo?.[e.id]; return o != null ? !!o : specialEvoAuto(e); };
 
 // ---------------------------------------------------------------- 🔍 capture corners
 // region flavour: the attributes that like to live there

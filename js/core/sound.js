@@ -292,6 +292,32 @@ const SONGS = {
             // tin whistle doubles the tune an octave up on the second half
             if (n && bar >= 4) bgmVoice(a, out, t, { freq: midi(n + 12), type: "sine", dur: len * 0.95, vol: 0.03, cut: 9000, cutEnd: 5000, attack: 0.015 });
         }
+    },
+    // Karma Fountain: accordion oom-pah + sea-shanty "crew" chorus, BPM 120
+    shanty_accordion: {
+        bpm: 120, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            const ROOT = [50, 48, 50, 45][bar];
+            const CH = { 50: [62, 65, 69], 48: [60, 64, 67], 45: [57, 61, 64] }[ROOT];
+            // boot stomp + tambourine
+            if (st % 8 === 0) kick(a, out, t, 0.3);
+            if (st % 4 === 2) bgmNoise(a, out, t, { dur: 0.06, vol: 0.05, hp: 6000 });
+            // accordion left hand: bass on 1 & 3, bellows chord on 2 & 4
+            if (st === 0 || st === 8) bgmVoice(a, out, t, { freq: midi(ROOT - 12 + (st ? 7 : 0)), type: "triangle", dur: len * 3, vol: 0.18, cut: 900, cutEnd: 300 });
+            if (st === 4 || st === 12) CH.forEach(n => { for (const dt of [-12, 12]) bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len * 2.6, vol: 0.012, cut: 2400, cutEnd: 1400, detune: dt, attack: 0.02 }); });
+            // accordion right hand: reedy tune (two detuned squares)
+            const MEL = [69, 0, 72, 0, 69, 0, 65, 0, 62, 0, 65, 0, 69, 0, 0, 0,
+                67, 0, 67, 0, 64, 0, 60, 0, 64, 0, 65, 0, 67, 0, 0, 0,
+                69, 0, 69, 0, 72, 0, 74, 0, 72, 0, 69, 0, 65, 0, 62, 0,
+                64, 0, 61, 0, 57, 0, 61, 0, 64, 0, 0, 0, 62, 0, 0, 0];
+            if (MEL[s]) for (const dt of [-10, 10]) bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "square", dur: len * 1.8, vol: 0.02, cut: 3000, cutEnd: 1800, detune: dt, attack: 0.015 });
+            // the crew sings along (soft closed saws) and shouts "HEY!" at the end of the verse
+            if (st === 0) CH.forEach(n => bgmVoice(a, out, t, { freq: midi(n - 12), type: "sawtooth", dur: len * 14, vol: 0.012, cut: 900, cutEnd: 600, attack: 0.15 }));
+            if (bar === 3 && st === 12) { bgmNoise(a, out, t, { dur: 0.12, vol: 0.08, hp: 1500 }); CH.forEach(n => bgmVoice(a, out, t, { freq: midi(n), type: "sawtooth", dur: len * 2, vol: 0.03, cut: 1600, cutEnd: 700, attack: 0.005 })); }
+            // harbour waves
+            if (s === 0 || s === 32) bgmNoise(a, out, t, { dur: 2.4, vol: 0.03, hp: 400 });
+        }
     }
 };
 function taiko(a, out, t, vol = 0.5) {
@@ -358,6 +384,7 @@ export const Sound = {
     boom() { noise(0.6, 0.25); tone(60, 0.5, "sine", 0.2, 0, -30); },
     fanfare() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, "square", 0.06, i * 0.15)); },
     whoosh() { noise(0.25, 0.06); },
+    scream() { tone(980, 0.9, "sawtooth", 0.045, 0, -520); tone(1240, 0.7, "square", 0.02, 0.05, -600); noise(0.5, 0.05, 0.05); },
     // 뿌직뿌직: wet low burst + falling squelch
     poop() { noise(0.18, 0.14); tone(140 + Math.random() * 40, 0.16, "sawtooth", 0.07, 0, -90); tone(90, 0.12, "square", 0.05, 0.12, -40); noise(0.1, 0.1, 0.14); },
     splash() { noise(0.5, 0.12); tone(220, 0.35, "sine", 0.05, 0, -160); },
