@@ -1,6 +1,6 @@
 // =====================================================================
 // 🐾 EmoMon rules inside a Gamblers season (state: ps.emo)
-//   ps.emo = { mons: [mon], battle: uid, finds, bag: {itemId:n}, wbag: {weaponId:n}, tbag: {traitId:n}, hospRound }
+//   ps.emo = { mons: [mon], battle: uid, finds, bag: {itemId:n}, wbag: {weaponId:n}, tbag: {traitId:n}, hospUses }
 //   mon    = { uid, sid, nature, hp (null = full), types (null = the species' own), weapons: [weaponId],
 //              traits: [traitId], diseases: [], from, at, line: [earlier species ids] }
 // No levels / EXP: stats are EmoMonster's StatCalculator at a fixed level, nature and traits included.
@@ -268,17 +268,19 @@ export function usePotion(pid, u, id) {
     }
     return { ok: false, why: "여기서 쓸 수 없는 아이템입니다" };
 }
-// 🏥 Monster Hospital: once per round, 1,000G → every monster full HP, every disease / status gone
-export const hospitalUsed = pid => emo(pid).hospRound === S().round;
+// 🏥 Monster Hospital: 2 times per season, 1,000G → every monster full HP + full weapon PP, every disease / status gone
+export const HOSPITAL_PER_SEASON = 2;
+export const hospitalLeft = pid => Math.max(0, HOSPITAL_PER_SEASON - (emo(pid).hospUses || 0));
+export const hospitalUsed = pid => hospitalLeft(pid) <= 0;
 export function hospital(pid) {
     const ps = S().ps[pid];
-    if (hospitalUsed(pid)) return { ok: false, why: "병원은 라운드당 1번만 이용할 수 있습니다" };
+    if (hospitalUsed(pid)) return { ok: false, why: `병원은 시즌당 ${HOSPITAL_PER_SEASON}번만 이용할 수 있습니다` };
     if (ps.money < EMO.HOSPITAL_FEE) return { ok: false, why: "골드가 부족합니다" };
     if (!mons(pid).length) return { ok: false, why: "치료할 몬스터가 없습니다" };
     ps.money -= EMO.HOSPITAL_FEE;
-    emo(pid).hospRound = S().round;
-    for (const m of mons(pid)) { m.hp = null; m.diseases = []; }
-    log(`🏥 ${name(pid)} 몬스터 병원 (전원 회복)`);
+    emo(pid).hospUses = (emo(pid).hospUses || 0) + 1;
+    for (const m of mons(pid)) { m.hp = null; m.pp = {}; m.diseases = []; }
+    log(`🏥 ${name(pid)} 몬스터 병원 (전원 HP · PP 회복)`);
     Store.saveSeason(true);
     return { ok: true };
 }

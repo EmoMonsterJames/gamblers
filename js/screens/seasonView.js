@@ -697,7 +697,7 @@ function locationStage(s) {
 
     return h("div.location", { style: { "--loc": loc.color } },
         h("div.loc-head",
-            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰 · 정보") : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ NPC 없음 · 정보")),
+            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i"))),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
         ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id) }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`)))] : []),

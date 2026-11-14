@@ -1,8 +1,19 @@
 // Small DOM + formatting helpers shared by every screen.
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+// The DOM turns null / undefined / false kids into the text "null"/"false" — screens pass
+// `cond ? h(...) : null` straight to replaceChildren/append/prepend, so drop those kids everywhere.
+for (const P of [Element.prototype, DocumentFragment.prototype, Document.prototype]) {
+    for (const fn of ["replaceChildren", "append", "prepend"]) {
+        const orig = P[fn];
+        if (!orig || orig.__skipNull) continue;
+        const wrapped = function (...kids) { return orig.apply(this, kids.filter(k => k != null && k !== false)); };
+        wrapped.__skipNull = true;
+        P[fn] = wrapped;
+    }
+}
 // replaceChildren that skips null / false and flattens arrays (h() style)
-export const put = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter(k => k != null && k !== false));
+export const put =(el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter(k => k != null && k !== false));
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 export const fmt = n => Math.round(n || 0).toLocaleString("en-US");
 export const gold = n => `${fmt(n)} G`;

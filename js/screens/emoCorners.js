@@ -256,10 +256,10 @@ export function hospitalView(pid, { onChange = () => { } } = {}) {
         const ps = G.S().ps[pid];
         const wrap = h("div.emo-hosp");
         const draw = () => {
-            const list = M.mons(pid), used = M.hospitalUsed(pid);
-            const hurt = list.filter(m => M.hpOf(m) < M.maxHp(m) || m.diseases?.length);
-            put(wrap, 
-                h("div.emo-hosp-head", h("div.big", "🏥"), h("div", h("h3", "Monster Hospital"), h("p.muted.small", `라운드당 1번 · ${fmt(EMO.HOSPITAL_FEE)}G · 모든 몬스터의 HP를 가득 채우고 질병 · 상태이상을 모두 치료합니다 (무기 PP는 PP 회복약으로만 회복)`))),
+            const list = M.mons(pid), used = M.hospitalUsed(pid), left = M.hospitalLeft(pid);
+            const hurt = list.filter(m => M.hpOf(m) < M.maxHp(m) || m.diseases?.length || M.weaponRows(m).some(w => M.ppLeft(m, w) < M.ppMax(w)));
+            put(wrap,
+                h("div.emo-hosp-head", h("div.big", "🏥"), h("div", h("h3", "Monster Hospital"), h("p.muted.small", `시즌당 ${M.HOSPITAL_PER_SEASON}번 (남은 횟수 ${left}) · ${fmt(EMO.HOSPITAL_FEE)}G · 모든 몬스터의 HP · 무기 PP를 가득 채우고 질병 · 상태이상을 모두 치료합니다`))),
                 h("div.emo-hosp-list", list.length ? list.map(m => h("div.emo-hosp-m", monPic(M.sp(m), 56), h("b", M.sp(m).name), h("small", `❤ ${M.hpOf(m)} / ${M.maxHp(m)}`), ...(m.diseases || []).map(d => h("small.emo-dis", d)))) : h("p.muted", "몬스터가 없습니다")),
                 h("div.row.center", h("button.btn.gold.big", { disabled: used || !list.length || ps.money < EMO.HOSPITAL_FEE, onclick: async () => {
                     if (!hurt.length && !(await confirmBox("다친 몬스터가 없습니다. 그래도 치료할까요?"))) return;
@@ -267,7 +267,7 @@ export function hospitalView(pid, { onChange = () => { } } = {}) {
                     if (!r.ok) return toast(r.why, "warn");
                     Sound.bonus(); wrap.classList.add("healing"); setTimeout(() => wrap.classList.remove("healing"), 1500);
                     toast("💚 모든 몬스터가 건강해졌습니다!", "ok"); onChange(); draw();
-                } }, used ? "이번 라운드는 이미 이용했습니다" : `💚 전원 치료 (${fmt(EMO.HOSPITAL_FEE)}G)`)));
+                } }, used ? "이번 시즌 이용 횟수를 모두 썼습니다" : `💚 전원 치료 (${fmt(EMO.HOSPITAL_FEE)}G)`)));
         };
         draw();
         return wrap;
