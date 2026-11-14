@@ -591,8 +591,20 @@
 .cabinet.skin-classic .reel .sym.sym-word > span { font-size: clamp(10px, 4cqmin, 16px); }
 
 /* 🗝️ The Mimic's Labyrinth — 5x5 stone plates turned into a diamond */
-.cabinet.skin-dungeon .reels { background: radial-gradient(circle, #44403c, #1c1917 75%); width: min(62%, 420px) !important; height: auto !important; aspect-ratio: 1; transform: rotate(45deg) scale(.86); margin: 9% auto !important; }
+/* board kept tilted 45° but sized like a normal cabinet: side S, so the diamond is ~1.41·S tall */
+.cabinet.skin-dungeon .reel-frame { --S: min(330px, 62vw); overflow: hidden; }
+@media (max-width: 600px) { .cabinet.skin-dungeon .reel-frame { --S: 47vw; } }
+.cabinet.skin-dungeon .reels { --cell: calc((var(--S) - 16px) / 5); gap: 4px; padding: 0; background: radial-gradient(circle, #44403c, #1c1917 75%); width: var(--S) !important; height: auto !important; transform: rotate(45deg); margin: calc(var(--S) * .32) auto !important; box-shadow: 0 0 0 4px #292524, 0 0 0 7px #a16207, 0 0 40px #f9731644; border-radius: 6px; }
 .cabinet.skin-dungeon .reel .sym { background: linear-gradient(135deg, #78716c, #44403c); border: 2px solid #292524; border-radius: 4px; box-shadow: inset 0 0 0 2px #a8a29e44, 0 3px 0 #0008; }
+/* candles: wax stick + flickering flame + warm halo; they light up one after another */
+.dg-candles { position: absolute; inset: 0; pointer-events: none; z-index: 2; --R: calc(var(--S, 330px) * .74); }
+.dg-candle { position: absolute; left: calc(50% + var(--x) * var(--R)); top: calc(50% + var(--y) * var(--R)); width: 11px; height: calc(30px * var(--h, 1)); transform: translate(-50%, -30%); border-radius: 3px 3px 2px 2px; background: linear-gradient(90deg, #d6c7a1, #fff7e0 45%, #c9b68a); box-shadow: 0 2px 0 #57534e, 0 3px 4px #0009; }
+.dg-candle::before { content: ""; position: absolute; left: 50%; bottom: 96%; width: 13px; height: 22px; margin-left: -6.5px; filter: drop-shadow(0 0 6px #fb923c); border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%; background: radial-gradient(ellipse at 50% 75%, #fff 0 18%, #fde047 30%, #f97316 62%, #f9731600 72%); transform-origin: 50% 100%; opacity: 0; animation: dgLight .35s var(--d) forwards, dgFlicker var(--f) calc(var(--d) + .35s) ease-in-out infinite alternate; }
+.dg-candle::after { content: ""; position: absolute; left: 50%; bottom: 60%; width: 96px; height: 96px; margin-left: -48px; border-radius: 50%; background: radial-gradient(circle, #fdba74aa, #f9731638 40%, transparent 70%); opacity: 0; animation: dgGlow 2.4s calc(var(--d) + .2s) ease-in-out infinite alternate; }
+@keyframes dgLight { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
+@keyframes dgFlicker { 0% { transform: scale(1, 1) rotate(-3deg); } 35% { transform: scale(.92, 1.08) rotate(2deg); } 70% { transform: scale(1.05, .94) rotate(-1deg); } 100% { transform: scale(.96, 1.1) rotate(3deg); } }
+@keyframes dgGlow { from { opacity: .55; } to { opacity: 1; } }
+.cabinet.skin-dungeon.free-mode .dg-candle::after, .cabinet.skin-dungeon .reel-frame:has(.win) .dg-candle::after { background: radial-gradient(circle, #fde68a99, #f9731644 45%, transparent 70%); }
 .cabinet.skin-dungeon .reel .sym > span, .cabinet.skin-dungeon .reel .sym > small, .cabinet.skin-dungeon .reel .sym > .spb { rotate: -45deg; }
 .cabinet.skin-dungeon .reel .sym.sym-rune > span { font: 900 clamp(18px, 7cqmin, 36px) serif; color: #38bdf8; text-shadow: 0 0 8px #38bdf8; }
 .cabinet.skin-dungeon .jp-bar .jp { background: linear-gradient(#57534e, #292524); border: 2px solid #fbbf24; border-radius: 4px; box-shadow: 0 0 10px #f9731655; }
@@ -622,3 +634,8 @@
 .sp-panel.spp-helm { width: 100%; justify-content: center; }
 .sp-panel.spp-helm .tp-sea { width: min(560px, 100%); height: 124px; flex: 0 1 auto; }
 .hl-ship { width: 150px; height: 100px; } .hl-mast { height: 74px; } .hl-hull { width: 140px; height: 24px; } .hl-sail { width: 60px; height: calc(5px + var(--f, 0) * 62px); }
+
+/* NPC 있음 / 없음 tags: 빙그레체 (Binggrae), smaller */
+@font-face { font-family: "Binggrae"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Binggrae.woff") format("woff"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Binggrae"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Binggrae-Bold.woff") format("woff"); font-weight: 700; font-display: swap; }
+.npc-warn, .npc-safe { font-family: "Binggrae", "Jua", "Noto Sans KR", sans-serif; font-weight: 700; font-size: 10.5px; padding: 2px 7px; letter-spacing: 0; }

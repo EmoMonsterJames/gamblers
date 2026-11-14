@@ -86,6 +86,14 @@ export const EMO_ITEMS = [
     { id: "ITEM003", kind: "ball", name: "Hyper Ball", emoji: "🟡", rate: 30, gold: 20000, img: "images/icons/balls/hyper.svg", note: "포획 확률 30%" },
     { id: "ITEM008", kind: "ball", name: "Crazy Ball", emoji: "🌀", rate: 70, gold: 30000, img: "images/icons/balls/crazy.svg", note: "포획 확률 70%" },
     { id: "ITEM004", kind: "ball", name: "Master Ball", emoji: "🟣", rate: 100, pts: 300, img: "images/icons/balls/master.svg", note: "무조건 잡힙니다" },
+    { id: "BALL_DUNG", kind: "ball", name: "Dung Ball", emoji: "💩", rate: 1, gold: 500, img: "images/icons/g/dung_ball.svg", note: "똥 모양 볼 · 포획 확률 1%" },
+    // Repeat Ball: 5% on the first throw at a monster, +5% each further Repeat Ball at the same monster, up to 50% (10th throw on)
+    { id: "BALL_REPEAT", kind: "ball", name: "Repeat Ball", emoji: "🔁", rate: 5, repeat: { step: 5, max: 50 }, gold: 15000, img: "images/icons/g/repeat_ball.svg", note: "처음 5% · 같은 몬스터에 던질 때마다 +5% (10번째부터 최대 50%)" },
+    // 📡 radars: used with 📡 Scan in a Capture corner instead of Find (one Capture try) — monster chance +boost% for that scan
+    { id: "RADAR_1", kind: "radar", name: "Monster Radar", emoji: "📡", boost: 10, gold: 50000, img: "images/icons/g/radar.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +10%" },
+    { id: "RADAR_2", kind: "radar", name: "Super Monster Radar", emoji: "📡", boost: 30, gold: 200000, img: "images/icons/g/radar_super.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +30%" },
+    { id: "RADAR_3", kind: "radar", name: "Mega Monster Radar", emoji: "📡", boost: 50, pts: 300, img: "images/icons/g/radar_mega.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +50%" },
+    { id: "RADAR_4", kind: "radar", name: "Legendary Monster Radar", emoji: "🌟", boost: 100, pts: 1000, img: "images/icons/g/radar_legend.svg", note: "Capture에서 Scan — 이모몬스터 1마리가 무조건 바로 등장" },
     ...TYPE_LIST.map(t => ({ id: "BALL_" + t.toUpperCase(), kind: "ball", name: `${t} Ball`, emoji: "⚪", attr: t, rate: 45, rateOff: 5, gold: 9000, img: `images/icons/balls/attr_${t.toLowerCase()}.svg`, note: `${t} 속성 몬스터 포획 확률 45% (다른 몬스터는 5%)` })),
     { id: "EMO_HP10", kind: "potion", name: "몬스터 HP 약 +10", emoji: "🧪", hp: 10, gold: 7940 },
     { id: "EMO_HP50", kind: "potion", name: "몬스터 HP 약 +50", emoji: "💉", hp: 50, gold: 32670 },
@@ -96,7 +104,7 @@ export const EMO_ITEMS = [
     { id: "EMO_MON_DEL", kind: "delete", name: "몬스터 Release 권", emoji: "🚮", pts: 455, note: "몬스터 3마리가 꽉 찼을 때만 사용 — 1마리를 놓아 주어 슬롯을 엽니다" },
     // breakers: only from LAB 조합 (never sold)
     { id: "EMO_TYPE_BREAKER", kind: "breaker", name: "속성 Breaker", emoji: "🔷", noSale: true, note: "🔬 LAB 실험실에서 몬스터 속성을 바꾸거나 추가할 때 필요 (LAB 조합으로만 얻음)" },
-    { id: "ITEM_WEAPON_BREAKER", kind: "breaker", name: "무기 Breaker", emoji: "⚔️", noSale: true, note: "🔬 LAB 실험실에서 못 배우는 무기를 가르칠 때 필요 (LAB 조합으로만 얻음)" },
+    { id: "ITEM_WEAPON_BREAKER", kind: "breaker", name: "무기 Breaker", emoji: "⚔️", noSale: true, img: "images/icons/g/weapon_breaker.svg", note: "🔬 LAB 실험실에서 못 배우는 무기를 가르칠 때 필요 (LAB 조합으로만 얻음)" },
     { id: "ITEM_TRAIT_BREAKER", kind: "breaker", name: "특성 Breaker", emoji: "🧬", noSale: true, note: "🔬 LAB 실험실에서 특성을 바꾸거나 배울 때 필요 (LAB 조합으로만 얻음)" },
     { id: "EMO_NATURE_BREAKER", kind: "breaker", name: "Nature Breaker", emoji: "🎭", noSale: true, note: "🔬 LAB 실험실에서 몬스터 성격을 바꿀 때 필요 (LAB 조합으로만 얻음)" }
 ];
@@ -120,6 +128,12 @@ const MAT_PRICE = {
     MIX_MONSTER_EYEBALL: { pts: 500 }, MAT_MONSTER_DNA: { pts: 800 }, MAT_DEFORMED_DNA: { pts: 1000 }
 };
 export const isOrb = r => /\borb\b/i.test(r?.name || "");
+// Gamblers' own pictures for some EmoMonster items (emomon/images/icons/g/)
+const ART = {
+    ITEM_EVO_ORB: "evo_orb", ITEM_BANANA: "banana", ITEM_SUGAR: "sugar", ITEM_MILK: "milk", MAT_MONSTER_NAIL: "dragon_claw",
+    MAT_BAY_LEAF: "bay_leaf", ITEM_BANANA_SMOOTHIE: "banana_smoothie", ITEM_EVO_HERB: "magic_herb", ITEM_EVO_PEARL: "ocean_pearl"
+};
+const artOf = id => ART[id] ? `images/icons/g/${ART[id]}.svg` : null;
 export function baseItem(id) {
     if (EMO_ITEM[id]) return { ...EMO_ITEM[id], src: C?.item[id] || null };
     const r = C?.item[id];
@@ -130,7 +144,7 @@ export function baseItem(id) {
     if (kind === "evo") { if (isOrb(r)) gold = 140000 + R * 10000; else pts = Math.min(1000, Math.max(500, 500 + (R - 2) * 150)); }
     else if (kind === "material") { const m = MAT_PRICE[id]; if (m?.pts) pts = m.pts; else gold = 3000 + R * 1500 + (m?.add || 30000); }
     else gold = 3000 + R * 1500;
-    return { id, kind, name: r.name, emoji: kind === "evo" ? "✨" : kind === "material" ? "🧱" : "🎒", img: r.image, src: r, gold, pts, orb: kind === "evo" && isOrb(r), noSale: LAB_ONLY.has(id) };
+    return { id, kind, name: r.name, emoji: kind === "evo" ? "✨" : kind === "material" ? "🧱" : "🎒", img: artOf(id) || r.image, src: r, gold, pts, orb: kind === "evo" && isOrb(r), noSale: LAB_ONLY.has(id) };
 }
 export const evoItems = () => (C?.items || []).filter(i => i.category === "evolution").map(i => emoItem(i.id));
 export const materials = () => (C?.items || []).filter(i => i.category === "material").map(i => emoItem(i.id));
@@ -190,15 +204,24 @@ function autoStock() {
     stockCache = out;
     return out;
 }
+// everyday goods every Monster Shop sells unless the admin changes that shop's list
+export const SHOP_GENERAL_KINDS = ["ball", "potion", "pp", "cure", "delete", "radar"];
+export const shopGeneral = () => EMO_ITEMS.filter(i => SHOP_GENERAL_KINDS.includes(i.kind) && !i.attr && !i.noSale).map(i => i.id);
 export function shopStock(locId) {
     const auto = autoStock().shop[locId] || { balls: [], weapons: [], traits: [] };
     const ov = Store.maps?.emoShop?.[locId] || {};
-    return { balls: ov.balls ?? auto.balls, weapons: ov.weapons ?? auto.weapons, traits: ov.traits ?? auto.traits, auto, ov };
+    return { items: ov.items ?? shopGeneral(), balls: ov.balls ?? auto.balls, weapons: ov.weapons ?? auto.weapons, traits: ov.traits ?? auto.traits, price: ov.price || {}, auto, ov };
 }
 export function labStock(locId) {
     const auto = autoStock().lab[locId] || { items: [] };
     const ov = Store.maps?.emoLabShop?.[locId] || {};
-    return { items: (ov.items ?? auto.items).filter(id => !LAB_ONLY.has(id)), auto, ov };
+    return { items: (ov.items ?? auto.items).filter(id => !LAB_ONLY.has(id)), price: ov.price || {}, auto, ov };
+}
+// a price set for one shop only (admin 🛒 재고 · 가격): key "i:ID" item · "w:ID" weapon · "t:ID" trait.
+// Without one, the admin's global price (iPrice / wPrice / tPrice) is used.
+export function stockPrice(locId, shop, key, base) {
+    const map = shop === "lab" ? Store.maps?.emoLabShop?.[locId]?.price : Store.maps?.emoShop?.[locId]?.price;
+    return parsePrice(map?.[key]) || base;
 }
 
 // ---------------------------------------------------------------- ⚗️ LAB recipes (EmoMonster's + Gamblers' own)
@@ -285,7 +308,16 @@ function buildConfig(loc) {
     const distinct = new Set(mons.flatMap(typesOfSpecies)).size;
     const avgR = mons.reduce((a, m) => a + (m.rarity || 1), 0) / Math.max(1, mons.length);
     const maxR = Math.max(1, ...mons.map(m => m.rarity || 1));
-    return { loc: loc.id, theme, themeText: THEMES[theme], types, mons: mons.map(m => m.id), chance, door: ov.door || "free", doorFixed: !!ov.door,
+    // shown attributes + description follow the monsters that really appear here (most common first)
+    const tally = {};
+    for (const m of mons) for (const t of typesOfSpecies(m)) tally[t] = (tally[t] || 0) + 1;
+    const real = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
+    if (real.length) types = real;
+    const tn = types.slice(0, 3).join(" · ") + (types.length > 3 ? ` 외 ${types.length - 3}개` : "");
+    const rare = maxR >= 5 ? " 아주 드물게 ★" + maxR + " 몬스터도 나타납니다." : maxR >= 3 ? ` 가끔 ★${maxR} 몬스터도 보입니다.` : " 흔한 몬스터들이 주로 나옵니다.";
+    const themeText = (types.length === 1 ? `${tn} 속성 몬스터 ${mons.length}종이 무리 지어 사는 곳.` : types.length === 2 ? `${tn} 속성 몬스터 ${mons.length}종이 섞여 사는 곳.`
+        : `${types.length}가지 속성(${tn}) 몬스터 ${mons.length}종이 나타나는 곳.`) + rare;
+    return { loc: loc.id, theme, themeText, types, mons: mons.map(m => m.id), chance, door: ov.door || "free", doorFixed: !!ov.door,
         score: avgR * 2 + maxR * 0.8 + distinct * 0.35 + mons.length * 0.05 };
 }
 // visual style of a corner: follows the map (crazy / evil / donation…) and its region

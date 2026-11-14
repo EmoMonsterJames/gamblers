@@ -9,7 +9,7 @@ import { toast, confirmBox, modal, confetti, Activity } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import * as G from "../game/season.js";
 import { emoReady } from "../emomon/engine.js";
-import { EMO, cat, loadCatalog, species, typesOfSpecies, emoItem, EMO_ITEMS, weaponPrice, traitPrice, captureConfig, captureSkin, shopStock, labStock, labRecipes, isOrb } from "../emomon/data.js";
+import { EMO, cat, loadCatalog, species, typesOfSpecies, emoItem, EMO_ITEMS, weaponPrice, traitPrice, captureConfig, captureSkin, shopStock, labStock, stockPrice, labRecipes, isOrb } from "../emomon/data.js";
 import * as M from "../emomon/game.js";
 import { monPic, typeChip, stars, itemIcon, partyPanel, monDetail, arena, arenaSide, dexView, weaponLine, natureTxt, traitTypes, traitInfo, weaponInfo } from "../emomon/ui.js";
 import { E } from "../emomon/engine.js";
@@ -28,8 +28,9 @@ function lazy(build) {
     return box;
 }
 const pname = pid => displayName(Store.player(pid));
-const buyLine = (ps, it, price, onBuy, blocked = false) => h("button.emo-buy", { disabled: blocked || !canPay(ps, price), onclick: onBuy },
-    itemIcon(it, 34), h("div", h("b", it.name), it.note ? h("small", it.note) : null), h("span.emo-price", priceLabel(price)));
+const haveTag = n => h("span.emo-have" + (n ? "" : ".zero"), `보유 ${n || 0}개`);
+const buyLine = (ps, it, price, onBuy, blocked = false, have = null) => h("button.emo-buy", { disabled: blocked || !canPay(ps, price), onclick: onBuy },
+    itemIcon(it, 34), h("div", h("b", it.name), it.note ? h("small", it.note) : null, have != null ? haveTag(have) : null), h("span.emo-price", priceLabel(price)));
 // one purchase in the 🛒 Monster Shop / 🧪 LAB 상점: asks first, counts toward the season limit
 async function buyFlow(pid, name, price, kind, give) {
     const ps = G.S().ps[pid];
@@ -84,12 +85,52 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             else if (st === "no") gate = h("div.emo-gate.no", h("div.emo-gate-door", "🚫"), h("p", "입장이 거절되었습니다. 다음 턴에 다시 와 보세요."));
             if (gate) { put(wrap, head(), poolRow(), gate); return; }
             const left = M.findsLeft(pid);
+            if (radarSel && M.bagN(pid, radarSel) <= 0) radarSel = null;
+            const radars = EMO_ITEMS.filter(i => i.kind === "radar" && M.bagN(pid, i.id) > 0).map(i => emoItem(i.id));
+            const R = radarSel ? emoItem(radarSel) : null;
+            const busyOut = left <= 0 || turn.remaining <= 0;
+            // 📡 the radar slot: put a radar in → Scan (instead of Find)
+            const radarBox = h("div.emo-radar",
+                h("button.emo-radar-slot" + (R ? ".on" : ""), { title: R ? "눌러서 레이더 빼기" : "아래에서 레이더를 골라 넣으세요", onclick: () => { radarSel = null; draw(); } },
+                    R ? itemIcon(R, 46) : h("span.emo-radar-empty", "📡"), h("small", R ? R.name : "레이더 칸")),
+                h("div.emo-radar-info",
+                    h("b", "📡 Monster Radar"),
+                    R ? h("small", R.boost >= 100 ? "Scan하면 이모몬스터 1마리가 무조건 등장합니다!" : `Scan 출현 확률 ${cfg.chance}% → ${Math.min(100, cfg.chance + R.boost)}% (+${R.boost}%)`)
+                        : h("small.muted", radars.length ? "보유한 레이더를 눌러 칸에 넣으면 Scan을 쓸 수 있습니다" : "레이더가 없습니다 (🛒 Monster Shop에서 판매)"),
+                    radars.length ? h("div.emo-radar-own", radars.map(it => h("button.emo-radar-pick" + (it.id === radarSel ? ".on" : ""), { title: it.note, onclick: () => { radarSel = it.id === radarSel ? null : it.id; draw(); } }, itemIcon(it, 24), h("small", `${it.name} ×${M.bagN(pid, it.id)}`)))) : null),
+                h("button.btn.big.emo-scan-btn" + (R ? ".gold" : ".ghost"), { disabled: !R || busyOut, onclick: doScan }, "📡 Scan!"));
             put(wrap, head(), poolRow(),
                 h("div.emo-cap-find",
-                    h("button.btn.gold.huge.emo-find-btn", { disabled: left <= 0 || turn.remaining <= 0, onclick: doFind }, left > 0 ? "🔍 Find!" : "이번 라운드 Capture를 모두 썼습니다 (다음 라운드에 3회 충전)"),
+                    h("button.btn.gold.huge.emo-find-btn", { disabled: busyOut, onclick: doFind }, left > 0 ? "🔍 Find!" : "이번 라운드 Capture를 모두 썼습니다 (다음 라운드에 3회 충전)"),
                     h("small.muted", "몬스터 · EmoMon Battler · 골드 · 아이템이 나올 수 있습니다")),
-                stage, h("p.muted.small", "🛒 볼 · 약 · 무기 · 특성은 🛒 Monster Shop 코너가 있는 맵에서 살 수 있습니다."));
+                radarBox,
+                stage, h("p.muted.small", "🛒 볼 · 약 · 무기 · 특성 · 레이더는 🛒 Monster Shop 코너가 있는 맵에서 살 수 있습니다."));
         };
+        let radarSel = null;
+        // 📡 Scan: the radar sweeps, then a monster shows up — or the radar fails (nothing else)
+        async function doScan(e) {
+            const R = emoItem(radarSel);
+            if (!R || M.bagN(pid, R.id) <= 0) return;
+            if (!(await confirmBox(`${R.name}을(를) 사용해 Scan할까요?\n레이더 1개와 이번 라운드 Capture 1회를 사용합니다.`, "📡 Scan", "취소"))) return;
+            const done = Activity.hold();
+            wrap.querySelectorAll(".emo-cap-find button, .emo-radar button").forEach(b => b.disabled = true);
+            const blips = Array.from({ length: 6 }, (_, i) => h("i.emo-scan-blip", { style: { "--x": (15 + Math.random() * 70) + "%", "--y": (15 + Math.random() * 70) + "%", "--d": (0.3 + i * 0.35) + "s" } }));
+            put(stage, h("div.emo-scan", h("div.emo-scan-screen", h("div.emo-scan-ring.r1"), h("div.emo-scan-ring.r2"), h("div.emo-scan-ring.r3"), h("div.emo-scan-sweep"), ...blips), h("b.emo-scan-txt", `📡 ${R.name} 스캔 중…`)));
+            for (let i = 0; i < 6; i++) { Sound.tick(); await sleep(420); }
+            const r = M.find(pid, loc.id, { radar: R.id });
+            radarSel = null;
+            done();
+            if (!r || r.kind === "noradar") { draw(); return; }
+            onChange();
+            if (r.kind === "monster") {
+                Sound.bonus();
+                toast(`📡 '${R.name}'를 통해서 이모몬스터가 출현했습니다!`, "ok", 3500);
+                return encounter(r.mon, h("p.emo-radar-ok", `📡 '${R.name}'를 통해서 이모몬스터가 출현했습니다!`));
+            }
+            draw();
+            Sound.miss();
+            put(stage, h("div.emo-found.emo-radar-fail", itemIcon(R, 56), h("b", `${R.name}에 실패했습니다.`)));
+        }
         async function doFind(e) {
             const done = Activity.hold();
             e.target.disabled = true;
@@ -107,18 +148,18 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             else { Sound.miss(); put(stage, h("div.emo-found", h("div.big", "🍃"), h("b", "아무것도 없었다…"))); }
         }
         // wild monster: throw balls / run
-        function encounter(wild) {
+        function encounter(wild, lead = null) {
             draw();
             const s = species(wild.sid);
             const msg = h("p.emo-enc-msg", `야생의 ${s.name}이(가) 나타났다!`);
-            const box = h("div.emo-enc", h("div.emo-enc-mon", monPic(s, 150, { anim: true })),
+            const box = h("div.emo-enc", lead, h("div.emo-enc-mon", monPic(s, 150, { anim: true })),
                 h("div.emo-enc-info", h("h3", s.name, " ", stars(s.rarity)), h("div", ...typesOfSpecies(s).map(typeChip)), h("small.muted", `성격: ${wild.nature}`), msg, h("div.emo-balls"), h("div.row")));
             put(stage, box);
             Sound.boom();
             const balls = () => {
                 const own = EMO_ITEMS.filter(b => b.kind === "ball" && M.bagN(pid, b.id) > 0);
                 const full = M.mons(pid).length >= EMO.MAX_MONS;
-                put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${M.catchChance(wild.sid, b.id)}%`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
+                put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${M.catchChance(wild.sid, b.id, wild)}%`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
                     full ? h("p.notice.warn.small", `몬스터가 이미 ${EMO.MAX_MONS}마리입니다 — 잡으면 몬스터 Release 권으로 1마리를 놓아 주어야 데려올 수 있습니다.`) : null);
                 put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"));
             };
@@ -141,7 +182,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                     return;
                 }
                 Sound.lose();
-                if (Math.random() < 0.3) { msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: draw }, "확인")); return; }
+                if (Math.random() < 0.3) { msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: () => { put(stage); draw(); } }, "확인")); return; }
                 msg.textContent = `볼에서 빠져나왔다! 다시 던져 보세요.`;
                 balls();
             }
@@ -178,12 +219,21 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             });
             if (!go) return;
             const r = await emoFight(pid, { mon: foe }, { title: `⚔ ${foe.trainer}`, foeLabel: foe.trainer });
+            G.noteBattler(pid, !!r.won);
             if (r.won) {
                 const rw = M.battlerReward(pid);
                 Store.saveSeason(true);
-                Sound.cash(); confetti(50);
-                toast(`🏆 승리! ${rw.gold ? `+${fmt(rw.gold)} G` : `+${rw.pts} P`}`, "ok", 3500);
+                Sound.cash(); confetti(50, ["🏆", "🪙", "✨"]);
                 G.log(`⚔ ${pname(pid)} EmoMon Battler 승리 (${rw.gold ? fmt(rw.gold) + "G" : rw.pts + "P"})`);
+                onChange();
+                const ps2 = G.S().ps[pid];
+                const pm = modal(h("div.emo-reward",
+                    h("div.emo-reward-ico", "🏆"),
+                    h("h3", `${foe.trainer}에게 승리!`),
+                    h("div.emo-reward-amt", rw.gold ? `+${fmt(rw.gold)} G` : `+${rw.pts} P`),
+                    h("p.muted", `배틀 승리 보상을 받았습니다 · 지금 보유 ${fmt(ps2.money)} G · ${ps2.points} P`),
+                    h("div.row.center", h("button.btn.gold.big", { onclick: () => pm.close() }, "확인"))), { title: "⚔ 배틀 승리 보상", cls: "emo-modal" });
+                await pm.closed;
             } else {
                 toast(r.a.bot ? "💥 패배…" : `💥 패배… ${M.sp(r.a.mon)?.name}의 HP ${M.hpOf(r.a.mon)} — 병원이나 약으로 회복하세요`, "warn", 4000);
                 G.log(`⚔ ${pname(pid)} EmoMon Battler에게 패배`);
@@ -352,8 +402,9 @@ export function labView(pid, { loc = null, onChange = () => { } } = {}) {
             const st = labStock(loc?.id);
             const goods = st.items.map(emoItem).filter(Boolean);
             const left = M.labBuysLeft(pid);
-            const group = (title, list) => list.length ? [h("h4", title), h("div.emo-buy-grid", ...list.map(it => buyLine(ps, it, { gold: it.gold || 0, pts: it.pts || 0 },
-                () => buyFlow(pid, it.name, { gold: it.gold || 0, pts: it.pts || 0 }, "lab", () => M.giveItem(pid, it.id)).then(ok => { if (ok) { onChange(); draw(); } }), left <= 0)))] : [];
+            const priceOf = it => stockPrice(loc?.id, "lab", "i:" + it.id, { gold: it.gold || 0, pts: it.pts || 0 });
+            const group = (title, list) => list.length ? [h("h4", title), h("div.emo-buy-grid", ...list.map(it => buyLine(ps, it, priceOf(it),
+                () => buyFlow(pid, it.name, priceOf(it), "lab", () => M.giveItem(pid, it.id)).then(ok => { if (ok) { onChange(); draw(); } }), left <= 0, M.bagN(pid, it.id))))] : [];
             if (!goods.length) return h("p.muted", "이 Lab의 상점은 지금 파는 물건이 없습니다.");
             return h("div",
                 h("div.row", h("span.emo-limit" + (left <= 0 ? ".out" : ""), `이번 시즌 남은 구매 ${left} / ${EMO.LAB_BUYS}회`), h("small.muted", " (모든 Lab 상점 합산 · Breaker와 Banana Smoothie는 ⚗️ 조합으로만)")),
@@ -406,23 +457,29 @@ export function monsterShopView(pid, loc, { onChange = () => { } } = {}) {
         const draw = () => {
             const st = shopStock(loc.id), left = M.shopBuysLeft(pid), out = left <= 0;
             const buy = (name, price, give) => buyFlow(pid, name, price, "shop", give).then(ok => { if (ok) { onChange(); draw(); } });
-            const group = (title, list) => list.length ? [h("h4", title), h("div.emo-buy-grid", ...list.map(it => { const price = { gold: it.gold || 0, pts: it.pts || 0 };
-                return buyLine(ps, it, price, () => buy(it.name, price, () => M.giveItem(pid, it.id)), out); }))] : [];
+            // this shop's own price if the admin set one, else the admin's global price
+            const group = (title, list) => list.length ? [h("h4", title), h("div.emo-buy-grid", ...list.map(it => { const price = stockPrice(loc.id, "shop", "i:" + it.id, { gold: it.gold || 0, pts: it.pts || 0 });
+                return buyLine(ps, it, price, () => buy(it.name, price, () => M.giveItem(pid, it.id)), out, M.bagN(pid, it.id)); }))] : [];
             const ws = st.weapons.map(id => cat().weapon[String(id)]).filter(Boolean);
             const ts = st.traits.map(id => cat().trait[String(id)]).filter(Boolean);
+            const gen = st.items.map(emoItem).filter(Boolean);
+            const weaponPriceHere = w => stockPrice(loc.id, "shop", "w:" + w.id, weaponPrice(w));
+            const traitPriceHere = t => stockPrice(loc.id, "shop", "t:" + t.id, traitPrice(t));
             put(wrap,
                 h("div.emo-lab-head", h("div.big", "🛒"), h("div", h("h3", `Monster Shop · ${loc.name}`), h("p.muted.small", "볼 · 회복약 · Release 권과 이 상점만의 속성 볼 · 몬스터 무기 · 특성을 팝니다. 상점마다 파는 물건이 다릅니다."))),
                 h("div.row", h("span.emo-limit" + (out ? ".out" : ""), `이번 시즌 남은 구매 ${left} / ${EMO.SHOP_BUYS}회`), h("small.muted", " (모든 Monster Shop 합산)")),
-                group("⚪ 볼", EMO_ITEMS.filter(i => i.kind === "ball" && !i.attr).map(i => emoItem(i.id))),
-                group("🔷 이 상점의 속성 볼 (해당 속성 몬스터 포획 45%)", st.balls.map(emoItem).filter(Boolean)),
-                group("🧪 회복 · 치료", EMO_ITEMS.filter(i => ["potion", "pp", "cure"].includes(i.kind)).map(i => emoItem(i.id))),
-                group("🎫 티켓", EMO_ITEMS.filter(i => i.kind === "delete").map(i => emoItem(i.id))),
+                group("⚪ 볼", gen.filter(i => i.kind === "ball" && !i.attr)),
+                group("🔷 이 상점의 속성 볼 (해당 속성 몬스터 포획 45%)", [...st.balls.map(emoItem), ...gen.filter(i => i.attr)].filter(Boolean)),
+                group("🧪 회복 · 치료", gen.filter(i => ["potion", "pp", "cure"].includes(i.kind))),
+                group("🎫 티켓", gen.filter(i => i.kind === "delete")),
+                group("📡 몬스터 레이더 (Capture에서 Scan)", gen.filter(i => i.kind === "radar")),
+                group("✨ 기타", gen.filter(i => !["ball", "potion", "pp", "cure", "delete", "radar"].includes(i.kind))),
                 ws.length || ts.length ? h("h4", "⚔ 몬스터 무기 · 🧬 특성") : null,
                 h("div.emo-buy-grid",
-                    ...ws.map(w => { const price = weaponPrice(w); return h("button.emo-buy", { disabled: out || !canPay(ps, price), onclick: () => buy(`⚔ ${w.name}`, price, () => M.giveWeapon(pid, w.id)) },
-                        typeChip(w.attribute), h("div", ...weaponLine(w), " ", stars(w.rarity)), h("span.emo-price", priceLabel(price))); }),
-                    ...ts.map(t => { const price = traitPrice(t); return h("button.emo-buy", { disabled: out || !canPay(ps, price), onclick: () => buy(`🧬 ${t.name}`, price, () => M.giveTrait(pid, t.id)) },
-                        h("span.big", "🧬"), h("div", h("b", t.name, " "), stars(t.rarity), h("small", E.traits.describe(t) || "")), h("span.emo-price", priceLabel(price))); })),
+                    ...ws.map(w => { const price = weaponPriceHere(w); return h("button.emo-buy", { disabled: out || !canPay(ps, price), onclick: () => buy(`⚔ ${w.name}`, price, () => M.giveWeapon(pid, w.id)) },
+                        typeChip(w.attribute), h("div", ...weaponLine(w), " ", stars(w.rarity), haveTag(M.emo(pid).wbag?.[w.id])), h("span.emo-price", priceLabel(price))); }),
+                    ...ts.map(t => { const price = traitPriceHere(t); return h("button.emo-buy", { disabled: out || !canPay(ps, price), onclick: () => buy(`🧬 ${t.name}`, price, () => M.giveTrait(pid, t.id)) },
+                        h("span.big", "🧬"), h("div", h("b", t.name, " "), stars(t.rarity), h("small", E.traits.describe(t) || ""), haveTag(M.emo(pid).tbag?.[t.id])), h("span.emo-price", priceLabel(price))); })),
                 h("p.muted.small", "산 무기 · 특성은 오른쪽 🐾 내 EmoMon에서 몬스터를 눌러 배웁니다. 못 배우는 무기 · 특성은 🧪 Monster Lab의 🔬 실험실에서 가르칠 수 있습니다."));
         };
         draw();

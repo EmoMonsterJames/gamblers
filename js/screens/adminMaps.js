@@ -9,6 +9,8 @@ import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds, ITEMS,
 import { HONOR_KINDS, HONOR_ALL, honorKinds, honorPrizes } from "../data/honor.js";
 const HONOR_TAB = "_honor";
 import { locationShops } from "../data/catalogAdmin.js";
+import { mapCorners } from "../ui/mapCorners.js";
+import { stockManager } from "./adminEmo.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
 import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
@@ -127,13 +129,7 @@ export function adminMapsPage() {
                 e.shops = Object.keys(SHOPS).filter(x => next.has(x)); dirty(); draw();
             } }), `${SHOPS[k].icon} ${SHOPS[k].name}${viaItems.has(k) && !own.has(k) ? " (아이템 배치)" : ""}`));
         // every corner a player will see on this map (same order as the in-game tabs)
-        const corners = [
-            ...locationShops(l).map(k => `${SHOPS[k].icon} ${SHOPS[k].name}`),
-            l.discount && "🏷️ 할인 상점",
-            ...earn.map(k => EARN_LABEL[k] || k),
-            l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee", l.bank && "🏦 Business Bank", l.bizhub && "🏪 Self-Business", l.capture && "🔍 EmoMon Capture", l.hospital && "🏥 Monster Hospital", l.lab && "🧪 Monster Lab", l.emoshop && "🛒 Monster Shop",
-            ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`),
-        ].filter(Boolean);
+        const corners = mapCorners(l); // same list as the in-game tabs (ui/mapCorners.js)
         const rules = [
             l.crazy && "🤪 Crazy (입장 시 5분 차감)", l.evil && `😈 Evil (HP −${l.evil})`, l.donation && "🎁 기부 입장",
             l.npcOnly && `💀 NPC 고정: ${NPCS.find(n => n.id === l.npcOnly)?.name || l.npcOnly}`,
@@ -154,6 +150,9 @@ export function adminMapsPage() {
             h("div.am-corners", h("small", `활성 코너 ${corners.length}개:`), corners.length ? corners.map(c => h("span.am-corner", c)) : h("span.muted", "없음"),
                 rules.length ? [h("small", " · 맵 규칙:"), rules.map(c => h("span.am-corner.rule", c))] : null),
             h("div.am-togs", h("small", "상점:"), shopToggles),
+            l.emoshop || l.lab ? h("div.am-togs", h("small", "🐾 EmoMon 상점 관리:"),
+                l.emoshop ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "shop", draw) }, "🛒 Monster Shop 재고 · 가격") : null,
+                l.lab ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "lab", draw) }, "🧪 LAB 상점 재고 · 가격") : null) : null,
             h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),

@@ -833,8 +833,20 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
 function hasThing(pid, what) {
     if (what === "pet") return !!S().ps[pid].pet;
     if (what === "gear") return hasPetGear(pid) || hasFrameGear(pid);
+    if (what === "special") { const d = Store.getDecor?.(pid) || {}; return !!(isSpecialFrame(d.frame) || isSpecialEffect(d.effect)); }
+    if (what === "biz") return (Store.bank?.biz || []).some(b => !b.closed && b.owner === +pid);
+    if (what === "bank") return !!Store.bank?.accounts?.[pid];
+    if (what === "battler") { const b = S().ps[pid]?.battler; return !!b && b.round === S().round && b.won > 0 && !b.lost; }
     return true;
 }
+const HAS_MISS = {
+    pet: "펫 없음 (상점에서 구매 가능)",
+    gear: "펫·펫효과·프레임·효과 모두 없음",
+    special: "⭐ 특수프레임 · 특수프레임 효과 없음",
+    biz: "🏪 본인 소유 Self-Business 없음",
+    bank: "🏦 본인 은행 계좌 없음",
+    battler: "⚔ EmoMon Capture에서 Battler를 만나 이겨야 안전 (지거나 못 만나면 후보)",
+};
 // missions decided by the judge, not by playing (shown as "판정 대기")
 export const judgedMission = m => m && (m.type === "rank");
 export function missionMet(m, st) {
@@ -886,7 +898,7 @@ export function missionProgress(m, st) {
         case "earn_min": return { cur: st.earn || 0, goal: m.v, label: `돈벌기 ${(st.earn || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "spell": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐝 Spelling Bee 성공!" : "🐝 Spelling Bee 코너가 있는 맵에서 단어를 맞히세요" };
         case "card": return { cur: met ? 1 : 0, goal: 1, label: met ? `카드 ${m.letter} 사용!` : `카드 ${m.letter}: 턴 종료 때 사용 여부를 묻습니다` };
-        case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? "보유 중 — 안전" : m.what === "pet" ? "펫 없음 (상점에서 구매 가능)" : "펫·펫효과·프레임·효과 없음" };
+        case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? (m.what === "battler" ? "⚔ Battler 승리 — 안전" : "보유 중 — 안전") : HAS_MISS[m.what] || "보유하지 않음" };
         case "emo_has": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐾 해당 몬스터 보유 중 — 안전" : "🐾 해당 몬스터가 없습니다 — EmoMon Capture · Lab에서 준비하세요" };
         case "rank": return { cur: 0, goal: 1, label: "라운드 끝에 판정" };
         case "bonus_in": {
@@ -1038,6 +1050,14 @@ export function luckOf(pid) {
     return { win: win / 100, bonus: bonus / 100, pct: win, bonusPct: bonus, pid, pet: ps.pet || null, petEffect: ps.petEffect || null, sources };
 }
 
+// EmoMon Battler fight this round (has:battler missions — safe only after a win and no loss)
+export function noteBattler(pid, won) {
+    const s = S(), ps = s?.ps[pid];
+    if (!ps) return;
+    if (ps.battler?.round !== s.round) ps.battler = { round: s.round, won: 0, lost: 0 };
+    ps.battler[won ? "won" : "lost"]++;
+    Store.saveSeason();
+}
 // pet / effect helped: what = "win" | "bonus"; counted on the player for the season
 export function notePetHelp(pid, what, amount, credit) {
     const s = S(), ps = s?.ps[pid];

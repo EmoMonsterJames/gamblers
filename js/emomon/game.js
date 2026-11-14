@@ -149,16 +149,22 @@ export function findsLeft(pid) {
     return EMO.CAPTURES_PER_ROUND - (e.finds || 0);
 }
 // a Find press: monster (map chance) · or battler / nothing / gold / item
-export function find(pid, locId) {
+// 📡 Scan: a Find with a radar (used up) — monster chance + its boost (Legendary = always);
+// when no monster shows up the scan simply fails (no battler / gold / item)
+export function find(pid, locId, { radar = null } = {}) {
     const cfg = captureConfig(locId);
     if (!cfg || findsLeft(pid) <= 0) return null;
+    const R = radar ? emoItem(radar) : null;
+    if (radar && (!R || R.kind !== "radar" || !useItem(pid, radar))) return { kind: "noradar" };
     emo(pid).finds++;
+    const chance = R ? (R.boost >= 100 ? 100 : Math.min(100, cfg.chance + R.boost)) : cfg.chance;
     let out;
-    if (Math.random() * 100 < cfg.chance) {
+    if (Math.random() * 100 < chance) {
         const s = pickByRarity(cfg.mons.map(species).filter(Boolean));
-        out = { kind: "monster", mon: newMon(s.id) };
+        out = { kind: "monster", mon: newMon(s.id), radar: R?.name || null };
         seen(pid, s.id, "capture");
-    } else {
+    } else if (R) out = { kind: "radarFail", radar: R.name };
+    else {
         const sp = EMO.MISS_SPLIT, tot = Object.values(sp).reduce((a, b) => a + b, 0);
         let x = Math.random() * tot, kind = "nothing";
         for (const [k, v] of Object.entries(sp)) { if ((x -= v) < 0) { kind = k; break; } }
@@ -167,7 +173,7 @@ export function find(pid, locId) {
         else if (kind === "item") { const it = findItem(); if (it.card) { const ps = S().ps[pid]; ps.items[it.id] = (ps.items[it.id] || 0) + 1; } else giveItem(pid, it.id); out = { kind, item: it }; }
         else out = { kind: "nothing" };
     }
-    log(`🔍 ${name(pid)} Capture Find → ${out.kind === "monster" ? species(out.mon.sid)?.name : out.kind === "battler" ? "EmoMon Battler!" : out.kind === "gold" ? `${out.gold}G` : out.kind === "item" ? out.item.name : "아무것도 없음"}`);
+    log(`${R ? `📡 ${name(pid)} ${R.name} Scan (${chance}%)` : `🔍 ${name(pid)} Capture Find`} → ${out.kind === "monster" ? species(out.mon.sid)?.name : out.kind === "battler" ? "EmoMon Battler!" : out.kind === "gold" ? `${out.gold}G` : out.kind === "item" ? out.item.name : out.kind === "radarFail" ? "레이더 실패" : "아무것도 없음"}`);
     Store.saveSeason();
     return out;
 }
@@ -191,17 +197,20 @@ function findItem() {
 }
 // catch chance = the ball's own rate (Monster 5% · Super 10% · Hyper 30% · Master 100%;
 // Crazy 70% · attribute balls 45% on their attribute, 5% on others)
-export function catchChance(sid, ballId) {
+// Dung 1% · Repeat 5% +5% per earlier Repeat Ball at the same wild monster (max 50%)
+export function catchChance(sid, ballId, wild = null) {
     const s = species(sid), b = emoItem(ballId);
     if (!s || !b) return 0;
     if (b.attr) return typesOfSpecies(s).some(t => t.toLowerCase() === b.attr.toLowerCase()) ? b.rate : (b.rateOff ?? 0);
+    if (b.repeat) return Math.min(b.repeat.max, (b.rate ?? 5) + b.repeat.step * (wild?.repeats || 0));
     return b.rate ?? 0;
 }
 // → { ok, caught, roll, chance }
 export function throwBall(pid, wild, ballId) {
     const b = emoItem(ballId);
     if (!b || !useItem(pid, ballId)) return { ok: false, why: "볼이 없습니다" };
-    let chance = catchChance(wild.sid, ballId);
+    let chance = catchChance(wild.sid, ballId, wild);
+    if (b.repeat) wild.repeats = (wild.repeats || 0) + 1;
     const caught = Math.random() * 100 < chance;
     log(`🎯 ${name(pid)} ${b.name} → ${species(wild.sid)?.name} ${caught ? "포획 성공!" : "놓침"}`);
     Store.saveSeason();

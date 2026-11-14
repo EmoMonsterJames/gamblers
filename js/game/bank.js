@@ -148,6 +148,8 @@ export const bizAt = locId => B().biz.filter(b => b.loc === locId);
 export const bizOf = pid => activeBiz().filter(b => b.owner === +pid);
 export const stockLeft = type => BIZ_TYPES[type].max - activeBiz().filter(b => b.type === type).length;
 export const priceFor = (type, pid) => { const T = BIZ_TYPES[type], p = Store.player(pid); return T.nation && p?.country === T.nation ? Math.round(T.price * 0.95) : T.price; };
+export const ptsFor = type => BIZ_TYPES[type].pts || 0; // points part of the price (no nation discount)
+const emoCount = pid => S().ps[pid]?.emo?.mons?.length || 0;
 // every map a type may open on, with its region tax (maps that already hold a business are taken)
 export function openSpots(type, { except = null } = {}) {
     const T = BIZ_TYPES[type], taken = new Set(activeBiz().filter(b => b.id !== except).map(b => b.loc));
@@ -161,8 +163,10 @@ export function buyStatus(type, pid) {
     const T = BIZ_TYPES[type];
     if (stockLeft(type) <= 0) return { ok: false, why: "매물 소진" };
     if (!hasTop(pid, T.rank)) return { ok: false, why: `TOP ${T.rank} 경력 필요` };
+    if (T.emoMin && emoCount(pid) < T.emoMin) return { ok: false, why: `EmoMon ${T.emoMin}마리 이상 필요` };
     if (!account(pid)) return { ok: false, why: "Business Bank 계좌 필요" };
     if (S().ps[pid].money < priceFor(type, pid)) return { ok: false, why: "골드 부족" };
+    if (S().ps[pid].points < ptsFor(type)) return { ok: false, why: "포인트 부족" };
     return { ok: true };
 }
 // price + region tax are paid together when the shop opens
@@ -173,13 +177,14 @@ export function openBusiness(pid, type, code, locId) {
     if (!a || a.pid !== +pid) return { ok: false, why: "본인 계좌 코드가 아닙니다" };
     const spot = openSpots(type).find(r => r.maps.some(m => m.loc.id === locId && !m.taken));
     if (!spot) return { ok: false, why: "그 맵에는 오픈할 수 없습니다" };
-    const price = priceFor(type, pid), total = price + spot.tax;
+    const price = priceFor(type, pid), pts = ptsFor(type), total = price + spot.tax;
     if (ps.money < total) return { ok: false, why: `매입가 + 지역세 ${total.toLocaleString()}G가 부족합니다` };
-    ps.money -= total;
+    if (ps.points < pts) return { ok: false, why: `포인트 ${pts}P가 부족합니다` };
+    ps.money -= total; ps.points -= pts;
     B().biz = B().biz.filter(b => !(b.closed && b.loc === locId)); // a closed slot is reused
-    const biz = { id: uid("biz"), type, owner: +pid, code: a.code, loc: locId, openedAt: now(), season: S().number, price, tax: spot.tax, revenue: 0, entries: 0, buys: 0, sales: [], moves: [] };
+    const biz = { id: uid("biz"), type, owner: +pid, code: a.code, loc: locId, openedAt: now(), season: S().number, price, pts, tax: spot.tax, revenue: 0, entries: 0, buys: 0, sales: [], moves: [] };
     B().biz.push(biz);
-    log(`${T.emoji} ${name(pid)} ${T.name} 매입 → ${LOC_BY_ID[locId].name} 오픈! (${total.toLocaleString()}G)`);
+    log(`${T.emoji} ${name(pid)} ${T.name} 매입 → ${LOC_BY_ID[locId].name} 오픈! (${total.toLocaleString()}G${pts ? ` + ${pts}P` : ""})`);
     save(); Store.saveSeason(true);
     return { ok: true, biz };
 }

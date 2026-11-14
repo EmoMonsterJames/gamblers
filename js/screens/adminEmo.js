@@ -10,7 +10,7 @@ import { toast, confirmBox, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { LOCATIONS, LOC_BY_ID, REGIONS } from "../data/catalog.js";
 import { emoReady, E } from "../emomon/engine.js";
-import { EMO, cat, loadCatalog, syncFromEmoMonster, captureConfigs, species, typesOfSpecies, emoAdmin, EMO_ITEMS, baseItem, emoItem, weaponPriceBase, traitPriceBase, isFirstStage, priceText, shopStock, labStock, LAB_ONLY, isOrb, isSpecialEvo, specialEvoAuto } from "../emomon/data.js";
+import { EMO, cat, loadCatalog, syncFromEmoMonster, captureConfigs, species, typesOfSpecies, emoAdmin, EMO_ITEMS, baseItem, emoItem, weaponPriceBase, traitPriceBase, weaponPrice, traitPrice, isFirstStage, priceText, shopStock, labStock, LAB_ONLY, isOrb, isSpecialEvo, specialEvoAuto } from "../emomon/data.js";
 import { monPic, typeChip, stars, itemIcon, weaponLine, rangeBrowser, typeStarBrowser, traitTypes } from "../emomon/ui.js";
 
 const TYPES = ["Normal", "Abnormal", "Magic", "Power", "Water", "Fire", "Grass", "Electric", "Ice", "Angel", "Evil", "Air", "Fly", "Earth", "Bug", "Ghost", "Steel", "Fairy", "Space", "Robot", "Light", "Mind"];
@@ -336,58 +336,114 @@ function itemsTab() {
             it.noSale || LAB_ONLY.has(it.id) ? h("small.muted", "LAB 조합 전용") : priceInput("iPrice", it.id, { gold: it.gold || 0, pts: it.pts || 0 }))
     });
 }
-// ---------------------------------------------------------------- 🛒 shop stock per map (Monster Shop + LAB 상점)
-// settings "maps".emoShop[locId] = { balls, weapons, traits } · .emoLabShop[locId] = { items } (missing = automatic)
+// ---------------------------------------------------------------- 🛒 shop stock + prices per map (Monster Shop · LAB 상점)
+// settings "maps".emoShop[locId] = { items, balls, weapons, traits, price } · .emoLabShop[locId] = { items, price }
+// (a missing list = automatic) · price: { "i:ID" | "w:ID" | "t:ID": 150000 | "500P" } = this shop only
+const shopKind = loc => [loc.emoshop && "shop", loc.lab && "lab"].filter(Boolean);
+function stockSummary(loc, shop) {
+    if (shop === "lab") { const st = labStock(loc.id); return `${st.items.length}종${st.ov.items != null ? " · 직접 지정" : " · 자동"}${Object.keys(st.price).length ? ` · 가격 지정 ${Object.keys(st.price).length}개` : ""}`; }
+    const st = shopStock(loc.id), n = st.items.length + st.balls.length + st.weapons.length + st.traits.length;
+    return `${n}종 (속성 볼 ${st.balls.length} · 무기 ${st.weapons.length} · 특성 ${st.traits.length})${Object.keys(st.ov).some(k => k !== "price") ? " · 직접 지정" : " · 자동"}${Object.keys(st.price).length ? ` · 가격 지정 ${Object.keys(st.price).length}개` : ""}`;
+}
+// one shop's goods: search to add, a price per good (blank = the admin's global price), ✕ to remove
+export async function stockManager(locId, shop, onSaved = () => { }) {
+    await emoReady(); if (!cat()) await loadCatalog();
+    const C = cat(), loc = LOC_BY_ID[locId];
+    if (!C || !loc) return toast("EmoMon 데이터를 먼저 불러오세요", "warn");
+    // every good this kind of shop can sell, as { key, label, icon, kind, base }
+    const goods = [];
+    if (shop === "lab") {
+        for (const i of C.items.filter(i => ["evolution", "material"].includes(i.category) && !LAB_ONLY.has(i.id))) {
+            const it = emoItem(i.id); if (!it) continue;
+            goods.push({ key: "i:" + it.id, id: it.id, label: it.name, icon: () => itemIcon(it, 26), kind: it.orb ? "🔮 Orb" : it.kind === "material" ? "🧱 재료" : "✨ 진화", base: { gold: it.gold || 0, pts: it.pts || 0 } });
+        }
+    } else {
+        for (const i of EMO_ITEMS.filter(i => !i.noSale && i.kind !== "breaker")) {
+            const it = emoItem(i.id);
+            goods.push({ key: "i:" + it.id, id: it.id, label: it.name, icon: () => itemIcon(it, 26), kind: it.attr ? "🔷 속성 볼" : { ball: "⚪ 볼", potion: "🧪 약", pp: "🔋 PP", cure: "💊 치료", delete: "🎫 티켓", radar: "📡 레이더" }[it.kind] || it.kind, attr: !!it.attr, base: { gold: it.gold || 0, pts: it.pts || 0 } });
+        }
+        for (const w of C.weapons.filter(w => !(w.allowed_monster_ids || []).map(Number).includes(EMO.BOT_ID) && w.attribute))
+            goods.push({ key: "w:" + w.id, id: w.id, label: `${w.name} (${w.attribute} ${EMO.STARS(w.rarity)})`, icon: () => typeChip(w.attribute), kind: "⚔ 무기", base: weaponPrice(w) });
+        for (const t of C.traits)
+            goods.push({ key: "t:" + t.id, id: t.id, label: `${t.name} ${EMO.STARS(t.rarity)}`, icon: () => h("span", "🧬"), kind: "🧬 특성", base: traitPrice(t) });
+    }
+    const byKey = Object.fromEntries(goods.map(g => [g.key, g]));
+    // current list
+    let keys, price;
+    if (shop === "lab") { const st = labStock(locId); keys = st.items.map(id => "i:" + id); price = { ...st.price }; }
+    else { const st = shopStock(locId); keys = [...st.items.map(id => "i:" + id), ...st.balls.map(id => "i:" + id), ...st.weapons.map(id => "w:" + id), ...st.traits.map(id => "t:" + id)]; price = { ...st.price }; }
+    keys = [...new Set(keys)].filter(k => byKey[k]);
+    const list = h("div.ae-sm-list"), found = h("div.ae-sm-found"), count = h("b");
+    const q = h("input.ae-sm-q", { placeholder: "🔎 추가할 아이템 · 무기 · 특성 검색 (이름 / 속성)", oninput: () => search() });
+    const baseTxt = b => b?.pts ? `${b.pts}P` : `${fmt(b?.gold || 0)}G`;
+    const drawList = () => {
+        count.textContent = `판매 중 ${keys.length}종`;
+        put(list, ...(keys.length ? keys.map(k => {
+            const g = byKey[k];
+            const inp = h("input.ae-price", { type: "text", value: price[k] ?? "", placeholder: baseTxt(g.base), title: "비우면 어드민 기본 가격 · 숫자 = 골드, 500P = 포인트",
+                onchange: e => {
+                    const v = e.target.value.trim().toUpperCase().replace(/[,\sG]/g, "");
+                    if (v === "") delete price[k];
+                    else if (/^\d+P$/.test(v) || /^\d+$/.test(v)) price[k] = /P$/.test(v) ? v : +v;
+                    else { e.target.value = price[k] ?? ""; toast("숫자(골드) 또는 500P 처럼 입력하세요", "warn"); }
+                } });
+            return h("div.ae-sm-row", g.icon(), h("div.ae-sm-name", h("b", g.label), h("small.muted", ` ${g.kind} · 기본 ${baseTxt(g.base)}`)), inp,
+                h("button.btn.small.ghost", { title: "빼기", onclick: () => { keys = keys.filter(x => x !== k); delete price[k]; drawList(); search(); } }, "✕"));
+        }) : [h("p.muted", "파는 물건이 없습니다. 위에서 검색해 추가하세요.")]));
+    };
+    const search = () => {
+        const f = q.value.trim().toLowerCase();
+        if (!f) { put(found); return; }
+        const hits = goods.filter(g => !keys.includes(g.key) && `${g.label} ${g.kind}`.toLowerCase().includes(f)).slice(0, 30);
+        put(found, ...(hits.length ? hits.map(g => h("button.ae-sm-hit", { onclick: () => { keys.push(g.key); drawList(); search(); q.focus(); } }, g.icon(), h("span", g.label), h("small.muted", ` ${g.kind} · ${baseTxt(g.base)}`), h("b.ae-sm-add", "+ 추가"))) : [h("small.muted", "검색 결과가 없습니다")]));
+    };
+    const save = async () => {
+        if (shop === "lab") {
+            const all = (Store.maps.emoLabShop ||= {});
+            all[locId] = { items: keys.map(k => k.slice(2)), ...(Object.keys(price).length ? { price } : {}) };
+        } else {
+            const ids = p => keys.filter(k => k.startsWith(p)).map(k => k.slice(2));
+            const items = ids("i:"), attr = items.filter(id => byKey["i:" + id]?.attr);
+            const num = id => isNaN(+id) ? id : +id;
+            const all = (Store.maps.emoShop ||= {});
+            all[locId] = { items: items.filter(id => !attr.includes(id)), balls: attr, weapons: ids("w:").map(num), traits: ids("t:").map(num), ...(Object.keys(price).length ? { price } : {}) };
+        }
+        await Store.saveMaps({ ...Store.maps });
+        toast(`${loc.name} ${shop === "lab" ? "LAB 상점" : "Monster Shop"} 재고 · 가격을 저장했습니다`, "ok");
+        m.close(); onSaved();
+    };
+    const reset = async () => {
+        if (!(await confirmBox(`${loc.name}의 ${shop === "lab" ? "LAB 상점" : "Monster Shop"}을 자동 재고 · 기본 가격으로 되돌릴까요?`, "되돌리기", "취소"))) return;
+        if (shop === "lab") delete (Store.maps.emoLabShop ||= {})[locId]; else delete (Store.maps.emoShop ||= {})[locId];
+        await Store.saveMaps({ ...Store.maps });
+        toast("자동으로 되돌렸습니다", "ok"); m.close(); onSaved();
+    };
+    const m = modal(h("div.ae-sm",
+        h("p.muted.small", shop === "lab" ? "이 Lab의 상점에서 팔 진화 아이템 · 재료를 검색해 넣고, 이 상점만의 가격을 정합니다 (비우면 어드민 🎒 아이템 탭의 가격)."
+            : "이 Monster Shop에서 팔 볼 · 약 · 레이더 · 속성 볼 · 무기 · 특성을 검색해 넣고, 이 상점만의 가격을 정합니다 (비우면 어드민 기본 가격)."),
+        q, found, h("div.row.between", count, h("small.muted", "가격 칸: 숫자 = 골드 · 500P = 포인트 · 비우면 기본")), list,
+        h("div.row.end", h("button.btn.ghost", { onclick: reset }, "↺ 자동으로"), h("button.btn.ghost", { onclick: () => m.close() }, "취소"), h("button.btn.gold", { onclick: save }, "💾 저장"))),
+        { title: `${loc.emoji || ""} ${loc.name} · ${shop === "lab" ? "🧪 LAB 상점" : "🛒 Monster Shop"} 재고 · 가격`, wide: true });
+    drawList();
+    setTimeout(() => q.focus(), 50);
+    return m;
+}
 function stockTab() {
     const wrap = h("div");
-    const C = cat();
-    const save = async (msg) => { await Store.saveMaps({ ...Store.maps }); toast(msg || "저장했습니다", "ok"); draw(); };
-    const setShop = (loc, key, ids) => { const all = (Store.maps.emoShop ||= {}); const o = (all[loc] ||= {}); if (ids == null) delete o[key]; else o[key] = ids; if (!Object.keys(o).length) delete all[loc]; save(); };
-    const setLab = (loc, ids) => { const all = (Store.maps.emoLabShop ||= {}); if (ids == null) delete all[loc]; else all[loc] = { items: ids }; save(); };
-    // who else sells it (to keep shops different)
-    const sellers = (key, id, except) => LOCATIONS.filter(l => l.emoshop && l.id !== except && shopStock(l.id)[key].map(String).includes(String(id))).map(l => l.name);
-    function picker({ title, all, chosen, label, max, onSave, onAuto, other }) {
-        const set = new Set(chosen.map(String));
-        const cnt = h("b", `${set.size}개 선택${max ? ` (권장 최대 ${max})` : ""}`);
-        const q = h("input", { placeholder: "검색" });
-        const grid = h("div.ae-pick-list");
-        const fill = () => { const f = q.value.trim().toLowerCase(); put(grid, ...all.filter(x => !f || label(x).toLowerCase().includes(f)).map(x => {
-            const id = String(x.id), o = other?.(x);
-            const b = h("button.ae-pick" + (set.has(id) ? ".on" : ""), { onclick: () => { set.has(id) ? set.delete(id) : set.add(id); b.classList.toggle("on"); cnt.textContent = `${set.size}개 선택${max ? ` (권장 최대 ${max})` : ""}`; } }, label(x), o?.length ? h("small.muted", ` · 다른 상점: ${o.join(", ")}`) : null);
-            return b; })); };
-        q.oninput = fill; fill();
-        const mm = modal(h("div", h("div.row", cnt, q), grid,
-            h("div.row.end", h("button.btn.ghost", { onclick: () => { mm.close(); onAuto(); } }, "↺ 자동으로"), h("button.btn.ghost", { onclick: () => { mm.close(); onSave([]); } }, "🚫 안 팔기"),
-                h("button.btn.gold", { onclick: () => { mm.close(); onSave([...set].map(x => isNaN(+x) ? x : +x)); } }, "저장"))), { title, wide: true });
-    }
-    const weaponsAll = C.weapons.filter(w => !(w.allowed_monster_ids || []).map(Number).includes(EMO.BOT_ID) && w.attribute);
-    const ballsAll = EMO_ITEMS.filter(i => i.attr);
-    const labAll = C.items.filter(i => ["evolution", "material"].includes(i.category) && !LAB_ONLY.has(i.id));
-    const tag = (ov, key) => ov[key] != null ? h("small.bad", " (직접 지정)") : h("small.muted", " (자동)");
-    const draw = () => put(wrap,
-        h("p.muted.small", `🛒 Monster Shop: 상점마다 속성 볼 2종 · 무기 2~3종 · 특성 1~2종을 서로 다르게 자동 배치합니다 (속성 볼은 22종뿐이라 상점이 11곳을 넘으면 일부 볼이 2곳에서 팔리지만 같은 조합은 없습니다). 일반 볼 · 회복약 · 티켓은 모든 상점에서 팝니다. 시즌당 구매 ${EMO.SHOP_BUYS}회 제한.`),
-        h("h3", "🛒 Monster Shop"),
-        ...LOCATIONS.filter(l => l.emoshop).map(l => {
-            const st = shopStock(l.id);
-            return h("div.ag-card.ae-stock", h("b", `${l.emoji || ""} ${l.name}`),
-                h("div.ae-stock-row", h("button.btn.small.ghost", { onclick: () => picker({ title: `${l.name} · 속성 볼`, all: ballsAll, chosen: st.balls, max: 2, label: b => b.name, other: b => sellers("balls", b.id, l.id), onSave: ids => setShop(l.id, "balls", ids), onAuto: () => setShop(l.id, "balls", null) }) }, "🔷 속성 볼"), tag(st.ov, "balls"),
-                    h("span", ...st.balls.map(id => emoItem(id)).filter(Boolean).map(b => typeChip(b.attr)))),
-                h("div.ae-stock-row", h("button.btn.small.ghost", { onclick: () => picker({ title: `${l.name} · 무기`, all: weaponsAll, chosen: st.weapons, max: 3, label: w => `${w.name} (${w.attribute} ${EMO.STARS(w.rarity)})`, other: w => sellers("weapons", w.id, l.id), onSave: ids => setShop(l.id, "weapons", ids), onAuto: () => setShop(l.id, "weapons", null) }) }, "⚔ 무기"), tag(st.ov, "weapons"),
-                    h("span.small", st.weapons.map(id => C.weapon[String(id)]?.name).filter(Boolean).join(", ") || "없음")),
-                h("div.ae-stock-row", h("button.btn.small.ghost", { onclick: () => picker({ title: `${l.name} · 특성`, all: C.traits, chosen: st.traits, max: 2, label: t => `${t.name} ${EMO.STARS(t.rarity)}`, other: t => sellers("traits", t.id, l.id), onSave: ids => setShop(l.id, "traits", ids), onAuto: () => setShop(l.id, "traits", null) }) }, "🧬 특성"), tag(st.ov, "traits"),
-                    h("span.small", st.traits.map(id => C.trait[String(id)]?.name).filter(Boolean).join(", ") || "없음")));
-        }),
-        h("h3", "🧪 LAB 상점"),
-        h("p.muted.small", `Lab이 있는 맵마다 Orb · 기타 진화 아이템 · 재료를 각각 최대 5개까지 팝니다. 안 파는 아이템은 여기서 직접 넣으면 등장합니다. Breaker와 Banana Smoothie는 조합 전용이라 팔 수 없습니다. 시즌당 구매 ${EMO.LAB_BUYS}회 제한.`),
-        ...LOCATIONS.filter(l => l.lab).map(l => {
-            const st = labStock(l.id);
-            const names = kind => st.items.map(id => emoItem(id)).filter(it => it && kind(it)).map(it => it.name).join(", ") || "없음";
-            return h("div.ag-card.ae-stock", h("div.row", h("b", `${l.emoji || ""} ${l.name}`), tag(st.ov.items != null ? { items: 1 } : {}, "items"),
-                h("button.btn.small.ghost", { onclick: () => picker({ title: `${l.name} · LAB 상점`, all: labAll, chosen: st.items, max: 15, label: i => `${isOrb(i) ? "🔮" : i.category === "material" ? "🧱" : "✨"} ${i.name}`, onSave: ids => setLab(l.id, ids), onAuto: () => setLab(l.id, null) }) }, "✏️ 바꾸기")),
-                h("div.small", "🔮 Orb: ", names(it => it.kind === "evo" && it.orb)),
-                h("div.small", "✨ 기타 진화: ", names(it => it.kind === "evo" && !it.orb)),
-                h("div.small", "🧱 재료: ", names(it => it.kind === "material")));
-        }));
+    let region = "";
+    const draw = () => {
+        const maps = LOCATIONS.filter(l => (l.emoshop || l.lab) && (!region || l.region === region));
+        put(wrap,
+            h("p.muted.small", `Monster Shop · LAB 상점이 있는 맵만 모았습니다. ✏️ 를 누르면 그 상점에서 팔 물건을 검색해 넣고 상점별 가격을 정할 수 있습니다 (비우면 어드민 기본 가격). 기본: Monster Shop마다 속성 볼 2종 · 무기 2~3종 · 특성 1~2종이 서로 다르게 자동 배치되고 일반 볼 · 약 · 티켓 · 레이더는 모든 상점에서 팝니다. 시즌당 구매 Monster Shop ${EMO.SHOP_BUYS}회 · LAB ${EMO.LAB_BUYS}회.`),
+            h("div.row", h("select", { onchange: e => { region = e.target.value; draw(); } }, h("option", { value: "" }, "모든 지역"),
+                REGIONS.filter(r => LOCATIONS.some(l => l.region === r.id && (l.emoshop || l.lab))).map(r => h("option", { value: r.id, selected: r.id === region }, `${r.emoji || ""} ${r.name}`))),
+                h("small.muted", `${maps.length}개 맵`)),
+            h("div.ae-sm-maps", maps.map(l => h("div.ag-card.ae-stock",
+                h("b", `${l.emoji || ""} ${l.name}`, h("small.muted", ` · ${REGIONS.find(r => r.id === l.region)?.name || l.region}`)),
+                ...shopKind(l).map(k => h("div.ae-stock-row",
+                    h("button.btn.small.gold", { onclick: () => stockManager(l.id, k, draw) }, k === "lab" ? "✏️ 🧪 LAB 상점" : "✏️ 🛒 Monster Shop"),
+                    h("small", stockSummary(l, k))))))));
+    };
     draw();
     return wrap;
 }

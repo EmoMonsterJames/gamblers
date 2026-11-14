@@ -1123,7 +1123,6 @@
    ===================================================================== */
 /* ---- "double reel" cabinets: the reel window is twice the usual area */
 .cabinet.dbl-reels .reels { --cell: min(158px, 15.5vw); }
-.cabinet.dbl-reels.skin-r9frames .reels { --cell: min(178px, 19vw); }
 .cabinet.dbl-reels .reel .sym span { font-size: 1.35em; }
 /* shaped boards: "_" cells are not part of the board */
 .cabinet.skin-r9cube .sym-empty, .cabinet.skin-r9radar .sym-empty { visibility: hidden; }
@@ -1157,12 +1156,21 @@
 .cabinet.skin-r9crate .reels { background: radial-gradient(ellipse at 50% 0%, #0e749044, #020617 70%); gap: 5px; }
 .cabinet.skin-r9crate .reel .sym { background: repeating-linear-gradient(90deg, #57534e 0 22%, #44403c 22% 24%), #44403c; border-radius: 4px; box-shadow: inset 0 0 0 3px #292524, inset 0 0 18px #000c; }
 .cabinet.skin-r9crate .reel .sym span { filter: drop-shadow(0 0 8px #5eead4aa); }
-.cabinet.skin-r9frames .reels { background: linear-gradient(160deg, #1e1b4b, #3b0764 60%, #14532d); gap: 12px; padding-top: 6%; }
-.cabinet.skin-r9frames .reel { overflow: visible; background: none; transform: translateY(calc((1.5 - var(--ci, 0)) * 4%)); }
-.cabinet.skin-r9frames .reel:nth-child(1) { --ci: 0; } .cabinet.skin-r9frames .reel:nth-child(2) { --ci: 1; }
-.cabinet.skin-r9frames .reel:nth-child(3) { --ci: 2; } .cabinet.skin-r9frames .reel:nth-child(4) { --ci: 3; }
-.cabinet.skin-r9frames .reel .sym { background: radial-gradient(ellipse, #1e1b4b 0 52%, transparent 54%), linear-gradient(135deg, #ca8a04, #713f12 50%, #facc15); border-radius: 45% / 40%; box-shadow: 0 0 14px #4ade8044; }
-.cabinet.skin-r9frames .reel .sym span { filter: drop-shadow(0 0 10px #c4b5fd); }
+/* Phantom Manor: haunted portrait gallery — four even columns of oval frames on damask wallpaper */
+.cabinet.dbl-reels.skin-r9frames .reels.sp-reels { --cell: min(132px, 18vw); grid-template-columns: repeat(4, var(--cell)) !important; max-width: 100%; width: max-content; margin: 0 auto; }
+.cabinet.skin-r9frames .reels { gap: 10px; padding: 14px 16px; border-radius: 18px; border: 3px solid #a16207;
+  background: radial-gradient(circle at 50% 50%, #4c1d9533 0 18%, transparent 19%) 0 0 / 46px 46px,
+              radial-gradient(circle at 50% 50%, #4c1d9522 0 10%, transparent 11%) 23px 23px / 46px 46px,
+              linear-gradient(180deg, #1e1035, #2e1065 55%, #1a0b2e);
+  box-shadow: inset 0 0 40px #000c, 0 0 0 4px #3b0764, 0 0 26px #4ade8033; }
+.cabinet.skin-r9frames .reel { background: none; overflow: hidden; border-radius: 10px; }
+.cabinet.skin-r9frames .reel .sym::after { content: ""; position: absolute; inset: 6% 9%; border-radius: 50%; z-index: 0;
+  border: 4px solid #d4a017; background: radial-gradient(ellipse at 50% 40%, #3b2a6b, #140a26 75%);
+  box-shadow: 0 0 0 2px #713f12, inset 0 0 14px #000, 0 0 10px #a78bfa44; }
+.cabinet.skin-r9frames .reel .sym > span { position: relative; z-index: 1; font-size: calc(var(--cell) * .46); filter: drop-shadow(0 0 8px #c4b5fd88); }
+.cabinet.skin-r9frames .reel .sym > .tag { z-index: 2; }
+.cabinet.skin-r9frames .reel .sym.sym-empty::after { display: none; }
+@media (max-width: 600px) { .cabinet.dbl-reels.skin-r9frames .reels.sp-reels { --cell: 14vw; gap: 5px; padding: 8px; } .cabinet.skin-r9frames .reel .sym::after { border-width: 3px; } }
 .sym .spb.slime { background: #16a34a; border-color: #bbf7d0; box-shadow: 0 0 12px #4ade80; }
 .cabinet.skin-r9grave .reels { background: linear-gradient(180deg, #1e293b, #0f172a 60%, #3f2a1d); gap: 6px; }
 .cabinet.skin-r9grave .reel .sym { background: linear-gradient(180deg, #64748b, #334155); border-radius: 42% 42% 4px 4px / 30% 30% 4px 4px; box-shadow: inset 0 -6px 0 #1e293b, inset 0 3px 0 #84cc1655, 0 0 10px #93c5fd33; }

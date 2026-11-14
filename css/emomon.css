@@ -331,3 +331,52 @@
 .ae-pick-list { display: flex; flex-wrap: wrap; gap: 4px; max-height: 60vh; overflow: auto; margin: 8px 0; }
 .ae-pick { padding: 4px 9px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line); color: inherit; cursor: pointer; font-size: 12px; }
 .ae-pick.on { border-color: #ffcc33; background: #ffcc3333; font-weight: 800; }
+/* 👥 참가자 명단 folded during a turn */
+.roster-fold { margin-top: 8px; }
+.roster-fold > summary { cursor: pointer; list-style: none; padding: 6px 10px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); user-select: none; }
+.roster-fold > summary::-webkit-details-marker { display: none; }
+.roster-fold > summary::after { content: " ▾"; opacity: .7; }
+.roster-fold[open] > summary::after { content: " ▴"; }
+.roster-fold[open] > .roster-list { margin-top: 6px; }
+.luck.fx { color: #f0abfc; }
+.luck.total { color: var(--muted); font-size: 11px; font-weight: 700; }
+/* ⚔ Battler win reward popup */
+.emo-reward { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 6px 4px; }
+.emo-reward-ico { font-size: 64px; animation: pop .5s cubic-bezier(.2, 1.6, .4, 1); }
+.emo-reward-amt { font-family: var(--display); font-size: 40px; color: var(--gold); text-shadow: 0 3px 0 #000, 0 0 18px #facc15; }
+.emo-have { display: inline-block; margin-top: 3px; font-size: 11px; font-weight: 900; padding: 1px 8px; border-radius: 999px; background: #22c55e22; color: #86efac; border: 1px solid #22c55e66; }
+.emo-have.zero { background: transparent; color: var(--muted); border-color: var(--line); }
+/* 📡 radar slot + Scan */
+.emo-radar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0; padding: 10px 12px; border-radius: 16px; background: linear-gradient(135deg, #052e1caa, #0f172aaa); border: 2px dashed #22c55e66; }
+.emo-radar-slot { width: 84px; height: 84px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 16px; border: 2px dashed #4ade80; background: #022c22; color: #bbf7d0; cursor: pointer; }
+.emo-radar-slot.on { border-style: solid; box-shadow: 0 0 0 3px #22c55e55, 0 0 18px #22c55e; animation: hnPulse 1.4s infinite; }
+.emo-radar-slot small { font-size: 10px; font-weight: 900; text-align: center; line-height: 1.1; }
+.emo-radar-empty { font-size: 30px; opacity: .45; }
+.emo-radar-info { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 4px; }
+.emo-radar-own { display: flex; gap: 6px; flex-wrap: wrap; }
+.emo-radar-pick { display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel2); color: inherit; cursor: pointer; }
+.emo-radar-pick.on { border-color: #4ade80; background: #14532d; }
+.emo-scan-btn { flex: none; }
+.emo-scan { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px; }
+.emo-scan-screen { position: relative; width: 190px; height: 190px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, #065f46 0%, #022c22 70%); border: 4px solid #334155; box-shadow: 0 0 30px #22c55e88, inset 0 0 30px #000; }
+.emo-scan-ring { position: absolute; inset: 0; margin: auto; border-radius: 50%; border: 1px solid #86efac66; }
+.emo-scan-ring.r1 { width: 33%; height: 33%; } .emo-scan-ring.r2 { width: 66%; height: 66%; } .emo-scan-ring.r3 { width: 99%; height: 99%; }
+.emo-scan-sweep { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, #4ade80cc 0deg, #4ade8000 70deg, transparent 360deg); animation: emoSweep 1.2s linear infinite; }
+@keyframes emoSweep { to { transform: rotate(360deg); } }
+.emo-scan-blip { position: absolute; left: var(--x); top: var(--y); width: 9px; height: 9px; margin: -4px; border-radius: 50%; background: #fde047; box-shadow: 0 0 10px #fde047; opacity: 0; animation: emoBlip 1.2s ease-out var(--d) infinite; }
+@keyframes emoBlip { 0% { opacity: 0; transform: scale(.4); } 20% { opacity: 1; transform: scale(1.3); } 100% { opacity: 0; transform: scale(1); } }
+.emo-scan-txt { color: #86efac; letter-spacing: 1px; animation: hnPulse .8s infinite; }
+.emo-radar-ok { width: 100%; text-align: center; font-weight: 900; color: #4ade80; font-size: 16px; margin: 0 0 6px; }
+.emo-radar-fail b { color: #fca5a5; }
+/* 🛒 admin stock + price manager */
+.ae-sm { display: flex; flex-direction: column; gap: 8px; }
+.ae-sm-q { width: 100%; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel2); color: inherit; font-size: 15px; }
+.ae-sm-found { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow: auto; }
+.ae-sm-hit { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: inherit; cursor: pointer; text-align: left; }
+.ae-sm-hit:hover { border-color: var(--gold); }
+.ae-sm-add { margin-left: auto; color: var(--gold); font-size: 12px; }
+.ae-sm-list { display: flex; flex-direction: column; gap: 4px; max-height: 50vh; overflow: auto; padding: 4px; border-radius: 12px; background: #0003; }
+.ae-sm-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 10px; background: var(--panel2); }
+.ae-sm-name { flex: 1; min-width: 0; }
+.ae-sm-row .ae-price { width: 110px; }
+.ae-sm-maps { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-top: 8px; }

@@ -119,6 +119,19 @@ function showLog() {
     modal(h("div.log", s.log.map(l => h("div", h("small", new Date(l.t).toLocaleTimeString()), " ", l.msg))), { title: "시즌 로그" });
 }
 
+let rosterOpen = false; // 참가자 명단 fold during a turn (kept while the sidebar re-renders)
+// 🍀 pet luck + ✨ pet effect luck, each on its own line, whole numbers
+function luckLines(luck) {
+    const r = n => Math.round(n || 0);
+    const pet = (luck.sources || []).filter(x => x.kind === "pet"), fx = (luck.sources || []).filter(x => x.kind === "fx");
+    const sum = (list, special) => r(list.reduce((a, x) => a + (special && !x.special ? 0 : x.boost), 0));
+    const tip = "착용한 펫·펫효과가 올려 주는 당첨 확률 보너스입니다 (전적이 아닙니다). 펫이 없으면 +0%.";
+    return [
+        h("div.luck", { title: tip }, `🍀 펫 행운: 당첨 확률 +${sum(pet)}%`, sum(pet, true) ? h("span", ` · 보너스 +${sum(pet, true)}%`) : null),
+        h("div.luck.fx", { title: tip }, `✨ 펫효과 행운: 당첨 확률 +${sum(fx)}%`, sum(fx, true) ? h("span", ` · 보너스 +${sum(fx, true)}%`) : null),
+        fx.length || pet.length ? h("div.luck.total", `합계 +${r(luck.pct)}%${luck.bonusPct ? ` · 보너스 +${r(luck.bonusPct)}%` : ""} (최대 30%)`) : null];
+}
+
 function sidebar(s) {
     // survivors first (richest on top), then the eliminated in the order they went out:
     // the latest one right under the survivors … the first one out (20위) at the very bottom
@@ -126,10 +139,7 @@ function sidebar(s) {
         || (s.ps[a].out ? (s.ps[a].rank || 99) - (s.ps[b].rank || 99) : s.ps[b].money - s.ps[a].money)) : [];
     // during a turn the player's EmoMon party sits on top; the participant list shrinks to a minimum
     const emoPid = s.status === "turns" && s.turn?.pid != null && !s.turn.done ? s.turn.pid : null;
-    return h("aside.roster" + (emoPid != null ? ".emo-on" : ""),
-        emoPid != null ? emoPartySide(emoPid, () => document.dispatchEvent(new Event("emo:change"))) : null,
-        h("div.roster-title", `참가자 ${s.roster.length}명`),
-        h("div.roster-list", list.map(pid => {
+    const rows = h("div.roster-list", list.map(pid => {
             const r = s.results[pid];
             const out = s.ps[pid].out;
             const mark = out ? "" : s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
@@ -142,7 +152,12 @@ function sidebar(s) {
             if (cand) el.classList.add("cand");
             el.onclick = () => modal(playerCard(pid, s.ps[pid]), { title: displayName(Store.player(pid)), wide: true });
             return el;
-        })));
+        }));
+    // during a turn the list is folded under the EmoMon party: "참가자 명단" opens it
+    return h("aside.roster" + (emoPid != null ? ".emo-on" : ""),
+        emoPid != null ? emoPartySide(emoPid, () => document.dispatchEvent(new Event("emo:change"))) : null,
+        emoPid != null ? h("details.roster-fold", { open: rosterOpen, ontoggle: e => { rosterOpen = e.target.open; } }, h("summary.roster-title", `👥 참가자 명단 (${s.roster.length}명)`), rows)
+            : [h("div.roster-title", `참가자 ${s.roster.length}명`), rows]);
 }
 
 // ------------------------------------------------------------------ select
@@ -508,7 +523,8 @@ function locationStage(s) {
     }
 
     // tabs
-    const tabs = [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
+    // rebuilt on every tab change, so a business bought / moved / closed here shows up at once
+    const tabList = () => [["games", "🎰 게임"], ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
@@ -520,9 +536,11 @@ function locationStage(s) {
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
+    const refreshTabs = () => tabBar.replaceChildren(...tabList().map(([k, label]) => h("button.tab" + (k === currentTab ? ".on" : ""), { onclick: () => tabBody(k) }, label)));
+    const bizChanged = () => { updateHud(); side.replaceChildren(sideCard()); refreshTabs(); };
     function tabBody(id) {
         currentTab = id;
-        tabBar.replaceChildren(...tabs.map(([k, label]) => h("button.tab" + (k === id ? ".on" : ""), { onclick: () => tabBody(k) }, label)));
+        refreshTabs();
         let content;
         if (id === "games") content = h("div.game-list",
             ...loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
@@ -550,8 +568,8 @@ function locationStage(s) {
         else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
         else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === id) tabBody(id); } });
         else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
-        else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
-        else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: bizChanged });
+        else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: bizChanged });
         else if (id === "emo:capture") content = captureView(pid, loc, { turn: t, onChange: emoChanged, onLeave: () => tabBody("games") });
         else if (id === "emo:hospital") content = hospitalView(pid, { onChange: emoChanged });
         else if (id === "emo:lab") content = labView(pid, { loc, onChange: emoChanged });
@@ -564,7 +582,7 @@ function locationStage(s) {
         avatar(pid, 120),
         h("div.ls-name", displayName(Store.player(pid))),
         h("div.ls-pet", ps.pet ? petView(ps.pet, ps.petEffect, 90) : h("div.muted", "펫 없음")),
-        h("div.luck", { title: "착용한 펫·펫효과가 올려 주는 당첨 확률 보너스입니다 (전적이 아닙니다). 펫이 없으면 +0%." }, `🍀 펫 행운: 당첨 확률 +${luck.pct}%`, luck.bonusPct ? h("span", ` · 보너스 +${luck.bonusPct}%`) : null),
+        ...luckLines(luck),
         ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
         ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
     const side = h("div.loc-side", sideCard());

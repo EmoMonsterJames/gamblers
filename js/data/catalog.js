@@ -86,15 +86,16 @@ export const MISSIONS = [
     { id: "n2_b_maps", tier: 2, type: "battle", rule: "fewmaps", text: "⚔️ 가장 적은 수의 맵을 방문한 사람 중 랜덤 2인 배틀" },
     { id: "n2_b_items", tier: 2, type: "battle", rule: "fewitems", text: "⚔️ Bag에 소유한 아이템이 가장 적은 후보들 중 랜덤 2인 배틀" },
     { id: "n2_b_spins2", tier: 2, type: "battle", rule: "fewspins2", text: "⚔️ 시즌 전체 슬롯 플레이 횟수가 가장 적은 최하위 2인 랜덤 배틀" },
-    { id: "n2_r_spins", tier: 2, type: "rank", rule: "fewspins", text: "시즌 전체 슬롯 플레이 횟수가 가장 적은 사람 중에서 랜덤 탈락" },
+    { id: "n2_r_spins", tier: 2, type: "has", what: "special", text: "특수프레임 또는 특수프레임 효과를 보유하지 않은 플레이어 중에서 랜덤 1명 탈락" },
+    { id: "n2_nobank", tier: 2, type: "has", what: "bank", text: "본인 소유의 은행 계좌가 없는 후보들 중에서 한 명 탈락" },
     { id: "n3_five5", tier: 3, type: "five", v: 5, text: "슬롯 게임에서 5 of a kind 5번 이상 달성하기" },
     { id: "n3_card_L", tier: 3, type: "card", letter: "L", text: "알파벳 카드 L 없는 플레이어 탈락" },
     { id: "n3_card_E", tier: 3, type: "card", letter: "E", text: "알파벳 카드 E 없는 플레이어 탈락" },
     { id: "n3_b_rich2", tier: 3, type: "battle", rule: "rich2", text: "⚔️ 가장 돈이 많은 사람 두 명 배틀로 1명 탈락" },
     { id: "n3_b_net2", tier: 3, type: "battle", rule: "netlow2", text: "⚔️ 카지노+슬롯 손익 순위 최하위 2인 배틀" },
     { id: "n3_b_highhp", tier: 3, type: "battle", rule: "highhp", text: "⚔️ HP가 가장 많은 후보들 중 랜덤 2인 배틀" },
-    { id: "n3_r_poor", tier: 3, type: "rank", rule: "fewspins_poor", text: "슬롯 플레이 횟수가 가장 적으면서 보유한 골드가 가장 적은 사람 랜덤 탈락" },
-    { id: "n3_nogear", tier: 3, type: "has", what: "gear", text: "펫, 펫 효과, 프레임, 프레임 효과를 보유하지 않은 후보들 중에서 랜덤 탈락" },
+    { id: "n3_r_poor", tier: 3, type: "has", what: "battler", text: "몬스터 Capture에서 나오는 Battler와 대결해 Lose한 플레이어들 중에 1명 탈락. (Battler도 못만난 경우 자동 탈락후보)" },
+    { id: "n3_nogear", tier: 3, type: "has", what: "gear", text: "펫, 펫 효과, 프레임, 프레임 효과를 모두 보유하지 않은 후보들 중에서 랜덤 탈락" },
     { id: "n4_card_R", tier: 4, type: "card", letter: "R", text: "알파벳 카드 R 없는 플레이어 탈락" },
     { id: "n4_card_S", tier: 4, type: "card", letter: "S", text: "알파벳 카드 S 없는 플레이어 탈락" },
     { id: "n4_b_highpts2", tier: 4, type: "battle", rule: "highpts2", text: "⚔️ 가장 포인트가 많은 사람 두 명 배틀로 1명 탈락" },
@@ -148,7 +149,7 @@ export const MISSIONS = [
     { id: "k4_job", tier: 4, type: "job_min", v: 30000, text: "직업으로 번 돈이 30,000G 미만인 플레이어 탈락" },
     { id: "k4_earn", tier: 4, type: "earn_min", v: 3000, text: "돈벌기로 번 돈이 3,000G 미만인 플레이어 탈락" },
     { id: "k4_maps", tier: 4, type: "rank", rule: "fewmaps_round", text: "이번 라운드에 방문한 맵 종류가 가장 적은 플레이어(들)가 탈락 후보" },
-    { id: "k4_gear", tier: 4, type: "rank", rule: "fewgear", text: "장비가 필요한 맵(산소통·날개·우주복) 방문 횟수가 가장 적은 플레이어(들)가 탈락 후보" },
+    { id: "k4_gear", tier: 4, type: "has", what: "biz", text: "본인 소유의 Self-Business가 없는 후보들 중에서 한 명 탈락" },
 
     // ---- 🐾 EmoMon missions -----------------------------------------------
     // battle + emo: the two players' ⚔ battle monsters fight (no monster → Battlebot), the loser is out

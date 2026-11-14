@@ -5,6 +5,7 @@
 // =====================================================================
 import { h, sleep, fmt, rand, pick, shuffle } from "../core/util.js";
 import { Sound } from "../core/sound.js";
+import { gameAudio } from "../core/gameAudio.js";
 import { toast, bigWin, floatText, confetti, shake } from "../core/fx.js";
 import { playCasino, gameRtp, topMult } from "../data/casino.js";
 import { Store } from "../core/store.js";
@@ -22,7 +23,7 @@ export function openCasino(g, ctx) {
     const hist = h("div.cg-hist");
     const root = h("div.game-screen.casino-screen",
         h("div.gs-head",
-            h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("진행 중입니다", "warn"); ctx.close(); } }, "← 나가기"),
+            h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("진행 중입니다", "warn"); stopAudio(); ctx.close(); } }, "← 나가기"),
             h("div.gs-title", h("span.ico", g.icon), h("div", h("b", g.name), h("small", g.desc))),
             h("div.gs-wallet", h("small", "보유금액"), moneyEl, h("small.rtp", `RTP ${(gameRtp(g) * 100).toFixed(1)}%`)), jackpotButton(g.id, g.name)),
         h("div.cg-body", stage, msg, controls, h("div.cg-bets", h("small", "BET"), chips), hist));
@@ -66,6 +67,11 @@ export function openCasino(g, ctx) {
     const K = KINDS[g.kind];
     K(g, { stage, controls, play, msg });
     refresh();
+    // every casino game has its own themed loop + SFX palette (core/gameAudio.js)
+    const audio = gameAudio(g), songName = typeof audio.song === "string" ? audio.song : audio.song.name;
+    function stopAudio() { if (Sound.bgmPlaying === songName) Sound.bgmStop(); if (Sound.paletteId === g.id) Sound.palette(null); }
+    Sound.palette(audio.sfx); Sound.bgm(audio.song);
+    const watch = setInterval(() => { if (!document.body.contains(root)) { clearInterval(watch); stopAudio(); } }, 1500);
     return root;
 }
 

@@ -131,7 +131,7 @@ export function fillerItems(shopId, locId) {
     const rnd = seeded(`fill|${shopId}|${locId}`);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     const n = Math.min(pool.length, 2 + Math.floor(rnd() * 7)); // 2~8
-    return pool.slice(0, n).map(it => ({ cat: it.cat, id: it.id, price: it.price, gold: it.gold || 0, filler: true }));
+    return pool.slice(0, n).map(it => ({ cat: it.cat, id: it.id, price: saleOf(it.cat, it.id).price || it.price, gold: it.gold || 0, filler: true }));
 }
 
 // ---------------------------------------------------------------- discount shop

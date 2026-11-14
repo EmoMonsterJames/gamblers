@@ -368,7 +368,8 @@ function bgmStop() {
 }
 function bgmStart(name, vol = 0.5) {
     bgmStop();
-    const song = SONGS[name];
+    const song = typeof name === "object" && name ? name : SONGS[name];
+    if (song && typeof name === "object") name = song.name;
     if (!song) return;
     try {
         const a = ac(), gain = a.createGain();
@@ -418,3 +419,16 @@ export const Sound = {
     buzz() { tone(190 + Math.random() * 30, 0.5, "sawtooth", 0.012, 0, 25); },
     cash() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.09, "square", 0.05, i * 0.06)); }
 };
+
+// ---------------------------------------------------------------- per-game palettes
+// A game screen installs its own SFX palette (see core/gameAudio.js); the
+// methods below then play that game's themed version. null = default sounds.
+let palette = null;
+const THEMED = ["tick", "click", "stop", "tease", "heartbeat", "win", "bigWin", "jackpot", "coin", "cash", "lose", "bonus", "fanfare", "whoosh", "hit", "miss", "boom"];
+for (const k of THEMED) {
+    const base = Sound[k];
+    Sound[k] = (...a) => { if (palette?.[k] && !muted) { try { return palette[k](...a); } catch { } } return base(...a); };
+}
+Sound.palette = p => { palette = p || null; };
+Object.defineProperty(Sound, "paletteId", { get: () => palette?.id || null });
+export { midi, bgmVoice, bgmNoise, kick, taiko, eight08, tone, noise };

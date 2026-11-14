@@ -17,6 +17,7 @@ import { npcInfo } from "./corners2.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
 import { activeBiz } from "../game/bank.js";
 import { BIZ_TYPES } from "../data/business.js";
+import { mapCorners } from "../ui/mapCorners.js";
 
 // ------------------------------------------------------------ home
 export function homePage() {
@@ -96,7 +97,7 @@ export function mapPage() {
     let region = REGIONS.find(r => !r.off)?.id || "cl1";
     const info = h("div.loc-info", h("p.muted", "핀을 눌러 카지노 정보를 확인하세요."));
     const tabs = h("div.tabs.region-tabs"), holder = h("div.map-holder");
-    const corners = l => [...(l.job ? ["💼 직업"] : []), ...(l.beg ? ["🥺 구걸"] : []), ...(l.discount ? ["🏷️ 할인 상점"] : []), ...earnKinds(l).map(k => "💪 " + EARN_NAME[k]), ...honorKinds(l).map(k => `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name} (시즌 ${HONOR_KINDS[k].rank === 1 ? "우승" : `TOP ${HONOR_KINDS[k].rank}`} 경력자 전용)`), ...(l.bank ? ["🏦 Business Bank (TOP 10 경력자 전용)"] : []), ...(l.bizhub ? ["🏪 Self-Business (TOP 10 경력자 전용)"] : []), ...activeBiz().filter(b => b.loc === l.id).map(b => `${BIZ_TYPES[b.type].emoji} ${BIZ_TYPES[b.type].name} (Owner: ${Store.player(b.owner)?.name_ko || "?"})`), ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)];
+    const corners = l => mapCorners(l).slice(locationShops(l).length);
     const pick = l => info.replaceChildren(
         h("h3", l.emoji, " ", l.name),
         h("p", reqText(l.req)),

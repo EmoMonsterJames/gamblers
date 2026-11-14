@@ -6,6 +6,7 @@
 // =====================================================================
 import { h, sleep, fmt, pick, shuffle, countUp } from "../core/util.js";
 import { Sound } from "../core/sound.js";
+import { gameAudio } from "../core/gameAudio.js";
 import { toast, bigWin, banner, floatText, confetti, shake, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { spinWithLuck, jackpotValue, P_POINTS, bestJackpot, MONKEY_WHEEL, MM_KEYS, CASCADE_FG } from "../slots/engine.js";
@@ -73,6 +74,19 @@ export function openSlot(cfg, ctx) {
     const logo = BRAND_LOGO[cfg.brand] ? h("img.brand-logo", { src: BRAND_LOGO[cfg.brand], alt: cfg.brand }) : h("span.brand-text", cfg.brand);
     const eggStage = egg ? buildEgg() : null;
     const frame = h("div.reel-frame" + (egg ? ".egg-frame" : ""), egg ? eggStage.el : reelsBox, overlay);
+    // The Mimic's Labyrinth: a ring of flickering candles around the tilted (diamond) board, lit one by one
+    if (cfg.skin === "dungeon") {
+        const ring = h("div.dg-candles");
+        const V = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+        V.forEach((a, e) => {
+            const b = V[(e + 1) % 4], nx = (a[0] + b[0]) / Math.SQRT2, ny = (a[1] + b[1]) / Math.SQRT2;
+            [0.18, 0.5, 0.82].forEach((t, k) => {
+                const x = a[0] + (b[0] - a[0]) * t + nx * 0.12, y = a[1] + (b[1] - a[1]) * t + ny * 0.12;
+                ring.append(h("i.dg-candle", { style: { "--x": x.toFixed(3), "--y": y.toFixed(3), "--d": ((e * 3 + k) * 0.14).toFixed(2) + "s", "--f": (0.9 + ((e * 3 + k) * 37 % 7) / 10).toFixed(2) + "s", "--h": (k === 1 ? 1.25 : 1) } }));
+            });
+        });
+        frame.append(ring);
+    }
     const treeEl = cfg.tree ? h("div.mtree") : null;
     if (treeEl) meterEl.append(treeEl);
     // practice room: force the next spin's bonus
@@ -96,7 +110,7 @@ export function openSlot(cfg, ctx) {
             spinBtn));
     const root = h("div.game-screen.slot-screen",
         h("div.gs-head",
-            h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("스핀이 끝난 뒤 나갈 수 있어요", "warn"); closed = true; auto = 0; if (cfg.bgm) Sound.bgmStop(); ctx.close(); } }, "← 나가기"),
+            h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("스핀이 끝난 뒤 나갈 수 있어요", "warn"); closed = true; auto = 0; Sound.bgmStop(); Sound.palette(null); ctx.close(); } }, "← 나가기"),
             h("div.gs-title", h("span.ico", "🎰"), h("div", h("b", cfg.name), h("small", `${cfg.brand} · ${cfg.progressive === false ? "NON-PROGRESSIVE" : "PROGRESSIVE"}`)))),
         cabinet);
 
@@ -1788,7 +1802,9 @@ export function openSlot(cfg, ctx) {
     }
 
     initReels(); renderJackpots(); renderMeter();
-    if (cfg.bgm) Sound.bgm(cfg.bgm);
-    const jpTimer = setInterval(() => { if (!document.body.contains(root)) { clearInterval(jpTimer); if (cfg.bgm && Sound.bgmPlaying === cfg.bgm) Sound.bgmStop(); } else if (!busy) renderJackpots(); }, 3000);
+    // every machine has its own themed loop + SFX palette (core/gameAudio.js)
+    const audio = gameAudio(cfg), songName = typeof audio.song === "string" ? audio.song : audio.song.name;
+    Sound.palette(audio.sfx); Sound.bgm(audio.song);
+    const jpTimer = setInterval(() => { if (!document.body.contains(root)) { clearInterval(jpTimer); if (Sound.bgmPlaying === songName) Sound.bgmStop(); if (Sound.paletteId === cfg.id) Sound.palette(null); } else if (!busy) renderJackpots(); }, 3000);
     return root;
 }

@@ -11,7 +11,10 @@ import { toast, confirmBox, modal, confetti, Activity, banner } from "../core/fx
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { ITEM_BY_ID, LOC_BY_ID, catalogEntry } from "../data/catalog.js";
-import { BIZ_TYPES, BIZ_LIST, BIZ_SHOP, marketPrice } from "../data/business.js";
+import { BIZ_TYPES, BIZ_LIST, BIZ_SHOP, marketPrice, bizPriceText } from "../data/business.js";
+import { emoItem } from "../emomon/data.js";
+import { itemIcon } from "../emomon/ui.js";
+import * as M from "../emomon/game.js";
 import * as G from "../game/season.js";
 import * as BK from "../game/bank.js";
 import { avatar, displayName } from "../ui/profile.js";
@@ -21,7 +24,17 @@ import { codeSearch, dateOf } from "./bank.js";
 const nameOf = pid => displayName(Store.player(pid));
 const locName = id => { const l = LOC_BY_ID[id]; return l ? `${l.emoji || ""} ${l.name}`.trim() : id; };
 const hpText = hp => hp === "full" ? "HP 전체 회복" : `HP +${hp}`;
-const timeOk = turn => !turn || turn.remaining > 0 || (toast("⏰ 플레이 시간이 끝났습니다", "warn"), false);
+// a market good → { name, emoji, desc, e | emo } (never null names / icons; "emo" = an EmoMon bag item)
+const CAT_EMOJI = { pet: "🐾", frame: "🖼️", effect: "✨", weapon: "⚔️", item: "🎁" };
+function goodOf(g) {
+    if (g.cat === "emo") { const it = emoItem(g.id); return it ? { name: it.name || g.id, emoji: it.emoji || "🐾", desc: it.note || "", emo: it } : null; }
+    const e = catalogEntry(g.cat, g.id);
+    return e ? { name: e.name || g.id, emoji: e.emoji || CAT_EMOJI[g.cat] || "🎁", desc: e.desc || "", e } : null;
+}
+const priceOf = (T, pid) => bizPriceText(BK.priceFor(T.id, pid), BK.ptsFor(T.id));
+const doorText = T => T.entry.fee ? `입장료 ${fmt(T.entry.fee)}G${T.entry.chance < 1 ? ` · 입장 ${Math.round(T.entry.chance * 100)}%` : ""}` : `입장 무료 · 입장 ${Math.round(T.entry.chance * 100)}% (랜덤)`;
+const cutText = T => `매출의 ${+(T.cut * 100).toFixed(3)}% 수익`;
+const timeOk = turn =>!turn || turn.remaining > 0 || (toast("⏰ 플레이 시간이 끝났습니다", "warn"), false);
 // tabs a map shows: the hub (bizhub maps + maps that list a business) and every business standing there
 export const bizHubHere = loc => !!loc.bizhub || BIZ_LIST.some(T => T.listed.includes(loc.id));
 export const bizTabs = loc => BK.bizAt(loc.id).map(b => {
@@ -54,12 +67,13 @@ export function bizHubView(pid, loc, { turn = null, onChange = () => { } } = {})
         const st = BK.buyStatus(T.id, pid), price = BK.priceFor(T.id, pid), left = Math.max(0, BK.stockLeft(T.id));
         return h("div.bz-card" + (left ? "" : ".sold"), { style: { "--bz": T.color } },
             h("div.bz-card-top", h("span.bz-emoji", T.emoji), h("div", h("b", T.name), h("small", T.ko))),
-            h("div.bz-price", price !== T.price ? h("s.muted", fmt(T.price)) : null, ` ${fmt(price)} G`, price !== T.price ? h("small.bz-nat", ` ${T.nation} 국적 5% 할인`) : null),
+            h("div.bz-price", price !== T.price ? h("s.muted", fmt(T.price)) : null, ` ${priceOf(T, pid)}`, price !== T.price ? h("small.bz-nat", ` ${T.nation} 국적 5% 할인`) : null),
             h("div.bz-tags",
-                h("span", `TOP ${T.rank} 경력`), h("span", "💳 계좌 필요"), h("span", `남은 매물 ${left}/${T.max}`),
-                h("span", `입장료 ${fmt(T.entry.fee)}G${T.entry.chance < 1 ? ` · 입장 ${Math.round(T.entry.chance * 100)}%` : ""}`), h("span", `매출의 ${(T.cut * 100).toFixed(1)}% 수익`),
+                h("span", `TOP ${T.rank} 경력`), T.emoMin ? h("span", `🐾 EmoMon ${T.emoMin}마리 이상`) : null, h("span", "💳 계좌 필요"), h("span", `남은 매물 ${left}/${T.max}`),
+                h("span", doorText(T)), h("span", cutText(T)), h("span", "라운드당 1회 구매"),
                 T.nation ? h("span", `🏳️ ${T.nation} 5% 할인`) : null),
-            h("div.bz-menu", T.menu ? T.menu.map(m => h("span", `${m.emoji} ${m.name} · ${hpText(m.hp)} · ${fmt(m.price)}G`)) : T.market.map(g => { const e = catalogEntry(g.cat, g.id); return h("span", `${e?.emoji || "🎁"} ${e?.name || g.id} · ${marketPrice(g) ? fmt(marketPrice(g)) + "G" : "-"}`); })),
+            h("div.bz-menu", T.menu ? T.menu.map(m => h("span", `${m.emoji} ${m.name} · ${hpText(m.hp)} · ${fmt(m.price)}G`))
+                : T.market.map(g => { const x = goodOf(g), p = marketPrice(g); return x && p ? h("span", `${x.emoji} ${x.name} · ${fmt(p)}G`) : null; })),
             h("details.bz-open", h("summary", "📍 오픈 가능 지역 (지역세)"), BK.openSpots(T.id).map(r => h("div", h("b", `${r.emoji} ${r.name}`), h("small", ` ${fmt(r.tax)}G · `), h("small.muted", r.maps.map(m => m.loc.name + (m.taken ? "(사용중)" : "")).join(", "))))),
             h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, onclick: () => buyWizard(T) }, st.ok ? "매입하기" : st.why));
     }
@@ -72,7 +86,7 @@ export function bizHubView(pid, loc, { turn = null, onChange = () => { } } = {})
         const steps = ["결제", "계좌 연결", "지역 · 맵 선택", "오픈"];
         const stepBar = i => h("div.bz-wsteps", steps.map((s, k) => h("span" + (k === i ? ".on" : k < i ? ".done" : ""), `${k + 1}. ${s}`)));
         const step1 = () => body.replaceChildren(stepBar(0),
-            h("p", `${T.name} (${T.ko})의 매입가는 `, h("b", `${fmt(price)} G`), " 입니다.", price !== T.price ? ` (${T.nation} 국적 5% 할인)` : ""),
+            h("p", `${T.name} (${T.ko})의 매입가는 `, h("b", priceOf(T, pid)), " 입니다.", price !== T.price ? ` (${T.nation} 국적 5% 할인)` : ""),
             h("p.muted", "오픈할 지역의 지역세는 맵을 고른 뒤 함께 결제됩니다. 비즈니스는 시즌이 끝나도 남습니다."),
             h("div.row.end", h("button.btn.ghost", { onclick: () => m.close() }, "취소"), h("button.btn.gold", { onclick: step2 }, "다음")));
         const step2 = () => {
@@ -91,12 +105,14 @@ export function bizHubView(pid, loc, { turn = null, onChange = () => { } } = {})
             spotPicker(T.id, null, s => { spot = s; step4(); }),
             h("div.row.end", h("button.btn.ghost", { onclick: step2 }, "이전")));
         const step4 = () => {
-            const total = price + spot.tax;
+            const total = price + spot.tax, pts = BK.ptsFor(T.id);
+            const short = ps.money < total || ps.points < pts;
             body.replaceChildren(stepBar(3),
-                h("div.bz-sum", h("div", "매입가", h("b", `${fmt(price)} G`)), h("div", `지역세 (${spot.regionName})`, h("b", `${fmt(spot.tax)} G`)), h("div.tot", "합계", h("b", `${fmt(total)} G`)),
+                h("div.bz-sum", h("div", "매입가", h("b", bizPriceText(price, pts))), h("div", `지역세 (${spot.regionName})`, h("b", `${fmt(spot.tax)} G`)), h("div.tot", "합계", h("b", bizPriceText(total, pts))),
                     h("div", "오픈 맵", h("b", locName(spot.loc))), h("div", "연결 계좌", h("b", code))),
                 ps.money < total ? h("p.notice.warn", `골드가 부족합니다 (보유 ${fmt(ps.money)} G)`) : null,
-                h("div.row.end", h("button.btn.ghost", { onclick: step3 }, "이전"), h("button.btn.gold", { disabled: ps.money < total, onclick: finish }, "결제하고 오픈")));
+                ps.points < pts ? h("p.notice.warn", `포인트가 부족합니다 (보유 ${ps.points} P)`) : null,
+                h("div.row.end", h("button.btn.ghost", { onclick: step3 }, "이전"), h("button.btn.gold", { disabled: short, onclick: finish }, "결제하고 오픈")));
         };
         const finish = async () => {
             const r = BK.openBusiness(pid, T.id, code, spot.loc);
@@ -167,24 +183,28 @@ export function bizView(pid, bizId, { turn = null, onChange = () => { } } = {}) 
             h("button.btn.small" + (owner ? ".gold" : ".ghost"), { disabled: !owner, title: owner ? "" : "가게 주인만 열 수 있습니다", onclick: () => ownerAdmin(pid, biz.id, { turn, onChange: () => { onChange(); render(); } }) }, "🔑 Owner Admin"));
         if (!u.in) {
             wrap.replaceChildren(head, h("div.bz-door",
-                u.paid ? h("p.notice.warn", "🙅 이번 라운드에는 입장이 거절되었습니다. (입장료는 돌려받지 못해요)")
-                    : [h("p", `입장료 ${fmt(T.entry.fee)} G`), T.entry.chance < 1 ? h("small.muted", `인기 가게라 입장이 ${Math.round((1 - T.entry.chance) * 100)}% 확률로 거절될 수 있습니다`) : null,
-                        h("button.btn.gold.big", { disabled: ps.money < T.entry.fee, onclick: enter }, ps.money < T.entry.fee ? "골드 부족" : "입장하기")]));
+                u.paid ? h("p.notice.warn", T.entry.fee ? "🙅 이번 라운드에는 입장이 거절되었습니다. (입장료는 돌려받지 못해요)" : "🙅 이번 라운드에는 입장이 거절되었습니다. 다음 라운드에 다시 와 보세요.")
+                    : [h("p", T.entry.fee ? `입장료 ${fmt(T.entry.fee)} G` : "입장 무료"), T.entry.chance < 1 ? h("small.muted", `${T.entry.fee ? "인기 가게라" : "예약이 꽉 차서"} 입장이 ${Math.round((1 - T.entry.chance) * 100)}% 확률로 거절될 수 있습니다`) : null,
+                        h("button.btn.gold.big", { disabled: ps.money < T.entry.fee, onclick: enter }, ps.money < T.entry.fee ? "골드 부족" : T.entry.fee ? "입장하기" : "🚪 입장 시도")]));
             return;
         }
         let goods;
         if (T.menu) goods = T.menu.map(mn => ({ key: mn.id, label: mn.name, emoji: mn.emoji, sub: hpText(mn.hp), price: mn.price, entry: mn }));
-        else {
-            // one random good per player per round
-            if (u.pick == null) { u.pick = Math.floor(Math.random() * T.market.length); Store.saveSeason(); }
-            const g = T.market[u.pick], e = catalogEntry(g.cat, g.id), p = marketPrice(g);
-            goods = e && p ? [{ key: g.id, label: e.name, e, cat: g.cat, price: p, entry: { label: e.name }, sub: `상점가 +5% · ${e.desc || ""}` }] : [];
-        }
+        // every good is on the shelf; a player buys one per round
+        else goods = T.market.map(g => {
+            const x = goodOf(g), p = marketPrice(g);
+            if (!x || !p) return null;
+            const own = g.cat === "emo" ? M.bagN(pid, g.id) : null;
+            return { key: g.id, label: x.name, emoji: x.emoji, e: x.e, emo: x.emo, cat: g.cat, price: p, entry: { label: x.name }, sub: `상점가 +5%${x.desc ? ` · ${x.desc}` : ""}${own != null ? ` · 보유 ${own}개` : ""}` };
+        }).filter(Boolean);
+        const lead = T.id === "clinic" ? `치료는 바로 HP를 회복합니다 (최대 ${CONFIG.START_HP}) · 라운드당 1회 · 지금 HP ${Math.round(ps.hp * 100) / 100}`
+            : T.menu ? `메뉴는 바로 먹어서 HP를 회복합니다 (최대 ${CONFIG.START_HP}) · 라운드당 1개 · HP ${Math.round(ps.hp * 100) / 100}`
+            : `판매 상품 ${goods.length}가지 · 손님마다 라운드당 1개 구매 가능`;
         wrap.replaceChildren(head,
-            h("p.muted", T.menu ? `메뉴는 바로 먹어서 HP를 회복합니다 (최대 ${CONFIG.START_HP}) · 라운드당 1개 · HP ${Math.round(ps.hp * 100) / 100}` : "오늘의 상품은 손님마다 라운드당 1개가 랜덤으로 나옵니다 · 1개 구매 가능"),
+            h("p.muted", lead),
             u.bought ? h("p.notice.ok", `✅ 이번 라운드 구매 완료: ${u.bought}`) : null,
             h("div.bz-goods", goods.map(g => h("div.bz-good",
-                h("div.bz-good-art", g.e ? art(g.cat, g.e) : h("div.big-emoji", g.emoji)),
+                h("div.bz-good-art", g.e ? art(g.cat, g.e) : g.emo ? itemIcon(g.emo, 56) : h("div.big-emoji", g.emoji)),
                 h("b", g.label), h("small.muted", g.sub),
                 h("button.btn.small" + (!u.bought && ps.money >= g.price ? ".gold" : ".ghost"), { disabled: !!u.bought || ps.money < g.price, onclick: () => buy(biz, g) }, `${fmt(g.price)} G`)))));
     };
@@ -200,7 +220,7 @@ export function bizView(pid, bizId, { turn = null, onChange = () => { } } = {}) 
         if (!timeOk(turn)) return;
         if (g.e && !(await checkGoods(ps, g.cat, g.key, g.e))) return;
         if (g.entry.hp && ps.hp >= CONFIG.START_HP && !(await confirmBox("HP가 이미 가득 찼습니다. 그래도 먹을까요?", "먹기", "취소"))) return;
-        const r = BK.buyMenu(pid, biz, g.entry, g.price, g.e ? () => giveGoods(pid, g.cat, g.key) : null);
+        const r = BK.buyMenu(pid, biz, g.entry, g.price, g.emo ? () => M.giveItem(pid, g.key) : g.e ? () => giveGoods(pid, g.cat, g.key) : null);
         if (!r.ok) return toast(r.why, "warn");
         Sound.coin();
         toast(r.hp ? `${g.emoji} 냠냠! ❤ HP +${Math.round(r.hp * 100) / 100}` : `🛍️ ${g.label} 구매! 가방에 넣었습니다`, "ok");
