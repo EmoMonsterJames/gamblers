@@ -79,12 +79,13 @@ export const itemImg = it => it?.image ? (/^(https?:|data:)/.test(it.image) ? it
 // kind: ball · potion · cure · delete · breaker · evo · material. `src` = the EmoMonster item it is
 // (picture / description come from there); `gold` / `pts` = Gamblers price.
 const TYPE_LIST = ["Normal", "Abnormal", "Magic", "Power", "Water", "Fire", "Grass", "Electric", "Ice", "Angel", "Evil", "Air", "Fly", "Earth", "Bug", "Ghost", "Steel", "Fairy", "Space", "Robot", "Light", "Mind"];
+const CHEAP_ATTR = new Set(["Electric", "Water", "Fire", "Normal", "Grass", "Bug", "Steel", "Ice", "Earth"]);
 export const EMO_ITEMS = [
 // balls: `rate` = catch chance in % (an attribute ball: `rate` on its attribute, `rateOff` on others)
     { id: "ITEM001", kind: "ball", name: "몬스터볼", en: "Monster Ball", emoji: "🔴", rate: 5, gold: 3000, img: "images/icons/balls/monster.svg", note: "포획 확률 5%" },
     { id: "ITEM002", kind: "ball", name: "Super Ball", emoji: "🔵", rate: 10, gold: 8000, img: "images/icons/balls/super.svg", note: "포획 확률 10%" },
     { id: "ITEM003", kind: "ball", name: "Hyper Ball", emoji: "🟡", rate: 30, gold: 20000, img: "images/icons/balls/hyper.svg", note: "포획 확률 30%" },
-    { id: "ITEM008", kind: "ball", name: "Crazy Ball", emoji: "🌀", rate: 70, gold: 30000, img: "images/icons/balls/crazy.svg", note: "포획 확률 70%" },
+    { id: "ITEM008", kind: "ball", name: "Crazy Ball", emoji: "🌀", rate: 70, gold: 65000, img: "images/icons/balls/crazy.svg", note: "포획 확률 70%" },
     { id: "ITEM004", kind: "ball", name: "Master Ball", emoji: "🟣", rate: 100, pts: 300, img: "images/icons/balls/master.svg", note: "무조건 잡힙니다" },
     { id: "BALL_DUNG", kind: "ball", name: "Dung Ball", emoji: "💩", rate: 1, gold: 500, img: "images/icons/g/dung_ball.svg", note: "똥 모양 볼 · 포획 확률 1%" },
     // Repeat Ball: 5% on the first throw at a monster, +5% each further Repeat Ball at the same monster, up to 50% (10th throw on)
@@ -93,8 +94,9 @@ export const EMO_ITEMS = [
     { id: "RADAR_1", kind: "radar", name: "Monster Radar", emoji: "📡", boost: 10, gold: 50000, img: "images/icons/g/radar.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +10%" },
     { id: "RADAR_2", kind: "radar", name: "Super Monster Radar", emoji: "📡", boost: 30, gold: 200000, img: "images/icons/g/radar_super.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +30%" },
     { id: "RADAR_3", kind: "radar", name: "Mega Monster Radar", emoji: "📡", boost: 50, pts: 300, img: "images/icons/g/radar_mega.svg", note: "Capture에서 Scan — 몬스터 출현 확률 +50%" },
-    { id: "RADAR_4", kind: "radar", name: "Legendary Monster Radar", emoji: "🌟", boost: 100, pts: 1000, img: "images/icons/g/radar_legend.svg", note: "Capture에서 Scan — 이모몬스터 1마리가 무조건 바로 등장" },
-    ...TYPE_LIST.map(t => ({ id: "BALL_" + t.toUpperCase(), kind: "ball", name: `${t} Ball`, emoji: "⚪", attr: t, rate: 45, rateOff: 5, gold: 9000, img: `images/icons/balls/attr_${t.toLowerCase()}.svg`, note: `${t} 속성 몬스터 포획 확률 45% (다른 몬스터는 5%)` })),
+    { id: "RADAR_4", kind: "radar", name: "Legendary Monster Radar", emoji: "🌟", boost: 100, pts: 500, img: "images/icons/g/radar_legend.svg", note: "Capture에서 Scan — 이모몬스터 1마리가 무조건 바로 등장" },
+    // attribute balls: 45,000G for the common types, 50,000G for the rest
+    ...TYPE_LIST.map(t => ({ id: "BALL_" + t.toUpperCase(), kind: "ball", name: `${t} Ball`, emoji: "⚪", attr: t, rate: 45, rateOff: 5, gold: CHEAP_ATTR.has(t) ? 45000 : 50000, img: `images/icons/balls/attr_${t.toLowerCase()}.svg`, note: `${t} 속성 몬스터 포획 확률 45% (다른 몬스터는 5%)` })),
     { id: "EMO_HP10", kind: "potion", name: "몬스터 HP 약 +10", emoji: "🧪", hp: 10, gold: 7940 },
     { id: "EMO_HP50", kind: "potion", name: "몬스터 HP 약 +50", emoji: "💉", hp: 50, gold: 32670 },
     { id: "EMO_HPFULL", kind: "potion", name: "몬스터 FULL HP 약", emoji: "❤️‍🩹", hp: "full", gold: 68230 },
