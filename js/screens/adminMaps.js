@@ -199,7 +199,12 @@ export function adminMapsPage() {
         if (work.honor && !Object.keys(work.honor).length) delete work.honor;
         for (const w of ["wheel", "box"]) if (work.honor?.[w] && !work.honor[w].some(p => +p.weight > 0)) return toast(`${w === "wheel" ? "Honor Wheel" : "Honor Box"}의 가중치가 모두 0입니다`, "warn");
         try {
-            await Store.saveMaps(structuredClone(work));
+            // this page owns only regions / locs / honor — everything else in "maps" (Monster Shop · LAB stock + prices,
+            // EmoMon capture / admin settings) is saved by its own popup in the meantime, so merge onto the CURRENT value
+            // instead of the copy taken when the page opened (that used to wipe a stock edit made before pressing 저장)
+            const next = { ...structuredClone(Store.maps || {}), regions: structuredClone(work.regions), locs: structuredClone(work.locs) };
+            if (work.honor) next.honor = structuredClone(work.honor); else delete next.honor;
+            await Store.saveMaps(next);
             applyMaps();
             saveBtn.textContent = "💾 저장";
             toast("지역·맵 설정을 저장했습니다", "ok");
