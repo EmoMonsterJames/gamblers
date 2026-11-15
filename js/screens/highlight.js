@@ -1,13 +1,13 @@
 // =====================================================================
 // 🎬 Gamblers Highlight — a rest corner: press 감상하기, watch one random
-// highlight moment (≤ 30 s) and get 1,000 ~ 10,000 G. Once per season.
+// highlight moment (≤ 15 s) and get 1,000 ~ 10,000 G. Once per season.
 //
 // The moments are NOT videos: Store.recordHighlight() keeps a tiny replay
 // record (who / what / how much — a few hundred bytes) the moment it
 // happens, and this file re-plays it as an animated scene. 400 records
 // ≈ 100 KB, so no cloud file storage is needed (settings key "highlights").
-//   jackpot 30s · npc_kill 20s · battle 30s · death 20s · handpay 20s
-//   beg 10s · champion 10s · lotto 20s · promo 20s
+//   scene scripts: jackpot 30s · npc_kill 20s · battle 30s · death 20s · handpay 20s
+//   beg 10s · champion 10s · lotto 20s · promo 20s — all played back in ≤ 15 s (HL_MAX_SEC)
 // =====================================================================
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
@@ -20,6 +20,9 @@ import { CASINO_BY_ID } from "../data/casino.js";
 import { WEAPON_BY_ID, LOC_BY_ID } from "../data/catalog.js";
 
 export const HL_REWARD = [1000, 10000];
+// every replay lasts at most 15 s: longer scene scripts (written for `sec`) are played faster to fit
+export const HL_MAX_SEC = 15;
+export const clipSec = K => Math.min(K.sec, HL_MAX_SEC);
 export const HL_KINDS = {
     jackpot: { sec: 30, emoji: "💰", label: "MAXI 이상 잭팟 당첨" },
     npc_kill: { sec: 20, emoji: "👹", label: "NPC 기습 즉사" },
@@ -89,7 +92,8 @@ export async function play(x, { preview = false } = {}) {
     const K = HL_KINDS[x.kind];
     const screen = h("div.gh-screen.k-" + x.kind);
     const cap = h("div.gh-cap");
-    const bar = h("i"), secs = h("small", `0 / ${K.sec}s`);
+    const len = clipSec(K), speed = len / K.sec; // speed < 1 → the scene script runs faster
+    const bar = h("i"), secs = h("small", `0 / ${len}s`);
     const ov = h("div.gh-ov",
         h("div.gh-tv",
             h("div.gh-top", h("b", "🎬 GAMBLERS HIGHLIGHT"), h("span", `${K.emoji} ${K.label}`), h("small", [x.season ? `SEASON ${x.season}` : "", x.round ? `ROUND ${x.round}` : "", x.at ? new Date(x.at).toLocaleDateString() : ""].filter(Boolean).join(" · "))),
@@ -97,14 +101,14 @@ export async function play(x, { preview = false } = {}) {
             h("div.gh-prog", h("div.gh-bar", bar), secs),
             preview ? h("button.btn.small.ghost.gh-x", { onclick: () => { T.stop = true; } }, "닫기") : null));
     document.body.append(ov);
-    const t0 = performance.now(), ms = K.sec * 1000;
+    const t0 = performance.now(), ms = len * 1000;
     const T = {
         stop: false,
         cap(text) { cap.replaceChildren(h("span", text)); },
         // wait until `sec` seconds into the clip
-        async at(sec) { while (!T.stop && performance.now() - t0 < sec * 1000) await sleep(60); }
+        async at(sec) { while (!T.stop && performance.now() - t0 < sec * speed * 1000) await sleep(60); }
     };
-    const tick = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); bar.style.width = k * 100 + "%"; secs.textContent = `${Math.min(K.sec, Math.floor(k * K.sec))} / ${K.sec}s`; }, 100);
+    const tick = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); bar.style.width = k * 100 + "%"; secs.textContent = `${Math.min(len, Math.floor(k * len))} / ${len}s`; }, 100);
     try {
         await (SCENES[x.kind] || (async () => { }))(screen, x, T);
         await T.at(K.sec);
