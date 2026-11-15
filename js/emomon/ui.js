@@ -251,25 +251,26 @@ export function dexView(pid) {
 // ---------------------------------------------------------------- browsers (shared with the admin)
 // #1~100 · #101~200 … buttons → the list of that range
 export function rangeBrowser({ items, idOf = x => x.id, size = 100, count = null, render, search = null, searchText = null, placeholder = "검색" }) {
-    const wrap = h("div.emo-drill");
+    const box = h("div.emo-drill-box"), wrap = h("div.emo-drill"); // the search box stays put — only the list below it is redrawn (keeps focus while typing)
     let range = null;
     const q = search === false ? null : h("input.emo-q", { placeholder, oninput: () => draw() });
     const ranges = [...new Set(items.map(x => Math.floor((idOf(x) - 1) / size)))].sort((a, b) => a - b);
     const draw = () => {
         const f = q?.value.trim().toLowerCase();
-        if (f) { put(wrap, q, h("div.emo-drill-list", ...items.filter(x => searchText?.(x)?.toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
+        if (f) { put(box, h("div.emo-drill-list", ...items.filter(x => searchText?.(x)?.toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
         const inR = r => items.filter(x => Math.floor((idOf(x) - 1) / size) === r);
-        put(wrap, q,
+        put(box,
             h("div.emo-drill-btns", ...ranges.map(r => h("button.emo-drill-b" + (r === range ? ".on" : ""), { onclick: () => { range = r === range ? null : r; draw(); } },
                 h("b", `#${r * size + 1} ~ ${(r + 1) * size}`), h("small", count ? count(inR(r)) : `${inR(r).length}종`)))),
             range == null ? h("p.muted.small.center", "번호대를 누르면 목록이 나옵니다") : h("div.emo-drill-list", ...inR(range).map(render)));
     };
+    if (q) wrap.append(q); wrap.append(box);
     draw();
     return wrap;
 }
 // attribute → ★ → list (an item can sit under several attributes)
 export function typeStarBrowser({ items, typesOf, starOf, render, searchText, placeholder = "이름 검색", anyLabel = "공용" }) {
-    const wrap = h("div.emo-drill");
+    const box = h("div.emo-drill-box"), wrap = h("div.emo-drill");
     let type = null, star = null;
     const q = h("input.emo-q", { placeholder, oninput: () => draw() });
     const tlist = x => { const t = (typesOf(x) || []).filter(Boolean); return t.length ? t : [anyLabel]; };
@@ -277,10 +278,10 @@ export function typeStarBrowser({ items, typesOf, starOf, render, searchText, pl
     const types = [...new Set(items.flatMap(tlist))].sort((a, b) => order.indexOf(a) - order.indexOf(b));
     const draw = () => {
         const f = q.value.trim().toLowerCase();
-        if (f) { put(wrap, q, h("div.emo-drill-list", ...items.filter(x => searchText(x).toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
+        if (f) { put(box, h("div.emo-drill-list", ...items.filter(x => searchText(x).toLowerCase().includes(f)).slice(0, 300).map(render))); return; }
         const inT = items.filter(x => type && tlist(x).includes(type));
         const stars = [...new Set(inT.map(starOf))].sort((a, b) => a - b);
-        put(wrap, q,
+        put(box,
             h("div.emo-drill-btns.types", ...types.map(t => h("button.emo-drill-b" + (t === type ? ".on" : ""), { onclick: () => { type = t === type ? null : t; star = null; draw(); } },
                 t === anyLabel ? h("b", `🌐 ${anyLabel}`) : typeChip(t), h("small", `${items.filter(x => tlist(x).includes(t)).length}`)))),
             type == null ? h("p.muted.small.center", "속성을 누르면 별 등급별로 나뉩니다") :
@@ -289,6 +290,7 @@ export function typeStarBrowser({ items, typesOf, starOf, render, searchText, pl
             type != null && star == null ? h("p.muted.small.center", "별 등급을 누르면 목록이 나옵니다") : null,
             type != null && star != null ? h("div.emo-drill-list", ...inT.filter(x => starOf(x) === star).sort((a, b) => a.name.localeCompare(b.name)).map(render)) : null);
     };
+    wrap.append(q, box);
     draw();
     return wrap;
 }

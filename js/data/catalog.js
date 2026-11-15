@@ -351,6 +351,7 @@ export const ITEMS = [
     ...ALPHABET.map(l => ({ id: cardId(l), name: `알파벳 카드 ${l}`, emoji: "🔤", letter: l, desc: "미션·맵 입장·Spelling Bee에 1번 쓰고 사라집니다." })),
     ...EXTRA_LETTERS.map(l => ({ id: cardId(l), name: `알파벳권 ${l}`, emoji: circled(l), letter: l, extra: true, desc: "🐝 Spelling Bee 코너에서 단어를 만들 때 1번 쓰고 사라집니다." })),
     { id: "map_random",   name: "랜덤 맵권",          emoji: "🗺️", desc: "사용하면 지금 입장 가능한 모든 지역의 모든 맵 중 한 곳으로 바로 이동합니다 (턴 시작 때나 턴 도중, 남은 시간은 그대로)." },
+    { id: "gotcha_blank", name: "꽝 캡슐", emoji: "🥚", desc: "Monster Gotcha에서 나온 꽝 캡슐입니다. Monster Gotcha 코너의 ♻️ 꽝 캡슐 수거에서 한꺼번에 반납하면 100~1,000G를 받습니다 (많이 모을수록 더 많이)." },
     { id: "slot_boost",   name: "슬롯 보너스 당첨 UP", emoji: "🎰", boost: "slot",   desc: "사용 후 30초 동안 모든 슬롯에서 보너스가 터질 확률이 최대 50%로! (베팅이 높을수록 확률이 줄어듭니다 · 1회용)" },
     { id: "casino_boost", name: "카지노게임 상금 당첨 UP", emoji: "🃏", boost: "casino", desc: "사용 후 30초 동안 모든 카지노게임에서 상금이 터질 확률이 최대 50%로! (베팅이 높을수록 확률이 줄어듭니다 · 1회용)" },
     { id: "random_letter", name: "랜덤알파벳권",      emoji: "❓", desc: "사용하면 알파벳권 A~Z 중 하나를 랜덤으로 받습니다." },
@@ -590,7 +591,10 @@ const passSellers = LOCATIONS.filter(l => l.shops.includes("general"));
 const passLoad = {};
 // pass prices: the new regions 45,000G · ☠️ Dead Land 10,000G · 🧗 Difficult Land 35,000G · 👹 NPC Land 40,000G (💀 Death Casino 35,000G) · older maps 45,000~50,000G
 const NEW_PASS_REGIONS = ["restricted", "desert", "emoland"];
+// 🏬 백화점 maps: their passes cost more
+const PASS_PRICE_BY_ID = { riches: 100000, goldbar: 100000, diamond_casino: 100000, lgbt_nation: 100000, combo_town: 100000, hurry_town: 100000, terror_casino: 55000, magma_town: 55000, death_door: 55000, radioactive: 55000 };
 function passPrice(l) {
+    if (PASS_PRICE_BY_ID[l.id]) return PASS_PRICE_BY_ID[l.id];
     if (l.region === "deadland") return 10000;
     if (l.region === "difficult") return 35000;
     if (l.region === "npcland") return l.id === "death_casino" ? 35000 : 40000;
@@ -624,6 +628,10 @@ for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) 
 }
 
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions
+// 🏬 백화점 corner (screens/dept.js) — admin can move it in 🌍 지역·맵 관리
+export const DEPT_MAPS = ["riches", "goldbar", "diamond_casino", "lgbt_nation", "combo_town", "terror_casino", "magma_town", "death_door", "hurry_town", "radioactive"];
+for (const id of DEPT_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.dept = true; }
+
 export const SPELL_MAPS = ["oink", "gambleables", "cany", "coffin", "blackout", "bubble", "igloo", "zodiac",
     // +10 spread over the other regions (18 maps in all)
     "lucky", "eastern", "magic", "dungeon", "shipwreck", "plaza", "beggar_shelter", "games_only", "npc_town", "island"];

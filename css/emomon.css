@@ -292,6 +292,7 @@
 /* ---------- drill-down browsers (dex + admin): #range / attribute → ★ → list ---------- */
 .emo-pc-desc { font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
 .emo-drill { display: flex; flex-direction: column; gap: 8px; }
+.emo-drill-box { display: flex; flex-direction: column; gap: 8px; }
 .emo-drill .emo-q { width: 100%; max-width: 360px; }
 .emo-drill-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 .emo-drill-b { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 84px; padding: 7px 10px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--line); color: inherit; cursor: pointer; }

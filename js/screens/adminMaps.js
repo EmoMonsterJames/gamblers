@@ -11,6 +11,7 @@ const HONOR_TAB = "_honor";
 import { locationShops } from "../data/catalogAdmin.js";
 import { mapCorners } from "../ui/mapCorners.js";
 import { stockManager } from "./adminEmo.js";
+import { gotchaManager } from "./gotcha.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
 import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
@@ -168,10 +169,11 @@ export function adminMapsPage() {
             h("div.am-corners", h("small", `활성 코너 ${corners.length}개:`), corners.length ? corners.map(c => h("span.am-corner", c)) : h("span.muted", "없음"),
                 rules.length ? [h("small", " · 맵 규칙:"), rules.map(c => h("span.am-corner.rule", c))] : null),
             h("div.am-togs", h("small", "상점:"), shopToggles),
+            l.gotcha ? h("div.am-togs", h("small", "🎰 Monster Gotcha:"), h("button.btn.small.gold", { onclick: () => gotchaManager(l.id, afterStock) }, "🎰 Gotcha 몬스터 구성")) : null,
             l.emoshop || l.lab ? h("div.am-togs", h("small", "🐾 EmoMon 상점 관리:"),
                 l.emoshop ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "shop", afterStock) }, "🛒 Monster Shop 재고 · 가격") : null,
                 l.lab ? h("button.btn.small.gold", { onclick: () => stockManager(l.id, "lab", afterStock) }, "🧪 LAB 상점 재고 · 가격") : null) : null,
-            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"), toggle("community", "💬 커뮤니티"), toggle("arena", "🏟️ 아레나"), toggle("lotto", "🎟️ 로또"), toggle("highlight", "🎬 Highlight"),
+            h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"), toggle("community", "💬 커뮤니티"), toggle("arena", "🏟️ 아레나"), toggle("lotto", "🎟️ 로또"), toggle("highlight", "🎬 Highlight"), toggle("dept", "🏬 백화점"), toggle("gotcha", "🎰 Monster Gotcha"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
             h("div.am-togs", h("small", "🏅 Honorarium 코너:"), HONOR_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: honorKinds(l).includes(k), onchange: ev => {

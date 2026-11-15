@@ -41,6 +41,8 @@ export function mapCorners(l, { detail = true } = {}) {
         l.arena && d("🏟️ 아레나", "1:1 EmoMon 배틀 · 시즌당 2회"),
         l.lotto && d("🎟️ 로또", "시즌 · 비시즌 · 연금 로또 · 로또 판매점"),
         l.highlight && d("🎬 Highlight", "하이라이트 감상 · 시즌당 1회 보상"),
+        l.dept && d("🏬 백화점", "몬스터 외 모든 상품 · 시즌당 1회 · 최대 3개"),
+        l.gotcha && d("🎰 Monster Gotcha", "몬스터 뽑기 · 입장 60% · 라운드당 1회"),
         ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)
     ].filter(Boolean);
 }

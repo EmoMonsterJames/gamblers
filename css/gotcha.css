@@ -1,0 +1,59 @@
+/* 🏬 백화점 + 🎰 Monster Gotcha (screens/gotcha.js) */
+.gc-dept, .gc-gotcha { display: flex; flex-direction: column; gap: 12px; }
+.gc-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-radius: 14px; background: linear-gradient(135deg, #1f1535, #2a1240); border: 1px solid var(--line); }
+.gc-head > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 180px; }
+.gc-head b { font-family: var(--display); color: var(--gold); font-size: 18px; }
+.gc-ico { font-size: 34px; }
+.gc-left { padding: 4px 12px; border-radius: 999px; background: #22c55e22; border: 1px solid #22c55e88; font-weight: 800; font-size: 13px; }
+.gc-left.none { background: #ef444422; border-color: #ef444488; }
+.gc-wallet { font-size: 13px; color: var(--muted); }
+.gc-q { width: 100%; box-sizing: border-box; font-size: 16px; padding: 12px 14px; }
+.gc-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow: auto; }
+.gc-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--line); }
+.gc-art { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex: none; overflow: hidden; }
+.gc-art .big-emoji { font-size: 32px; }
+.gc-art.big { font-size: 30px; }
+.gc-name { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.gc-name small.have { color: var(--gold); }
+
+.gc-machines { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.gc-machine { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px; background: var(--panel2); border: 2px solid var(--line); }
+.gc-machine.k-good { border-color: #22c55e66; }
+.gc-machine.k-premium { border-color: #a855f788; }
+.gc-machine.k-legend { border-color: #facc15aa; box-shadow: 0 0 18px #facc1533; }
+.gc-mhead { display: flex; gap: 10px; align-items: center; }
+.gc-mhead > div { display: flex; flex-direction: column; }
+.gc-memo { font-size: 30px; }
+.gc-pool { display: flex; flex-wrap: wrap; gap: 6px; }
+.gc-mon { width: 76px; display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center; font-size: 11px; padding: 4px 2px; border-radius: 10px; background: #0003; }
+.gc-mon small { line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 72px; }
+.gc-mon.blank { opacity: .8; }
+.gc-capsule { font-size: 30px; height: 40px; display: flex; align-items: center; }
+.gc-pct { font-weight: 800; color: var(--muted); }
+.gc-pct.r2, .gc-rar.r2 { color: #4ade80; }
+.gc-pct.r3, .gc-rar.r3 { color: #60a5fa; }
+.gc-pct.r4, .gc-rar.r4 { color: #c084fc; }
+.gc-pct.r5, .gc-rar.r5, .gc-pct.r6, .gc-rar.r6 { color: #facc15; }
+.gc-rar { font-family: var(--display); font-size: 20px; margin: 0; }
+.gc-door, .gc-recycle { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 20px; border-radius: 16px; background: var(--panel2); border: 1px solid var(--line); }
+.gc-door h3, .gc-recycle h3 { margin: 0; }
+.gc-big { font-size: 60px; }
+.gc-blanks { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; font-size: 22px; margin: 6px 0; }
+
+.gc-reveal { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 280px; padding: 10px; text-align: center; }
+.gc-machine-art { font-size: 70px; }
+.gc-cap { font-size: 64px; animation: gcDrop .7s cubic-bezier(.3, 1.6, .5, 1); }
+.gc-cap.shake { animation: gcShake .18s linear infinite; }
+.gc-cap.open { animation: gcOpen .35s ease-in forwards; }
+.gc-out { display: none; flex-direction: column; align-items: center; gap: 6px; }
+.gc-out.show { display: flex; animation: gcPop .45s ease-out; }
+.gc-out h3, .gc-out p { margin: 0; }
+@keyframes gcDrop { from { transform: translateY(-120px); opacity: 0; } }
+@keyframes gcShake { 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+@keyframes gcOpen { to { transform: scale(2.2); opacity: 0; } }
+@keyframes gcPop { from { transform: scale(.4); opacity: 0; } }
+@media (max-width: 640px) { .gc-machines { grid-template-columns: 1fr; } }
+.gc-admin-wrap, .gc-admin { display: flex; flex-direction: column; gap: 10px; }
+button.gc-mon.add { border: 1px dashed var(--line); color: inherit; cursor: pointer; }
+button.gc-mon.add:hover { border-color: var(--gold); }
+.gc-admin .gc-mon .btn { padding: 0 6px; min-height: 0; }
