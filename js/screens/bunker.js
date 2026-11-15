@@ -22,6 +22,17 @@ export function bunkerFallback() {
     return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
 
+// 💰 Rich Land: a refused / unpaid entry fee → 40% 거지쉼터 · 30% a random Dead Land map · 30% a random Difficult Land map
+export const RICH_FALLBACK_TEXT = "🥣 40%: 거지쉼터\n☠️ 30%: Dead Land (랜덤 맵)\n🧗 30%: Difficult Land (랜덤 맵)";
+export function richFallback() {
+    const r = Math.random();
+    const shelter = LOCATIONS.find(l => l.id === "beggar_shelter" && !l.off);
+    const region = r < 0.4 && shelter ? null : r < 0.7 ? "deadland" : "difficult";
+    if (!region) return shelter;
+    const pool = LOCATIONS.filter(l => l.region === region && !l.off && !l.kidnap && !l.crazy);
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : shelter;
+}
+
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const S = () => G.S();
 const ps = pid => S().ps[pid];

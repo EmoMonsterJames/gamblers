@@ -38,10 +38,13 @@ import { captureView, hospitalView, labView, monsterShopView, emoDexTab, emoPart
 import { emoInventory } from "../emomon/ui.js";
 import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
 import { promoAtTurn } from "./promo.js";
-import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard } from "./bunker.js";
+import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard, richFallback, RICH_FALLBACK_TEXT } from "./bunker.js";
 import { endLocked, END_LOCK_LEFT } from "../game/extra.js";
+import { lottoView, seasonLottoCheck } from "./lotto.js";
 
 let root = null, timer = null;
+// game tile: just the first short phrase of the description (the full rules are behind the game's ⓘ)
+const shortDesc = d => { const s = String(d || "").split(/(?<=[.!?])\s|[·(=,:]|\. /)[0].trim(); return s.length > 34 ? s.slice(0, 33) + "…" : s; };
 
 export function seasonScreen() {
     root = h("div.season");
@@ -265,7 +268,7 @@ function preTurn(s) {
         h("h2.stage-title", `${s.turnIdx + 1}번째 플레이어`),
         playerCard(pid, ps),
         h("div.row.center",
-            h("button.btn.gold.huge", { onclick: async () => { G.startTurn(); render(); await promoAtTurn(pid); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
+            h("button.btn.gold.huge", { onclick: async () => { G.startTurn(); render(); await seasonLottoCheck(); render(); await promoAtTurn(pid); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
             h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
 }
 
@@ -290,8 +293,11 @@ function mapStage(s) {
             await map.roulette(pool, target.id);
             await banner(`${target.emoji} ${target.name}`, 1400, "loc");
             // 🔐 Bunker: no Access Card → a random Dead Land / Difficult Land / NPC Land map
-            const tfb = target.accessCard ? bunkerFallback() : fb && fb.id !== target.id ? fb : null;
-            let ok = await entryCheck(pid, target, pool.length > 1, tfb);
+            // 💰 Rich Land: refusing the fee → 40% 거지쉼터 / 30% Dead Land / 30% Difficult Land (drawn after the refusal)
+            const rich = region.id === "richland" && !target.accessCard && fb && fb.id !== target.id;
+            let tfb = target.accessCard ? bunkerFallback() : fb && fb.id !== target.id ? fb : null;
+            let ok = await entryCheck(pid, target, pool.length > 1, tfb, rich);
+            if (!ok && rich) tfb = richFallback() || tfb;
             // ⚔️ Battle Town gate · 🎡 Death Door wheel (death ends the turn right here)
             if (ok) {
                 const ex = await extraEntry(pid, target);
@@ -329,7 +335,7 @@ function mapStage(s) {
         h("div.map-head", avatar(pid, 56), h("div", h("b", displayName(Store.player(pid))), h("div.muted", `${region.emoji} ${region.name} · 입장 가능 ${acc.length}곳`)), btn),
         map.el,
         region.fallback ? h("p.notice.center", region.id === "richland"
-            ? `💰 리치랜드: 입장료를 꼭 물어봅니다. 안 내거나 낼 돈·포인트가 부족하면 ${LOC_BY_ID[region.fallback]?.emoji} ${LOC_BY_ID[region.fallback]?.name}(으)로 바로 갑니다.`
+            ? `💰 리치랜드: 입장료를 꼭 물어봅니다. 안 내거나 낼 돈·포인트가 부족하면 🥣 거지쉼터 40% · ☠️ Dead Land 30% · 🧗 Difficult Land 30% 중 한 곳으로 갑니다.`
             : `🎲 랜덤랜드: 입장을 거절당하면 ${LOC_BY_ID[region.fallback]?.emoji} ${LOC_BY_ID[region.fallback]?.name}(으)로 바로 갑니다.`) : null,
         h("p.muted.center", "회색 핀은 입장 불가 (포인트 부족 / 국적 전용 / 필요한 장비 없음 — 맵권이 있으면 입장) · 💰 입장료 맵은 들어갈 때 차감 · 🎲 랜덤 입장 맵은 거절당하면 다른 맵을 다시 뽑습니다 · 🤿🪽🧑‍🚀 장비 맵은 들어갈 때 장비를 사용합니다"));
 }
@@ -467,9 +473,9 @@ function regionStage(s) {
 // random-entry maps: the bouncer flips a coin. A refused player may spend any alphabet card to force it.
 // Then an entry fee is ASKED (리치랜드) and gear is confirmed before it is used up.
 // fallback: where a refused player goes (랜덤랜드 / 리치랜드) instead of re-rolling.
-async function entryCheck(pid, loc, canRetry, fallback = null) {
+async function entryCheck(pid, loc, canRetry, fallback = null, rich = false) {
     const ce = G.canEnter(pid, loc);
-    const after = fallback ? ` ${fallback.emoji} ${fallback.name}(으)로 이동합니다.` : canRetry ? " 다른 카지노를 다시 뽑습니다." : "";
+    const after = rich ? ` 아래 중 랜덤한 곳으로 이동합니다.\n${RICH_FALLBACK_TEXT}` : fallback ? ` ${fallback.emoji} ${fallback.name}(으)로 이동합니다.` : canRetry ? " 다른 카지노를 다시 뽑습니다." : "";
     if (ce.random) {
         const roll = G.rollEntry(pid, loc);
         const cards = G.cardsOf(pid);
@@ -501,7 +507,13 @@ async function entryCheck(pid, loc, canRetry, fallback = null) {
             await alertBox("💰 입장료 부족", [`${loc.emoji} ${loc.name}의 입장료는 ${what}입니다.`, `${ce.fee ? "골드" : "포인트"}가 부족해 들어갈 수 없습니다…${after}`], "warn");
             return false;
         }
-        if (!(await confirmBox(`${loc.emoji} ${loc.name}의 입장료는 ${what}입니다.\n입장료를 내고 들어갈까요?${fallback ? `\n(안 내면 ${fallback.emoji} ${fallback.name}(으)로 갑니다)` : ""}`, "내고 입장", "안 낸다"))) return false;
+        const askFee = () => confirmBox(`${loc.emoji} ${loc.name}의 입장료는 ${what}입니다.\n입장료를 내고 들어갈까요?${rich ? `\n(안 내면 랜덤한 곳으로 갑니다)\n${RICH_FALLBACK_TEXT}` : fallback ? `\n(안 내면 ${fallback.emoji} ${fallback.name}(으)로 갑니다)` : ""}`, "내고 입장", "안 낸다");
+        if (!(await askFee())) {
+            if (!rich) return false;
+            // 💰 Rich Land: one "are you sure?" — No gives exactly one more chance to pay; refusing again goes straight away
+            if (await confirmBox(`정말로 입장을 거부하고 아래의 랜덤한 곳으로 이동하시겠습니까?\n${RICH_FALLBACK_TEXT}`, "Yes, 이동", "No")) return false;
+            if (!(await askFee())) return false;
+        }
     } else {
         if (ce.fee) toast(`💰 입장료 ${fmt(ce.fee)}G`, "info");
         if (ce.feePts) toast(`💎 입장료 ${ce.feePts}P`, "info");
@@ -597,7 +609,7 @@ function locationStage(s) {
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
-        ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
+        ["lotto", "🎟️ 로또"], ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
     const invWrap = el => h("div", extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
@@ -620,9 +632,9 @@ function locationStage(s) {
         else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
         else if (id === "games") content = h("div.game-list",
             ...loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
-                h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand), h("div.gc-desc", c.desc)); }),
+                h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); }),
             ...loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
-                h("div.gc-kind", "CASINO GAME"), h("div.gc-ico", g.icon), h("div.gc-name", g.name), h("div.gc-desc", g.desc)); }));
+                h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", "GAMBLERS CASINO"), h("div.gc-desc", shortDesc(g.desc))); }));
         else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
         else if (id === "inv") content = invWrap(inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
@@ -651,6 +663,7 @@ function locationStage(s) {
         else if (id === "emo:lab") content = labView(pid, { loc, onChange: emoChanged });
         else if (id === "emo:shop") content = monsterShopView(pid, loc, { onChange: emoChanged });
         else if (id === "emo:dex") content = emoDexTab(pid);
+        else if (id === "lotto") content = lottoView(pid, { hold: lottoHold, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
@@ -662,6 +675,8 @@ function locationStage(s) {
         ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
         ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
     const side = h("div.loc-side", sideCard());
+    // 🎟️ lotto draw show: the turn clock stops (no play time used, no NPC visits) until it is over
+    const lottoHold = () => { const was = t.running; t.running = false; npcBusy = true; updateHud(); return () => { npcBusy = false; t.running = was; updateHud(); side.replaceChildren(sideCard()); Store.saveSeason(); }; };
     // map pass during the turn: move right away, the turn clock keeps running
     let moving = false;
     async function movePass(itemId) {
@@ -893,6 +908,7 @@ function finalSweep(pid, onCrown) {
 function doneStage(s) {
     const endBtn = h("button.btn.red.big", { onclick: async () => {
         if (!(await confirmBox(`시즌 ${s.number}을(를) 최종 종료할까요?\n(결과와 명예의 전당 기록은 그대로 남습니다)`, "🏁 시즌 종료", "취소"))) return;
+        G.stashSeason(s);
         Store.endSeasonLocal();
         toast(`🏁 시즌 ${s.number} 종료!`, "ok");
         render();

@@ -401,6 +401,20 @@ export function evoOptions(pid, m) {
             ok: have && wNeed && !missing.length && ps.money >= gold && ps.points >= pts };
     }).filter(o => o.to);
 }
+// ✨ evolution ready: the player holds the matching evolution item(s) — the monster box shakes
+// until it evolves or the player declines (m.evoNo = the form that was declined)
+export function evoReady(pid, m) {
+    if (!m || m.evoNo === m.sid) return false;
+    try { return evoOptions(pid, m).some(o => o.need.length && o.have && !o.missing.length); } catch { return false; }
+}
+export function declineEvo(pid, u, on = true) {
+    const m = monByUid(pid, u);
+    if (!m) return false;
+    if (on) m.evoNo = m.sid; else delete m.evoNo;
+    log(`🐾 ${name(pid)} ${sp(m)?.name} 진화 ${on ? "거부" : "알림 다시 켜기"}`);
+    Store.saveSeason();
+    return true;
+}
 // special: true = 🔬 실험실 특수 진화 (1000P) · false = the normal ✨ 진화 tab (100P)
 export function evolve(pid, u, evoId, { special = false } = {}) {
     const m = monByUid(pid, u);

@@ -1,0 +1,119 @@
+/* 🎟️ Lotto corner (screens/lotto.js) */
+.lotto { display: flex; flex-direction: column; gap: 12px; }
+.lotto-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.lotto-tab { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 999px; padding: 7px 14px; font-weight: 800; cursor: pointer; }
+.lotto-tab.on { background: linear-gradient(180deg, #ffe27a, var(--gold) 50%, var(--gold2)); color: #3a1d00; border-color: transparent; }
+
+.lotto-head { display: flex; gap: 10px; align-items: stretch; }
+.lotto-log { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 64px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); border-radius: 14px; font-size: 26px; cursor: pointer; }
+.lotto-log small { font-size: 11px; color: var(--muted); }
+.lotto-log:hover { border-color: var(--gold); }
+
+/* the prize: sparkles + a breathing number */
+.lotto-promo { position: relative; flex: 1; overflow: hidden; text-align: center; padding: 14px 12px; border-radius: 16px; border: 2px solid #ffcc3388;
+    background: radial-gradient(circle at 50% 0%, #6b3c00, #2a1400 70%); box-shadow: inset 0 0 30px #ffcc3333, 0 0 24px #ffcc3322; }
+.lotto-promo.off { background: radial-gradient(circle at 50% 0%, #2c2a7a, #0e0b2e 70%); border-color: #a5b4fc88; }
+.lotto-promo.pension { background: radial-gradient(circle at 50% 0%, #0f5a46, #04221b 70%); border-color: #6ee7b788; }
+.lp-label { font-weight: 800; color: #ffe9a8; letter-spacing: .5px; }
+.lp-prize { font-family: var(--display); font-size: 42px; line-height: 1.1; margin: 4px 0; background: linear-gradient(180deg, #fffbe0, var(--gold) 45%, var(--gold2)); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 10px #ffcc3399); animation: lp-breathe 1.4s ease-in-out infinite; display: inline-block; }
+.lp-prize small { font-size: 16px; }
+.lp-sub { font-size: 13px; color: #f5e6c4; } .lp-sub b.em { color: #ff8fa3; font-size: 14px; animation: lp-blink 1s steps(2) infinite; }
+.lp-spark { position: absolute; inset: 0; pointer-events: none; font-size: 18px; }
+.lp-spark, .lp-spark i { color: #fff6c2; }
+.lp-spark { animation: lp-twinkle 1.6s ease-in-out infinite; padding: 6px 10px; text-align: left; }
+.lp-spark i { position: absolute; font-style: normal; animation: lp-twinkle 1.2s ease-in-out infinite; }
+.lp-spark i:nth-child(1) { right: 12px; top: 8px; animation-delay: .3s; }
+.lp-spark i:nth-child(2) { left: 22%; bottom: 8px; animation-delay: .7s; }
+.lp-spark i:nth-child(3) { right: 26%; bottom: 14px; animation-delay: 1s; }
+.lotto-promo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, #ffffff40 50%, transparent 65%); transform: translateX(-100%); animation: lp-shine 2.6s ease-in-out infinite; pointer-events: none; }
+@keyframes lp-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(.86); } }
+@keyframes lp-twinkle { 0%, 100% { opacity: .25; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.2); } }
+@keyframes lp-shine { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+@keyframes lp-blink { 50% { opacity: .55; } }
+
+.lotto-info { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.lotto-info span { background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.lotto-info span.hot { background: #5a1030; border-color: var(--red); color: #ffd1dc; font-weight: 800; }
+.lotto-enter, .lotto-room, .lotto-closed { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.lotto-room { border-color: var(--gold); box-shadow: 0 0 18px #ffcc3333; }
+.lr-title { font-family: var(--display); font-size: 22px; color: var(--gold); }
+.lr-pick { color: #ffd1dc; font-weight: 800; }
+.lotto-go { animation: lp-breathe 1.2s ease-in-out infinite; }
+.lotto-closed b { font-size: 18px; color: #ffd1dc; }
+.lc-win { display: flex; align-items: center; gap: 6px; }
+.lotto-msg:empty { display: none; } .lotto-msg { text-align: center; margin: 0; font-weight: 800; } .lotto-msg.warn { color: var(--gold); }
+
+.lotto-grid { display: grid; gap: 8px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.lotto-grid.n20 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.lotto-grid.n30 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.lslot { position: relative; min-height: 96px; border-radius: 12px; border: 1px dashed var(--line); background: #120a20; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 4px; font: inherit; overflow: hidden; }
+.lslot .ls-no { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 800; color: var(--muted); }
+.lslot.empty .ls-no { position: static; font-family: var(--display); font-size: 26px; color: #4c3a70; }
+.lslot.taken { border-style: solid; background: var(--panel2); color: var(--text); }
+.lslot.mine { border-color: var(--gold); box-shadow: 0 0 12px #ffcc3355; }
+.lslot.blocked { border-style: solid; background: repeating-linear-gradient(45deg, #2a0f18, #2a0f18 8px, #1a0910 8px, #1a0910 16px); color: #ff8fa3; }
+.ls-block { font-size: 28px; }
+.ls-name { font-size: 11px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ls-season { font-size: 10px; color: var(--gold); }
+.lslot.pick { cursor: pointer; border-color: var(--gold); color: var(--gold); animation: ls-pick 1s ease-in-out infinite; }
+.lslot.pick.blockpick { border-color: var(--red); color: var(--red); }
+.lslot.hot { outline: 3px solid var(--gold); background: #4a3500; transform: scale(1.05); z-index: 1; }
+@keyframes ls-pick { 50% { background: #2b1d00; } }
+
+.lotto-shop .lotto-wallet { display: flex; gap: 12px; justify-content: center; font-weight: 800; margin-bottom: 8px; }
+.lshop-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.lshop-item { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.lshop-item p { flex: 1; margin: 0; font-size: 12px; color: var(--muted); }
+.lsi-ico { font-size: 34px; } .lsi-own { font-size: 12px; color: var(--gold); }
+
+.lotto-door { text-align: center; min-width: 260px; }
+.ld-ico { font-size: 70px; animation: lp-breathe .7s ease-in-out infinite; }
+
+.lotto-hist { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow: auto; min-width: min(480px, 80vw); }
+.lh-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: var(--panel2); }
+.lh-no { font-weight: 800; min-width: 90px; font-size: 12px; } .lh-amt { margin-left: auto; color: var(--gold); font-weight: 800; }
+
+/* ---------------- draw show */
+.lotto-ov { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; overflow: hidden;
+    background: radial-gradient(circle at 50% 40%, #2a0f3f, #07030d 75%); animation: lov-in .35s ease-out; }
+.lotto-ov.out { animation: lov-out .35s ease-in forwards; }
+.lotto-ov.cel { background: radial-gradient(circle at 50% 40%, #7a4a00, #1a0a00 70%); }
+.lshow-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, #ffcc3314 0 10deg, transparent 10deg 20deg); animation: lov-spin 14s linear infinite; pointer-events: none; }
+.lshow-title { position: relative; font-family: var(--display); font-size: 40px; text-align: center; color: var(--gold); text-shadow: 0 0 20px #ffcc33aa; animation: lp-breathe 1.6s ease-in-out infinite; }
+.lshow-sub { position: relative; color: #ffd1dc; font-weight: 800; font-size: 18px; text-align: center; min-height: 26px; }
+.lshow-stage { position: relative; display: flex; flex-direction: column; gap: 18px; align-items: center; width: min(1000px, 100%); }
+.lshow-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.lshow-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border-radius: 16px; background: #1d1230; border: 2px solid var(--line); min-width: 100px; transition: transform .15s, opacity .4s, filter .4s; }
+.lshow-card small { font-weight: 800; }
+.lshow-card.hot, .lshow-mini.hot { border-color: var(--gold); box-shadow: 0 0 26px #ffcc33aa; transform: scale(1.1); background: #4a3500; }
+.lshow-card.out { opacity: .3; filter: grayscale(1); transform: scale(.9); position: relative; }
+.lshow-card.out::after { content: "✕"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 70px; color: var(--red); font-weight: 900; }
+.lshow-card.chosen { border-color: var(--gold); transform: scale(1.25); box-shadow: 0 0 40px #ffcc33, 0 0 80px #ff9f1c88; animation: lov-pop .6s ease-out; }
+.lshow-pool { display: grid; gap: 6px; grid-template-columns: repeat(10, 46px); transition: opacity .5s; }
+.lshow-pool.n20 { grid-template-columns: repeat(10, 46px); }
+.lshow-pool.dim { opacity: .35; }
+.lshow-mini { width: 46px; height: 46px; border-radius: 10px; border: 2px solid var(--line); background: #1d1230; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.lshow-mini.blk { color: var(--red); background: #2a0f18; }
+.lshow-mini.picked { border-color: var(--green); box-shadow: 0 0 12px var(--green); }
+.lcel-win { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; animation: lov-pop .7s ease-out; }
+.lcel-win h2 { margin: 0; font-size: 30px; }
+.lcel-num { position: relative; font-family: var(--display); font-size: 64px; color: var(--gold); text-shadow: 0 0 24px #ffcc33; }
+.lcel-num small { font-size: 28px; }
+.lcel-note, .lcel-none { position: relative; color: #ffe9a8; font-weight: 700; text-align: center; }
+.lotto-ov .btn { position: relative; }
+.lcel-coins { position: absolute; inset: 0; pointer-events: none; }
+.lcel-coins i { position: absolute; left: var(--x); top: -40px; font-style: normal; font-size: 30px; animation: lcel-fall 2.4s ease-in var(--d) infinite; }
+@keyframes lcel-fall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
+@keyframes lov-in { from { opacity: 0; } }
+@keyframes lov-out { to { opacity: 0; } }
+@keyframes lov-spin { to { transform: rotate(360deg); } }
+@keyframes lov-pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.3); } 100% { transform: scale(1.25); } }
+.lcel-win { transform-origin: center; }
+
+@media (max-width: 640px) {
+    .lotto-grid, .lotto-grid.n30 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lotto-grid.n20 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .lshow-pool, .lshow-pool.n20 { grid-template-columns: repeat(6, 40px); }
+    .lp-prize { font-size: 32px; } .lshow-title { font-size: 28px; }
+}

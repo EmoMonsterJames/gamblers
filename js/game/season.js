@@ -122,7 +122,47 @@ export function addToRoster(pid) {
     // gold won outside a season (survival corner) comes along
     const w = Store.wallets?.[pid] || 0;
     if (w > 0) { s.ps[pid].money += w; delete Store.wallets[pid]; Store.saveWallets(); log(`👛 ${name(pid)} 시즌 밖에서 번 ${w.toLocaleString()}G 합류`); }
+    restoreStash(pid);
     Store.saveSeason();
+}
+
+// ---------------------------------------------------------------- 🎒 belongings kept between seasons
+// items · pet + pet effect · weapons · EmoMon (monsters, bags, extra slots) · lotto items.
+// Saved for the whole roster when a season ends, given back when the player joins another season.
+// Gold and points carry over too (the carried gold replaces the start gold; wallet gold is added on top). HP starts fresh.
+const EMO_KEEP = ["mons", "battle", "bag", "wbag", "tbag", "extraSlots"];
+export function stashOf(ps, season) {
+    const emo = ps.emo ? Object.fromEntries(EMO_KEEP.filter(k => ps.emo[k] != null).map(k => [k, structuredClone(ps.emo[k])])) : null;
+    if (emo?.mons) for (const m of emo.mons) { m.hp = null; } // monsters come back healed
+    return {
+        season, items: Object.fromEntries(Object.entries(ps.items || {}).filter(([, n]) => n > 0)),
+        pet: ps.pet || null, petEffect: ps.petEffect || null, weapons: [...(ps.weapons || [])],
+        emo, lotto: ps.lotto ? Object.fromEntries(Object.entries(ps.lotto).filter(([, n]) => n > 0)) : null,
+        money: Math.max(0, Math.round(ps.money || 0)), points: Math.round(ps.points || 0)
+    };
+}
+export function stashSeason(s = S()) {
+    if (!s || s.sandbox || s.testSeason || s.stashed) return;
+    Store.stash ||= {};
+    for (const pid of s.roster) if (s.ps[pid]) Store.stash[pid] = stashOf(s.ps[pid], s.number);
+    s.stashed = true;
+    Store.saveStash();
+}
+function restoreStash(pid) {
+    const s = S(), st = Store.stash?.[pid];
+    if (!st || s.sandbox) return;
+    const ps = s.ps[pid];
+    for (const [id, n] of Object.entries(st.items || {})) ps.items[id] = (ps.items[id] || 0) + n;
+    if (st.pet) ps.pet = st.pet;
+    if (st.petEffect) ps.petEffect = st.petEffect;
+    ps.weapons = [...ps.weapons, ...(st.weapons || [])];
+    if (st.emo) ps.emo = { ...structuredClone(st.emo), finds: 0 };
+    if (st.lotto) ps.lotto = { ...st.lotto };
+    if (st.money != null) ps.money += st.money - CONFIG.START_MONEY;
+    if (st.points != null) ps.points = st.points;
+    delete Store.stash[pid];
+    Store.saveStash();
+    log(`🎒 ${name(pid)} 시즌 ${st.season}의 골드 · 포인트 · 아이템 · 펫 · 무기 · 몬스터를 가지고 합류${st.money != null ? ` (${st.money.toLocaleString()}G · ${(st.points || 0).toLocaleString()}P)` : ""}`);
 }
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
@@ -373,6 +413,7 @@ export function finishBattle(winner, loser) {
     const s = S();
     s.candidates = [winner, loser];
     s.results = { [winner]: { pass: true, battle: true }, [loser]: { pass: false, battle: true } };
+    Store.recordHighlight("battle", { a: winner, b: loser, winner, emo: !!s.mission?.emo, hpA: Math.round(s.ps[winner].hp), weapons: [[...(s.ps[winner].weapons || [])].slice(0, 4), [...(s.ps[loser].weapons || [])].slice(0, 4)] });
     log(`⚔️ 배틀 미션: ${name(winner)} 승리 (HP ${Math.round(s.ps[winner].hp * 100) / 100}), ${name(loser)} 패배`);
     eliminate(loser);
 }
@@ -409,6 +450,7 @@ export function payBeg(pid, gold) {
     ps.money += gold;
     if (s.turn?.pid === pid) s.turn.stats.beg = (s.turn.stats.beg || 0) + gold;
     log(`🥺 ${name(pid)} 구걸 +${gold.toLocaleString()}G`);
+    if (gold > 0) Store.recordHighlight("beg", { pid, amount: gold, loc: s.turn?.loc || null });
     Store.saveSeason(true);
 }
 // job corner: once per turn, the job's time comes off the turn timer
@@ -603,18 +645,19 @@ export function npcHit(pid, npc, move) {
         : out.copied ? `${WEAPON_BY_ID[out.weapon]?.name} 복사 공격${out.hp ? ` HP ${out.hp}` : " (효과 없음)"}`
         : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주";
     log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${what}`);
-    if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`);
+    if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`, { npc });
     else if (out.kidnap) kidnap(pid);
     else Store.saveSeason(true);
     return out;
 }
 // death outside the judge (reaper): out at once, the turn is over
-export function killPlayer(pid, why) {
+export function killPlayer(pid, why, { npc = null } = {}) {
     const s = S();
     if (s.ps[pid].out) return;
     const rank = alive().length;
     Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
     s.history.push({ round: s.round, npcDeath: true, eliminated: pid, rank, why });
+    Store.recordHighlight(npc ? "npc_kill" : "death", { pid, why, rank, loc: s.turn?.pid === pid ? s.turn.loc : null, npc: npc ? { id: npc.id, name: npc.name, emoji: npc.emoji, art: npc.art || null } : null });
     log(`☠️ ${name(pid)} ${why} (${rank}위)`);
     if (s.turn?.pid === pid) {
         s.results[pid] = { stats: s.turn.stats, pass: false, dead: true, loc: s.turn.loc };
@@ -1135,6 +1178,8 @@ export const FINAL_LABEL = { emo: "🐾 EmoMon 배틀", weapon: "⚔️ 무기 �
 export function finalResult(kind, winner) {
     const s = S();
     (s.finalRes ||= {})[kind] = winner;
+    const foe = alive().find(p => p !== winner);
+    if ((kind === "weapon" || kind === "emo") && foe != null) Store.recordHighlight("battle", { a: winner, b: foe, winner, emo: kind === "emo", final: true, hpA: Math.round(s.ps[winner].hp), weapons: [[...(s.ps[winner].weapons || [])].slice(0, 4), [...(s.ps[foe].weapons || [])].slice(0, 4)] });
     log(`🏁 결승 ${FINAL_LABEL[kind]}: ${name(winner)} 승리`);
     Store.saveSeason(true);
 }
@@ -1150,7 +1195,9 @@ export async function crown(winnerId, snapshot) {
     s.winnerId = winnerId;
     s.endedAt = new Date().toISOString();
     log(`👑 시즌 ${s.number} 우승: ${name(winnerId)}!`);
+    Store.recordHighlight("champion", { pid: winnerId, runner: loser ?? null, money: Math.round(s.ps[winnerId].money || 0) });
     for (const f of seasonEndHooks) try { f(s); } catch (e) { console.error(e); }
+    try { stashSeason(s); } catch (e) { console.error(e); } // 🎒 everyone keeps their belongings for the next season they join
     const ranks = Object.fromEntries(s.roster.map(pid => [pid, s.ps[pid].rank]));
     await Store.finishSeason(s, ranks, snapshot);
 }

@@ -60,11 +60,11 @@ export function partyPanel(pid, { onChange = () => { } } = {}) {
 
 // one party card (sidebar + the "내 이모몬" list). ⚠️ blinks while the monster has a disease / status.
 function monCard(pid, m, bm, refresh, slotLabel = null) {
-    const s = M.sp(m), isB = bm?.uid === m.uid, sick = (m.diseases || []).length > 0;
-    return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : ""), { onclick: () => monDetail(pid, m.uid, refresh) },
+    const s = M.sp(m), isB = bm?.uid === m.uid, sick = (m.diseases || []).length > 0, evo = M.evoReady(pid, m);
+    return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : "") + (evo ? ".evo-ready" : ""), { onclick: () => monDetail(pid, m.uid, refresh), title: evo ? "✨ 진화 준비 완료 — 🧪 Monster Lab에서 진화할 수 있습니다" : "" },
         monPic(s, 46),
         h("div.emo-pc-info",
-            h("div.emo-pc-name", s?.name || "?", sick ? h("span.emo-sick-warn", { title: "질병 · 상태이상 — 치료할 때까지 표시됩니다" }, "⚠️") : null, isB ? h("i.emo-btag", "⚔ BATTLE") : null, slotLabel),
+            h("div.emo-pc-name", s?.name || "?", sick ? h("span.emo-sick-warn", { title: "질병 · 상태이상 — 치료할 때까지 표시됩니다" }, "⚠️") : null, isB ? h("i.emo-btag", "⚔ BATTLE") : null, evo ? h("i.emo-evo-tag", "✨ 진화 준비") : null, slotLabel),
             h("div.emo-pc-sub", stars(s?.rarity), ...M.typesOf(m).map(typeChip)),
             hpBar(m),
             h("div.emo-pc-w", `⚔ ${m.weapons.length}/${EMO.MAX_WEAPONS} · 🧬 ${m.traits.length}/${EMO.MAX_TRAITS}`, M.weaponRows(m).some(w => M.ppLeft(m, w) <= 0) ? h("span.emo-dis", "🔋 PP 0") : null, ...diseaseChips(m))));
@@ -102,6 +102,19 @@ function evoInfo(m) {
         ...lab.map(r => h("div", `🔬 ${r.text}`)));
 }
 
+// ✨ evolution ready: notice + "진화 거부하기" (stops the shaking box) — or turn the notice back on
+function evoReadyRow(pid, m, changed) {
+    if (M.evoReady(pid, m)) return h("div.emo-evo-ready",
+        h("b", "✨ 진화 준비 완료!"), h("small", " 진화 아이템을 갖고 있습니다 — 🧪 Monster Lab에서 진화할 수 있습니다"),
+        h("button.btn.small.ghost", { onclick: async () => {
+            if (!(await confirmBox(`정말로 진화를 거부하시겠습니까?\n${M.sp(m)?.name}의 진화 준비 알림(흔들림)이 사라집니다.\n(Monster Lab에서는 언제든 진화할 수 있습니다)`, "진화 거부", "취소"))) return;
+            M.declineEvo(pid, m.uid, true); toast("진화를 거부했습니다", "info"); changed();
+        } }, "🙅 진화 거부하기"));
+    if (m.evoNo === m.sid && M.evoOptions(pid, m).some(o => o.need.length && o.have)) return h("div.emo-evo-ready.off",
+        h("small.muted", "진화를 거부한 몬스터입니다 "), h("button.btn.small.ghost", { onclick: () => { M.declineEvo(pid, m.uid, false); changed(); } }, "✨ 진화 알림 다시 켜기"));
+    return null;
+}
+
 // ---------------------------------------------------------------- monster detail / management
 export function monDetail(pid, u, onChange = () => { }) {
     const body = h("div.emo-detail");
@@ -125,6 +138,7 @@ export function monDetail(pid, u, onChange = () => { }) {
                     s?.description ? h("p.emo-desc", s.description) : null,
                     hpBar(m), h("div.emo-dis-row", (m.diseases || []).length ? h("span.emo-sick-warn", "⚠️ 치료 필요") : null, ...diseaseChips(m)),
                     evoInfo(m),
+                    evoReadyRow(pid, m, changed),
                     h("div.emo-stats", statRow("maxHp", "HP"), statRow("physAttack", "P.ATTK"), statRow("specAttack", "S.ATTK"), statRow("speed", "SPEED"), statRow("physDefense", "P.DEF"), statRow("specDefense", "S.DEF")))),
             h("h4", `🧬 특성 (${m.traits.length}/${EMO.MAX_TRAITS})`),
             h("div.emo-chips", m.traits.length ? M.traitRows(m).map(t => h("span.emo-chip", { title: E.traits.describe(t) }, `🧬 ${t.name}`, h("small", ` ${E.traits.describe(t)}`))) : h("span.muted", "특성 없음")),

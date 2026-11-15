@@ -33,6 +33,9 @@ export const Store = {
     bank: {},        // 🏦 accounts, 🏪 businesses, pending transfers, trend reports: see game/bank.js
     emodex: {},      // 📖 EmoMon dex per player: { <pid>: { <speciesId>: { how, at, season } } } (persistent)
     community: { posts: [] }, // 💬 community board (persistent across seasons): { posts: [{ id, pid, season, text, style, at }] }
+    stash: {},       // 🎒 every player's belongings carried between seasons: { <pid>: { season, items, pet, petEffect, weapons, emo, lotto } } (game/season.js)
+    highlights: { list: [], seen: {} }, // 🎬 Gamblers Highlight replays (screens/highlight.js) + who watched in which season
+    lotto: {},       // 🎟️ lotto corner (persistent across seasons): see game/lotto.js
     emokeep: {},     // 🏟️ every player's last battle monster (persistent) — arena opponents outside the season
     emomon: null,    // 🐾 EmoMonster catalog snapshot (settings "emomon", loaded on demand: emomon/data.js)
     season: null,    // current season object (see game/season.js)
@@ -60,6 +63,9 @@ export const Store = {
         this.emodex = L.emodex || {};
         this.community = L.community || { posts: [] };
         this.emokeep = L.emokeep || {};
+        this.lotto = L.lotto || {};
+        this.stash = L.stash || {};
+        this.highlights = L.highlights || { list: [], seen: {} };
         this.season = L.season || null;
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
@@ -118,6 +124,9 @@ export const Store = {
         this.emodex = settings.find(r => r.key === "emodex")?.value || {};
         this.community = settings.find(r => r.key === "community")?.value || { posts: [] };
         this.emokeep = settings.find(r => r.key === "emokeep")?.value || {};
+        this.lotto = settings.find(r => r.key === "lotto")?.value || {};
+        this.stash = settings.find(r => r.key === "stash")?.value || {};
+        this.highlights = settings.find(r => r.key === "highlights")?.value || { list: [], seen: {} };
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -128,7 +137,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, lotto: this.lotto, stash: this.stash, highlights: this.highlights, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -205,6 +214,22 @@ export const Store = {
         if (this.sandbox) return;
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "community", value: this.community, updated_at: new Date().toISOString() }));
+    },
+    async saveStash() {
+        if (this.sandbox) return;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "stash", value: this.stash, updated_at: new Date().toISOString() }));
+    },
+    saveHighlights() {
+        if (this.sandbox) return;
+        this.saveLocal();
+        clearTimeout(this._hlTimer);
+        this._hlTimer = setTimeout(() => this.write(sb => sb.from("settings").upsert({ key: "highlights", value: this.highlights, updated_at: new Date().toISOString() })), 1500);
+    },
+    async saveLotto() {
+        if (this.sandbox) return;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key: "lotto", value: this.lotto, updated_at: new Date().toISOString() }));
     },
     async saveEmokeep() {
         if (this.sandbox) return;
@@ -379,9 +404,30 @@ export const Store = {
 
     // MAXI+ jackpot winners (slots) and top-prize winners (casino).
     // Progressive slot tiers are already logged server-side by jp_hit.
+    // 🎬 Gamblers Highlight: a highlight moment is kept as a tiny replay record (not a video) — screens/highlight.js plays it back
+    recordHighlight(kind, data = {}) {
+        const s = this.season;
+        if (this.sandbox || s?.sandbox || s?.testSeason) return;
+        const hl = (this.highlights ||= { list: [], seen: {} });
+        hl.list ||= [];
+        hl.list.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), kind, season: s?.number ?? null, round: s?.round ?? null, at: new Date().toISOString(), ...data });
+        this.trimHighlights(hl);
+        this.saveHighlights();
+    },
+    // keep ≤ 400 replays: drop the most-played first (ties → random); when none of the rest were played, drop a random one.
+    // The record just added is never the one dropped.
+    trimHighlights(hl = this.highlights, max = 400) {
+        const L = hl.list;
+        while (L.length > max) {
+            const pool = L.slice(1), top = Math.max(0, ...pool.map(x => x.plays || 0));
+            const cand = pool.filter(x => (x.plays || 0) === top);
+            L.splice(L.indexOf(cand[Math.floor(Math.random() * cand.length)]), 1);
+        }
+    },
     logJackpot(game, tier, pid, amount, { serverLogged = false } = {}) {
         if (pid == null) return; // practice room
         const season = this.season?.number ?? null;
+        if (["MAXI", "EGG", "MONKEY", "MAJOR", "GRAND", "MEGA", "VAULT"].includes(tier)) this.recordHighlight("jackpot", { pid, game, tier, amount });
         this.jpLog.push({ game, tier, playerId: pid, amount, season, at: new Date().toISOString() });
         this.saveLocal();
         if (!serverLogged) this.write(sb => sb.from("jackpot_hits").insert({ game, tier, player_id: pid, amount, season_number: season }));

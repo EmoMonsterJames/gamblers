@@ -546,7 +546,7 @@ export function openSlot(cfg, ctx) {
         const jp = bestJackpot(res.jackpots);
         if (res.total >= bet * 15 && !jp) await bigWin(res.total, bet);
         // 🤲 HANDPAY: 1000× the bet or a GRAND jackpot
-        if (isHandpay(bet, res.total, res.jackpots)) await handpay(ctx.pid, res.total);
+        if (isHandpay(bet, res.total, res.jackpots)) await handpay(ctx.pid, res.total, { game: cfg.id });
         busy = false; cabinet.classList.remove("busy"); spinBtn.disabled = false;
         if (auto > 0 && !closed) {
             auto--; autoBtn.textContent = auto ? `AUTO ${auto}` : "AUTO"; autoBtn.classList.toggle("on", !!auto);

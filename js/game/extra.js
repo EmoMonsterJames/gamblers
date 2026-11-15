@@ -427,6 +427,7 @@ export function promoClaim(pid, box) {
     }
     delete p.pending[pid];
     log(`🎁 ${name(pid)} 인기 투표 선물 → ${prize.label}`);
+    Store.recordHighlight("promo", { pid, prize: prize.label, emoji: prize.emoji });
     Store.saveSeason(true); savePromo();
     return prize;
 }

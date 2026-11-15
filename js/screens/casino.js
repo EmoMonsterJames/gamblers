@@ -59,7 +59,7 @@ export function openCasino(g, ctx) {
             if (top) await bigWin(res.payout, bet, { title: "JACKPOT!" });
             else if (res.mult >= 20 || res.payout >= 50000) await bigWin(res.payout, bet);
         } else { msg.innerHTML = `<span class="lose">꽝! 다음 기회에…</span>`; Sound.lose(); }
-        if (isHandpay(bet, res.payout)) await handpay(ctx.pid, res.payout); // 🤲 1000× the bet
+        if (isHandpay(bet, res.payout)) await handpay(ctx.pid, res.payout, { game: g.id }); // 🤲 1000× the bet
         if (res.points) { floatText(stage, `+${res.points} P`, "pts"); Sound.coin(); }
         hist.prepend(h("span.hchip" + (res.payout ? ".w" : ""), res.payout ? `+${fmt(res.payout)}` : `-${fmt(bet)}`));
         while (hist.children.length > 14) hist.lastChild.remove();

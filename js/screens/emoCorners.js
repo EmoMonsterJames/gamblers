@@ -277,6 +277,47 @@ export function hospitalView(pid, { onChange = () => { } } = {}) {
 }
 
 // ================================================================ 🧪 LAB
+// ✨ evolution show: the monster flickers with "?" and smoke, the blurred new form shows through,
+// faster and faster … then the evolved monster (to = null → the evolution failed)
+export async function evolutionShow(from, to) {
+    const pic = s => h("div.evs-face", monPic(s, 150));
+    const a = pic(from), q = h("div.evs-face.q", h("b", "?")), b = to ? h("div.evs-face.blur", monPic(to, 150)) : h("div.evs-face.q", h("b", "?"));
+    const stage = h("div.evs-stage", h("div.evs-smoke", ...Array.from({ length: 10 }, (_, i) => h("i", { style: { "--i": i } }, "💨"))), a, q, b);
+    const text = h("div.evs-text", `${from?.name || "?"}의 몸에서 이상한 빛이 새어 나온다…`);
+    const btn = h("button.btn.gold.big", { style: { visibility: "hidden" } }, "확인");
+    const box = h("div.evs", h("div.evs-rays"), stage, text, h("div.row.center", btn));
+    const mm = modal(box, { title: "🧪 진화 중…", closable: false, cls: "emo-modal evs-modal" });
+    const faces = [a, q, b];
+    const lines = ["무언가가 꿈틀거린다…", "연기가 피어오른다! 💨", "형태가 바뀌고 있다…!", "과연 어떤 모습이 될까…?", "빛이 점점 강해진다!!"];
+    let gap = 520;
+    for (let k = 0; k < 16; k++) {
+        faces.forEach((f, i) => f.classList.toggle("on", i === k % 3));
+        if (k % 3 === 0) text.textContent = lines[Math.floor(k / 3) % lines.length];
+        k % 3 === 2 ? Sound.heartbeat() : Sound.tease();
+        await sleep(gap);
+        gap = Math.max(110, gap * 0.86);
+    }
+    box.classList.add("flash");
+    Sound.boom();
+    await sleep(500);
+    faces.forEach(f => f.classList.remove("on"));
+    if (to) {
+        stage.replaceChildren(h("div.evs-face.on.final", monPic(to, 170, { anim: true })));
+        text.replaceChildren(h("h3", `✨ ${from?.name} → ${to.name}!`), h("div", ...typesOfSpecies(to).map(typeChip)));
+        mm.box.querySelector(".modal-title").firstChild.textContent = "✨ 진화 성공!";
+        Sound.fanfare(); confetti(90, ["✨", "⭐", "🧬"]);
+    } else {
+        stage.replaceChildren(h("div.evs-face.on.fail", monPic(from, 150)), h("div.evs-smoke.done", ...Array.from({ length: 6 }, (_, i) => h("i", { style: { "--i": i } }, "💨"))));
+        text.replaceChildren(h("h3", "💥 진화 실패…"), h("p.muted", "재료는 사라졌습니다"));
+        mm.box.querySelector(".modal-title").firstChild.textContent = "💥 진화 실패";
+        Sound.lose();
+    }
+    box.classList.remove("flash");
+    btn.style.visibility = "visible";
+    await new Promise(r => btn.onclick = r);
+    mm.close();
+}
+
 export function labView(pid, { loc = null, onChange = () => { } } = {}) {
     return lazy(() => {
         const ps = G.S().ps[pid];
@@ -298,10 +339,12 @@ export function labView(pid, { loc = null, onChange = () => { } } = {}) {
                     h("button.btn.gold", { disabled: !o.ok, onclick: async () => {
                         if (!(await confirmBox(`${o.r.text}
 ${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?`, "진화", "취소"))) return;
+                        const from = species(o.r.from ?? o.r.fuse?.[0]);
                         const r = M.labEvolve(pid, o.r.id);
                         if (!r.ok) return toast(r.why, "warn", 3500);
-                        if (r.failed) { Sound.lose(); toast("🔬 특수 진화 실패… (아이템은 사용됨)", "warn", 3500); }
-                        else { Sound.fanfare(); confetti(60, ["✨", "🧬", "⭐"]); toast(`✨ ${r.to?.name} 탄생!`, "ok", 3500); }
+                        const done = Activity.hold();
+                        await evolutionShow(from, r.failed ? null : (r.to?.id != null ? r.to : species(r.to)));
+                        done();
                         onChange(); draw();
                     } }, o.r.fuse ? "🧬 합체!" : "🔬 진화!"))));
         }
@@ -326,14 +369,11 @@ ${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?
         async function doEvolve(m, o) {
             if (!(await confirmBox(`${M.sp(m).name}을(를) ${o.special ? "특수 " : ""}진화시킬까요?\n진화 아이템과 ${o.pts}P${o.gold ? `, ${fmt(o.gold)}G` : ""}가 사용됩니다 (성공 ${o.chance}%).`, "진화", "취소"))) return;
             const done = Activity.hold();
-            const fx = h("div.emo-evo-fx", monPic(M.sp(m), 140, { anim: true }));
-            const mm = modal(h("div.center", fx, h("p", "✨ 진화 중…")), { title: "🧪 Monster Lab", closable: false, cls: "emo-modal" });
-            Sound.tease(); fx.classList.add("glow"); await sleep(1800);
-            const r = M.evolve(pid, m.uid, o.e.id, { special: o.special });
-            mm.close(); done();
-            if (!r.ok) return toast(r.why, "warn");
-            if (r.failed) { Sound.lose(); toast("💥 진화 실패… 재료는 사라졌습니다", "warn", 3500); }
-            else { Sound.fanfare(); confetti(80); modal(h("div.center", monPic(r.to, 160, { anim: true }), h("h3", `${r.from.name} → ${r.to.name}!`), h("div", ...typesOfSpecies(r.to).map(typeChip))), { title: "✨ 진화 성공!", cls: "emo-modal" }); }
+            const from = M.sp(m);
+            const r = M.evolve(pid, m.uid, o.e.id, { special: o.special }); // decided first — the show can't lose anything
+            if (!r.ok) { done(); return toast(r.why, "warn"); }
+            await evolutionShow(from, r.failed ? null : r.to);
+            done();
             onChange(); draw();
         }
         function mixTab() {

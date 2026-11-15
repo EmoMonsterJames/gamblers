@@ -12,7 +12,8 @@ import { avatar, displayName } from "./profile.js";
 export const HANDPAY_X = 1000;
 export const isHandpay = (bet, win, jackpots = []) => (bet > 0 && win >= bet * HANDPAY_X) || (jackpots || []).includes("GRAND");
 
-export async function handpay(pid, amount, { ms = 10000 } = {}) {
+export async function handpay(pid, amount, { ms = 10000, game = null } = {}) {
+    if (pid != null) Store.recordHighlight("handpay", { pid, amount, game });
     const hold = Activity.hold?.() || (() => { });
     const p = pid != null ? Store.player(pid) : null;
     const pile = h("div.hp-pile");

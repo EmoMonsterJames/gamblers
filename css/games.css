@@ -1298,3 +1298,8 @@
 .cabinet.theme-chaos_cube .meter-zone { margin-top: 2px; margin-bottom: 2px; }
 /* 👻 Phantom Manor: no little 🖼️ picture frames flying around the reels while it spins */
 .cabinet.theme-phantom_manor .sk-cover .cv-frame { display: none !important; }
+/* 🎲 Chaos Cube: square tiles in a compact centred board (no full-width stretch), so the whole cabinet fits the screen */
+.cabinet.theme-chaos_cube .reels.sp-reels { --cell: max(48px, min(84px, 13vw, calc((100vh - 540px) / 4))); grid-template-columns: repeat(4, var(--cell)) !important; width: max-content; max-width: 100%; margin: 0 auto; gap: 4px; padding: 6px; }
+.cabinet.theme-chaos_cube .reels.sp-reels .reel .sym { height: var(--cell); }
+.cabinet.theme-chaos_cube .sk-strip { margin: 2px auto; padding: 2px 10px; font-size: 11px; }
+.cabinet.theme-chaos_cube .cv-cube .cv-cube { width: 64px; height: 64px; }
