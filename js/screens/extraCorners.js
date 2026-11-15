@@ -113,7 +113,7 @@ export async function arrivalExtra(s, loc) {
     if (loc.dark && X.ownsTypes(pid, ["Light", "Electric"])) { Sound.bonus(); await alertBox("💡 이모몬스터 도움을 받았다", ["Light / Electric 몬스터가 어둠을 밝혀 줘서 화면이 정상으로 보입니다!"]); }
     if (loc.cursed) toast("🥶 저주받은 카지노: 펫 · 스페셜 펫 · 이펙트가 작동하지 않고 RTP가 10% 낮습니다", "warn", 5000);
     if (loc.magma) toast("🌋 Magma Town: 30초마다 HP −10", "warn", 4000);
-    if (loc.sugar) toast("🍬 Sugar Casino: 버튼을 누를 때마다 당 수치가 오릅니다. 100%가 되면 사망!", "warn", 5000);
+    if (loc.sugar) toast(`🍬 Sugar Casino: 버튼을 누를 때마다 당 수치가 오릅니다 (${X.sugarBug(pid) ? "🐛 Bug 몬스터 보유 → 0~15%씩" : "5~30%씩"}). 100%가 되면 사망!`, "warn", 5000);
 }
 
 // ================================================================ in-turn map effects
@@ -141,11 +141,17 @@ export function mapEffects(loc, t, pid, { root, onDead, onChange }) {
         candy(); Sound.coin();
         drawSugar();
         if (r.dead) { toast("🍬 설탕중독으로 사망…", "error", 5000); setTimeout(dead, 900); }
-        else toast(`🍬 당 +${r.add}% → ${r.level}%`, r.level >= 70 ? "warn" : "info", 1400);
+        else toast(r.add ? `🍬 당 +${r.add}% → ${r.level}%` : `🐛 Bug 몬스터 덕분에 당이 오르지 않았다 (${r.level}%)`, r.level >= 70 ? "warn" : "info", 1400);
     };
     if (loc.sugar) {
         sugarFill = h("i"); sugarTxt = h("b");
-        sugarBar = h("div.sugar-bar", h("div.sugar-track", sugarFill, h("span.sugar-end", "☠️ 바로사망")), sugarTxt);
+        const bug = X.sugarBug(pid);
+        sugarBar = h("div.sugar-bar", h("div.sugar-track", sugarFill, h("span.sugar-end", "☠️ 바로사망")), sugarTxt,
+            h("span.sugar-bug" + (bug ? ".on" : ""), { title: "Bug 속성 이모몬스터를 갖고 있으면 당 수치가 0~15%씩만 오릅니다 · 🩸 혈당관리제: 인벤토리에서 사용 (−10~30%)" },
+                bug ? "🐛 Bug 몬스터 효과: 당 상승 0~15%" : "🐛 Bug 속성 몬스터가 있으면 당 상승 0~15%"));
+        const onCure = () => drawSugar();
+        document.addEventListener("sugar:change", onCure);
+        cleanups.push(() => document.removeEventListener("sugar:change", onCure));
         drawSugar();
         // any play / bet / spin button pressed inside a game → +5~30%
         const onClick = e => {
@@ -183,15 +189,16 @@ export function mapEffects(loc, t, pid, { root, onDead, onChange }) {
 }
 
 // ================================================================ ⛓️ terrorist kidnap room
-export function kidnapView(pid, { onFreed, onDead, onChange }) {
+export function kidnapView(pid, { onFreed, onDead, onChange, onTried }) {
     const t = G.S().turn;
     const ring = h("div.kr-ring", ...["💣", "🥷", "💣", "🥷", "💣", "🥷"].map((e, i) => h("span", { style: { "--i": i } }, e)));
     const status = h("div.kr-status");
     const btns = h("div.kr-btns");
     const draw = () => {
         const tried = X.escapeTried();
-        status.replaceChildren(tried ? h("p.muted", "이번 턴의 탈출 시도는 끝났습니다. 턴을 종료하고 다음 라운드를 기다리세요…") : h("p", "탈출 버튼 6개 중 하나를 누르세요. 결과는 무작위입니다 (턴마다 1번)."));
-        btns.replaceChildren(...X.ESCAPE.map((e, i) => h("button.btn.kr-btn", { disabled: tried, onclick: () => escape() }, `🚪 탈출 ${i + 1}`)));
+        status.replaceChildren(tried ? h("p.muted", "이번 턴의 탈출 시도는 끝났습니다. 3분이 지나면 턴을 종료할 수 있습니다 — 그동안 쥐를 잡아 보세요 🐀")
+            : h("p.kr-must", "⚠️ 탈출은 필수! 탈출 버튼 6개 중 하나를 눌러야 턴을 끝낼 수 있습니다 (결과는 무작위 · 턴마다 1번)"));
+        btns.replaceChildren(...X.ESCAPE.map((e, i) => h("button.btn.kr-btn" + (tried ? "" : ".must"), { disabled: tried, onclick: () => escape() }, `🚪 탈출 ${i + 1}`)));
     };
     async function escape() {
         const out = X.tryEscape(pid);
@@ -202,22 +209,64 @@ export function kidnapView(pid, { onFreed, onDead, onChange }) {
             const box = await hopeBoxes(pid);
             onChange?.();
             if (box.id === "free") return onFreed();
-            draw(); return;
+            draw(); onTried?.(); return;
         }
         await alertBox(out.freed ? "🕊️ 탈출 성공!" : "⛓️ 탈출 실패", [out.label, out.msg], out.freed ? "" : "warn");
         onChange?.();
         if (out.freed) return onFreed();
-        draw();
+        draw(); onTried?.();
     }
     draw();
-    return h("div.kidnap-room",
+    const room = h("div.kidnap-room",
         h("div.kr-light"),
         h("div.kr-center", ring, h("div.kr-avatar", avatar(pid, 110, { effect: false }))),
         h("h2.kr-title", "⛓️ 테러리스트 납치 공간"),
-        h("p.kr-sub", `라운드마다 이곳으로 돌아옵니다 · 남은 시간 ${fmtTime(t?.remaining || 0)} · 턴은 언제든 바로 끝낼 수 있습니다`),
+        h("p.kr-sub", `라운드마다 이곳으로 돌아옵니다 · 🦹 Terrorist Boss가 항상 나타납니다 · 처음 3분 동안은 턴을 끝낼 수 없습니다 · 남은 시간 ${fmtTime(t?.remaining || 0)}`),
         status, btns,
         h("details.kr-odds", h("summary", "탈출 확률표"), h("ul", X.ESCAPE.map(e => h("li", `${e.label} — ${e.w}%`)), h("li", "희망이 보인다!! → 상자 4개 중 1개: 3,000G / 5P / 탈출 / HP +10 (각 25%)"))));
+    ratRun(room, pid, onChange);
+    return room;
 }
+// 🐀 a few rats dart around the room — click one and it turns into 100~1,000 G
+function ratRun(room, pid, onChange) {
+    const layer = h("div.kr-rats");
+    const counter = h("div.kr-ratcount");
+    room.append(layer, counter);
+    const showCount = () => { counter.textContent = X.ratsLeft() > 0 ? `🐀 쥐를 클릭하면 골드로 변해요! (남은 쥐 ${X.ratsLeft()}마리)` : "🐀 쥐를 모두 잡았습니다!"; };
+    showCount();
+    let out = 0; // rats on screen
+    const move = rat => {
+        const x = 4 + Math.random() * 88, y = 8 + Math.random() * 80;
+        const dx = x - parseFloat(rat.style.left || 50);
+        rat.classList.toggle("flip", dx > 0);
+        rat.style.transitionDuration = (0.45 + Math.random() * 0.5).toFixed(2) + "s";
+        rat.style.left = x + "%"; rat.style.top = y + "%";
+    };
+    const spawn = () => {
+        if (!room.isConnected) return;
+        if (X.ratsLeft() - out <= 0 || out >= X.RAT_ON_SCREEN) return;
+        out++;
+        const rat = h("button.kr-rat", { title: "잡아라!", style: { left: Math.random() * 90 + "%", top: Math.random() * 85 + "%" } }, h("span", "🐀"));
+        rat.onclick = e => {
+            e.stopPropagation();
+            if (rat.classList.contains("got")) return;
+            const r = X.catchRat(pid);
+            if (!r) return;
+            rat.classList.add("got"); rat.replaceChildren(h("span", "💰"), h("b", `+${fmt(r.gold)}G`));
+            Sound.coin(); onChange?.(); showCount();
+            setTimeout(() => { rat.remove(); out--; setTimeout(spawn, 1500 + Math.random() * 2500); }, 900);
+        };
+        layer.append(rat);
+        requestAnimationFrame(() => move(rat));
+        (async () => { while (rat.isConnected && !rat.classList.contains("got")) { await sleep(500 + Math.random() * 700); if (!rat.classList.contains("got")) move(rat); } })();
+    };
+    // start once the room is on the page
+    (async () => {
+        for (let k = 0; k < 50 && !room.isConnected; k++) await sleep(100);
+        for (let i = 0; i < X.RAT_ON_SCREEN; i++) { spawn(); await sleep(400); }
+    })();
+}
+
 function hopeBoxes(pid) {
     return new Promise(res => {
         const grid = h("div.hope-grid");
@@ -344,6 +393,11 @@ export function extraInventory(pid, onChange = () => { }) {
         if (!r.ok) return toast(r.why, "warn");
         Sound.bonus(); toast(`💚 ${X.DISEASES[r.kind].name} 치료 완료!`, "ok"); onChange();
     } }, `${ITEM_BY_ID[id]?.emoji || "💊"} ${ITEM_BY_ID[id]?.name} ×${ps.items[id]} 사용`));
+    if (ps.items.sugar_cure > 0) rows.push(h("button.btn.small", { onclick: () => {
+        const r = X.useSugarCure(pid);
+        if (!r.ok) return toast(r.why, "warn");
+        Sound.bonus(); toast(`🩸 혈당관리제: Sugar Level −${r.down}% → ${r.level}%`, "ok"); document.dispatchEvent(new Event("sugar:change")); onChange();
+    } }, `🩸 혈당관리제 ×${ps.items.sugar_cure} 사용 (Sugar Casino 전용)`));
     if (ps.items.emo_slot > 0) rows.push(h("button.btn.small", { onclick: () => {
         const r = X.useSlotTicket(pid);
         if (!r.ok) return toast(r.why, "warn");

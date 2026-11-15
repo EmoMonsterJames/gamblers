@@ -77,7 +77,7 @@ export function partyModal(pid, refresh = () => { }) {
         const list = M.mons(pid), bm = M.battleMon(pid), slots = emoSlots(pid);
         const ext = i => i >= EMO_FREE_SLOTS ? h("span.emo-slot-ext", "확장 슬롯") : null;
         put(body,
-            h("p.muted.small", `슬롯 ${list.length}/${slots} · 기본 ${EMO_FREE_SLOTS}칸 + 확장 ${slots - EMO_FREE_SLOTS}칸 (최대 ${EMO_MAX_SLOTS}칸 · 이모몬스터 슬롯 확장권: 일반 상점 50,000G / 포인트 상점 300P)`),
+            h("p.muted.small", `슬롯 ${list.length}/${slots} · 기본 ${EMO_FREE_SLOTS}칸 + 확장 ${slots - EMO_FREE_SLOTS}칸 (최대 ${EMO_MAX_SLOTS}칸 · 이모몬스터 슬롯 확장권: 일반 상점 300,000G / 일부 포인트 상점 100P)`),
             ...Array.from({ length: slots }, (_, i) => list[i] ? monCard(pid, list[i], bm, () => { draw(); refresh(); }, ext(i)) : h("div.emo-slot-empty", `빈 슬롯 ${i + 1}`, ext(i))),
             h("div.row.end", h("button.btn.ghost", { onclick: () => mm.close() }, "닫기")));
     };

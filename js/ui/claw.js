@@ -23,7 +23,8 @@ const HEAD = 34;        // claw head height (px)
 const HEAD_W = 54;
 const SLIP_RATE = 0.35; // chance the claw drops its first ball
 
-export function clawElimination(cands, { onDone = () => { } } = {}) {
+// safe: the mission winners (not candidates) — shown on their own next to the machine
+export function clawElimination(cands, { onDone = () => { }, safe = [] } = {}) {
     const many = cands.length > 3;
     const B = cands.length > 12 ? 50 : 60; // ball size
     const status = h("p.claw-status");
@@ -31,6 +32,7 @@ export function clawElimination(cands, { onDone = () => { } } = {}) {
     const btn = h("button.btn.red.huge");
     const wrap = h("div.claw-wrap");
     const card = pid => h("div.claw-card", { "data-id": pid }, avatar(pid, 92, { effect: false }), h("small", nm(pid)), h("i.claw-tag"));
+    const safePanel = safe.length ? h("div.claw-safe", h("h4", `✅ 미션 성공 ${safe.length}명 — 탈락 걱정 없음`), h("div.claw-safe-list", safe.map(pid => h("div.claw-safe-p", avatar(pid, 46, { effect: false }), h("small", nm(pid)))))) : null;
     let machine = null, claw = null, rope = null, head = null;
     const balls = new Map();
 
@@ -55,10 +57,10 @@ export function clawElimination(cands, { onDone = () => { } } = {}) {
         status.textContent = `탈락 후보 ${cands.length}명의 프로필 공이 들어 있습니다. 집게가 3개를 뽑습니다!`;
         btn.textContent = "🕹️ 집게 시작 — 3명 뽑기";
         btn.onclick = runClaw;
-        wrap.append(machine, h("h4.claw-tray-title", "🎯 뽑힌 공"), tray, status, h("div.row.center", btn));
+        wrap.append(h("div.claw-stage", machine, safePanel), h("h4.claw-tray-title", "🎯 뽑힌 공"), tray, status, h("div.row.center", btn));
     } else {
         cands.forEach(pid => tray.append(card(pid)));
-        wrap.append(tray, status, h("div.row.center", btn));
+        wrap.append(h("div.claw-stage", tray, safePanel), status, h("div.row.center", btn));
         setupNext(cands);
     }
 
@@ -149,22 +151,34 @@ export function clawElimination(cands, { onDone = () => { } } = {}) {
         claw.classList.remove("open");
         return true;
     }
+    // each picked ball may slip out of the claw up to 3 times (random) — the claw goes back for the
+    // very same ball and finally drops it in OUT. Other balls it fumbles can still be picked later.
+    const SLIP_MAX = 3;
     async function runClaw() {
         btn.disabled = true;
         const picks = shuffle(cands).slice(0, 3);
-        let slips = 0;
+        const slips = new Map(); // pid → times dropped
         for (let i = 0; i < 3; i++) {
             const pid = picks[i];
-            const others = [...balls.keys()].filter(x => x !== pid && !picks.slice(i).includes(x));
             status.textContent = `🕹️ ${i + 1}번째 공을 노리는 중…`;
-            if (others.length && slips < 2 && Math.random() < SLIP_RATE) {
-                slips++;
-                await grab(others[Math.floor(Math.random() * others.length)], true);
+            // 0~3 drops of this very ball (0: 50% · 1: 25% · 2: 15% · 3: 10%)
+            const r = Math.random(), n = Math.min(SLIP_MAX - (slips.get(pid) || 0), r < 0.5 ? 0 : r < 0.75 ? 1 : r < 0.9 ? 2 : 3);
+            for (let k = 0; k < n; k++) {
+                await grab(pid, true);
+                slips.set(pid, (slips.get(pid) || 0) + 1);
+                status.textContent = k + 1 < n ? `🕹️ ${nm(pid)}의 공을 또 노린다… (${k + 1}번 놓침)` : `🕹️ 떨어뜨린 ${nm(pid)}의 공을 다시 집는다…!`;
+                await sleep(500);
+            }
+            // sometimes it fumbles some other ball first (that ball stays in and can still come out later)
+            const others = [...balls.keys()].filter(x => x !== pid && (slips.get(x) || 0) < SLIP_MAX);
+            if (!n && others.length && Math.random() < SLIP_RATE) {
+                const o = others[Math.floor(Math.random() * others.length)];
+                await grab(o, true); slips.set(o, (slips.get(o) || 0) + 1);
                 status.textContent = "🕹️ 다시 한 번…!";
             }
             await grab(pid, false);
-            status.textContent = `🎯 ${nm(pid)}의 공이 나왔다!`;
-            await sleep(700);
+            status.textContent = slips.get(pid) ? `🎯 ${slips.get(pid)}번 떨어뜨렸던 ${nm(pid)}의 공이 결국 OUT!` : `🎯 ${nm(pid)}의 공이 나왔다!`;
+            await sleep(900);
         }
         await moveClaw(machine.clientWidth * 0.55);
         setupNext(picks);

@@ -7,7 +7,7 @@
 // happens, and this file re-plays it as an animated scene. 400 records
 // ≈ 100 KB, so no cloud file storage is needed (settings key "highlights").
 //   scene scripts: jackpot 30s · npc_kill 20s · battle 30s · death 20s · handpay 20s
-//   beg 10s · champion 10s · lotto 20s · promo 20s — all played back in ≤ 15 s (HL_MAX_SEC)
+//   beg 10s · champion 10s · lotto 20s · promo 20s · poop 15s · bunker 15s · kidnap 15s — all played back in ≤ 15 s (HL_MAX_SEC)
 // =====================================================================
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
@@ -32,7 +32,10 @@ export const HL_KINDS = {
     beg: { sec: 10, emoji: "🥺", label: "구걸로 돈 벌기" },
     champion: { sec: 10, emoji: "👑", label: "최종 우승" },
     lotto: { sec: 20, emoji: "🎟️", label: "로또 당첨" },
-    promo: { sec: 20, emoji: "🗳️", label: "홍보 프로필 당첨" }
+    promo: { sec: 20, emoji: "🗳️", label: "홍보 프로필 당첨" },
+    poop: { sec: 15, emoji: "💩", label: "돈벌기 똥 맞기" },
+    bunker: { sec: 15, emoji: "🔐", label: "Bunker Key 금고" },
+    kidnap: { sec: 15, emoji: "⛓️", label: "납치 공간 탈출" }
 };
 const nm = pid => displayName(Store.player(pid));
 const list = () => (Store.highlights?.list || []).filter(x => HL_KINDS[x.kind] && (x.pid == null || Store.player(x.pid)) && (x.a == null || Store.player(x.a)));
@@ -269,6 +272,95 @@ const SCENES = {
         st.append(box); Sound.tease();
         await T.at(15); box.textContent = x.emoji || "🎁"; box.classList.add("open"); Sound.cash(); confetti(60, ["🎁", "✨"]);
         T.cap(`🎁 선물: ${x.prize || "?"}`);
+    },
+    // 💩 15 s: poop flies in from every side, sewage pours, then the pay
+    async poop(st, x, T) {
+        const me = pic(x.pid, 120);
+        const splats = h("div.gh-splats");
+        me.append(splats);
+        st.append(h("div.gh-place", placeName(x.loc) || "💪 돈벌기"), h("div.gh-flies", Array.from({ length: 5 }, (_, i) => h("i", { style: { "--i": i } }, "🪰"))), me);
+        T.cap(`💩 ${nm(x.pid)}, 돈을 벌기 위해 10초 동안 똥을 맞기로 했다…`);
+        await T.at(1.5);
+        for (let k = 0; k < 14; k++) {
+            await T.at(1.8 + k * 0.6);
+            const p = h("i.gh-poop", { style: { "--sx": `${(Math.random() < 0.5 ? -1 : 1) * (180 + Math.random() * 120)}px`, "--sy": `${Math.random() * 200 - 100}px` } }, "💩");
+            st.append(p); setTimeout(() => p.remove(), 700);
+            setTimeout(() => { splats.append(h("i", { style: { left: `${10 + Math.random() * 75}%`, top: `${5 + Math.random() * 70}%`, rotate: `${Math.random() * 60 - 30}deg` } }, "💩")); me.classList.remove("hurt"); void me.offsetWidth; me.classList.add("hurt"); }, 480);
+            Sound.poop?.();
+            if (k === 5) { st.append(h("div.gh-sewage")); Sound.splash?.(); T.cap("🚽 하수구 물까지 쏟아진다…!"); }
+            if (k === 10) T.cap("😵 냄새가… 버텨라…!");
+        }
+        await T.at(11);
+        const num = h("b", "0");
+        st.append(h("div.gh-banner.b-beg", "💩 +", num, " G"));
+        T.cap(`💰 ${nm(x.pid)}, 똥을 맞고 ${fmt(x.amount)} G를 벌었다… 씻고 오세요!`);
+        Sound.cash();
+        await count(num, x.amount || 0, 2500);
+    },
+    // 🔐 15 s: the key glints → the vault door opens → the picks come out one by one
+    async bunker(st, x, T) {
+        const key = h("div.gh-key", "🔑");
+        st.append(h("div.gh-place", placeName(x.loc) || "🔐 Bunker"), pic(x.pid, 90, "corner"), key);
+        T.cap(`🔦 ${nm(x.pid)}, 어두운 벙커를 뒤지는 중…`);
+        for (let k = 0; k < 4; k++) { await T.at(0.6 + k * 0.6); Sound.tick(); }
+        await T.at(3); key.classList.add("found"); Sound.bonus(); T.cap("🔑 Bunker Key 발견!!");
+        await T.at(5.5);
+        key.remove();
+        const door = h("div.gh-vault", h("div.gh-vdoor", "🔒"));
+        st.append(door); Sound.tease();
+        T.cap("🔐 숨겨진 금고 문이 열린다…");
+        await T.at(7.5); door.classList.add("open"); Sound.boom(); door.firstChild.textContent = "🔓";
+        const items = x.items?.length ? x.items : [{ emoji: "💰", name: "금은보화" }];
+        const row = h("div.gh-loot");
+        st.append(row);
+        T.cap(x.random ? "🎲 랜덤 코너에서 1개를 뽑는다…!" : `🎁 원하는 아이템 ${items.length}개를 골랐다!`);
+        for (let k = 0; k < items.length; k++) {
+            await T.at(9 + k * 1.3);
+            row.append(h("div.gh-lootitem", h("span", items[k].emoji), h("small", items[k].name)));
+            Sound.cash();
+        }
+        await T.at(9 + items.length * 1.3 + 0.3);
+        confetti(60, ["💰", "🪙", "💎", "🔑"]); Sound.fanfare();
+        T.cap(`🔐 ${nm(x.pid)} 획득: ${items.map(i => `${i.emoji} ${i.name}`).join(" · ")}`);
+    },
+    // ⛓️ 15 s: tied up in the dark room → the boss strikes → rats turn into gold → the escape
+    async kidnap(st, x, T) {
+        const me = pic(x.pid, 100);
+        st.append(h("div.gh-place", "⛓️ 테러리스트 납치 공간"), h("div.gh-chains", "⛓️"), me);
+        T.cap(`⛓️ ${nm(x.pid)}, 테러리스트에게 납치되었다…`);
+        for (let k = 0; k < 3; k++) { await T.at(0.5 + k * 0.7); Sound.heartbeat(); }
+        const hits = x.hits || [];
+        if (hits.length) {
+            const boss = h("div.gh-npc", "🦹");
+            st.append(boss, h("div.gh-npcname", "🦹 Terrorist Boss"));
+            Sound.boom();
+            for (let k = 0; k < hits.length; k++) {
+                await T.at(2.8 + k * 1.2);
+                st.classList.add("gh-shake"); Sound.hit(); me.classList.remove("hurt"); void me.offsetWidth; me.classList.add("hurt");
+                T.cap(`${hits[k].emoji || "🦹"} ${hits[k].npc || "Terrorist Boss"}: ${hits[k].what}`);
+                setTimeout(() => st.classList.remove("gh-shake"), 400);
+            }
+            await T.at(2.8 + hits.length * 1.2 + 0.2); boss.remove();
+            st.querySelector(".gh-npcname")?.remove();
+        } else { await T.at(3); T.cap("🦹 Terrorist Boss가 노려보고 있다…"); }
+        const t0 = hits.length ? 3 + hits.length * 1.2 : 4;
+        if (x.rats > 0) {
+            T.cap(`🐀 쥐들이 돌아다닌다! 잡으면 골드로 변한다…`);
+            const rats = Array.from({ length: Math.min(5, x.rats) }, (_, i) => h("i.gh-rat", { style: { "--i": i, top: `${20 + Math.random() * 60}%` } }, "🐀"));
+            st.append(...rats);
+            for (let k = 0; k < rats.length; k++) { await T.at(t0 + 0.6 + k * 0.5); rats[k].textContent = "💰"; rats[k].classList.add("got"); Sound.coin(); }
+            T.cap(`🐀 쥐 ${x.rats}마리 → 💰 +${fmt(x.ratGold || 0)} G`);
+            await T.at(t0 + 1 + rats.length * 0.5 + 0.8);
+            rats.forEach(r => r.remove());
+        }
+        const e = x.escape || {};
+        T.cap(`🚪 탈출 시도!! …${e.label || ""}`);
+        st.classList.add("gh-shake"); Sound.tease();
+        await T.at(Math.max(11, t0 + 3)); st.classList.remove("gh-shake");
+        if (e.dead) { st.classList.add("gh-flash"); Sound.boom(); me.classList.add("dead"); st.append(h("div.gh-banner.b-dead", "☠️ 처형")); }
+        else if (e.freed) { st.querySelector(".gh-chains")?.remove(); me.classList.add("champ"); Sound.fanfare(); confetti(50, ["🕊️", "✨"]); st.append(h("div.gh-banner", "🕊️ 탈출 성공!")); }
+        else { Sound.lose?.(); st.append(h("div.gh-banner.b-dead", "⛓️ 탈출 실패")); }
+        T.cap(`${e.freed ? "🕊️" : e.dead ? "☠️" : "⛓️"} ${e.msg || ""}`);
     }
 };
 

@@ -89,6 +89,7 @@ export const bunkerKeyDue = t => !!t.bunker && t.bunker.keyAt != null && !t.bunk
 function claim(pid, list) {
     for (const r of list) r.give(pid);
     G.log(`🔐 ${displayName(Store.player(pid))} Bunker 금고 → ${list.map(r => r.name).join(" · ")}`);
+    Store.recordHighlight("bunker", { pid, random: list.length === 1, items: list.map(r => ({ emoji: r.emoji, name: r.name })), loc: G.S()?.turn?.loc || null }); // 🎬 Bunker Key → 금고
     Store.saveSeason(true);
 }
 

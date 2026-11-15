@@ -110,7 +110,7 @@ export function locationShops(loc) {
 export function locationsWithShop(shopId) { return LOCATIONS.filter(l => locationShops(l).includes(shopId)); }
 
 // second-shop listings (alt: true in SHOPS) are added as they are
-export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).filter(it => it.alt && !saleOf(it.cat, it.id).off && !(ITEM_BY_ID[it.id]?.letter && !cardSoldHere(shopId, ITEM_BY_ID[it.id].letter, locId))).map(it => ({ cat: it.cat, id: it.id, price: it.price })); }
+export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).filter(it => it.alt && !(it.locs && locId && !it.locs.includes(locId)) && !saleOf(it.cat, it.id).off && !(ITEM_BY_ID[it.id]?.letter && !cardSoldHere(shopId, ITEM_BY_ID[it.id].letter, locId))).map(it => ({ cat: it.cat, id: it.id, price: it.price })); }
 
 // What a map's shop tab sells. A tab left with nothing to sell (e.g. every
 // product moved elsewhere / turned off in the admin) is stocked with 2~8

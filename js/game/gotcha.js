@@ -3,6 +3,7 @@
 //
 // 🏬 백화점 — every good except monsters, at the admin's price, found by search.
 //    One visit per season (the turn of the first purchase), up to 3 purchases in it.
+//    Entry: a roulette once per round — refused 35% · 1,000 / 3,000 / 5,000 / 10,000G or free (13% each).
 //
 // 🎰 Monster Gotcha — a capsule machine that sells monsters.
 //    Door: 60% let in / 40% turned away, decided once per round. 1 purchase per round.
@@ -35,6 +36,32 @@ export function deptNoteBuy(pid, locId) {
     if (!ps.dept) ps.dept = { key: deptKey(locId), buys: 0 };
     ps.dept.buys++;
 }
+// 🎡 entry roulette (once per round): refused 35% · the other five 13% each — the fee is paid on the spot
+export const DEPT_DOOR = [
+    { id: "no", label: "입장 거절", emoji: "🙅", fee: null, w: 35, color: "#7f1d1d" },
+    { id: "g1k", label: "1,000G 지불 후 입장", emoji: "💵", fee: 1000, w: 13, color: "#166534" },
+    { id: "g3k", label: "3,000G 지불 후 입장", emoji: "💵", fee: 3000, w: 13, color: "#1d4ed8" },
+    { id: "g5k", label: "5,000G 지불 후 입장", emoji: "💰", fee: 5000, w: 13, color: "#7c3aed" },
+    { id: "g10k", label: "10,000G 지불 후 입장", emoji: "💰", fee: 10000, w: 13, color: "#b45309" },
+    { id: "free", label: "무료 입장", emoji: "🎉", fee: 0, w: 13, color: "#0e7490" }
+];
+// → null (not spun this round) | { round, id, ok, fee, broke }
+export const deptDoorState = pid => { const d = ps_(pid)?.deptDoor; return d?.round === S().round ? d : null; };
+export function deptDoorRoll(pid) {
+    const ps = ps_(pid), s = S();
+    if (ps.deptDoor?.round === s.round) return ps.deptDoor;
+    let x = Math.random() * 100, pick = DEPT_DOOR[0];
+    for (const d of DEPT_DOOR) { if ((x -= d.w) < 0) { pick = d; break; } }
+    const r = { round: s.round, id: pick.id, ok: pick.fee != null, fee: pick.fee || 0, broke: false };
+    if (r.ok && r.fee > ps.money) { r.ok = false; r.broke = true; }        // can't pay the fee → turned away
+    if (r.ok && r.fee) ps.money -= r.fee;
+    ps.deptDoor = r;
+    log(`🎡 ${name(pid)} 백화점 입장 룰렛 → ${pick.label}${r.broke ? " (골드 부족으로 입장 실패)" : ""}`);
+    Store.saveSeason(true);
+    return r;
+}
+// already shopping here this round (the visit started) → no roulette again
+export const deptInside = (pid, locId) => ps_(pid)?.dept?.key === deptKey(locId);
 // every good on sale anywhere (admin price · currency), monsters excluded
 // → [{ src: "game"|"emo", cat, id, name, price: { gold, pts } }]
 export function deptGoods() {

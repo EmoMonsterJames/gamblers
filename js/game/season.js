@@ -4,13 +4,13 @@
 // =====================================================================
 import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
-import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
+import { MISSIONS, ALPHABET, ALL_LETTERS, EXTRA_LETTERS, brandKey, JACKPOT_RANK, LOCATIONS, LOC_BY_ID, PET_BY_ID, PETFX_BY_ID, LOANS, REGIONS, ITEM_BY_ID, ITEMS, SHOP_LIMIT, passIdOf, cardId, WEAPON_BY_ID, isDeadWeapon, npcHarmful, HOPE_MESSAGES, SANTA_GIFTS, BOOST_SECONDS, isSpecialFrame, isSpecialEffect } from "../data/catalog.js";
 import { shuffle, pick } from "../core/util.js";
 import { lang } from "../core/i18n.js";
 import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
-import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits } from "../emomon/game.js";
-import { infect, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection } from "./extra.js";
+import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits, giveItem as emoGiveItem, newMon as emoNewMon, addMon as emoAddMon } from "../emomon/game.js";
+import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
 
 export const S = () => Store.season;
 
@@ -309,6 +309,16 @@ export function missionDeck(tier) {
     Store.saveSeason();
     return deck;
 }
+// 📜 the roulette's pick. Round 1 of every season: a battle mission at most 20% of the time,
+// so everybody gets at least one round of play first.
+export const FIRST_ROUND_BATTLE = 0.2;
+export function pickMission(deck) {
+    const isB = m => m.type === "battle";
+    const b = deck.filter(isB), rest = deck.filter(m => !isB(m));
+    if (S().round === 1 && b.length && rest.length && b.length / deck.length > FIRST_ROUND_BATTLE)
+        return Math.random() < FIRST_ROUND_BATTLE ? pick(b) : pick(rest);
+    return pick(deck);
+}
 export function setMission(m) {
     const s = S();
     s.mission = { ...m };
@@ -544,7 +554,7 @@ export function npcMaps() {
     }
     return s.npc.maps;
 }
-export const npcActive = locId => npcMaps().includes(locId);
+export const npcActive = locId => locId === KIDNAP_ID || npcMaps().includes(locId); // 🦹 the kidnap room always has its boss
 
 // 🎫 NPC 공격 Block 권: charges left (opened tickets) + unopened tickets in the bag
 const BLOCK_ITEMS = () => ITEMS.filter(i => i.npcBlock).sort((a, b) => a.npcBlock - b.npcBlock);
@@ -611,6 +621,30 @@ export function npcHit(pid, npc, move) {
         }
     }
     else if (move.stealPts) { if (ps.points >= move.stealPts) { ps.points -= move.stealPts; out.pts = -move.stealPts; } else out.none = true; }
+    else if (move.cureFlu) {
+        // 🎅 Santa: cures the flu (nothing happens when the player is not sick with it)
+        if (cure(pid, "flu", `${npc.name}의 치료`)) out.cured = "flu"; else out.none = true;
+    }
+    else if (move.giftBox) {
+        // 🎅 Santa's gift box: one random present (SANTA_GIFTS weights)
+        let x = Math.random() * SANTA_GIFTS.reduce((a, g) => a + g.w, 0), g = SANTA_GIFTS[0];
+        for (const it of SANTA_GIFTS) { if ((x -= it.w) < 0) { g = it; break; } }
+        const box = { name: g.item ? ITEM_BY_ID[g.item]?.name || g.item : g.name, emoji: g.item ? ITEM_BY_ID[g.item]?.emoji || "🎁" : g.emoji };
+        if (g.item) ps.items[g.item] = (ps.items[g.item] || 0) + 1;
+        else if (g.emo) emoGiveItem(pid, g.emo, 1);
+        else if (g.mon) {
+            // a monster needs a free slot — otherwise the box holds a +50 HP monster potion instead
+            const ok = emoAddMon(pid, emoNewMon(g.mon, { from: "gift" }));
+            if (!ok) { emoGiveItem(pid, "EMO_HP50", 1); box.full = true; box.name += " (몬스터 칸이 가득 차서 +50 HP 이모몬스터약으로 대신)"; }
+        }
+        out.box = box;
+    }
+    else if (move.stealItem) {
+        // 🦹 one random item from the bag
+        const own = Object.entries(ps.items || {}).filter(([, n]) => n > 0).map(([id]) => id);
+        if (!own.length) out.none = true;
+        else { const id = own[Math.floor(Math.random() * own.length)]; ps.items[id]--; out.stoleItem = id; }
+    }
     else if (move.kidnap) { out.kidnap = true; }
     else if (move.idle) out.idle = move.idle;
     else if (move.hope) out.hope = HOPE_MESSAGES[Math.floor(Math.random() * HOPE_MESSAGES.length)];
@@ -629,7 +663,9 @@ export function npcHit(pid, npc, move) {
     }
     else if (move.steal) {
         const g = rnd(move.steal);
-        if (ps.money >= g) { ps.money -= g; out.gold = -g; } else out.none = true; // too poor to rob
+        if (ps.money >= g) { ps.money -= g; out.gold = -g; }
+        else if (move.rob && ps.money > 0) { out.gold = -Math.round(ps.money); ps.money = 0; } // 🦹 the boss takes whatever there is
+        else out.none = true; // too poor to rob
     } else if (move.give) { const g = rnd(move.give); ps.money += g; out.gold = g; }
     else if (move.hp) { const before = ps.hp; ps.hp = Math.max(1, Math.min(CONFIG.START_HP, ps.hp + move.hp)); out.hp = ps.hp - before; }
     else if (move.nomove) {
@@ -641,10 +677,12 @@ export function npcHit(pid, npc, move) {
     const what = out.kill ? "즉사!" : out.none ? "효과 없음" : out.kidnap ? "납치!" : out.broke ? `무기 ${WEAPON_BY_ID[out.broke]?.name || out.broke} 파괴`
         : out.stolePet ? `${out.stolePet.name} 강탈` : out.disease ? `${out.disease === "flu" ? "독감" : "암"} 감염` : out.items ? `아이템 ${out.items}개 전부 강탈`
         : out.bgold ? `Business Gold ${(-out.bgold).toLocaleString()} 강탈` : out.loanGold ? `대출 골드 ${(-out.loanGold).toLocaleString()} 강탈` : out.mon ? "이모몬스터 강탈"
+        : out.cured ? "독감 치료" : out.box ? `선물상자 → ${out.box.name}` : out.stoleItem ? `${ITEM_BY_ID[out.stoleItem]?.name || out.stoleItem} 강탈`
         : out.pts ? `${out.pts}P` : out.idle ? out.idle : out.hope ? `"${out.hope}"` : out.gift ? `${ITEM_BY_ID[out.gift]?.name} 선물` : out.shop ? "보따리상점 OPEN"
         : out.copied ? `${WEAPON_BY_ID[out.weapon]?.name} 복사 공격${out.hp ? ` HP ${out.hp}` : " (효과 없음)"}`
         : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주";
     log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${what}`);
+    if (s.turn?.pid === pid && s.turn.loc === KIDNAP_ID) noteKidnap(pid, { hit: { npc: npc.name, emoji: npc.emoji, what, kill: !!out.kill, blocked: false } });
     if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`, { npc });
     else if (out.kidnap) kidnap(pid);
     else Store.saveSeason(true);
@@ -659,6 +697,13 @@ export function killPlayer(pid, why, { npc = null } = {}) {
     s.history.push({ round: s.round, npcDeath: true, eliminated: pid, rank, why });
     Store.recordHighlight(npc ? "npc_kill" : "death", { pid, why, rank, loc: s.turn?.pid === pid ? s.turn.loc : null, npc: npc ? { id: npc.id, name: npc.name, emoji: npc.emoji, art: npc.art || null } : null });
     log(`☠️ ${name(pid)} ${why} (${rank}위)`);
+    // ☠️ an instant death that leaves only 2 alive: everyone else's turns stop — straight to the final
+    if (!(s.sandbox && !s.testSeason) && alive().length <= CONFIG.FINALISTS && ["turns", "battle", "mission", "judge"].includes(s.status)) {
+        s.turn = null; s.status = "final";
+        log(`🏁 생존자 ${alive().length}명 — 남은 플레이를 멈추고 바로 최종 대결로!`);
+        Store.saveSeason(true);
+        return;
+    }
     if (s.turn?.pid === pid) {
         s.results[pid] = { stats: s.turn.stats, pass: false, dead: true, loc: s.turn.loc };
         s.turn = null;
@@ -681,7 +726,7 @@ export function startTurn() {
     const pid = currentPid();
     s.turn = { pid, loc: null, region: null, remaining: CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
     // ⛓️ kidnapped: no roulette — straight back into the terrorists' room (10 minutes as usual)
-    if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; }
+    if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; s.turn.kidnapIn = s.turn.remaining; }
     Store.saveSeason();
     return s.turn;
 }

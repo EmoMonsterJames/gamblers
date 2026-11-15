@@ -216,9 +216,9 @@ export function scheduleNpc(remaining, force = false) {
     return Array.from({ length: n }, () => 20 + Math.floor(Math.random() * (remaining - 40))).sort((a, b) => b - a);
 }
 const NPC_FX = { steal: "💸", give: "💰", hp: "💥", heal: "💖", curse: "🗯️", kill: "☠️", nomove: "🪄", idle: "💤", hope: "🌈", gift: "🎁", shop: "🧳", copy: "📋",
-    breakWeapon: "🔨", stealPet: "🧸", disease: "🦠", stealAll: "🫳", stealMon: "🐾", stealPts: "💎", kidnap: "⛓️" };
+    breakWeapon: "🔨", stealPet: "🧸", disease: "🦠", stealAll: "🫳", stealMon: "🐾", stealPts: "💎", kidnap: "⛓️", cureFlu: "💚", giftBox: "🎁", stealItem: "🫳" };
 const alignBadge = n => { const a = NPC_ALIGN[npcAlign(n)]; return h("span.npc-align." + a.cls, a.label); };
-const NEW_KINDS = ["breakWeapon", "stealPet", "disease", "stealAll", "stealMon", "stealPts", "kidnap"];
+const NEW_KINDS = ["breakWeapon", "stealPet", "disease", "stealAll", "stealMon", "stealPts", "kidnap", "cureFlu", "giftBox", "stealItem"];
 export async function npcAttack(pid) {
     // 💀 Death Casino: only the reaper · ☠️ Dead Land: only Dead Land NPCs · elsewhere: never the Dead Land ones
     const pool = npcPool(LOC_BY_ID[G.S().turn?.loc]);
@@ -226,7 +226,7 @@ export async function npcAttack(pid) {
     const move = pickNpcMove(npc);
     const kind = move.hp && move.steal ? "hp" : NEW_KINDS.find(k => move[k]) || (move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove"
         : move.idle ? "idle" : move.hope ? "hope" : move.gift ? "gift" : move.shop ? "shop" : move.copy ? "copy" : "curse");
-    const friendly = ["give", "heal", "idle", "hope", "gift", "shop"].includes(kind);
+    const friendly = ["give", "heal", "idle", "hope", "gift", "shop", "cureFlu", "giftBox"].includes(kind);
     const art = h("div.npc-art", { style: { "--c": npc.color } }, h("span.npc-body", npc.emoji), h("span.npc-weapon", npc.art), h("small", npc.name, " ", alignBadge(npc)));
     const target = h("div.npc-target", avatar(pid, 120, { effect: false }));
     const say = h("div.npc-say", `${npc.emoji} ${npc.name}이(가) 나타났다!`);
@@ -251,11 +251,14 @@ export async function npcAttack(pid) {
         res.replaceChildren(h("b", `🎫 NPC 공격 Block 권 발동! 공격을 막았다 (남은 Block ${out.left}회)`));
     } else {
         fxl.append(h("span.npc-burst", NPC_FX[kind] || "💥"));
-        if (kind === "hp" || kind === "kill" || kind === "steal" || NEW_KINDS.includes(kind) || (kind === "copy" && out.hp)) target.classList.add("hurt");
-        if (kind === "kill") { Sound.boom(); target.classList.add("dead"); } else if (kind === "give" || kind === "heal" || kind === "gift") Sound.cash(); else if (friendly) Sound.bonus(); else Sound.hit();
+        if (!friendly && (kind === "hp" || kind === "kill" || kind === "steal" || NEW_KINDS.includes(kind) || (kind === "copy" && out.hp))) target.classList.add("hurt");
+        if (kind === "kill") { Sound.boom(); target.classList.add("dead"); } else if (kind === "give" || kind === "heal" || kind === "gift" || kind === "giftBox") Sound.cash(); else if (friendly) Sound.bonus(); else Sound.hit();
         say.textContent = kind === "curse" ? `${npc.emoji} "${CURSES[Math.floor(Math.random() * CURSES.length)]}"` : kind === "hope" ? `${npc.emoji} "${out.hope}"` : friendly ? `${npc.emoji} ${npc.name}` : `${npc.emoji} ${npc.name}의 공격!`;
-        res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.none ? (kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : kind === "copy" ? "복사할 무기가 없어 아무 일도 없었다" : NEW_KINDS.includes(kind) ? "가진 것이 없어 아무 일도 없었다" : "무기가 없어 아무 일도 없었다") :
+        res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.none ? (kind === "cureFlu" ? "🎅 독감에 걸려 있지 않아 그냥 웃으며 떠났다 (Ho Ho Ho!)" : kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : kind === "copy" ? "복사할 무기가 없어 아무 일도 없었다" : NEW_KINDS.includes(kind) ? "가진 것이 없어 아무 일도 없었다" : "무기가 없어 아무 일도 없었다") :
             out.kidnap ? "⛓️ 테러리스트에게 납치당했다!! 납치 공간으로 끌려갑니다…" :
+            out.cured ? "💚 산타가 독감을 낫게 해 주었다!" :
+            out.box ? `🎁 선물상자를 열었다 → ${out.box.emoji} ${out.box.name}!` :
+            out.stoleItem ? `🫳 아이템 ${ITEM_BY_ID[out.stoleItem]?.emoji || ""} ${ITEM_BY_ID[out.stoleItem]?.name || out.stoleItem} 1개를 빼앗겼다` :
             out.broke ? `👾 Monster Magic! ${WEAPON_BY_ID[out.broke]?.emoji || ""} ${WEAPON_BY_ID[out.broke]?.name || out.broke}이(가) 파괴됐다` :
             out.stolePet ? `😈 ${out.stolePet.name}을(를) 훔쳐 갔다!` :
             out.disease ? (out.already ? "🦠 이미 걸려 있는 병이라 더 나빠지지는 않았다" : out.disease === "flu" ? "🤧 독감에 걸렸다! (라운드마다 HP −5 · 독감치료제 / Player Clinic)" : "🎗️ 암에 걸렸다! (라운드마다 HP −10 · 암치료제 / Player Clinic)") :
@@ -330,6 +333,10 @@ const moveText = m => m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0]
     : m.stealAll ? `🫳 ${STEAL_ALL[m.stealAll]} 강탈 (없으면 효과 없음)`
     : m.stealMon ? "🐾 이모몬스터 1마리 강탈 (없으면 효과 없음)"
     : m.stealPts ? `💎 ${m.stealPts}P 강탈 (부족하면 효과 없음)`
+    : m.cureFlu ? "💚 독감에 걸려 있으면 바로 치료"
+    : m.giftBox ? "🎁 선물상자 — 혈당관리제 · 독감치료제 · 몬스터볼 · 똥볼 · HP약 +10/+50 · 이모몬스터약 +10/+50 · X-Deer (1%) · Angel Orb (5%) · Ice Orb (5%) 중 1개"
+    : m.stealItem ? "🫳 아이템 1개 강탈 (없으면 효과 없음)"
+    : m.rob ? `💸 ${fmt(m.steal[0])}G 강탈 (모자라면 가진 돈 전부)`
     : m.kidnap ? "⛓️ 납치! 테러리스트 납치 공간으로 끌려감"
     : m.steal ? `💸 골드 강탈 ${fmt(m.steal[0])}~${fmt(m.steal[1])}G (가진 돈이 부족하면 실패)`
     : m.give ? `💰 골드 선물 ${fmt(m.give[0])}~${fmt(m.give[1])}G`
@@ -354,6 +361,8 @@ export function npcInfo(loc, { active = null } = {}) {
                 h("li", "NPC가 있는 맵에서 플레이하면 턴마다 ", h("b", "40~70%"), " 확률로 습격을 받고, 습격은 플레이 중 무작위 시점에 ", h("b", "1~3회"), " 일어납니다."),
                 h("li", `습격마다 아래 NPC ${npcPool(loc).length}명 중 1명이 같은 확률(`, h("b", pct(1 / npcPool(loc).length)), ")로 나오고, 그 NPC의 기술 중 하나를 표시된 확률로 씁니다."),
                 loc.deadNpc ? h("li.npc-always", "☠️ Dead Land: 이 지역 전용 NPC만 나타납니다.") : null,
+                loc.region === "arctic" ? h("li.npc-always", "🎅 빙하 지역: 이 지역에서만 산타크로스가 나타납니다!") : null,
+                loc.kidnap ? h("li.npc-always", "🦹 납치 공간에는 Terrorist Boss가 항상 나타납니다 (턴마다 최소 1회).") : null,
                 h("li", "NPC 종류: ", alignBadge({ align: "evil", moves: [] }), " 공격만 함 · ", alignBadge({ align: "neutral", moves: [] }), " 공격도 하고 돕기도 함 · ", alignBadge({ align: "good", moves: [] }), " 돕기만 함"),
                 loc.npc === "always" ? h("li.npc-always", "👹 NPC 랜드의 맵: NPC가 ", h("b", "100%"), " 등장합니다 (턴마다 최소 1회 습격).") : null,
                 loc.npcOnly ? h("li.npc-always", "💀 이 맵에는 ", h("b", NPCS.find(n => n.id === loc.npcOnly)?.name), "만 나타납니다!") : null,
@@ -361,7 +370,7 @@ export function npcInfo(loc, { active = null } = {}) {
         diseaseRisk(loc) ? diseaseSection(loc, diseaseRisk(loc)) : null,
         h("div.npc-cards", npcPool(loc).map(n => h("div.npc-card", { style: { "--c": n.color } },
             h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / npcPool(loc).length)}`))),
-            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))),
+            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop || m.cureFlu || m.giftBox ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))),
             h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / npcPool(loc).length)} × 기술별 확률`))))),
         { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
 }

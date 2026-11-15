@@ -187,7 +187,7 @@ function record(kind, winner, extra = {}) {
 // 시즌 로또 due? (all 6 taken, or a turn starts with ≤ 10 survivors)
 export function seasonDue() {
     const s = S();
-    if (!s || s.status !== "turns" || board("season").drawn) return false;
+    if (!s || !["turns", "battle"].includes(s.status) || board("season").drawn) return false; // battle: drawn before the fight
     return isFull("season") || G.alive().length <= SEASON_DRAW_ALIVE;
 }
 // decide + pay at once (an interrupted show loses nothing) → { list: [{pid, idx}], winner, where }

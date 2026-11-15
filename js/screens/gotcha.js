@@ -20,7 +20,13 @@ const lazy = build => {
 const CAT_TXT = { item: "아이템", weapon: "무기", pet: "펫", effect: "펫효과", frame: "프레임", peffect: "프레임효과" };
 
 // ---------------------------------------------------------------- 🏬 백화점
-export function deptView(pid, locId, { onChange = () => { } } = {}) {
+// 🎡 entry roulette first (once per round) — already inside / visit used up → straight to the shop
+export function deptView(pid, locId, opts = {}) {
+    const st = Q.deptStatus(pid, locId);
+    if (st.locked || Q.deptInside(pid, locId) || Q.deptDoorState(pid)?.ok) return deptShop(pid, locId, opts);
+    return deptRoulette(pid, () => deptShop(pid, locId, opts), opts);
+}
+function deptShop(pid, locId, { onChange = () => { } } = {}) {
     return lazy(() => {
         const ps = G.S().ps[pid];
         const goods = Q.deptGoods();
@@ -195,4 +201,38 @@ export async function gotchaManager(locId, onSaved = () => { }) {
         h("div.row.end", h("button.btn.ghost", { onclick: reset }, "↺ 기본값"), h("button.btn.ghost", { onclick: () => m.close() }, "취소"), h("button.btn.gold", { onclick: save }, "💾 저장"))),
         { title: "🎰 Monster Gotcha 몬스터 구성", wide: true });
     draw();
+}
+
+// ---------------------------------------------------------------- 🎡 백화점 entry roulette
+function deptRoulette(pid, inside, { onChange = () => { } } = {}) {
+    const wrap = h("div.gc-dept.dr-wrap");
+    const segs = []; let a = 0;
+    for (const d of Q.DEPT_DOOR) { const span = d.w * 3.6; segs.push({ d, from: a, to: a + span }); a += span; }
+    const refused = (d, r) => h("div.entry-check.no", h("div.bouncer", "🙅"), h("h2", "백화점 입장 거절!"),
+        h("p", r?.broke ? `${d.label}이(가) 나왔지만 골드가 모자라 들어가지 못했습니다.` : "이번 라운드에는 백화점 문이 열리지 않았습니다."),
+        h("small.muted", "입장 룰렛은 라운드마다 1번 — 다음 라운드에 다시 오세요."));
+    const st = Q.deptDoorState(pid);
+    if (st && !st.ok) { put(wrap, refused(Q.DEPT_DOOR.find(d => d.id === st.id), st)); return wrap; }
+    const wheel = h("div.dr-wheel", { style: { background: `conic-gradient(${segs.map(s => `${s.d.color} ${s.from}deg ${s.to}deg`).join(", ")})` } },
+        segs.map(s => h("div.dr-label", { style: { "--a": `${(s.from + s.to) / 2}deg` } }, h("span", s.d.emoji), h("small", s.d.fee == null ? "거절" : s.d.fee ? `${fmt(s.d.fee)}G` : "무료"))));
+    const btn = h("button.btn.gold.huge", "🎡 입장 룰렛 돌리기");
+    const legend = h("ul.dr-legend", Q.DEPT_DOOR.map(d => h("li", h("i", { style: { background: d.color } }), `${d.emoji} ${d.label} — ${d.w}%`)));
+    btn.onclick = async () => {
+        btn.disabled = true;
+        const r = Q.deptDoorRoll(pid);
+        const seg = segs.find(s => s.d.id === r.id);
+        const target = seg.from + 4 + Math.random() * (seg.to - seg.from - 8);
+        wheel.style.transform = `rotate(${360 * 6 + (360 - target)}deg)`;
+        for (let k = 0; k < 18; k++) { Sound.tick(); await sleep(70 + k * 13); }
+        await sleep(3900 - 18 * 70 - 13 * 153);
+        onChange();
+        if (!r.ok) { Sound.lose(); put(wrap, refused(seg.d, r)); return; }
+        Sound.coin(); confetti(24, ["🛍️", "✨", "🎉"]);
+        put(wrap, h("div.entry-check.yes", h("div.bouncer", "🛍️"), h("h2", "백화점 입장!"), h("p.muted", r.fee ? `${fmt(r.fee)}G를 내고 안으로 들어갑니다…` : "무료 입장! 안으로 들어갑니다…")));
+        await sleep(1200);
+        put(wrap, inside());
+    };
+    put(wrap, h("div.gc-head", h("span.gc-ico", "🏬"), h("div", h("b", "백화점 입장 룰렛"), h("small.muted", "라운드마다 1번 돌릴 수 있습니다 · 입장료는 바로 냅니다 (골드가 모자라면 입장 실패)"))),
+        h("div.dr-stage", h("div.dr-pointer", "▼"), wheel), h("div.row.center", btn), legend);
+    return wrap;
 }

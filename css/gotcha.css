@@ -57,3 +57,13 @@
 button.gc-mon.add { border: 1px dashed var(--line); color: inherit; cursor: pointer; }
 button.gc-mon.add:hover { border-color: var(--gold); }
 .gc-admin .gc-mon .btn { padding: 0 6px; min-height: 0; }
+/* 🎡 백화점 entry roulette */
+.dr-stage { position: relative; width: min(320px, 80vw); aspect-ratio: 1; margin: 18px auto 6px; }
+.dr-wheel { position: absolute; inset: 0; border-radius: 50%; border: 6px solid var(--gold); box-shadow: 0 0 24px #facc1544, inset 0 0 0 3px #0006; transition: transform 3.9s cubic-bezier(.12,.6,.1,1); }
+.dr-label { position: absolute; left: 50%; top: 50%; width: 70px; margin-left: -35px; display: flex; flex-direction: column; align-items: center; transform: rotate(var(--a)) translateY(-108px) ; text-shadow: 0 1px 3px #000; color: #fff; font-weight: 800; }
+.dr-label span { font-size: 22px; }
+.dr-label small { font-size: 12px; }
+.dr-pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); z-index: 2; font-size: 30px; color: var(--gold); text-shadow: 0 2px 4px #000; }
+.dr-legend { list-style: none; padding: 0; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 12px; max-width: 640px; font-size: 13px; }
+.dr-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+@media (max-width: 420px) { .dr-label { transform: rotate(var(--a)) translateY(-80px); } }

@@ -373,6 +373,7 @@ export const ITEMS = [
     { id: "cancer_cure", name: "암치료제",   emoji: "💊", cure: "cancer", desc: "플레이어가 걸린 암을 바로 치료합니다." },
     // 🐾 EmoMon slots: 3 free, +1 per ticket up to 10
     { id: "emo_slot",    name: "이모몬스터 슬롯 확장권", emoji: "🧳", desc: "이모몬스터를 가질 수 있는 슬롯을 1칸 늘립니다 (기본 3칸 · 최대 10칸 · 인벤토리에서 사용)." },
+    { id: "sugar_cure",  name: "혈당관리제", emoji: "🩸", desc: "Sugar Casino에서만 사용 · 설탕중독 수치(Sugar Level)를 10~30% 낮춥니다 (인벤토리에서 사용)." },
     // 💬 community shop goods (one comment each)
     ...CM_GOODS.map(g => ({ id: g.id, name: g.name, emoji: g.emoji, desc: g.desc, cm: g.kind }))
 ];
@@ -393,6 +394,10 @@ const specialPetPriceG = { 5: 80000, 10: 150000 };
 const fxPriceG = { 5: 30000, 10: 65000, 15: 120000 };
 const specialFxPriceG = { 5: 60000, 10: 120000 };
 const weaponPriceG = { spray: 35000, magic: 500000, punch: 12000, guard: 25000, tongue: 28000, kick: 12000, rock: 45000, ghost_punch: 65000, ko_punch: 55000, holo_ball: 80000, sleep_flute: 70000, coin_throw: 30000 };
+
+// 🧳 이모몬스터 슬롯 확장권 100P · 🩸 혈당관리제 30P — the point shops that sell them (picked at random once, fixed)
+export const EMO_SLOT_PT_MAPS = ["gamblers", "dungtown", "cloud", "stars", "fantasy", "spooky", "bubble", "igloo", "plaza", "riches", "npc_town", "desert_casino"];
+export const SUGAR_CURE_MAPS = ["cany", "seaside", "twins", "oink", "emo", "foggy", "sky_casino", "balloon", "cosmic", "ribbit", "downtown", "magic", "ghost", "dungeon", "penguin_casino"];
 
 export const SHOPS = {
     general: {
@@ -416,7 +421,7 @@ export const SHOPS = {
             { cat: "item", id: "npc_block10", price: 95000 },
             { cat: "item", id: "flu_cure", price: 30000 },
             { cat: "item", id: "cancer_cure", price: 80000 },
-            { cat: "item", id: "emo_slot", price: 50000 },
+            { cat: "item", id: "emo_slot", price: 300000 },
             // 알파벳권 (each letter only at a few maps — see cardHomes() in catalogAdmin.js)
             ...EXTRA_LETTERS.filter(l => letterSale(l).shop === "general").map(l => ({ cat: "item", id: cardId(l), price: letterSale(l).price }))
             // map passes are appended below LOCATIONS (one per map)
@@ -453,7 +458,9 @@ export const SHOPS = {
             ...PROFILE_EFFECTS.filter(f => f.rare).map(f => ({ cat: "peffect", id: f.id, price: 50 })),
             { cat: "item", id: "slot_boost", price: 200 },
             { cat: "item", id: "casino_boost", price: 100 },
-            { cat: "item", id: "emo_slot", price: 300 },
+            // 🧳 also 100P, but only at these 12 point shops (alt listing) · 🩸 혈당관리제 30P at 15 point shops (never Sugar Casino)
+            { cat: "item", id: "emo_slot", price: 100, alt: true, locs: EMO_SLOT_PT_MAPS },
+            { cat: "item", id: "sugar_cure", price: 30, locs: SUGAR_CURE_MAPS },
             ...EXTRA_LETTERS.filter(l => letterSale(l).shop === "point").map(l => ({ cat: "item", id: cardId(l), price: letterSale(l).price })),
             ...ALPHABET.map(l => ({ cat: "item", id: cardId(l), price: 300, alt: true }))
         ]
@@ -706,15 +713,27 @@ export const NPCS = [
     { id: "beggar_family", name: "거지가족", emoji: "👨‍👩‍👧‍👦", art: "🥫", color: "#78716c", align: "evil", deadOnly: true,
       moves: [{ steal: [10000, 10000] }, { steal: [20000, 20000] }, { steal: [50000, 50000] }, { steal: [30000, 30000] }, { stealPts: 50 }, { stealPts: 100 }, { stealPts: 10 }, { steal: [5000, 5000] }, { stealAll: "bizGold" }, { stealAll: "loanGold" }] },
     { id: "terrorist", name: "Terrorist", emoji: "🥷", art: "💣", color: "#3f3f46", align: "evil", deadOnly: true,
-      moves: [{ kill: true, w: 10 }, { hp: -15, w: 30 }, { kidnap: true, w: 40 }, { hp: -20, steal: [10000, 10000], w: 20 }] }
+      moves: [{ kill: true, w: 10 }, { hp: -15, w: 30 }, { kidnap: true, w: 40 }, { hp: -20, steal: [10000, 10000], w: 20 }] },
+    // 🎅 arctic (빙하) region only · 🦹 terrorist kidnap room only (always there)
+    { id: "santa", name: "산타크로스", emoji: "🎅", art: "🎁", color: "#dc2626", align: "good", arcticOnly: true,
+      moves: [{ hp: 10 }, { give: [1000, 1000] }, { give: [2000, 2000] }, { hp: 20 }, { cureFlu: true }, { giftBox: true }] },
+    { id: "terror_boss", name: "Terrorist Boss", emoji: "🦹", art: "🧨", color: "#18181b", align: "evil", kidnapOnly: true,
+      moves: [{ hp: -10 }, { hp: -20 }, { hp: -30 }, { kill: true }, { steal: [10000, 10000], rob: true }, { steal: [5000, 5000], rob: true }, { steal: [3000, 3000], rob: true }, { steal: [1000, 1000], rob: true }, { stealItem: true }] }
 ];
 // Dead Land maps (deadNpc): only these NPCs come — the four Dead Land NPCs + the reaper and the crocodile
 export const DEAD_NPC_IDS = ["space_monster", "reaper", "evil_kid", "death_hand", "croc", "beggar_family"];
+// 🎅 Santa: arctic maps only (with the normal NPCs) · 🦹 Terrorist Boss: the kidnap room only (npcOnly)
+// 🎁 Santa's gift box: one of these (w = weight %)
+export const SANTA_GIFTS = [
+    { item: "sugar_cure", w: 11.125 }, { item: "flu_cure", w: 11.125 }, { emo: "ITEM001", name: "몬스터볼", emoji: "⚪", w: 11.125 }, { emo: "BALL_DUNG", name: "똥볼", emoji: "💩", w: 11.125 },
+    { item: "hp_10", w: 11.125 }, { item: "hp_50", w: 11.125 }, { emo: "EMO_HP10", name: "+10 HP 이모몬스터약", emoji: "🧪", w: 11.125 }, { emo: "EMO_HP50", name: "+50 HP 이모몬스터약", emoji: "💉", w: 11.125 },
+    { mon: 85, name: "X-Deer 이모몬스터", emoji: "🦌", w: 1 }, { emo: "ITEM_ANGEL_ORB", name: "Angel Orb", emoji: "😇", w: 5 }, { emo: "ITEM_ICE_ORB", name: "Ice Orb", emoji: "🧊", w: 5 }
+];
 // who can show up on this map: npcOnly → that one · Dead Land → DEAD_NPC_IDS · anywhere else → the normal NPCs
 export function npcPool(loc) {
     if (loc?.npcOnly) { const n = NPCS.find(x => x.id === loc.npcOnly); if (n) return [n]; }
     if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
-    return NPCS.filter(n => !n.deadOnly);
+    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && (!n.arcticOnly || loc?.region === "arctic"));
 }
 // a move by its weight (w, default 1)
 export const moveChance = (npc, m) => (m.w ?? 1) / npc.moves.reduce((a, x) => a + (x.w ?? 1), 0);
@@ -725,7 +744,7 @@ export function pickNpcMove(npc) {
 }
 export const HOPE_MESSAGES = ["잘될거에요", "대박나세요", "우승할거에요"];
 // a move is "harmful" when it can hurt the player (NPC 공격 Block 권 blocks these)
-export const npcHarmful = m => !!(m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
+export const npcHarmful = m => !!(m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
 // evil = harmful moves only · good = helpful only · neutral = both (curses / idling count as neither)
 export function npcAlign(n) {
     if (n.align) return n.align;

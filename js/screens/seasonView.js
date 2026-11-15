@@ -39,7 +39,7 @@ import { emoInventory } from "../emomon/ui.js";
 import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
 import { promoAtTurn } from "./promo.js";
 import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard, richFallback, RICH_FALLBACK_TEXT } from "./bunker.js";
-import { endLocked, END_LOCK_LEFT } from "../game/extra.js";
+import { endLocked, endLockText, END_LOCK_LEFT, kidnapLockLeft, escapeTried } from "../game/extra.js";
 import { lottoView, seasonLottoCheck } from "./lotto.js";
 import { highlightView } from "./highlight.js";
 import { deptView, gotchaView } from "./gotcha.js";
@@ -227,7 +227,7 @@ function missionStage(s) {
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
-        const target = pick(ms);
+        const target = G.pickMission(ms); // round 1: a battle mission at most 20%
         let gap = 60, i = 0;
         const total = 22 + Math.floor(Math.random() * ms.length) + 4;
         for (let k = 0; k < total; k++) {
@@ -243,6 +243,7 @@ function missionStage(s) {
         await banner(`📜 미션: ${target.text}`, 2200, "mission");
         G.setMission(target);
         render();
+        if (G.S().status === "battle" && await seasonLottoCheck()) { render(); return; } // 🎟️ season lotto before the battle
     } }, "📜 미션 뽑기");
     return h("div.mission-stage",
         s.loanDeaths?.length ? h("div.loan-deaths", h("b", "☠️ 대출 미상환 사망"), s.loanDeaths.map(pid => h("div.cand-card", avatar(pid, 70, { effect: false }), h("small", displayName(Store.player(pid)))))) : null,
@@ -566,10 +567,13 @@ function locationStage(s) {
     const pauseBtn = h("button.btn.ghost.small", { onclick: () => { t.running = !t.running; pauseBtn.textContent = t.running ? "⏸ 일시정지" : "▶ 재개"; updateHud(); Store.saveSeason(); } }, t.running ? "⏸ 일시정지" : "▶ 재개");
     // 🔒 Hell · Sugar · Terror · Jail · Cursed · Radioactive: the turn can only end with ≤ 5 min left
     const endBtn = h("button.btn.red.small", { onclick: async () => {
-        if (endLocked(loc, t)) return toast(`🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`, "warn", 3500);
+        if (endLocked(loc, t)) return toast(endLockText(loc, t), "warn", 3500);
         if (await confirmBox("턴을 종료할까요?")) finishTurn();
     } }, "⏹ 턴 종료");
-    const lockEnd = () => { const l = endLocked(loc, t); endBtn.classList.toggle("locked", l); endBtn.textContent = l ? `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)` : "⏹ 턴 종료"; };
+    const lockEnd = () => {
+        const l = endLocked(loc, t); endBtn.classList.toggle("locked", l);
+        endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)`;
+    };
 
     const ctx = kind => ({
         pid,
@@ -628,7 +632,8 @@ function locationStage(s) {
             onChange: () => { updateHud(); side.replaceChildren(sideCard()); },
             onDead: () => { clearInterval(timer); fx.stop(); render(); },
             // 🕊️ free: back to the region roulette with the time that is left
-            onFreed: () => { clearInterval(timer); fx.stop(); t.loc = null; t.region = null; t.npc = null; t.running = false; Store.saveSeason(true); render(); }
+            onFreed: () => { if (t.remaining <= 0 && escapeWait) return escapeWait(); clearInterval(timer); fx.stop(); t.loc = null; t.region = null; t.npc = null; t.running = false; Store.saveSeason(true); render(); },
+            onTried: () => escapeWait?.()
         });
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
@@ -774,7 +779,8 @@ function locationStage(s) {
     // ⏰ time up: anything that already started (a spin and its whole bonus, a casino hand,
     // a corner, a shop purchase, an NPC visit, a map move) is played out first —
     // its winnings count — and only then is the turn over. Nothing new can start (canPlay / corners check the clock).
-    let timingOut = false;
+    let timingOut = false, escapeWait = null; // ⛓️ time up in the kidnap room before the escape → wait for it
+
     async function timeUp() {
         if (timingOut || finishing) return; timingOut = true;
         Sound.boom();
@@ -785,6 +791,15 @@ function locationStage(s) {
             while (activityBusy() || npcBusy || moving) await sleep(400);
             note.remove();
             await sleep(600);
+        }
+        // ⛓️ kidnap room: the escape has to be played before the turn can end
+        if (loc.kidnap && !escapeTried() && G.S().turn === t) {
+            const note = h("div.timeup-wait", "⛓️ 플레이 시간 종료 — 탈출을 시도해야 턴이 끝납니다! 탈출 버튼을 누르세요");
+            root.querySelector(".location")?.prepend(note);
+            if (currentTab !== "kidnap") tabBody("kidnap");
+            await new Promise(r => { escapeWait = r; });
+            escapeWait = null; note.remove();
+            if (G.S().turn !== t) return; // died in the attempt
         }
         finishTurn();
     }
@@ -832,7 +847,7 @@ function judgeStage(s) {
     const failed = s.order.filter(pid => !s.results[pid]?.pass);
     // 🕹️ claw machine: > 3 candidates → the claw pulls 3 balls → 1 saved → 1 of the last 2 is out
     let done = false;
-    const claw = clawElimination([...s.candidates], { onDone: loser => {
+    const claw = clawElimination([...s.candidates], { safe: passed.filter(pid => !s.candidates.includes(pid) && !s.ps[pid].out), onDone: loser => {
         if (done) return; done = true;
         G.eliminate(loser);
         render();
@@ -981,7 +996,8 @@ function battleDrawStage(s) {
     const slots = [0, 1].map(i => h("div.bd-slot", h("div.bd-q", "?"), h("small", i === 0 ? "첫 번째 파이터" : "두 번째 파이터")));
     const status = h("p.bd-status", `후보 ${pool.length}명 중 2명이 배틀에 나섭니다…`);
     let drawing = false;
-    const btn = h("button.btn.red.huge", { onclick: () => draw() }, "🎲 배틀 상대 추첨");
+    // 🎟️ a season lotto that is due is drawn BEFORE the battle (not in the round after it)
+    const btn = h("button.btn.red.huge", { onclick: async () => { btn.disabled = true; if (await seasonLottoCheck()) { render(); return; } draw(); } }, "🎲 배틀 상대 추첨");
     const wrap = h("div.battle-draw",
         h("h2.stage-title", `⚔️ ROUND ${s.round} 배틀 미션`, h("small", s.mission.text)),
         h("div.bd-vs", slots[0], h("div.vs-big", "VS"), slots[1]),

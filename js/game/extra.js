@@ -169,16 +169,33 @@ export function applyHarm(pid, { hp = 0, gold = 0, kill = false } = {}, place = 
 }
 
 // ---------------------------------------------------------------- 🍬 Sugar Casino
-export const SUGAR_PLAY = [5, 30], SUGAR_IDLE = [5, 15];
-export function addSugar(pid, [a, b]) {
+// 🐛 a Bug-type EmoMonster in the party → every rise is only 0~15% (instead of 5~30 / 5~15)
+export const SUGAR_PLAY = [5, 30], SUGAR_IDLE = [5, 15], SUGAR_BUG = [0, 15];
+export const sugarBug = pid => ownsTypes(pid, ["Bug"]);
+export function addSugar(pid, range) {
     const t = S()?.turn;
     if (!t || t.pid !== pid) return null;
+    const [a, b] = sugarBug(pid) ? SUGAR_BUG : range;
     const add = rint(a, b);
+    if (!add) return { add, level: t.sugar || 0 };
     t.sugar = Math.min(100, (t.sugar || 0) + add);
     t.stats.sugarMax = Math.max(t.stats.sugarMax || 0, t.sugar); // 🍬 sugar_max missions
     if (t.sugar >= 100) { killPlayer(pid, "🍬 설탕중독으로 사망"); return { add, level: 100, dead: true }; }
     Store.saveSeason();
     return { add, level: t.sugar };
+}
+
+// 🩸 혈당관리제: only inside Sugar Casino — Sugar Level −10~30%
+export function useSugarCure(pid) {
+    const ps = ps_(pid), t = S()?.turn;
+    if (!(ps?.items.sugar_cure > 0)) return { ok: false, why: "혈당관리제가 없습니다" };
+    if (!t || t.pid !== pid || !LOC_BY_ID[t.loc]?.sugar) return { ok: false, why: "🩸 혈당관리제는 Sugar Casino 안에서만 쓸 수 있습니다" };
+    const down = Math.min(t.sugar || 0, rint(10, 30));
+    ps.items.sugar_cure--;
+    t.sugar = (t.sugar || 0) - down;
+    log(`🩸 ${name(pid)} 혈당관리제 사용 → Sugar Level −${down}% (${t.sugar}%)`);
+    Store.saveSeason(true);
+    return { ok: true, down, level: t.sugar };
 }
 
 // ---------------------------------------------------------------- ⛓️ terrorist kidnap room
@@ -188,8 +205,36 @@ export function kidnap(pid) {
     const s = S(), ps = ps_(pid);
     ps.kidnap = { round: s.round };
     log(`🥷 ${name(pid)} 테러리스트에게 납치됨!`);
-    if (s.turn?.pid === pid) { s.turn.npc = null; setLocation(KIDNAP_ID, { teleport: true }); s.turn.region = "kidnap"; }
+    if (s.turn?.pid === pid) { s.turn.npc = null; setLocation(KIDNAP_ID, { teleport: true }); s.turn.region = "kidnap"; s.turn.kidnapIn = s.turn.remaining; }
     Store.saveSeason(true);
+}
+// ⛓️ in the room: the turn can't end for the first 3 minutes there, and never before the escape was tried
+export const KIDNAP_LOCK = 180;
+export const kidnapLockLeft = t => Math.max(0, KIDNAP_LOCK - ((t?.kidnapIn ?? t?.remaining ?? 0) - (t?.remaining ?? 0)));
+// 🐀 rats run around the room: click one → it turns into 100~1,000 G (at most RAT_MAX a turn, RAT_ON_SCREEN at once)
+export const RAT_MAX = 15, RAT_ON_SCREEN = 4;
+export function catchRat(pid) {
+    const t = S()?.turn, ps = ps_(pid);
+    if (!t || t.pid !== pid || t.loc !== KIDNAP_ID) return null;
+    const L = (t.kidnapLog ||= { hits: [], rats: 0, ratGold: 0 });
+    if (L.rats >= RAT_MAX) return null;
+    const gold = rint(10, 100) * 10;
+    ps.money += gold; L.rats++; L.ratGold += gold;
+    log(`🐀 ${name(pid)} 납치 공간에서 쥐를 잡아 +${gold.toLocaleString()}G`);
+    Store.saveSeason();
+    return { gold, left: RAT_MAX - L.rats };
+}
+export const ratsLeft = () => RAT_MAX - (S()?.turn?.kidnapLog?.rats || 0);
+// what happened in the room this turn (boss attacks · rats) → 🎬 a "kidnap" highlight once the escape is decided
+export function noteKidnap(pid, { hit } = {}) {
+    const t = S()?.turn;
+    if (!t || t.pid !== pid) return;
+    const L = (t.kidnapLog ||= { hits: [], rats: 0, ratGold: 0 });
+    if (hit) L.hits.push(hit);
+}
+function kidnapHighlight(pid, escape) {
+    const L = S()?.turn?.kidnapLog || { hits: [], rats: 0, ratGold: 0 };
+    Store.recordHighlight("kidnap", { pid, hits: L.hits.slice(-3), rats: L.rats, ratGold: L.ratGold, escape });
 }
 // the 6 escape buttons (weights in %) — the outcome is drawn when a button is pressed
 export const ESCAPE = [
@@ -224,6 +269,7 @@ export function tryEscape(pid) {
     else if (pick.id === "rob") { const g = Math.min(5000, Math.max(0, ps.money)); ps.money -= g; out.msg = `테러리스트가 ${g.toLocaleString()}G를 뺏어 갔다`; }
     else { out.hope = true; out.msg = "희망이 보인다!! 상자 4개 중 하나를 고르세요"; }
     log(`⛓️ ${name(pid)} 탈출 시도 → ${out.msg}`);
+    if (!out.hope) kidnapHighlight(pid, { label: pick.label, msg: out.msg, freed: !!out.freed, dead: !!out.dead });
     if (out.freed) freeKidnap(pid);
     if (out.dead) { killPlayer(pid, "⛓️ 납치 공간에서 처형"); return out; }
     Store.saveSeason(true);
@@ -237,6 +283,7 @@ export function openHopeBox(pid) {
     else if (box.id === "hp") ps.hp = Math.min(CONFIG.START_HP, ps.hp + 10);
     else freeKidnap(pid);
     log(`🎁 ${name(pid)} 희망 상자 → ${box.label}`);
+    kidnapHighlight(pid, { label: "희망이 보인다!!", msg: `희망 상자 → ${box.emoji} ${box.label}`, freed: box.id === "free", hope: true });
     Store.saveSeason(true);
     return box;
 }
@@ -334,7 +381,10 @@ export const COMMENT = { FEE: COMMENT_FEE, OK: COMMUNITY_OK };
 export const locOfTurn = () => LOC_BY_ID[S()?.turn?.loc] || null;
 export const noPassHere = () => !!locOfTurn()?.noPass;
 export const END_LOCK_LEFT = 300;
-export const endLocked = (loc, t) => !!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT;
+// ⛓️ kidnap room: locked for its first 3 minutes and until the escape was tried
+export const endLocked = (loc, t) => loc?.kidnap ? (kidnapLockLeft(t) > 0 && (t?.remaining ?? 0) > 0) || !t?.escapeTried : !!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT;
+export const endLockText = (loc, t) => !loc?.kidnap ? `🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`
+    : !t?.escapeTried ? "⛓️ 탈출을 반드시 시도해야 턴을 끝낼 수 있습니다" : `⛓️ 납치 공간에서는 3분 동안 턴을 끝낼 수 없습니다 (${Math.ceil(kidnapLockLeft(t))}초 남음)`;
 
 // ---------------------------------------------------------------- 📣 홍보하기 · 인기 투표 (persistent, Store.community.promo)
 //   6 profiles register (50P, once per season each) → 20 votes (free + 500G reward, once per season each):

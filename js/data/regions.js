@@ -395,7 +395,7 @@ export const NEW_MAPS = [
       slots: [], casinos: [cg("scratch", "Fallout Scratch", "☢️", "방사능 스크래치! 해골 3개 x40", { syms: ["🧪", "🦠", "☣️", "☢️", "💀"] }), cg("plinko", "Isotope Plinko", "⚛️", "동위원소 플링코! 양 끝 x25")] }
 ];
 // the room terrorists drag a kidnapped player into (not on any map — see game/extra.js)
-export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "never", kidnap: true, slots: [], casino: [] };
+export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "always", npcOnly: "terror_boss", kidnap: true, slots: [], casino: [] };
 
 // the 6 rule regions added last — their slots / casino games get their own odds
 export const RULE_REGIONS = ["randomland", "richland", "noslot", "nocasino", "npcland", "combo"];

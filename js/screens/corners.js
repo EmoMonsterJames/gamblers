@@ -120,7 +120,9 @@ const JOBS_RUN = {
     async poop(pid) {
         if (!(await confirmBox("10초 동안 똥을 맞아야 합니다… 정말 할까요? 💩"))) return null;
         await poopShow(pid);
-        return { gold: randStep(100, 1000, 10), msg: "💩 …씻고 오세요" };
+        const gold = randStep(100, 1000, 10);
+        Store.recordHighlight("poop", { pid, amount: gold, loc: G.S()?.turn?.loc || null }); // 🎬 똥 맞기
+        return { gold, msg: "💩 …씻고 오세요" };
     },
     async sell(pid, ps) {
         const goods = [
