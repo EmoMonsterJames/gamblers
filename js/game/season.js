@@ -906,10 +906,15 @@ export function setLocation(locId, { teleport = false } = {}) {
 }
 // map pass: skip both roulettes and go straight to that map
 export const passesOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => n > 0 && ITEM_BY_ID[k]?.loc && LOC_BY_ID[ITEM_BY_ID[k].loc] && !LOC_BY_ID[ITEM_BY_ID[k].loc].off).map(([k]) => ITEM_BY_ID[k]);
+// ☠️ Dead Land map passes: only with 8 min or more of play time left
+export const DEAD_PASS_MIN = 480;
+export const deadPassBlocked = itemId => { const l = LOC_BY_ID[ITEM_BY_ID[itemId]?.loc]; return l?.region === "deadland" && (S()?.turn?.remaining ?? 0) < DEAD_PASS_MIN; };
+export const DEAD_PASS_TEXT = "☠️ Dead Land 지역 맵권은 플레이 시간이 8분 이상 남았을 때만 사용할 수 있습니다";
 export function usePassTeleport(itemId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     const it = ITEM_BY_ID[itemId];
     if (!it?.loc || !(ps.items[itemId] > 0)) return false;
+    if (deadPassBlocked(itemId)) return false;
     if (t.loc && LOC_BY_ID[t.loc]?.noPass) return false;
     const need = passNeeds(t.pid, LOC_BY_ID[it.loc]);
     if (!need.ok) return false;

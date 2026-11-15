@@ -457,9 +457,10 @@ function regionStage(s) {
     } }, "🌍 지역 룰렛 돌리기");
     const passRow = passes.length ? h("div.pass-row", h("b", "🎟️ 맵권 사용 → 바로 이동:"), passes.map(it => h("button.btn.small.gold", { onclick: async () => {
         const loc = LOC_BY_ID[it.loc];
+        if (G.deadPassBlocked(it.id)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (!(await tryPass(pid, it))) return;
         if (G.usePassTeleport(it.id)) { s.turn.running = true; Sound.bonus(); await banner(`🎟️ ${loc.emoji} ${loc.name}`, 1400, "loc"); await arrive(s, loc); render(); }
-    } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`, passBlocked(pid, LOC_BY_ID[it.loc]) ? " 🔒" : ""))) : null;
+    } }, `${LOC_BY_ID[it.loc]?.emoji || "🎟️"} ${LOC_BY_ID[it.loc]?.name} ×${ps.items[it.id]}`, passBlocked(pid, LOC_BY_ID[it.loc]) || G.deadPassBlocked(it.id) ? " 🔒" : ""))) : null;
     const randomRow = ps.items.map_random > 0 ? h("div.pass-row", h("b", "🗺️ 랜덤 맵권:"), h("button.btn.small.gold", { onclick: async () => {
         if (!(await confirmBox(RANDOM_MAP_ASK))) return;
         const loc = await randomMapGo();
@@ -693,6 +694,7 @@ function locationStage(s) {
         const it = ITEM_BY_ID[itemId], to = LOC_BY_ID[it?.loc];
         if (!to || moving || to.id === loc.id) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
         moving = true;
         const was = t.running; t.running = false; updateHud();
@@ -709,6 +711,7 @@ function locationStage(s) {
     async function moveRandom() {
         if (moving) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
         if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.\n${RANDOM_MAP_ASK.split("\n").slice(1).join("\n")}`, "이동하기", "취소"))) return;
         moving = true;
@@ -836,7 +839,7 @@ function locationStage(s) {
             h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc)),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
-        ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id) }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`)))] : []),
+        ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id), title: LOC_BY_ID[it.loc].region === "deadland" ? "☠️ Dead Land 맵권: 남은 시간 8분 이상일 때만" : "" }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`, LOC_BY_ID[it.loc].region === "deadland" ? " ☠️8분+" : "")))] : []),
         hud,
         h("div.loc-wrap", side, h("div.loc-main", tabBar, body)));
 }
