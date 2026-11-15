@@ -41,6 +41,7 @@ import { promoAtTurn } from "./promo.js";
 import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard, richFallback, RICH_FALLBACK_TEXT } from "./bunker.js";
 import { endLocked, END_LOCK_LEFT } from "../game/extra.js";
 import { lottoView, seasonLottoCheck } from "./lotto.js";
+import { highlightView } from "./highlight.js";
 
 let root = null, timer = null;
 // game tile: just the first short phrase of the description (the full rules are behind the game's ⓘ)
@@ -609,7 +610,7 @@ function locationStage(s) {
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
-        ["lotto", "🎟️ 로또"], ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
+        ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
     const invWrap = el => h("div", extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
@@ -664,6 +665,7 @@ function locationStage(s) {
         else if (id === "emo:shop") content = monsterShopView(pid, loc, { onChange: emoChanged });
         else if (id === "emo:dex") content = emoDexTab(pid);
         else if (id === "lotto") content = lottoView(pid, { hold: lottoHold, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "highlight") content = highlightView(pid, { hold: () => { npcBusy = true; return () => { npcBusy = false; updateHud(); }; }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
         body.replaceChildren(content);
     }
