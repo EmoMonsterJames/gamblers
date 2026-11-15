@@ -8,6 +8,7 @@ import * as Q from "../game/gotcha.js";
 import { catalogEntry, ITEM_BY_ID } from "../data/catalog.js";
 import { art, checkGoods, giveGoods, canPay, pay, priceLabel } from "./shop.js";
 import { emoBoot } from "./emoCorners.js";
+import { doorGate } from "../ui/doorGate.js";
 import { monPic, itemIcon, typeChip, stars } from "../emomon/ui.js";
 import { emoItem, cat, species } from "../emomon/data.js";
 
@@ -80,7 +81,8 @@ export function gotchaView(pid, locId, { onChange = () => { } } = {}) {
         put(wrap, bar, tab === "buy" ? machines(ps) : recycle(ps));
     };
     const machines = ps => {
-        if (!Q.gotchaDoor(pid)) return h("div.gc-door", h("div.gc-big", "🚫"), h("h3", "입장 거절!"), h("p", "Monster Gotcha가 이번 라운드에는 문을 열어 주지 않았습니다 (입장 확률 60%)."), h("small.muted", "다음 라운드에 다시 와 보세요. ♻️ 꽝 캡슐 수거는 지금도 할 수 있습니다."));
+        if (Q.gotchaDoorState(pid) !== true) return doorGate({ name: "Monster Gotcha", emoji: "🎰", chance: Math.round(Q.GOTCHA_OK * 100), state: () => Q.gotchaDoorState(pid), roll: () => Q.gotchaDoor(pid),
+            refusedText: "♻️ 꽝 캡슐 수거는 지금도 할 수 있습니다.", inside: () => machines(G.S().ps[pid]) });
         const done = Q.gotchaBought(pid), full = Q.slotsFull(pid);
         return h("div",
             h("div.gc-head", h("span.gc-ico", "🎰"), h("div", h("b", "Monster Gotcha"), h("small.muted", "캡슐을 뽑아 몬스터를 얻습니다 · 라운드당 1회")),

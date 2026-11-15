@@ -297,6 +297,8 @@ export function arenaLose(pid, foeLabel) { log(`🏟️ ${name(pid)} 아레나 �
 export const posts = () => (Store.community?.posts || []);
 export const postedThisSeason = pid => (ps_(pid)?.cmPosted === S()?.number) || posts().some(p => +p.pid === +pid && p.season === S()?.number);
 // the door: 60% in (kept for the round, so re-opening the tab doesn't re-roll)
+// null = not tried this round yet (the player presses 입장하기 first — ui/doorGate.js)
+export const communityDoorState = pid => { const d = ps_(pid)?.cmDoor; return d?.round === S().round ? d.ok : null; };
 export function communityDoor(pid) {
     const ps = ps_(pid), s = S();
     if (ps.cmDoor?.round !== s.round) { ps.cmDoor = { round: s.round, ok: Math.random() < COMMUNITY_OK }; Store.saveSeason(); }

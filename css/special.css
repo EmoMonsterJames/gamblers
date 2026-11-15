@@ -142,6 +142,11 @@
 .entry-check { text-align: center; padding: 14px; }
 .entry-check .bouncer { font-size: 80px; animation: giftBob 1s infinite; }
 .entry-check.no .bouncer { animation: omenShake .3s 3; }
+.entry-check .btn.huge { margin-top: 10px; }
+.entry-check.yes .bouncer { animation: dgYes .5s ease-out; }
+.entry-check .bouncer.dg-think { animation: dgThink .5s ease-in-out infinite; }
+@keyframes dgYes { from { transform: scale(.4); } }
+@keyframes dgThink { 50% { transform: translateX(10px) rotate(6deg); } }
 .npc-warn { margin-left: 8px; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #7f1d1d; border: 1px solid #f87171; color: #fecaca; animation: jpPulse .6s infinite alternate; }
 /* 🎧 music corner: the profile nods along with headphones on */
 .task-scene.listen { position: relative; }

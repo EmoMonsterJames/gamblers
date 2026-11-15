@@ -19,6 +19,7 @@ import { species, EMO } from "../emomon/data.js";
 import { monPic } from "../emomon/ui.js";
 import { emoFight, emoBoot } from "./emoCorners.js";
 import { promoView } from "./promo.js";
+import { doorGate } from "../ui/doorGate.js";
 
 const pname = pid => displayName(Store.player(pid));
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -374,7 +375,8 @@ export function cursedConfig(kind, cfg, loc) {
 
 // ================================================================ 💬 Community corner: 💬 코멘트 · 📣 홍보하기
 export function communityView(pid, { onChange = () => { } } = {}) {
-    if (!X.communityDoor(pid)) return commentView(pid, { onChange }); // shows the refusal
+    // 🚪 입장하기 first — approved / refused once per round (ui/doorGate.js)
+    if (X.communityDoorState(pid) !== true) return doorGate({ name: "커뮤니티", emoji: "💬", chance: 60, state: () => X.communityDoorState(pid), roll: () => X.communityDoor(pid), inside: () => communityView(pid, { onChange }) });
     let tab = "comment";
     const body = h("div"), bar = h("div.bk-tabs");
     const draw = () => {

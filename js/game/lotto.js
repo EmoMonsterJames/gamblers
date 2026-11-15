@@ -2,7 +2,7 @@
 // 🎟️ Lotto corner — rules and state (screens/lotto.js draws it).
 //
 //  · 시즌 로또  : free, 6 slots, 100,000G. One try per round per player. Paid the moment
-//                 all 6 slots are taken, or when a turn starts with 10 or fewer survivors.
+//                 all 6 slots are taken, or when a turn starts with 5 or fewer survivors.
 //                 Paid once per season, then closed until the next season.
 //  · 비시즌 로또 : 1,000G, 20 slots, 500,000G. One try per season. Runs across seasons
 //                 until all 20 are taken. Random slot until 15 are taken, then PICK.
@@ -24,7 +24,7 @@ export const LOTTO = {
 };
 export const LOTTO_KINDS = ["season", "off", "pension"];
 export const ENTRY_CHANCE = 0.6;
-export const SEASON_DRAW_ALIVE = 10;
+export const SEASON_DRAW_ALIVE = 5;
 
 export const LOTTO_SHOP = [
     { id: "lotto_dup_season", emoji: "🎟️", name: "시즌 로또 중복 등록권", pts: 50, text: "시즌 로또에 한 번 더 등록할 수 있습니다 (연속 사용으로 최대 2번 중복 → 최대 3자리)" },

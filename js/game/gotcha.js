@@ -104,6 +104,7 @@ export function gotchaOdds(kind, locId) {
     for (const t of used) for (const s of groups[t]) rows.push({ s, pct: (100 - miss) * G_.rates[t] / tot / groups[t].length });
     return { miss, rows };
 }
+export const gotchaDoorState = pid => { const d = ps_(pid)?.gotchaDoor; return d?.round === S().round ? d.ok : null; };
 export function gotchaDoor(pid) {
     const ps = ps_(pid), s = S();
     if (ps.gotchaDoor?.round !== s.round) { ps.gotchaDoor = { round: s.round, ok: Math.random() < GOTCHA_OK }; Store.saveSeason(); }
@@ -115,7 +116,7 @@ export const slotsFull = pid => M.mons(pid).length >= emoSlots(pid);
 export function buyGotcha(pid, kind, locId) {
     const ps = ps_(pid), G_ = GOTCHAS[kind];
     if (!G_) return { ok: false, why: "없는 Gotcha" };
-    if (!gotchaDoor(pid)) return { ok: false, why: "이번 라운드에는 입장이 거절되었습니다" };
+    if (gotchaDoorState(pid) !== true) return { ok: false, why: "먼저 입장하기를 눌러 입장 승인을 받아야 합니다" };
     if (gotchaBought(pid)) return { ok: false, why: "이번 라운드에는 이미 Gotcha를 뽑았습니다 (라운드당 1회)" };
     if (slotsFull(pid)) return { ok: false, why: "몬스터 칸이 가득 찼습니다. 칸을 비우거나 늘린 뒤 뽑아 주세요" };
     if (ps.money < (G_.price.gold || 0) || ps.points < (G_.price.pts || 0)) return { ok: false, why: "골드 · 포인트가 부족합니다" };
