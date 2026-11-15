@@ -330,7 +330,7 @@ export const NEW_MAPS = [
     { id: "senior_casino", region: "restricted", name: "Senior Casino", emoji: "👴", color: "#a8a29e", x: 22, y: 62, shops: ["general", "point"], req: { who: "senior" },
       slots: [sl("Golden Years", "Classic Gaming", "ant", "👴 👵 🫖", "🧶 👓", "🦯", "🥫", "#78716c", "#1c1917", "#e7e5e4")],
       casinos: [cg("lottery", "Bingo Hall", "🎱", "경로당 빙고 로또! 5개 다 맞히면 x300")] },
-    { id: "lgbt_nation", region: "restricted", name: "LGBT Nation", emoji: "🏳️‍🌈", color: "#c084fc", x: 50, y: 50, shops: ["general", "decor", "pet"], req: { who: "lgbt" },
+    { id: "lgbt_nation", region: "restricted", name: "LGBTQ Nation", emoji: "🏳️‍🌈", color: "#c084fc", x: 50, y: 50, shops: ["general", "decor", "pet"], req: { who: "lgbt" },
       slots: [sl("Pride Parade", "CLOVER-TECH", "rabbit", "🏳️‍🌈 🦄 💖", "🌈 ✨", "🎉", "🌕", "#7c3aed", "#1e0524", "#f0abfc")],
       casinos: [cg("scratch", "Rainbow Scratch", "🌈", "무지개 스크래치! 하트 3개 x40", { syms: ["✨", "🌈", "🦄", "🎉", "💖"] })] },
     { id: "vip_casino", region: "restricted", name: "VIP Casino (Top 10)", emoji: "🎖️", color: "#facc15", x: 78, y: 62, shops: ["general", "point", "weapon"], req: { who: "vip" },
