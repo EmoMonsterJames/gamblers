@@ -123,7 +123,7 @@ function apply(m, fin) {
 }
 
 // ---------------------------------------------------------------- 📖 dex (persistent, per player)
-export const DEX_HOW = { capture: "🔍 Capture에서 만남", caught: "🎯 직접 포획", battler: "⚔️ EmoMon Battler와 싸움", pvp: "🤺 다른 플레이어와 배틀", evolve: "✨ 진화로 얻음", own: "🐾 보유" };
+export const DEX_HOW = { capture: "🔍 Capture에서 만남", caught: "🎯 직접 포획", battler: "⚔️ EmoMon Battler와 싸움", pvp: "🤺 다른 플레이어와 배틀", evolve: "✨ 진화로 얻음", own: "🐾 보유", bot: "🤖 기본 Battlebot — 몬스터가 없을 때 대신 싸웁니다 (포획 불가)" };
 export function seen(pid, sid, how) {
     if (pid == null || sid == null) return;
     const d = (Store.emodex[pid] ||= {});
@@ -376,9 +376,15 @@ export function changeNature(pid, u) {
 }
 
 // ---------------------------------------------------------------- 🛒 purchase limits (per season, ps.emo lives in the season)
-export const shopBuysLeft = pid => EMO.SHOP_BUYS - (emo(pid).shopBuys || 0);
+// 🛒 Monster Shop: counted per round (shopRound) · 🧪 LAB: per season
+export const shopBuysLeft = pid => { const e = emo(pid); return EMO.SHOP_BUYS - (e.shopRound === S()?.round ? e.shopBuys || 0 : 0); };
 export const labBuysLeft = pid => EMO.LAB_BUYS - (emo(pid).labBuys || 0);
-export function countBuy(pid, kind) { const e = emo(pid); if (kind === "lab") e.labBuys = (e.labBuys || 0) + 1; else e.shopBuys = (e.shopBuys || 0) + 1; }
+export function countBuy(pid, kind) {
+    const e = emo(pid);
+    if (kind === "lab") { e.labBuys = (e.labBuys || 0) + 1; return; }
+    if (e.shopRound !== S()?.round) { e.shopRound = S()?.round; e.shopBuys = 0; }
+    e.shopBuys = (e.shopBuys || 0) + 1;
+}
 
 // ---------------------------------------------------------------- 🧪 lab: evolution + mixing
 export function evoOptions(pid, m) {

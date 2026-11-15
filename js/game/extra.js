@@ -249,7 +249,7 @@ export function freeKidnap(pid) {
 }
 
 // ---------------------------------------------------------------- 🏟️ Arena: 1:1 EmoMon battle (2 per season)
-export const ARENA_PER_SEASON = 2, ARENA_PRIZE = [8000, 30000], ARENA_NPC = 0.3;
+export const ARENA_PER_SEASON = 2, ARENA_PRIZE = [8000, 30000], ARENA_PRIZE_PTS = [10, 50], ARENA_NPC = 0.3;
 export const arenaLeft = pid => Math.max(0, ARENA_PER_SEASON - (ps_(pid)?.arenaUsed || 0));
 // remember every season player's battle monster, so later seasons can meet it (persistent)
 export function keepMons() {
@@ -280,14 +280,16 @@ export function arenaFoeMon(foePid) {
     return { ...structuredClone(src), uid: "arena-" + (src.uid || foePid), hp: null, pp: {}, diseases: [], from: "arena" };
 }
 export function useArena(pid) { const ps = ps_(pid); ps.arenaUsed = (ps.arenaUsed || 0) + 1; Store.saveSeason(true); }
+// 🏆 a win pays EITHER a gold prize (8,000~30,000G) OR a point prize (10~50P) — 50 / 50 → { gold, pts }
 export function arenaWin(pid, foeLabel) {
     const ps = ps_(pid);
-    const g = Math.round(rint(...ARENA_PRIZE) / 100) * 100;
-    ps.money += g;
-    log(`🏟️ ${name(pid)} 아레나 승리 vs ${foeLabel} → +${g.toLocaleString()}G`);
+    const gold = Math.random() < 0.5 ? Math.round(rint(...ARENA_PRIZE) / 100) * 100 : 0;
+    const pts = gold ? 0 : rint(...ARENA_PRIZE_PTS);
+    ps.money += gold; ps.points += pts;
+    log(`🏟️ ${name(pid)} 아레나 승리 vs ${foeLabel} → ${gold ? `+${gold.toLocaleString()}G` : `+${pts}P`}`);
     const t = S()?.turn; if (t?.pid === pid) t.stats.arenaWin = (t.stats.arenaWin || 0) + 1; // 🏟️ arena_win missions
     Store.saveSeason(true);
-    return g;
+    return { gold, pts };
 }
 export function arenaLose(pid, foeLabel) { log(`🏟️ ${name(pid)} 아레나 패 vs ${foeLabel}`); Store.saveSeason(true); }
 

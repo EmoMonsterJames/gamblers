@@ -19,7 +19,7 @@ export const EMO = {
     LEVEL: 50,                   // EmoMonster has no levels any more: stats are always taken at Lv 50
     HP: 100,                     // every monster has 100 HP
     RELEASE_PTS: 455,            // 몬스터 Release 권 (only usable with all 3 slots full)
-    SHOP_BUYS: 5,                // 🛒 Monster Shop purchases per player per season (all shops together)
+    SHOP_BUYS: 3,                // 🛒 Monster Shop purchases per player per ROUND (all shops together)
     LAB_BUYS: 3,                 // 🧪 LAB 상점 purchases per player per season
     EVOLVE_PTS: 100,             // every evolution costs 100P (plus its items)
     // 🔬 Lab experiments: price + the breaker it needs

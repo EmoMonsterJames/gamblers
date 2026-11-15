@@ -304,7 +304,7 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
             h("ul.small.muted", h("li", "무작위 상대와 1:1 EmoMon 배틀 — 70% 몬스터를 가진 플레이어 · 30% NPC Battler"),
                 h("li", "상대는 언제나 HP · PP 가득, 상태이상 없이 싸우고 배틀 뒤 원래 상태로 돌아갑니다"),
                 h("li", "내 몬스터의 HP · PP · 상태이상은 배틀 후에도 그대로 남습니다"),
-                h("li", `승리 ${fmt(X.ARENA_PRIZE[0])}~${fmt(X.ARENA_PRIZE[1])}G · 패배는 보상 없음 · 시즌당 ${X.ARENA_PER_SEASON}회`),
+                h("li", `🏆 승리 상금: 골드 ${fmt(X.ARENA_PRIZE[0])}~${fmt(X.ARENA_PRIZE[1])}G 또는 포인트 ${X.ARENA_PRIZE_PTS[0]}~${X.ARENA_PRIZE_PTS[1]}P (둘 중 하나 랜덤) · 패배는 보상 없음 · 시즌당 ${X.ARENA_PER_SEASON}회`),
                 h("li", "배틀 중에는 턴 시간이 멈추고 NPC가 나타나지 않습니다")),
             h("div.arena-me", me ? monPic(M.sp(me), 80, { anim: true }) : null, h("b", me ? `⚔ ${M.sp(me).name} · HP ${M.hpOf(me)}/${M.maxHp(me)}` : "몬스터가 없어 Battlebot이 출전합니다")),
             h("div.row.center", h("button.btn.gold.big", { disabled: left <= 0, onclick: go }, left > 0 ? `🏟️ 도전! (남은 ${left}회)` : "이번 시즌 아레나 횟수를 모두 썼습니다")));
@@ -325,7 +325,7 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
             X.useArena(pid);
             Sound.fanfare();
             const r = await emoFight(pid, { mon: foeMon }, { title: `🏟️ 아레나 vs ${foeLabel}`, foeLabel });
-            if (r.won) { const g = X.arenaWin(pid, foeLabel); Sound.cash(); confetti(60, ["🏆", "🪙"]); await alertBox("🏟️ 아레나 승리!", [h("div.emo-reward-amt", `+${fmt(g)} G`), `${foeLabel}을(를) 이겼습니다!`]); }
+            if (r.won) { const p = X.arenaWin(pid, foeLabel); Sound.cash(); confetti(60, p.gold ? ["🏆", "🪙"] : ["🏆", "💎"]); await alertBox("🏟️ 아레나 승리!", [h("div.emo-reward-amt", p.gold ? `💰 골드 상금 +${fmt(p.gold)} G` : `💎 포인트 상금 +${p.pts} P`), `${foeLabel}을(를) 이겼습니다!`]); }
             else { X.arenaLose(pid, foeLabel); Sound.lose(); toast(`💥 아레나 패배… (vs ${foeLabel})`, "warn", 3500); }
         } finally { if (turn) { turn.running = was; turn.arena = false; } Store.saveSeason(true); }
         onChange(); draw();

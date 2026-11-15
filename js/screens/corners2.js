@@ -358,9 +358,60 @@ export function npcInfo(loc, { active = null } = {}) {
                 loc.npc === "always" ? h("li.npc-always", "👹 NPC 랜드의 맵: NPC가 ", h("b", "100%"), " 등장합니다 (턴마다 최소 1회 습격).") : null,
                 loc.npcOnly ? h("li.npc-always", "💀 이 맵에는 ", h("b", NPCS.find(n => n.id === loc.npcOnly)?.name), "만 나타납니다!") : null,
                 h("li", "🎫 NPC 공격 Block 권(일반 상점)이 있으면 해로운 공격을 자동으로 막아 줍니다."))),
+        diseaseRisk(loc) ? diseaseSection(loc, diseaseRisk(loc)) : null,
         h("div.npc-cards", npcPool(loc).map(n => h("div.npc-card", { style: { "--c": n.color } },
             h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / npcPool(loc).length)}`))),
             h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))),
             h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / npcPool(loc).length)} × 기술별 확률`))))),
         { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
 }
+
+// ================================================================ 🦠 player diseases on a map
+// two ways to catch one here: the map itself (a roll on every arrival) and NPCs that carry it
+const DIS = {
+    flu: { name: "독감", emoji: "🤧", hp: 5, cure: "flu_cure", cureGold: 30000 },
+    cancer: { name: "암", emoji: "🎗️", hp: 10, cure: "cancer_cure", cureGold: 80000 }
+};
+export function diseaseRisk(loc) {
+    if (!loc || loc.kidnap) return null;
+    const arrival = [];
+    const flu = loc.fluChance || (loc.region === "arctic" ? 0.1 : 0);
+    if (flu) arrival.push({ kind: "flu", p: flu });
+    if (loc.cancerChance) arrival.push({ kind: "cancer", p: loc.cancerChance });
+    const npc = [];
+    if (G.npcMapChance(loc) > 0) {
+        const pool = npcPool(loc);
+        for (const kind of Object.keys(DIS)) {
+            const carriers = pool.filter(n => n.moves.some(m => m.disease === kind));
+            if (!carriers.length) continue;
+            const p = carriers.reduce((a, n) => a + n.moves.filter(m => m.disease === kind).reduce((b, m) => b + moveChance(n, m), 0) / pool.length, 0);
+            npc.push({ kind, p, by: carriers.map(n => `${n.emoji} ${n.name}`) });
+        }
+    }
+    return arrival.length || npc.length ? { arrival, npc, mapP: G.npcMapChance(loc) } : null;
+}
+const pctTxt = x => (Math.round(x * 1000) / 10) + "%";
+function diseaseSection(loc, risk) {
+    const kinds = [...new Set([...risk.arrival, ...risk.npc].map(r => r.kind))];
+    return h("div.dis-info",
+        h("h4", "🦠 이 맵에서 걸릴 수 있는 질병"),
+        h("ul.npc-rules",
+            ...risk.arrival.map(r => h("li", `${DIS[r.kind].emoji} 맵에 들어올 때마다 `, h("b", pctTxt(r.p)), ` 확률로 `, h("b", DIS[r.kind].name), " 감염", loc.region === "arctic" && r.kind === "flu" && !loc.fluChance ? " (🧊 북극 지역 전체)" : "")),
+            ...risk.npc.map(r => h("li", `${DIS[r.kind].emoji} NPC 습격 1회마다 `, h("b", pctTxt(r.p)), ` 확률로 `, h("b", DIS[r.kind].name), ` 감염 (${r.by.join(", ")}의 기술`,
+                risk.mapP >= 1 ? " · 이 맵은 NPC가 항상 출몰" : ` · NPC가 출몰하는 라운드에만 · 출몰 확률 ${Math.round(risk.mapP * 100)}%`, ")"))),
+        h("div.dis-cards", kinds.map(k => {
+            const d = DIS[k];
+            return h("div.dis-card",
+                h("b", `${d.emoji} ${d.name}`),
+                h("small", `증상: 새 라운드가 시작될 때마다 HP −${d.hp} · HP가 0이 되면 바로 사망 · 이미 걸린 병은 또 걸려도 더 나빠지지 않습니다`),
+                h("small", `치료: ${ITEM_BY_ID[d.cure]?.emoji || "💊"} ${ITEM_BY_ID[d.cure]?.name || d.cure} (일반 상점 ${fmt(d.cureGold)}G · 인벤토리에서 사용) 또는 🏥 Player Clinic에서 치료`));
+        })),
+        h("p.small.muted", "🎫 NPC 공격 Block 권이 있으면 NPC의 질병 공격도 막아 줍니다."));
+}
+export function diseaseInfo(loc) {
+    const risk = diseaseRisk(loc);
+    if (!risk) return;
+    modal(diseaseSection(loc, risk), { title: `🦠 질병 정보 · ${loc.emoji} ${loc.name}`, wide: true });
+}
+// the badge next to "⚠️ NPC 출몰 / 🛡️ No NPC"
+export const diseaseBadge = loc => diseaseRisk(loc) ? h("span.dis-warn", { title: "이 맵에서는 질병에 걸릴 수 있습니다 — 눌러서 확률 · 치료법 보기", onclick: () => diseaseInfo(loc) }, "🦠 질병 주의", h("i.npc-i", "i")) : null;

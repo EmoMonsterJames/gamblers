@@ -96,18 +96,26 @@ export function adminMapsPage() {
             r.off ? h("p.notice", "꺼진 지역은 지역 룰렛에 나오지 않습니다.") : null);
     }
 
+    // + 추가 dropdown: A→Z by name, with a search box that narrows it down
     function chipPicker(ids, all, byId, label, onChange) {
         const used = new Set(ids);
+        const isSlot = label.startsWith("슬롯");
+        const sorted = all.filter(g => !used.has(g.id)).sort((a, b) => String(a.name).localeCompare(String(b.name), "en", { sensitivity: "base", numeric: true }));
+        const optionsFor = q => {
+            q = q.trim().toLowerCase();
+            const list = q ? sorted.filter(g => `${g.name} ${g.id}`.toLowerCase().includes(q)) : sorted;
+            return [h("option", { value: "" }, q ? `+ 추가… (${list.length}개 검색됨)` : "+ 추가…"), ...list.map(g => {
+                const home = LOCATIONS.find(l => l[isSlot ? "slots" : "casino"]?.includes(g.id));
+                return h("option", { value: g.id }, `${g.icon || ""} ${g.name}${home ? ` (현재: ${home.name})` : ""}`);
+            })];
+        };
+        const sel = h("select", { onchange: ev => { if (ev.target.value) onChange([...ids, ev.target.value]); } }, optionsFor(""));
+        const search = h("input.am-search", { type: "search", placeholder: `🔍 ${isSlot ? "슬롯" : "카지노 게임"} 검색`, oninput: ev => sel.replaceChildren(...optionsFor(ev.target.value)) });
         return h("div.am-pick",
             h("small", label),
             h("div.am-chips", ids.map(id => h("span.am-chip" + (byId[id]?.off ? ".off" : ""), byId[id] ? `${byId[id].icon || "🎰"} ${byId[id].name}` : id,
                 h("button", { title: "빼기", onclick: () => onChange(ids.filter(x => x !== id)) }, "×")))),
-            h("select", { onchange: ev => { if (ev.target.value) onChange([...ids, ev.target.value]); } },
-                h("option", { value: "" }, "+ 추가…"),
-                all.filter(g => !used.has(g.id)).map(g => {
-                    const home = LOCATIONS.find(l => l[label.startsWith("슬롯") ? "slots" : "casino"]?.includes(g.id));
-                    return h("option", { value: g.id }, `${g.icon || ""} ${g.name}${home ? ` (현재: ${home.name})` : ""}`);
-                })));
+            h("div.am-add", sel, search));
     }
 
     function locCard(l) {

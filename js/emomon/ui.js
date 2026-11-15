@@ -280,9 +280,11 @@ export function typeStarBrowser({ items, typesOf, starOf, render, searchText, pl
 }
 
 function monsterDex(pid) {
-    const dex = M.dexOf(pid);
-    for (const m of M.monsOf(pid)) if (!dex[m.sid]) M.seen(pid, m.sid, "own");
-    const list = cat().mons.filter(m => m.id !== EMO.BOT_ID || dex[m.id]);
+    for (const m of M.monsOf(pid)) if (!M.dexOf(pid)[m.sid]) M.seen(pid, m.sid, "own");
+    // 🤖 EmoMon Battlebot: never in Capture, but listed (and counted as found) — it fights for every player without monsters
+    const dex = { ...M.dexOf(pid) };
+    dex[EMO.BOT_ID] ||= { how: "bot" };
+    const list = cat().mons;
     const found = list.filter(m => dex[m.id]).length;
     const card = m => {
         const d = dex[m.id];

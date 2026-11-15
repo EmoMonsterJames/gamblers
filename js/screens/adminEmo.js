@@ -296,11 +296,13 @@ function monsTab() {
             h("div.ae-row-main", h("b", `#${m.id} ${m.name} `, stars(m.rarity)), h("div", ...typesOfSpecies(m).map(typeChip)),
                 h("small.muted", `${isFirstStage(m.id) ? "1단계" : "진화형"} · P.ATK ${st.physAttack} · S.ATK ${st.specAttack} · SPD ${st.speed} · P.DEF ${st.physDefense} · S.DEF ${st.specDefense}`),
                 evos.length ? h("div.ae-evos", ...evos.map(evoRow)) : null),
-            h("label.am-tog", h("input", { type: "checkbox", checked: isOn("offMons", m.id), onchange: e => { toggleIn("offMons", m.id, e.target.checked); e.target.closest(".ae-row").classList.toggle("off", !e.target.checked); } }), " 사용"));
+            // 🤖 the Battlebot is listed in the dex only — it never shows up in Capture, so there is nothing to switch
+            m.id === EMO.BOT_ID ? h("small.muted", "🤖 도감 전용 · Capture 미등장")
+                : h("label.am-tog", h("input", { type: "checkbox", checked: isOn("offMons", m.id), onchange: e => { toggleIn("offMons", m.id, e.target.checked); e.target.closest(".ae-row").classList.toggle("off", !e.target.checked); } }), " 사용"));
     };
     return h("div",
         h("p.muted.small", "번호대를 누르면 몬스터 목록이 나옵니다. 끈 몬스터는 Capture 코너와 EmoMon Battler에 나오지 않습니다 (이미 잡은 몬스터는 그대로). '특수 진화'를 켠 진화는 🧪 Monster Lab의 🔬 실험실에서만 1000P로 진화합니다 (일반 진화는 100P)."),
-        rangeBrowser({ items: C.mons.filter(m => m.id !== EMO.BOT_ID), render, placeholder: "이름 / 속성 / #번호 검색", searchText: m => `${m.name} ${typesOfSpecies(m).join(" ")} #${m.id}` }));
+        rangeBrowser({ items: C.mons, render, placeholder: "이름 / 속성 / #번호 검색", searchText: m => `${m.name} ${typesOfSpecies(m).join(" ")} #${m.id}` }));
 }
 // ---------------------------------------------------------------- ⚔ weapons (attribute → ★ → list)
 function weaponsTab() {
@@ -434,7 +436,7 @@ function stockTab() {
     const draw = () => {
         const maps = LOCATIONS.filter(l => (l.emoshop || l.lab) && (!region || l.region === region));
         put(wrap,
-            h("p.muted.small", `Monster Shop · LAB 상점이 있는 맵만 모았습니다. ✏️ 를 누르면 그 상점에서 팔 물건을 검색해 넣고 상점별 가격을 정할 수 있습니다 (비우면 어드민 기본 가격). 기본: Monster Shop마다 속성 볼 2종 · 무기 2~3종 · 특성 1~2종이 서로 다르게 자동 배치되고 일반 볼 · 약 · 티켓 · 레이더는 모든 상점에서 팝니다. 시즌당 구매 Monster Shop ${EMO.SHOP_BUYS}회 · LAB ${EMO.LAB_BUYS}회.`),
+            h("p.muted.small", `Monster Shop · LAB 상점이 있는 맵만 모았습니다. ✏️ 를 누르면 그 상점에서 팔 물건을 검색해 넣고 상점별 가격을 정할 수 있습니다 (비우면 어드민 기본 가격). 기본: Monster Shop마다 속성 볼 2종 · 무기 2~3종 · 특성 1~2종이 서로 다르게 자동 배치되고 일반 볼 · 약 · 티켓 · 레이더는 모든 상점에서 팝니다. 구매 횟수: Monster Shop 라운드당 ${EMO.SHOP_BUYS}회 · LAB 시즌당 ${EMO.LAB_BUYS}회.`),
             h("div.row", h("select", { onchange: e => { region = e.target.value; draw(); } }, h("option", { value: "" }, "모든 지역"),
                 REGIONS.filter(r => LOCATIONS.some(l => l.region === r.id && (l.emoshop || l.lab))).map(r => h("option", { value: r.id, selected: r.id === region }, `${r.emoji || ""} ${r.name}`))),
                 h("small.muted", `${maps.length}개 맵`)),

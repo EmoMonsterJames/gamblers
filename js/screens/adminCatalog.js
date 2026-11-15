@@ -3,7 +3,7 @@
 import { h, fmt } from "../core/util.js";
 import { toast, confirmBox, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { SHOPS, LOCATIONS } from "../data/catalog.js";
+import { SHOPS, LOCATIONS, LOC_BY_ID, REGIONS } from "../data/catalog.js";
 import { CATS, STAT_FIELDS, saleOf, applyCatalog, locationShops, WEAPON_ANIMS, PET_ANIMS, FX_MODES, FRAME_STYLES } from "../data/catalogAdmin.js";
 import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
@@ -27,10 +27,13 @@ export function adminCatalogPage() {
 
     const edit = (c, id) => (work.edits[`${c}:${id}`] ||= {});
     const markDirty = () => { dirty = true; saveBtn.textContent = "💾 저장 *"; };
+    // locationShops() scans every edit — computed once per draw (with the working copy applied), not once per row × map
+    let shopCache = new Map();
+    const shopsOf = l => { if (!shopCache.has(l.id)) shopCache.set(l.id, locationShops(l)); return shopCache.get(l.id); };
     function draw() {
         tabs.replaceChildren(...Object.entries(CATS).map(([k, c]) => h("button.tab" + (k === cat ? ".on" : ""), { onclick: () => { cat = k; draw(); } }, c.label)));
         // preview the working copy
-        const saved = Store.catalog; Store.catalog = work; applyCatalog();
+        const saved = Store.catalog; Store.catalog = work; applyCatalog(); shopCache = new Map();
         const hit = e => !query || [e.id, e.name, e.emoji, e.desc, e.type, e.kind].some(v => v != null && String(v).toLowerCase().includes(query));
         const list = CATS[cat].list.filter(hit);
         const rows = list.length ? list.map(e => row(cat, e)) : [h("p.muted.center", `'${query}'에 맞는 ${CATS[cat].label}이(가) 없습니다`)];
@@ -48,16 +51,15 @@ export function adminCatalogPage() {
             h("option", { value: "", selected: sale.off || !sale.shop }, "판매 안 함"),
             Object.entries(SHOPS).map(([k, s]) => h("option", { value: k, selected: !sale.off && sale.shop === k }, `${s.icon} ${s.name}`)));
         const price = h("input.num", { type: "number", min: 0, value: sale.price || "", placeholder: "가격", onchange: ev => { ed.price = ev.target.value === "" ? null : +ev.target.value; markDirty(); } });
-        const locs = h("div.loc-pick", LOCATIONS.map(l => {
-            const on = (ed.locs || []).includes(l.id);
-            const has = sale.shop && locationShops(l).includes(sale.shop);
-            return h("button.lchip" + (on ? ".on" : "") + (!ed.locs?.length && has ? ".def" : ""), { title: l.name, onclick: () => {
-                const cur = new Set(ed.locs || []);
-                cur.has(l.id) ? cur.delete(l.id) : cur.add(l.id);
-                ed.locs = cur.size ? [...cur] : null; markDirty(); draw();
-            } }, l.emoji);
-        }));
-        return h("div.cat-row" + (sale.off ? ".off" : ""),
+        // 판매 장소: a short summary here — the full map list opens in a picker (one row's worth of buttons, not every row's)
+        const picked = (ed.locs || []).map(id => LOC_BY_ID[id]).filter(Boolean);
+        const defN = sale.shop ? LOCATIONS.filter(l => !l.off && shopsOf(l).includes(sale.shop)).length : 0;
+        const locs = h("div.loc-sum",
+            picked.length
+                ? h("div.loc-sum-list", picked.slice(0, 6).map(l => h("span.loc-tag", `${l.emoji || ""} ${l.name}`)), picked.length > 6 ? h("span.loc-tag.more", `+${picked.length - 6}곳`) : null)
+                : h("small.muted", sale.shop ? `기본: ${SHOPS[sale.shop]?.name || sale.shop}이(가) 있는 맵 ${defN}곳` : "판매 안 함"),
+            h("button.btn.small.ghost", { onclick: () => locPicker(e, ed, sale, () => { markDirty(); refreshRow(c, e, rowEl); }) }, picked.length ? `✏️ 장소 ${picked.length}곳 편집` : "✏️ 장소 고르기"));
+        const rowEl = h("div.cat-row" + (sale.off ? ".off" : ""),
             h("div.cat-prev", { title: "눌러서 크게 보기", onclick: ev => { if (!ev.target.closest(".fr-deco.reveal")) openPreview(c, e); } }, preview(c, e), e.custom ? h("small.badge", "추가됨") : null),
             stats,
             h("div.cat-sale", shopSel, h("div.row", price, h("small", sale.cur))),
@@ -68,6 +70,54 @@ export function adminCatalogPage() {
                     if (!(await confirmBox(`'${e.name}'을(를) 삭제할까요? 이미 가진 플레이어에게서는 표시가 사라질 수 있습니다.`))) return;
                     work.custom[c] = (work.custom[c] || []).filter(x => x.id !== e.id); delete work.edits[`${c}:${e.id}`]; markDirty(); draw();
                 } }, "삭제") : null));
+        return rowEl;
+    }
+    // rebuild one row only (with the working copy applied, like draw())
+    function refreshRow(c, e, el) {
+        const saved = Store.catalog; Store.catalog = work; applyCatalog(); shopCache = new Map();
+        const fresh = row(c, e);
+        Store.catalog = saved; applyCatalog();
+        el.replaceWith(fresh);
+    }
+    // 📍 sale places: maps grouped by region, with names · search · whole-region on/off. Clicks only touch their own chip.
+    function locPicker(e, ed, sale, onDone) {
+        const cur = new Set(ed.locs || []);
+        const regions = REGIONS.map(r => ({ r, maps: LOCATIONS.filter(l => l.region === r.id && !l.kidnap) })).filter(g => g.maps.length);
+        const others = LOCATIONS.filter(l => !l.kidnap && !REGIONS.some(r => r.id === l.region));
+        if (others.length) regions.unshift({ r: { id: "_", name: "기본 맵", emoji: "🎰" }, maps: others });
+        const count = h("b");
+        const chips = new Map();
+        const has = l => sale.shop && shopsOf(l).includes(sale.shop);
+        const paint = () => {
+            for (const [id, b] of chips) { b.classList.toggle("on", cur.has(id)); b.classList.toggle("def", !cur.size && has(LOC_BY_ID[id])); }
+            count.textContent = cur.size ? `${cur.size}곳 선택` : "선택 없음 → 기본 (상점이 있는 모든 맵)";
+        };
+        const groups = regions.map(({ r, maps }) => {
+            const btns = maps.map(l => {
+                const b = h("button.lp-chip" + (l.off ? ".closed" : ""), { title: l.id, onclick: () => { cur.has(l.id) ? cur.delete(l.id) : cur.add(l.id); paint(); } }, h("span", l.emoji || "🎰"), ` ${l.name}`);
+                chips.set(l.id, b); b._text = `${l.name} ${l.id} ${r.name}`.toLowerCase();
+                return b;
+            });
+            const all = h("button.btn.small.ghost", { onclick: () => { const on = maps.every(l => cur.has(l.id)); for (const l of maps) on ? cur.delete(l.id) : cur.add(l.id); paint(); } }, "전체 / 해제");
+            const g = h("section.lp-group", h("div.lp-head", h("b", `${r.emoji || ""} ${r.name}`), h("small.muted", `${maps.length}곳`), all), h("div.lp-chips", btns));
+            g._btns = btns;
+            return g;
+        });
+        const search = h("input.am-search", { type: "search", placeholder: "🔍 맵 / 지역 이름 검색", oninput: ev => {
+            const q = ev.target.value.trim().toLowerCase();
+            for (const g of groups) { let n = 0; for (const b of g._btns) { const ok = !q || b._text.includes(q); b.style.display = ok ? "" : "none"; n += ok; } g.style.display = n ? "" : "none"; }
+        } });
+        const m = modal(h("div.lp",
+            h("div.lp-top", search, count, h("button.btn.small.ghost", { onclick: () => { cur.clear(); paint(); } }, "모두 해제")),
+            h("p.small.muted", "아무 곳도 고르지 않으면 판매 상점이 있는 모든 맵에서 팝니다 (점선). 고른 맵에 상점이 없으면 상점 탭이 새로 생깁니다."),
+            h("div.lp-groups", groups),
+            h("div.row.end", h("button.btn.gold", { onclick: () => m.close() }, "완료"))), { title: `📍 ${e.emoji || ""} ${e.name} — 판매 장소`, wide: true });
+        paint();
+        m.closed.then(() => {
+            const next = cur.size ? [...cur] : null;
+            if (JSON.stringify(next) === JSON.stringify(ed.locs || null)) return;
+            ed.locs = next; onDone();
+        });
     }
     function field(c, f, val, set) {
         const label = h("small", FIELD_LABEL[f] || f);

@@ -37,9 +37,10 @@ async function buyFlow(pid, name, price, kind, give) {
     const ps = G.S().ps[pid];
     const left = kind === "lab" ? M.labBuysLeft(pid) : M.shopBuysLeft(pid);
     const max = kind === "lab" ? EMO.LAB_BUYS : EMO.SHOP_BUYS;
-    if (left <= 0) { toast(`이번 시즌 ${kind === "lab" ? "LAB 상점" : "Monster Shop"} 구매 횟수(${max}회)를 모두 썼습니다`, "warn", 3500); return false; }
+    const per = kind === "lab" ? "이번 시즌" : "이번 라운드";
+    if (left <= 0) { toast(`${per} ${kind === "lab" ? "LAB 상점" : "Monster Shop"} 구매 횟수(${max}회)를 모두 썼습니다`, "warn", 3500); return false; }
     if (!canPay(ps, price)) { toast("골드 · 포인트가 부족합니다", "warn"); return false; }
-    if (!(await confirmBox(`${name}을(를) ${priceLabel(price)}에 구매할까요?\n이번 시즌 남은 구매: ${left}회 → ${left - 1}회`, "구매", "취소"))) return false;
+    if (!(await confirmBox(`${name}을(를) ${priceLabel(price)}에 구매할까요?\n${per} 남은 구매: ${left}회 → ${left - 1}회`, "구매", "취소"))) return false;
     if (!canPay(ps, price) || (kind === "lab" ? M.labBuysLeft(pid) : M.shopBuysLeft(pid)) <= 0) return false;
     pay(ps, price); give(); M.countBuy(pid, kind);
     G.log(`${kind === "lab" ? "🧪" : "🛒"} ${pname(pid)} ${name} 구매 (${priceLabel(price)})`);
@@ -484,7 +485,7 @@ export function monsterShopView(pid, loc, { onChange = () => { } } = {}) {
             const traitPriceHere = t => stockPrice(loc.id, "shop", "t:" + t.id, traitPrice(t));
             put(wrap,
                 h("div.emo-lab-head", h("div.big", "🛒"), h("div", h("h3", `Monster Shop · ${loc.name}`), h("p.muted.small", "볼 · 회복약 · Release 권과 이 상점만의 속성 볼 · 몬스터 무기 · 특성을 팝니다. 상점마다 파는 물건이 다릅니다."))),
-                h("div.row", h("span.emo-limit" + (out ? ".out" : ""), `이번 시즌 남은 구매 ${left} / ${EMO.SHOP_BUYS}회`), h("small.muted", " (모든 Monster Shop 합산)")),
+                h("div.row", h("span.emo-limit" + (out ? ".out" : ""), `이번 라운드 남은 구매 ${left} / ${EMO.SHOP_BUYS}회`), h("small.muted", " (모든 Monster Shop 합산)")),
                 group("⚪ 볼", gen.filter(i => i.kind === "ball" && !i.attr)),
                 group("🔷 이 상점의 속성 볼 (해당 속성 몬스터 포획 45%)", [...st.balls.map(emoItem), ...gen.filter(i => i.attr)].filter(Boolean)),
                 group("🧪 회복 · 치료", gen.filter(i => ["potion", "pp", "cure"].includes(i.kind))),

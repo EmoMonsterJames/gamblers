@@ -13,7 +13,7 @@ import { openSlot } from "./slot.js";
 import { openCasino } from "./casino.js";
 import { locationShops, cardsAt } from "../data/catalogAdmin.js";
 import { npcMapChance } from "../game/season.js";
-import { npcInfo } from "./corners2.js";
+import { npcInfo, diseaseRisk, diseaseInfo } from "./corners2.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
 import { activeBiz } from "../game/bank.js";
 import { BIZ_TYPES } from "../data/business.js";
@@ -102,6 +102,7 @@ export function mapPage() {
         h("h3", l.emoji, " ", l.name),
         h("p", reqText(l.req)),
         h("p.npc-line", `👹 NPC 출몰 확률 (라운드마다 무작위): ${Math.round(npcMapChance(l) * 100)}% `, h("button.btn.small.ghost", { onclick: () => npcInfo(l) }, "NPC 정보")),
+        diseaseRisk(l) ? h("p.npc-line", "🦠 이 맵에서는 질병(독감 · 암)에 걸릴 수 있습니다 ", h("button.btn.small.ghost", { onclick: () => diseaseInfo(l) }, "질병 정보")) : null,
         h("h4", "슬롯"), h("ul", (l.slots || []).filter(id => SLOT_BY_ID[id] && !SLOT_BY_ID[id].off).map(id => h("li", `${SLOT_BY_ID[id].name} — ${SLOT_BY_ID[id].brand}`))),
         h("h4", "카지노 게임"), h("ul", (l.casino || []).filter(id => CASINO_BY_ID[id] && !CASINO_BY_ID[id].off).map(id => h("li", `${CASINO_BY_ID[id].icon} ${CASINO_BY_ID[id].name}`))),
         h("h4", "상점"), h("ul", locationShops(l).map(id => h("li", `${SHOPS[id].icon} ${SHOPS[id].name}`))),

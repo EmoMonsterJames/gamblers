@@ -643,3 +643,10 @@
 /* ⓘ info icon on the map's NPC badge */
 .npc-warn, .npc-safe { display: inline-flex; align-items: center; gap: .35em; }
 .npc-i { display: inline-grid; place-items: center; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1.5px solid currentColor; font: italic 700 .8em/1 Georgia, "Times New Roman", serif; opacity: .9; }
+/* 🦠 disease badge (next to NPC 출몰 / No NPC) + info */
+.dis-warn { margin-left: 6px; display: inline-flex; align-items: center; gap: .35em; font-family: "Binggrae", "Jua", "Noto Sans KR", sans-serif; font-weight: 700; font-size: 10.5px; padding: 2px 7px; border-radius: 999px; background: #3f2a05; border: 1px solid #facc15; color: #fde68a; cursor: pointer; }
+.dis-info { display: grid; gap: 8px; margin-top: 10px; }
+.dis-info h4 { margin: 0; }
+.dis-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.dis-card { display: grid; gap: 4px; padding: 10px; border-radius: 10px; background: #ffffff0a; border: 1px solid #facc1566; }
+.loc-name .npc-warn, .loc-name .npc-safe, .loc-name .dis-warn { white-space: nowrap; }

@@ -316,13 +316,15 @@ export const NEW_MAPS = [
 
     // =========================================================== 🚧 제한구역 (one kind of player only — everyone else needs the map pass)
     // req.who: baby | female | male | senior | lgbt | vip | other  (see whoOk() in game/season.js)
+    // 🚹 No Girls Casino = men only · 🚺 No Boys Casino = women only. The live admin map settings put 👔 Gentlemen's Club (rs_no_boys)
+    // in No Girls and 💄 Ladies Night (rs_no_girls) in No Boys — the slot ids keep their old names.
     { id: "baby_town", region: "restricted", name: "Baby Town", emoji: "🍼", color: "#f9a8d4", x: 18, y: 24, shops: ["general", "pet"], req: { who: "baby" },
       slots: [sl("Baby Bottle Bonanza", "Rabbit-Gaming", "rabbit", "🍼 🧸 🐣", "🧷 🎈", "👶", "🌕", "#f9a8d4", "#500724", "#fbcfe8")],
       casinos: [cg("pick", "Rattle Pick", "🪇", "딸랑이 4개 중 사탕이 든 딸랑이는?", { n: 4, closed: "🪇", prize: "🍭", miss: "🧷" })] },
-    { id: "no_girls", region: "restricted", name: "No Girls Casino", emoji: "🚺", color: "#f472b6", x: 46, y: 14, shops: ["general", "decor"], req: { who: "female" },
+    { id: "no_girls", region: "restricted", name: "No Girls Casino", emoji: "🚹", color: "#60a5fa", x: 46, y: 14, shops: ["general", "decor"], req: { who: "male" },
       slots: [sl("Ladies Night", "DAEBAK", "pearl", "💄 👠 👛", "💅 🎀", "👑", "💰", "#be185d", "#1f0410", "#f9a8d4")],
       casinos: [cg("wheel", "Lipstick Wheel", "💄", "립스틱 휠! 최대 x30")] },
-    { id: "no_boys", region: "restricted", name: "No Boys Casino", emoji: "🚹", color: "#60a5fa", x: 76, y: 22, shops: ["general", "weapon"], req: { who: "male" },
+    { id: "no_boys", region: "restricted", name: "No Boys Casino", emoji: "🚺", color: "#f472b6", x: 76, y: 22, shops: ["general", "weapon"], req: { who: "female" },
       slots: [sl("Gentlemen's Club", "Scrooge-Slots", "dragon", "🎩 👔 ⌚", "🥃 🚬", "💼", "👁️", "#1e3a8a", "#030712", "#93c5fd", "'Rye', serif")],
       casinos: [cg("dice", "Cigar Dice", "🎲", "신사의 주사위! 6-6 이면 x30")] },
     { id: "senior_casino", region: "restricted", name: "Senior Casino", emoji: "👴", color: "#a8a29e", x: 22, y: 62, shops: ["general", "point"], req: { who: "senior" },
@@ -337,6 +339,11 @@ export const NEW_MAPS = [
     { id: "other_casino", region: "restricted", name: "Other Casino", emoji: "👽", color: "#22d3ee", x: 46, y: 84, shops: ["general", "pet"], req: { who: "other" },
       slots: [sl("Other Worlds", "IPEX", "ghost", "👽 🛸 🧿", "🌀 🫧", "❔", "🔮", "#0e7490", "#020617", "#67e8f9")],
       casinos: [cg("gacha", "Mystery Capsule", "❔", "정체불명 캡슐 뽑기! 레전드 x50")] },
+    // 🔐 Bunker: anybody — but only with a 🪪 Access Card bought at the door (10,000G). No card → Dead Land / Difficult Land / NPC Land.
+    // While playing here (first 6 minutes) a 🔑 Bunker Key may turn up (20%) → the hidden vault (screens/bunker.js)
+    { id: "bunker", region: "restricted", name: "Bunker", emoji: "🔐", color: "#57534e", x: 82, y: 86, shops: ["general", "weapon"], req: { fee: 10000, ask: true }, accessCard: true, bunker: true,
+      slots: [sl("Bunker Buster", "IPEX", "dragon", "🪖 💣 🔦", "📻 🥫", "🔑", "👁️", "#3f3f46", "#0a0a0a", "#a8a29e")],
+      casinos: [cg("pick", "Safe Crack", "🔐", "금고 4개 중 금괴가 든 금고는?", { n: 4, closed: "🔐", prize: "🪙", miss: "💣" })] },
 
     // =========================================================== ☠️ Dead Land (NPCs 100% — Dead Land NPCs only — except Sugar Casino)
     // noPass: no map pass / random map ticket works here · endLock: the turn can only be ended with ≤ 5:00 left

@@ -25,7 +25,7 @@ import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
 import { spellingView } from "./spelling.js";
 import { locationShops } from "../data/catalogAdmin.js";
-import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo } from "./corners.js";
+import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo, diseaseBadge } from "./corners.js";
 import { battleView } from "./battle.js";
 import { honorView } from "./honor.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
@@ -38,6 +38,7 @@ import { captureView, hospitalView, labView, monsterShopView, emoDexTab, emoPart
 import { emoInventory } from "../emomon/ui.js";
 import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
 import { promoAtTurn } from "./promo.js";
+import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard } from "./bunker.js";
 import { endLocked, END_LOCK_LEFT } from "../game/extra.js";
 
 let root = null, timer = null;
@@ -288,7 +289,9 @@ function mapStage(s) {
             const target = pick(pool);
             await map.roulette(pool, target.id);
             await banner(`${target.emoji} ${target.name}`, 1400, "loc");
-            let ok = await entryCheck(pid, target, pool.length > 1, fb && fb.id !== target.id ? fb : null);
+            // 🔐 Bunker: no Access Card → a random Dead Land / Difficult Land / NPC Land map
+            const tfb = target.accessCard ? bunkerFallback() : fb && fb.id !== target.id ? fb : null;
+            let ok = await entryCheck(pid, target, pool.length > 1, tfb);
             // ⚔️ Battle Town gate · 🎡 Death Door wheel (death ends the turn right here)
             if (ok) {
                 const ex = await extraEntry(pid, target);
@@ -303,11 +306,12 @@ function mapStage(s) {
                 render();
                 return;
             }
-            if (fb && fb.id !== target.id) {
-                G.setLocation(fb.id, { teleport: true });
+            if (tfb) {
+                s.turn.region = tfb.region; s.turn.npc = null;
+                G.setLocation(tfb.id, { teleport: true });
                 s.turn.running = true;
-                await banner(`${fb.emoji} ${fb.name}`, 1400, "loc");
-                await arrive(s, fb);
+                await banner(`${tfb.emoji} ${tfb.name}`, 1400, "loc");
+                await arrive(s, tfb);
                 render();
                 return;
             }
@@ -482,7 +486,15 @@ async function entryCheck(pid, loc, canRetry, fallback = null) {
         await m.closed;
         if (!roll.allowed && !forced) return false;
     }
-    if (ce.ask) {
+    if (ce.ask && loc.accessCard) {
+        // 🔐 Bunker door: buy the 🪪 Access Card or get sent away
+        if (ce.short) {
+            Sound.lose();
+            await alertBox("🪪 Access Card", [`${loc.emoji} ${loc.name}의 Access Card(출입증)는 ${fmt(ce.fee)} G입니다.`, `골드가 부족해 출입증을 살 수 없습니다…${after}`], "warn");
+            return false;
+        }
+        if (!(await askAccessCard(loc))) return false;
+    } else if (ce.ask) {
         const what = ce.fee ? `${fmt(ce.fee)} G` : `${ce.feePts} P`;
         if (ce.short) {
             Sound.lose();
@@ -707,6 +719,21 @@ function locationStage(s) {
         Store.saveSeason();
     }
 
+    // 🔐 Bunker: a 🔑 Bunker Key may turn up within the first 6 minutes (20%, once per turn)
+    if (loc.bunker) bunkerArm(t);
+    let keyBusy = false;
+    async function bunkerCheck() {
+        if (keyBusy || !loc.bunker || t.arena || !bunkerKeyDue(t)) return;
+        if (root.querySelector(".game-screen .busy, .game-screen.busy") || npcBusy) return; // after the spin / NPC visit
+        keyBusy = true;
+        const was = t.running; t.running = false; updateHud();
+        await bunkerKeyFound(pid, t);
+        keyBusy = false;
+        if (!G.S().turn) return;
+        t.running = was; updateHud(); side.replaceChildren(sideCard()); if (!gameLayer) tabBody(currentTab);
+        Store.saveSeason();
+    }
+
     // timer loop
     let saveTick = 0;
     timer = setInterval(() => {
@@ -720,6 +747,7 @@ function locationStage(s) {
         fx.tick();
         if (!G.S().turn) return;
         npcCheck();
+        bunkerCheck();
         if (t.remaining <= 0) timeUp();
     }, 1000);
 
@@ -770,7 +798,7 @@ function locationStage(s) {
     return h("div.location" + (loc.cursed ? ".cursed" : "") + (loc.kidnap ? ".kidnapped" : "") + (loc.magma ? ".magma" : ""), { style: { "--loc": loc.color } },
         fx.hud,
         h("div.loc-head",
-            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i"))),
+            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc)),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
         ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id) }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`)))] : []),

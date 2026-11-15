@@ -638,3 +638,18 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .ss-who { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px 1px 2px; border-radius: 999px; background: #ffffff10; font-size: 12px; font-weight: 700; vertical-align: middle; }
 .ss-who .avatar, .ss-who > * { flex: none; }
 @media (max-width: 560px) { .ss-rank { width: 34px; font-size: 15px; } }
+/* admin 상품·상점 관리: sale-place summary + picker */
+.loc-sum { display: grid; gap: 6px; align-content: center; justify-items: start; }
+.loc-sum-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.loc-tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #ffcc3322; border: 1px solid var(--gold); white-space: nowrap; }
+.loc-tag.more { background: none; }
+.lp { display: grid; gap: 10px; }
+.lp-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 2; background: var(--panel, #1a1030); padding: 4px 0; }
+.lp-top .am-search { flex: 1 1 220px; }
+.lp-groups { display: grid; gap: 10px; max-height: 60vh; overflow: auto; }
+.lp-head { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.lp-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.lp-chip { font-size: 12px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: #ffffff08; color: inherit; cursor: pointer; opacity: .6; }
+.lp-chip.def { opacity: .9; border-style: dashed; }
+.lp-chip.on { opacity: 1; background: #ffcc3333; border-color: var(--gold); }
+.lp-chip.closed { text-decoration: line-through; }
