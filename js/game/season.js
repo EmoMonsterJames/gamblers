@@ -158,11 +158,11 @@ function restoreStash(pid) {
     ps.weapons = [...ps.weapons, ...(st.weapons || [])];
     if (st.emo) ps.emo = { ...structuredClone(st.emo), finds: 0 };
     if (st.lotto) ps.lotto = { ...st.lotto };
-    if (st.money != null) ps.money += st.money - CONFIG.START_MONEY;
+    if (st.money != null) ps.money += st.money; // carried gold comes ON TOP of the new season's start gold
     if (st.points != null) ps.points = st.points;
     delete Store.stash[pid];
     Store.saveStash();
-    log(`🎒 ${name(pid)} 시즌 ${st.season}의 골드 · 포인트 · 아이템 · 펫 · 무기 · 몬스터를 가지고 합류${st.money != null ? ` (${st.money.toLocaleString()}G · ${(st.points || 0).toLocaleString()}P)` : ""}`);
+    log(`🎒 ${name(pid)} 시즌 ${st.season}의 골드 · 포인트 · 아이템 · 펫 · 무기 · 몬스터를 가지고 합류${st.money != null ? ` (이월 ${st.money.toLocaleString()}G + 시작 ${CONFIG.START_MONEY.toLocaleString()}G · ${(st.points || 0).toLocaleString()}P)` : ""}`);
 }
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
