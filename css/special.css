@@ -650,3 +650,9 @@
 .dis-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
 .dis-card { display: grid; gap: 4px; padding: 10px; border-radius: 10px; background: #ffffff0a; border: 1px solid #facc1566; }
 .loc-name .npc-warn, .loc-name .npc-safe, .loc-name .dis-warn { white-space: nowrap; }
+/* map title row: NPC badge · disease badge · mission · timer on one line */
+.loc-name .npc-warn, .loc-name .npc-safe, .loc-name .dis-warn { font-size: 13px; padding: 4px 10px; margin-left: 0; line-height: 1.2; }
+.loc-name { flex-wrap: nowrap; gap: 8px; }
+.loc-head .loc-timer { display: flex; align-items: center; gap: 10px; }
+.loc-head .loc-timer .row { flex-direction: column; gap: 4px; }
+.loc-head .mission-prog { flex: 1 1 160px; min-width: 160px; }
