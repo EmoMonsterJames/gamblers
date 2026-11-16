@@ -43,8 +43,24 @@ import { endLocked, endLockText, END_LOCK_LEFT, kidnapLockLeft, escapeTried } fr
 import { lottoView, seasonLottoCheck } from "./lotto.js";
 import { highlightView } from "./highlight.js";
 import { deptView, gotchaView } from "./gotcha.js";
+import * as RV from "../game/revival.js";
+import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
+import { arcadeView, CORNER_KINDS } from "./arcade.js";
+import { stopSurvivalFx, infernoGate, INFERNO_FREE } from "./survivalLand.js";
 
 let root = null, timer = null;
+// 🕹️ the running arcade (kept across re-renders of the turn screen) + the screen's current hooks
+let arcadeInst = null, arcadeTurn = null, arcadeHooks = {}, cornerPaused = false;
+function arcadeFor(pid, t) {
+    if (!arcadeInst || arcadeTurn !== t) {
+        arcadeInst?.stop();
+        cornerPaused = false;
+        const call = k => (...a) => arcadeHooks[k]?.(...a);
+        arcadeInst = arcadeView(pid, t, { hp: call("hp"), hurt: call("hurt"), heal: call("heal"), onCorner: call("onCorner"), onResume: call("onResume"), onWin: call("onWin"), onDead: call("onDead"), onChange: call("onChange") });
+        arcadeTurn = t;
+    }
+    return arcadeInst;
+}
 // game tile: just the first short phrase of the description (the full rules are behind the game's ⓘ)
 const shortDesc = d => { const s = String(d || "").split(/(?<=[.!?])\s|[·(=,:]|\. /)[0].trim(); return s.length > 34 ? s.slice(0, 33) + "…" : s; };
 
@@ -60,7 +76,13 @@ function render() {
     const s = G.S();
     if (!s) { root.replaceChildren(noSeason()); return; }
     if (!emoBooting) emoBooting = emoBoot().catch(e => console.warn("EmoMon", e)); // EmoMon missions / party need the catalog
-    const stage = {
+    // 🔄 패자부활전: Survival Land opens only while it runs · the 10th player out stops the season before the next round
+    RV.syncSurvivalLand();
+    stopSurvivalFx(); // flood / fog / statue overlays of the previous screen
+    if (RV.revivalDue()) RV.openRevival();
+    if (arcadeInst && (s.turn?.loc !== "arcade" || arcadeTurn !== s.turn)) { arcadeInst.stop(); arcadeInst = null; arcadeTurn = null; }
+    const revStage = s.revival?.phase === "intro" ? (x => revivalIntroStage(x, render)) : s.status === "revival" ? (x => revivalStage(x, render)) : null;
+    const stage = revStage || {
         select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage, battle: battleMissionStage,
         eliminated: eliminatedStage, final: finalStage, done: doneStage
     }[s.status] || (() => h("div", "?"));
@@ -119,6 +141,7 @@ function header(s) {
     return h("div.season-head",
         h("div.sh-left", h("b", `SEASON ${s.number}`), s.round ? h("span", `ROUND ${s.round}`) : null,
             tier != null ? h("span.tier.t" + tier, `난이도 ${TIERS[tier]}`) : null),
+        RV.revivalOpen() || s.revival?.phase === "intro" ? h("div.sh-mission.rv-head", "🔄 패자부활전 ", s.mission?.revival ? h("span", "· ", s.mission.text) : h("span.muted", "· Survival Land")) :
         s.mission ? h("div.sh-mission", "📜 ", s.mission.text) : h("div.sh-mission.muted", { select: "참가자 선발 중", final: "최종 결승전", done: "시즌 종료" }[s.status] || ""),
         h("div.sh-right", h("span", `생존 ${G.alive().length}/${s.roster.length || CONFIG.SEASON_SIZE}`),
             h("button.btn.ghost.small", { onclick: showLog }, "📋 로그")));
@@ -267,6 +290,14 @@ function turnsStage(s) {
 function preTurn(s) {
     const pid = G.currentPid();
     const ps = s.ps[pid];
+    // 🔄 패자부활전: straight into Survival Land (no region roulette, no lotto / promo)
+    if (RV.revivalTurns()) return h("div.preturn.rv-preturn",
+        h("h2.stage-title", `🔄 패자부활 ${s.turnIdx + 1}번째 플레이어`, h("small", `${s.order.length}명 중`)),
+        playerCard(pid, ps),
+        h("p.notice.center", `❤ FULL HP · 💰 패자부활전 골드 ${fmt(RV.REVIVAL_GOLD)}G · 🔒 Survival Land에서는 턴을 끝낼 수 없습니다 (10분 동안 플레이)`),
+        h("div.row.center",
+            h("button.btn.gold.huge", { onclick: () => { G.startTurn(); G.enterRegion("survival"); render(); } }, "🔄 턴 시작 — Survival Land 맵 뽑기"),
+            h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 패자부활 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
     return h("div.preturn",
         h("h2.stage-title", `${s.turnIdx + 1}번째 플레이어`),
         playerCard(pid, ps),
@@ -567,11 +598,12 @@ function locationStage(s) {
 
     const pauseBtn = h("button.btn.ghost.small", { onclick: () => { t.running = !t.running; pauseBtn.textContent = t.running ? "⏸ 일시정지" : "▶ 재개"; updateHud(); Store.saveSeason(); } }, t.running ? "⏸ 일시정지" : "▶ 재개");
     // 🔒 Hell · Sugar · Terror · Jail · Cursed · Radioactive: the turn can only end with ≤ 5 min left
-    const endBtn = h("button.btn.red.small", { onclick: async () => {
+    const endBtn = loc.noEnd ? h("span.rv-noend", { title: "Survival Land의 모든 맵은 턴 종료가 불가능합니다 — 시간이 끝날 때까지 플레이" }, "🔒 턴 종료 불가") : h("button.btn.red.small", { onclick: async () => {
         if (endLocked(loc, t)) return toast(endLockText(loc, t), "warn", 3500);
         if (await confirmBox("턴을 종료할까요?")) finishTurn();
     } }, "⏹ 턴 종료");
     const lockEnd = () => {
+        if (loc.noEnd) return;
         const l = endLocked(loc, t); endBtn.classList.toggle("locked", l);
         endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)`;
     };
@@ -597,6 +629,14 @@ function locationStage(s) {
         gainCard: kind === "slot" ? L => { G.gainCard(pid, L); updateHud(); } : null,
         cardRate: CARD_RATE,
         petHelp: (what, amount, credit) => { G.notePetHelp(pid, what, amount, credit); side.replaceChildren(sideCard()); },
+        // 🔥 Inferno Casino death games: the player dies on the spot, the turn is over
+        kill: async why => {
+            G.killPlayer(pid, why);
+            clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null;
+            Sound.boom();
+            await alertBox("☠️ 사망", [why, "패자부활전에서 사망했습니다…"], "warn");
+            render();
+        },
         close() { gameLayer?.remove(); gameLayer = null; tabBody(currentTab); }
     });
     function openGame(kind, id) {
@@ -610,15 +650,18 @@ function locationStage(s) {
 
     // tabs
     // rebuilt on every tab change, so a business bought / moved / closed here shows up at once
-    const tabList = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
+    const rev = RV.inRevival(pid);
+    // 🕹️ Arcade: only the corners found inside the game show up
+    const arcadeTabs = () => [["arcade", "🕹️ ARCADE"], ...(t.arcade?.found || []).map(k => [CORNER_KINDS[k].tab, `${CORNER_KINDS[k].emoji} ${CORNER_KINDS[k].label}`]), ["inv", "🎒 인벤토리"], ["emo:dex", "📖 EmoMon Dex"], ["card", "🪪 프로필"]];
+    const tabList = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
-        ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"], ["card", "🪪 프로필"]];
+        ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
-    const invWrap = el => h("div", extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
+    const invWrap = el => h("div", rev ? revivalInvView(pid) : null, extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -628,6 +671,12 @@ function locationStage(s) {
         currentTab = id;
         refreshTabs();
         let content;
+        // 🔥 Inferno Casino: every corner is behind the death roulette (once open, it stays open for this visit)
+        if (loc.inferno && !INFERNO_FREE.includes(id) && !(t.infOpen || []).includes(id)) {
+            const label = tabList().find(([k]) => k === id)?.[1] || "코너";
+            body.replaceChildren(infernoGate(pid, t, id, label, { onOpen: () => tabBody(id), onDead: () => { clearInterval(timer); fx.stop(); render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }));
+            return;
+        }
         if (id === "games" && !loc.slots.length && !loc.casino.length) content = h("p.notice.center", loc.stuck ? "🧗 Stuck Casino: 게임이 하나도 없습니다… 시간이 끝날 때까지 갇혀 있어야 합니다." : "🫥 이 맵에는 게임이 없습니다.");
         else if (id === "kidnap") content = kidnapView(pid, {
             onChange: () => { updateHud(); side.replaceChildren(sideCard()); },
@@ -638,6 +687,12 @@ function locationStage(s) {
         });
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
+        else if (id === "arcade") content = arcadeFor(pid, t).el;
+        else if (id === "arc:slot" || id === "arc:casino") content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")),
+            h("div.game-list", ...(id === "arc:slot" ? loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
+                h("div.gc-kind", "SLOT · ARCADE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); })
+                : loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
+                h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", "GAMBLERS ARCADE"), h("div.gc-desc", shortDesc(g.desc))); }))));
         else if (id === "games") content = h("div.game-list",
             ...loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
                 h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); }),
@@ -646,15 +701,15 @@ function locationStage(s) {
         else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
         else if (id === "inv") content = invWrap(inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
-            onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } },
+            onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } else if (rev) toast("🔄 패자부활전에서는 미션완료권을 쓸 수 없습니다", "warn", 3500); },
             onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${Math.round(r * 100) / 100}`, "ok"); updateHud(); } },
             onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
             onChange: () => side.replaceChildren(sideCard()),
             onPass: id => movePass(id),
             onBoost: kind => { if (G.useBoost(kind)) { Sound.bonus(); toast(kind === "slot" ? "🎰 30초 동안 슬롯 보너스 확률 UP!" : "🃏 30초 동안 카지노 상금 확률 UP!", "ok"); updateHud(); } },
-            onRandomMap: () => moveRandom(),
-            onRemoteBank: () => remoteBank(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
-            onRemoteBiz: () => remoteBiz(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
+            onRandomMap: rev ? null : () => moveRandom(),
+            onRemoteBank: rev ? null : () => remoteBank(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
+            onRemoteBiz: rev ? null : () => remoteBiz(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
             onReports: () => reportList(pid)
         }));
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
@@ -676,6 +731,7 @@ function locationStage(s) {
         else if (id === "dept") content = deptView(pid, loc.id, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "gotcha") content = gotchaView(pid, loc.id, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
+        if (loc.arcade && cornerPaused && id !== "arcade" && !id.startsWith("arc:")) content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")), content);
         body.replaceChildren(content);
     }
     const sideCard = () => h("div.loc-side-inner",
@@ -695,6 +751,7 @@ function locationStage(s) {
         if (!to || moving || to.id === loc.id) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
         if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
+        if (RV.revivalPassBlock(itemId)) return toast(RV.revivalPassBlock(itemId), "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
         moving = true;
         const was = t.running; t.running = false; updateHud();
@@ -728,7 +785,23 @@ function locationStage(s) {
     const passBtns = loc.noPass || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
     // 🍬 sugar · 🌑 dark · 🌋 magma
     const fx = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
-    tabBody(loc.kidnap ? "kidnap" : "games");
+    // 🕹️ Arcade hooks (the arcade instance outlives re-renders of this screen)
+    arcadeHooks = {
+        hp: () => G.S().ps[pid]?.hp ?? 0,
+        hurt: n => {
+            const q = G.S().ps[pid];
+            if (!q) return { dead: true };
+            if (q.hp <= n) { G.killPlayer(pid, "🕹️ 아케이드에서 HP가 바닥나 사망"); return { dead: true }; }
+            q.hp -= n; Store.saveSeason(); updateHud(); return { hp: q.hp };
+        },
+        heal: n => { const q = G.S().ps[pid], add = Math.max(0, Math.min(n, CONFIG.START_HP - q.hp)); q.hp += add; Store.saveSeason(); updateHud(); return add; },
+        onCorner: kind => { cornerPaused = true; t.running = false; updateHud(); refreshTabs(); tabBody(CORNER_KINDS[kind].tab); },
+        onResume: () => { if (cornerPaused) { cornerPaused = false; t.running = true; updateHud(); } },
+        onWin: () => { t.stats.arcadeBoss = true; G.log(`🕹️ ${displayName(Store.player(pid))} 아케이드 보스 격파!`); Store.saveSeason(true); updateHud(); toast("🏆 아케이드 보스 격파!", "ok", 4000); },
+        onDead: () => { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; arcadeInst?.stop(); arcadeInst = null; render(); },
+        onChange: () => updateHud()
+    };
+    tabBody(loc.kidnap ? "kidnap" : loc.arcade ? "arcade" : "games");
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
     const npcHere = G.npcActive(loc.id);
@@ -736,6 +809,7 @@ function locationStage(s) {
     let npcBusy = false;
     async function npcCheck() {
         if (npcBusy || t.arena || !t.npc?.length || t.remaining > t.npc[0]) return; // 🏟️ no NPCs during an arena battle
+        if (loc.revival && activityBusy()) return; // 🔄 Survival Land: never on top of a quiz / roulette / popup
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
         npcBusy = true;
         t.npc.shift();
@@ -839,6 +913,7 @@ function locationStage(s) {
             h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc)),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
+        rev ? revivalBar(s, pid, () => { updateHud(); tabBody(currentTab); }) : null,
         ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id), title: LOC_BY_ID[it.loc].region === "deadland" ? "☠️ Dead Land 맵권: 남은 시간 8분 이상일 때만" : "" }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`, LOC_BY_ID[it.loc].region === "deadland" ? " ☠️8분+" : "")))] : []),
         hud,
         h("div.loc-wrap", side, h("div.loc-main", tabBar, body)));

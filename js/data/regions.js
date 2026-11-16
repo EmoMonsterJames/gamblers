@@ -34,7 +34,9 @@ export const REGIONS = [
     { id: "deadland",   name: "Dead Land",      en: "DEAD LAND",       emoji: "☠️", color: "#7f1d1d", danger: true },
     { id: "desert",     name: "사막",           en: "DESERT",          emoji: "🏜️", color: "#f59e0b" },
     { id: "emoland",    name: "EmoMonster Land", en: "EMOMONSTER LAND", emoji: "🐾", color: "#34d399" },
-    { id: "difficult",  name: "Difficult Land", en: "DIFFICULT LAND",  emoji: "🧗", color: "#64748b" }
+    { id: "difficult",  name: "Difficult Land", en: "DIFFICULT LAND",  emoji: "🧗", color: "#64748b" },
+    // 🔄 패자부활전 only: hidden (off) in normal rounds — game/revival.js syncSurvivalLand() opens it while the revival runs
+    { id: "survival",   name: "Survival Land",  en: "SURVIVAL LAND",   emoji: "🔄", color: "#14b8a6", revival: true, off: true }
 ];
 
 // x / y = % on the region map. req: { country, pass } | { points } |
@@ -392,7 +394,37 @@ export const NEW_MAPS = [
     { id: "cursed_casino", region: "difficult", name: "Cursed Casino", emoji: "🥶", color: "#1e3a8a", x: 22, y: 64, shops: ["general"], npc: "always", noPass: true, endLock: true, cursed: true, fluChance: 0.3, rtpCut: 0.1,
       slots: [], casinos: [cg("pick", "Frozen Coffin", "⚰️", "얼어붙은 관 3개 중 하나…", { n: 3, closed: "⚰️", prize: "💰", miss: "🥶" }), cg("wheel", "Blizzard Wheel", "❄️", "저주받은 눈보라 휠")] },
     { id: "radioactive", region: "difficult", name: "Radioactive Town", emoji: "☢️", color: "#84cc16", x: 50, y: 82, shops: ["general"], npc: "always", noPass: true, endLock: true, cancerChance: 0.3,
-      slots: [], casinos: [cg("scratch", "Fallout Scratch", "☢️", "방사능 스크래치! 해골 3개 x40", { syms: ["🧪", "🦠", "☣️", "☢️", "💀"] }), cg("plinko", "Isotope Plinko", "⚛️", "동위원소 플링코! 양 끝 x25")] }
+      slots: [], casinos: [cg("scratch", "Fallout Scratch", "☢️", "방사능 스크래치! 해골 3개 x40", { syms: ["🧪", "🦠", "☣️", "☢️", "💀"] }), cg("plinko", "Isotope Plinko", "⚛️", "동위원소 플링코! 양 끝 x25")] },
+
+    // =========================================================== 🔄 Survival Land (패자부활전 only — see game/revival.js)
+    // revival: only reachable during the revival round · noEnd: the turn can never be ended by hand (only time up / death)
+    // deadNpc: Dead Land NPCs (no Terrorist) · survivalOnly passes: 45,000G, sold only in Survival Land shops
+    //   disaster: earthquake / flood / gale (screens/survivalLand.js) · passLate: Survival Land passes only with ≤ 5:00 left
+    //   arcade: the arcade platformer (screens/arcade.js) — its corners are found inside the game
+    //   buttonTax: HP −5 for every button pressed in the play area · church: fog · devil statue · Priest NPC
+    { id: "disaster_casino", region: "survival", name: "Disaster Casino", emoji: "🌪️", color: "#0369a1", x: 22, y: 28, shops: ["general", "weapon"], npc: "always", deadNpc: true, revival: true, noEnd: true, disaster: true, passLate: true, highlight: true,
+      slots: [sl("Catastrophe Reels", "IPEX", "dragon", "🌋 🌊 🌪️", "⚡ 🧯", "🆘", "🚨", "#0c4a6e", "#020617", "#38bdf8")],
+      casinos: [cg("wheel", "Disaster Wheel", "🌪️", "재난 휠! 최대 x30"), cg("dice", "Quake Dice", "🫨", "지진 주사위! 6-6 이면 x30")] },
+    { id: "arcade", region: "survival", name: "Arcade", emoji: "🕹️", color: "#7c3aed", x: 74, y: 24, shops: ["general"], npc: "always", deadNpc: true, revival: true, noEnd: true, arcade: true, capture: true,
+      slots: [sl("Pixel Jackpot", "IPEX", "rabbit", "👾 🕹️ 🍄", "⭐ 🪙", "🎮", "🏰", "#312e81", "#0b0420", "#a78bfa")],
+      casinos: [cg("coinflip", "Pixel Flip", "🪙", "8비트 동전 던지기! x1.9"), cg("pick", "Treasure Block", "🧱", "블록 4개 중 코인이 든 블록은?", { n: 4, closed: "🧱", prize: "🪙", miss: "💥" })] },
+    { id: "button_casino", region: "survival", name: "Button Casino", emoji: "🔘", color: "#dc2626", x: 26, y: 70, shops: ["general", "pet"], npc: "always", deadNpc: true, revival: true, noEnd: true, buttonTax: 5, spell: true, emoshop: true, capture: true,
+      slots: [sl("Press Your Luck", "IPEX", "dragon", "🔴 🟡 🟢", "🔵 ⚪", "🔘", "🛑", "#7f1d1d", "#1c0505", "#f87171")],
+      casinos: [cg("hilo", "Button Hi-Lo", "🔘", "누를 때마다 아프다! 하이로우"), cg("plinko", "Push Plinko", "🔴", "버튼 플링코! 양 끝 x25")] },
+    { id: "foggy_church", region: "survival", name: "Foggy Church", emoji: "⛪", color: "#475569", x: 72, y: 70, shops: ["general", "weapon"], npc: "always", deadNpc: true, revival: true, noEnd: true, church: true, spell: true, highlight: true, emoshop: true, capture: true,
+      slots: [sl("Sinner's Bell", "IPEX", "ghost", "🔔 🕯️ ⛪", "📿 🕊️", "✝️", "😈", "#1e293b", "#020617", "#cbd5e1")],
+      casinos: [cg("wheel", "Confession Wheel", "🕯️", "고해성사 휠… 최대 x30"), cg("scratch", "Holy Scratch", "📿", "성수 스크래치! 종 3개 x40", { syms: ["🕯️", "📿", "🕊️", "⛪", "🔔"] })] },
+    //   quiz: quiz popups (at least one every 2 min) — 3 hints (HP −10 each), a wrong answer spins the Penalty roulette
+    { id: "quiz_casino", region: "survival", name: "Quiz Casino", emoji: "🧠", color: "#0284c7", x: 50, y: 47, shops: ["general"], npc: "always", deadNpc: true, revival: true, noEnd: true, quiz: true, capture: true, spell: true,
+      slots: [sl("Brain Teaser Reels", "IPEX", "pearl", "🧠 📚 🎓", "❓ ✏️", "💡", "🏆", "#075985", "#020617", "#7dd3fc")],
+      casinos: [cg("hilo", "Quiz Hi-Lo", "❓", "정답은 높을까 낮을까? 하이로우"), cg("lottery", "Answer Lotto", "🎱", "정답 로또! 5개 다 맞히면 x300")] },
+    //   inferno: every corner opens only after the death roulette (20% death · 50% open · 30% HP −20 and spin again) · noPass: no map pass works here
+    //   slots: Suicide Spin (3 X-marked profiles = death) · Kill Me Gently (knife meter → death) — screens/infernoSlots.js
+    { id: "inferno_casino", region: "survival", name: "Inferno Casino", emoji: "🔥", color: "#b91c1c", x: 50, y: 88, shops: ["general", "weapon"], npc: "always", deadNpc: true, revival: true, noEnd: true, noPass: true, inferno: true,
+      slots: [{ ...sl("Suicide Spin", "Death Slot", "dragon", "💀 ⚰️ 🩸", "🕯️ ⛓️", "☠️", "🪦", "#450a0a", "#0a0000", "#ef4444"), x: { mode: "suicide", sym: "DX", w: 1.7 } },
+              { ...sl("Kill Me Gently", "Death Slot", "rabbit", "🗡️ 🌹 🩸", "🕯️ 🥀", "💀", "⚰️", "#1c1917", "#000000", "#f43f5e"), x: { mode: "knife", sym: "KN", w: 1.1 } }],
+      casinos: [cg("plinko", "Inferno Plinko", "🔥", "지옥 플링코! ☠️ 해골 칸에 떨어지면 바로 사망 · 양 끝 x25", { death: 0.08 }),
+                cg("pick", "Bomb Pick", "💣", "폭탄 4개 중 하나를 고르세요! ☠️ 바로 사망 폭탄 주의", { n: 4, closed: "💣", prize: "💰", miss: "💥", death: 0.1 })] }
 ];
 // the room terrorists drag a kidnapped player into (not on any map — see game/extra.js)
 export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "always", npcOnly: "terror_boss", kidnap: true, slots: [], casino: [] };

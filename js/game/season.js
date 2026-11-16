@@ -10,6 +10,8 @@ import { lang } from "../core/i18n.js";
 import { HONOR_KINDS, honorPrizes, drawPrize, rollAnvils, anvilTotal, HONOR_BUDDY_GOLD } from "../data/honor.js";
 import { sandboxNextTurn } from "./sandbox.js";
 import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits, giveItem as emoGiveItem, newMon as emoNewMon, addMon as emoAddMon } from "../emomon/game.js";
+import * as RV from "./revival.js";
+import { isSurvivalPass } from "../data/catalog.js";
 import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
 
 export const S = () => Store.season;
@@ -237,6 +239,7 @@ export function noteBuy(pid, shopId) {
 // ---------------------------------------------------------------- loans
 export function loanStatus(pid) {
     const s = S(), ps = s.ps[pid];
+    if (RV.inRevival(pid)) return { ok: false, why: "🔄 패자부활전 중에는 대출을 받을 수 없습니다." };
     if (ps.loan) return { ok: false, why: "이미 대출이 있습니다. 먼저 상환하세요." };
     if (alive().length < CONFIG.LOAN_MIN_ALIVE) return { ok: false, why: `생존자가 ${CONFIG.LOAN_MIN_ALIVE - 1}명 이하라 대출이 불가능합니다.` };
     if (ps.money + (ps.loanGold || 0) > CONFIG.LOAN_MAX_GOLD) return { ok: false, why: `보유 골드가 ${CONFIG.LOAN_MAX_GOLD.toLocaleString()}G 이하인 플레이어만 대출할 수 있습니다.` };
@@ -569,6 +572,13 @@ function useNpcBlock(ps) {
     return true;
 }
 
+// 🧑‍⚖️ moves handled by their own screen (Priest): use a Block ticket if there is one
+export function npcBlockTry(pid, move) {
+    const ps = S().ps[pid];
+    if (!npcHarmful(move) || !useNpcBlock(ps)) return null;
+    Store.saveSeason(true);
+    return { blocked: true, left: npcBlocksLeft(ps) };
+}
 export function npcHit(pid, npc, move) {
     const s = S(), ps = s.ps[pid];
     const rnd = ([a, b]) => Math.round((a + Math.random() * (b - a)) / 100) * 100;
@@ -587,7 +597,7 @@ export function npcHit(pid, npc, move) {
     else if (move.breakWeapon) {
         // 👾 Monster Magic!: one of the player's weapons is gone for good
         if (!ps.weapons.length) out.none = true;
-        else { const ix = Math.floor(Math.random() * ps.weapons.length); out.broke = ps.weapons[ix]; ps.weapons.splice(ix, 1); }
+        else { const ix = RV.inRevival(pid) ? RV.weaponToBreak(pid) : Math.floor(Math.random() * ps.weapons.length); out.broke = ps.weapons[ix]; ps.weapons.splice(ix, 1); }
     }
     else if (move.stealPet) {
         // 😈 evil kid: pet / pet effect / special pet / special pet effect (only if the player has that kind)
@@ -595,16 +605,22 @@ export function npcHit(pid, npc, move) {
         const id = isFx ? ps.petEffect : ps.pet;
         const row = id ? (isFx ? PETFX_BY_ID[id] : PET_BY_ID[id]) : null;
         if (!row || (row.kind === "special") !== special) out.none = true;
-        else { if (isFx) ps.petEffect = null; else ps.pet = null; out.stolePet = { kind: k, id, name: row.name }; }
+        else { if (RV.inRevival(pid)) RV.losePet(pid, isFx); if (isFx) ps.petEffect = null; else ps.pet = null; out.stolePet = { kind: k, id, name: row.name }; }
     }
     else if (move.disease) { out.disease = move.disease; if (!infect(pid, move.disease, npc.name)) out.already = true; }
     else if (move.stealAll) {
         const k = move.stealAll;
         if (k === "gold") { if (ps.money > 0) { out.gold = -ps.money; ps.money = 0; } else out.none = true; }
         else if (k === "points") { if (ps.points > 0) { out.pts = -ps.points; ps.points = 0; } else out.none = true; }
+        else if (k === "items" && RV.inRevival(pid)) {
+            // 🔄 the revival inventory goes first — only without one are the player's own items taken
+            const r = RV.takeAllItems(pid);
+            if (r?.n > 0) { out.items = r.n; out.revInv = r.rev; } else out.none = true;
+        }
         else if (k === "items") {
             const n = Object.values(ps.items || {}).reduce((a, x) => a + Math.max(0, x || 0), 0);
             if (n > 0) { out.items = n; ps.items = {}; ps.npcBlock = 0; } else out.none = true;
+        } else if ((k === "bizGold" || k === "loanGold") && RV.inRevival(pid)) { out.none = true; // 🔄 only revival gold can be robbed
         } else if (k === "bizGold") {
             const acc = Store.bank?.accounts?.[pid];
             if (acc?.bgold > 0) { out.bgold = -acc.bgold; acc.bgold = 0; (acc.history ||= []).push({ t: Date.now(), kind: "npc", amount: out.bgold, note: `${npc.name} 강탈` }); Store.saveBank?.(); } else out.none = true;
@@ -614,7 +630,7 @@ export function npcHit(pid, npc, move) {
         const list = ps.emo?.mons || [];
         if (!list.length) out.none = true;
         else {
-            const m = list[Math.floor(Math.random() * list.length)];
+            const m = RV.inRevival(pid) ? RV.monToSteal(pid) : list[Math.floor(Math.random() * list.length)];
             ps.emo.mons = list.filter(x => x !== m);
             if (ps.emo.battle === m.uid) ps.emo.battle = ps.emo.mons[0]?.uid || null;
             out.mon = m.sid;
@@ -643,6 +659,7 @@ export function npcHit(pid, npc, move) {
         // 🦹 one random item from the bag
         const own = Object.entries(ps.items || {}).filter(([, n]) => n > 0).map(([id]) => id);
         if (!own.length) out.none = true;
+        else if (RV.inRevival(pid)) { const r = RV.takeItem(pid); out.stoleItem = r.id; out.revInv = r.rev; }
         else { const id = own[Math.floor(Math.random() * own.length)]; ps.items[id]--; out.stoleItem = id; }
     }
     else if (move.kidnap) { out.kidnap = true; }
@@ -691,6 +708,7 @@ export function npcHit(pid, npc, move) {
 // death outside the judge (reaper): out at once, the turn is over
 export function killPlayer(pid, why, { npc = null } = {}) {
     const s = S();
+    if (RV.revivalTurns() && RV.inRevival(pid)) { RV.revivalKill(pid, why); return; } // 🔄 a death in the revival = a failed revival
     if (s.ps[pid].out) return;
     const rank = alive().length;
     Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
@@ -715,6 +733,7 @@ export function killPlayer(pid, why, { npc = null } = {}) {
 function advanceTurn() {
     const s = S();
     if (s.sandbox && !s.testSeason) { sandboxNextTurn(); return; } // map test: no judging, just the next turn
+    if (RV.revivalTurns()) { RV.revivalAdvance(); return; } // 🔄 패자부활전: the eliminated play, the claw picks the revived
     while (s.turnIdx < s.order.length && s.ps[s.order[s.turnIdx]].out) s.turnIdx++;
     if (s.turnIdx >= s.order.length) judge();
 }
@@ -735,6 +754,7 @@ export function startTurn() {
 export function regionStatus(pid, region) {
     const ps = S().ps[pid];
     if (region.off) return { ok: false, why: "닫힘" };
+    if (RV.revivalTurns() && region.id !== "survival") return { ok: false, why: "🔄 패자부활전: Survival Land만" };
     const locs = LOCATIONS.filter(l => l.region === region.id && !l.off);
     if (!locs.length) return { ok: false, why: "맵 없음" };
     if (region.need && !(ps.items[region.need] > 0)) return { ok: false, why: `${ITEM_BY_ID[region.need]?.name || region.need} 필요`, need: region.need };
@@ -814,6 +834,8 @@ export function passNeeds(pid, loc) {
     if (loc.needMon && !ownsMon(pid)) missing.push("이모몬스터가 없습니다 → EmoMon Capture에서 몬스터부터 잡으세요");
     if (loc.typeGate && !ownsTypes(pid, [typeGateType()])) missing.push(`이번 라운드 Type Casino는 ${typeGateType()} 속성 몬스터 보유자만 들어갈 수 있습니다`);
     if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
+    if (RV.revivalTurns() && loc.region !== "survival") missing.push("🔄 패자부활전 중에는 Survival Land 맵으로만 이동할 수 있습니다");
+    if (RV.revivalTurns() && LOC_BY_ID[S().turn?.loc]?.passLate && (S().turn.remaining ?? 0) > RV.PASS_LATE) missing.push("🌪️ Disaster Casino에서는 남은 시간이 5분 이하일 때만 맵권을 쓸 수 있습니다");
     const fee = r.freeTypes && ownsTypes(pid, r.freeTypes) ? 0 : (r.fee || 0), feePts = r.feePts || 0;
     if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
     if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
@@ -905,7 +927,8 @@ export function setLocation(locId, { teleport = false } = {}) {
     Store.saveSeason();
 }
 // map pass: skip both roulettes and go straight to that map
-export const passesOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => n > 0 && ITEM_BY_ID[k]?.loc && LOC_BY_ID[ITEM_BY_ID[k].loc] && !LOC_BY_ID[ITEM_BY_ID[k].loc].off).map(([k]) => ITEM_BY_ID[k]);
+export const passesOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => n > 0 && ITEM_BY_ID[k]?.loc && LOC_BY_ID[ITEM_BY_ID[k].loc] && !LOC_BY_ID[ITEM_BY_ID[k].loc].off)
+    .filter(([k]) => RV.revivalTurns() ? isSurvivalPass(k) : !isSurvivalPass(k)).map(([k]) => ITEM_BY_ID[k]); // 🔄 revival: Survival Land passes only
 // ☠️ Dead Land map passes: only with 8 min or more of play time left
 export const DEAD_PASS_MIN = 480;
 export const deadPassBlocked = itemId => { const l = LOC_BY_ID[ITEM_BY_ID[itemId]?.loc]; return l?.region === "deadland" && (S()?.turn?.remaining ?? 0) < DEAD_PASS_MIN; };
@@ -915,6 +938,7 @@ export function usePassTeleport(itemId) {
     const it = ITEM_BY_ID[itemId];
     if (!it?.loc || !(ps.items[itemId] > 0)) return false;
     if (deadPassBlocked(itemId)) return false;
+    if (RV.revivalPassBlock(itemId)) return false;
     if (t.loc && LOC_BY_ID[t.loc]?.noPass) return false;
     const need = passNeeds(t.pid, LOC_BY_ID[it.loc]);
     if (!need.ok) return false;
@@ -933,6 +957,7 @@ export function usePassTeleport(itemId) {
 //    Such a map is offered first (pay & go, or "No" → another map with no fee or gear).
 const identityLocked = l => !!(l.req?.country || l.req?.who);
 export function randomMapPool(pid) {
+    if (RV.revivalTurns()) return []; // 🔄 no random map tickets in Survival Land
     const cur = S().turn?.loc;
     const open = new Set(REGIONS.filter(r => !r.off).map(r => r.id));
     return LOCATIONS.filter(l => {
@@ -1016,6 +1041,8 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
         if (win > 0) t.stats.slotWins = (t.stats.slotWins || 0) + 1; // a whole bonus round is one win
         t.stats.five = (t.stats.five || 0) + (extra.five ? 1 : 0);
         if (extra.freeSpin) t.stats.freeSpins = (t.stats.freeSpins || 0) + 1;
+        if (extra.bonus) t.stats.slotBonus = (t.stats.slotBonus || 0) + 1; // slot bonuses only (🔄 revival mission)
+        if (t.stats.spins <= 100 && t.stats.slotNet >= 100000) t.stats.r100 = true; // 100,000G within the first 100 spins
         // first bonus of the turn: on which spin (bonus_in missions)
         if (extra.bonus && !t.stats.bonusAt) t.stats.bonusAt = t.stats.spins;
         // best single-spin win per brand and per bet (brand_win / bet_win missions)
@@ -1052,6 +1079,7 @@ const HAS_MISS = {
 export const judgedMission = m => m && (m.type === "rank");
 export function missionMet(m, st) {
     if (!m || !st) return false;
+    if (m.revival) { const r = RV.revivalMet(m, st); if (r !== null) return r; }
     switch (m.type) {
         case "bonus": return st.bonus > 0;
         case "slot_net": return st.slotNet >= m.v;
@@ -1089,6 +1117,7 @@ export function missionMet(m, st) {
 const bestOf = (obj, keys) => Math.max(0, ...keys.map(k => obj?.[k] || 0));
 export function missionProgress(m, st) {
     if (!m || !st) return { cur: 0, goal: 1, label: "" };
+    if (m.revival) { const r = RV.revivalProgress(m, st); if (r) return r; }
     const met = missionMet(m, st);
     switch (m.type) {
         case "bonus": return { cur: Math.min(1, st.bonus), goal: 1, label: st.bonus ? "보너스 달성!" : "보너스 0회" };
@@ -1131,7 +1160,7 @@ export function missionProgress(m, st) {
 }
 export function useMissionPass() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
-    if (!(ps.items.mission_pass > 0) || t.ticket) return false;
+    if (!(ps.items.mission_pass > 0) || t.ticket || RV.revivalTurns()) return false; // 🔄 not in the revival round
     ps.items.mission_pass--; t.ticket = true;
     log(`🎫 ${name(t.pid)} 미션완료권 사용!`);
     Store.saveSeason();

@@ -45,7 +45,8 @@ export function adminMapsPage() {
     function drawTabs() {
         tabs.replaceChildren(...REGIONS.map(r0 => {
             const r = reg(r0.id);
-            return h("button.tab" + (cur === r.id ? ".on" : "") + (r.off ? ".off" : ""), { onclick: () => { cur = r.id; draw(); } }, `${r.emoji} ${r.name} (${allLocs().filter(l => l.region === r.id).length})`);
+            const sv = r0.revival || r0.id === "survival";
+            return h("button.tab" + (cur === r.id ? ".on" : "") + (r.off && !sv ? ".off" : "") + (sv ? ".am-survival-tab" : ""), { onclick: () => { cur = r.id; draw(); } }, `${r.emoji} ${r.name}${sv ? " · 패자부활전 전용" : ""} (${allLocs().filter(l => l.region === r.id).length})`);
         }), h("button.tab.am-honor-tab" + (cur === HONOR_TAB ? ".on" : ""), { onclick: () => { cur = HONOR_TAB; draw(); } }, `🏅 Honorarium 상품 · 배치 (${allLocs().filter(l => honorKinds(l).length).length})`));
     }
 
@@ -88,6 +89,11 @@ export function adminMapsPage() {
 
     function regionCard() {
         const r = reg(cur), e = red(cur);
+        if (cur === "survival") return h("div.ag-card.am-region.am-survival",
+            h("h3", `${r.emoji} ${r.name} — 🔄 패자부활전 전용 지역`),
+            h("p", "평소 라운드에서는 자동으로 숨겨지고, 패자부활전이 진행되는 동안에만 열립니다 (지역 끄기/켜기 대신 아래에서 맵별로 켜고 끕니다)."),
+            h("p.muted", "각 맵의 슬롯 · 카지노 게임 · 상점 · 코너와 Survival Land 규칙(턴 종료 불가, 재난, 퀴즈, 죽음의 룰렛 등)을 여기서 관리합니다. 일반 상점에는 시간 연장권 · HP약 · 산소통 등 생존 상품과 다른 Survival Land 맵권(45,000G)이 자동으로 진열됩니다."),
+            h("label.cf", h("small", "이름"), h("input", { value: r.name, onchange: ev => { e.name = ev.target.value.trim() || regionDefault(cur).name; dirty(); drawTabs(); } })));
         return h("div.ag-card.am-region" + (r.off ? ".off" : ""),
             h("div.row.between", h("h3", `${r.emoji} 지역 설정`),
                 h("button.btn.small" + (r.off ? ".gold" : ".red"), { onclick: () => { e.off = !r.off; dirty(); draw(); } }, r.off ? "↩ 지역 켜기" : "🚫 지역 끄기")),
@@ -152,6 +158,8 @@ export function adminMapsPage() {
             l.dark && "🌑 암흑 화면", l.magma && "🌋 30초마다 HP −10", l.hurry && "⏱️ 1분 안에 플레이", l.bare && "🫥 기본 코너만", l.cursed && "🥶 펫 무효 · RTP −10%",
             l.fluChance && `🤧 독감 ${Math.round(l.fluChance * 100)}%`, l.cancerChance && `☢️ 암 ${Math.round(l.cancerChance * 100)}%`,
             l.needMon && "🐾 이모몬 보유자만", l.battleGate && "⚔️ 배틀러를 이겨야 입장", l.typeGate && "🔷 랜덤 속성 보유자만", l.req?.who && `🚧 ${l.req.who} 전용`,
+            l.noEnd && "🔒 턴 종료 불가", l.passLate && "⏱️ 5분 이하에서만 맵권", l.disaster && "🌪️ 재난", l.buttonTax && `🔘 버튼마다 HP −${l.buttonTax}`, l.church && "⛪ 안개 · 악마 조각상 · Priest",
+            l.arcade && "🕹️ 아케이드", l.quiz && "🧠 퀴즈 팝업", l.inferno && "🔥 코너마다 죽음의 룰렛",
         ].filter(Boolean);
         return h("div.ag-card.am-loc" + (l.off ? ".off" : ""),
             h("div.row.between",
@@ -176,6 +184,10 @@ export function adminMapsPage() {
             h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"), toggle("community", "💬 커뮤니티"), toggle("arena", "🏟️ 아레나"), toggle("lotto", "🎟️ 로또"), toggle("highlight", "🎬 Highlight"), toggle("dept", "🏬 백화점"), toggle("gotcha", "🎰 Monster Gotcha"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
+            l.region === "survival" ? h("div.am-togs.am-survival", h("small", "🔄 Survival Land 규칙:"),
+                toggle("noEnd", "🔒 턴 종료 불가"), toggle("noPass", "🚫 맵권 사용 불가"), toggle("passLate", "⏱️ 남은 5분 이하에서만 맵권"), toggle("deadNpc", "☠️ Dead Land NPC"),
+                toggle("disaster", "🌪️ 재난 (지진·홍수·강풍)"), h("label.am-tog", h("input", { type: "checkbox", checked: !!l.buttonTax, onchange: ev => { e.buttonTax = ev.target.checked ? 5 : false; dirty(); draw(); } }), "🔘 버튼마다 HP −5"),
+                toggle("church", "⛪ 안개 · 악마 조각상 · Priest"), toggle("quiz", "🧠 퀴즈 팝업 (2분에 1번 이상)"), toggle("inferno", "🔥 코너마다 죽음의 룰렛"), toggle("arcade", "🕹️ 아케이드 게임")) : null,
             h("div.am-togs", h("small", "🏅 Honorarium 코너:"), HONOR_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: honorKinds(l).includes(k), onchange: ev => {
                 const next = new Set(honorKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);

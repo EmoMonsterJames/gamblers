@@ -49,6 +49,16 @@ export function openCasino(g, ctx) {
         try { await animate(res, choice); } catch (e) { console.error(e); }
         ctx.record(0, res.payout, res.points, { settle: true, bet });
         refresh();
+        // ☠️ Inferno Casino death outcome
+        if (res.entry.death) {
+            msg.innerHTML = `<span class="lose">☠️ 바로 사망…</span>`;
+            Sound.boom(); shake(stage);
+            busy = false; root.classList.remove("busy");
+            await sleep(900);
+            if (ctx.kill) { stopAudio(); return ctx.kill(`${g.icon} ${g.name}에서 즉사`); }
+            toast("☠️ 즉사 칸! (연습: 사망 대신 계속)", "warn", 3500);
+            return;
+        }
         if (res.payout > 0) {
             msg.innerHTML = `<span class="win">WIN ×${res.mult} → +${fmt(res.payout)} G</span>`;
             if (res.entry.boosted) msg.append(h("span.lucky", " 🃏 상금 UP 아이템 발동!"));
@@ -127,7 +137,8 @@ const KINDS = {
                 tiles[i].classList.add("shaking"); Sound.tease();
                 await sleep(900);
                 tiles[i].classList.remove("shaking");
-                if (res.mult > 0) { tiles[i].replaceChildren(h("span", g.prize), h("b", "x" + res.mult)); tiles[i].classList.add("win"); }
+                if (res.entry.death) { tiles[i].replaceChildren(h("span", "☠️"), h("b", "BOOM")); tiles[i].classList.add("lose", "death"); Sound.boom(); }
+                else if (res.mult > 0) { tiles[i].replaceChildren(h("span", g.prize), h("b", "x" + res.mult)); tiles[i].classList.add("win"); }
                 else {
                     tiles[i].replaceChildren(h("span", g.miss)); tiles[i].classList.add("lose");
                     await sleep(500);
@@ -270,7 +281,7 @@ const KINDS = {
         }
         const board = h("div.plinko", { html: `<svg viewBox="0 0 ${W} ${H}">${pegs}</svg>` });
         const ball = h("div.pl-ball");
-        const buckets = h("div.pl-buckets", g.buckets.map(m => h("span" + (m >= 5 ? ".hot" : m === 0 ? ".zero" : ""), m ? "x" + m : "0")));
+        const buckets = h("div.pl-buckets", g.buckets.map((m, i) => i === g.deathBucket ? h("span.death", "☠️") : h("span" + (m >= 5 ? ".hot" : m === 0 ? ".zero" : ""), m ? "x" + m : "0")));
         board.append(ball, buckets);
         stage.append(board);
         controls.append(h("button.btn.gold.big", { onclick: () => play(null, async res => {

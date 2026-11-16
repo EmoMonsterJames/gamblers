@@ -16,6 +16,7 @@ import { playSpecial, buildPanel } from "./slotSpecial.js";
 import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
 import { isHandpay, handpay } from "../ui/handpay.js";
+import { infernoUI } from "./infernoSlots.js";
 
 const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "LOTUS", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
 
@@ -31,6 +32,8 @@ export function openSlot(cfg, ctx) {
 
     // ------------------------------------------------------------ symbols
     function symEl(key) {
+        const inf = infHook?.sym(key);
+        if (inf) return inf;
         if (special && key === "_") return h("div.sym.sym-empty", { "data-s": "_" });
         const def = (cfg.look && cfg.look[key]) || (key === "W" ? cfg.wild : null) || cfg.syms?.[key] || (key === "P" ? { e: "P", cls: "sym-p" } : { e: key });
         const cls = ["sym", "s-" + key.replace(/[^\w]/g, "_")];
@@ -88,6 +91,8 @@ export function openSlot(cfg, ctx) {
         });
         frame.append(ring);
     }
+    // 🔥 Inferno Casino death machines (Suicide Spin / Kill Me Gently)
+    const infHook = cfg.inferno ? infernoUI(cfg, ctx, { cellsEl: (c, r) => cellsEl(c, r) }) : null;
     const treeEl = cfg.tree ? h("div.mtree") : null;
     if (treeEl) meterEl.append(treeEl);
     // practice room: force the next spin's bonus
@@ -109,6 +114,7 @@ export function openSlot(cfg, ctx) {
             h("div.ctrl-box", h("small", "WIN"), winEl),
             h("div.ctrl-btns", autoBtn, turboBtn),
             spinBtn));
+    if (infHook) cabinet.insertBefore(infHook.el, frame);
     const root = h("div.game-screen.slot-screen",
         h("div.gs-head",
             h("button.btn.ghost.back", { onclick: () => { if (busy) return toast("스핀이 끝난 뒤 나갈 수 있어요", "warn"); closed = true; auto = 0; Sound.bgmStop(); Sound.palette(null); ctx.close(); } }, "← 나가기"),
@@ -537,6 +543,16 @@ export function openSlot(cfg, ctx) {
         ctx.record(0, res.total, res.points, { settle: true, bet, brand: cfg.brand, bonus: res.bonus, jackpots: res.jackpots, five, freeSpin });
         winEl.textContent = fmt(res.total);
         refresh();
+        // 🔥 Inferno: X profiles / knives on the base reels can kill the player
+        if (infHook) {
+            const dead = await infHook.after(res);
+            if (dead) {
+                auto = 0; closed = true; busy = false;
+                Sound.bgmStop(); Sound.palette(null);
+                if (ctx.kill) { await ctx.kill(dead); return; }
+                toast(`${dead} (연습: 사망 대신 계속)`, "warn", 4000); closed = false;
+            }
+        }
         if (res.points) { floatText(reelsBox, `+${res.points} P`, "pts"); Sound.coin(); }
         if (res.boosted) floatText(cabinet, "🎰 보너스 UP 아이템 발동!", "lucky");
         if (res.lucky && (res.lucky === "bonus" || res.total > 0)) {

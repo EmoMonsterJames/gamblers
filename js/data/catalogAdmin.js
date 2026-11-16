@@ -116,7 +116,13 @@ export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).fil
 // product moved elsewhere / turned off in the admin) is stocked with 2~8
 // different goods of that shop type, fixed per map (seeded by map + shop).
 // Map passes and alphabet cards are never used as filler.
+// 🔄 Survival Land (패자부활전) general shops: a fixed survival stock + the Survival Land passes
+export const SURVIVAL_STOCK = ["time_ext", "hp_10", "hp_50", "hp_full", "oxygen", "slot_plus5", "casino_plus1", "npc_block1", "npc_block5", "random_letter", "super_letter", "flu_cure", "cancer_cure"];
 export function shopListing(shopId, locId) {
+    if (shopId === "general" && LOCATIONS.find(l => l.id === locId)?.region === "survival") {
+        const base = Object.fromEntries(SHOPS.general.list.filter(it => !it.locs).map(it => [it.id, it]));
+        return [...shopItems(shopId, locId), ...SURVIVAL_STOCK.filter(id => base[id]).map(id => ({ cat: "item", id, price: saleOf("item", id).price || base[id].price, gold: 0 }))];
+    }
     const list = [...shopItems(shopId, locId), ...altItems(shopId, locId)];
     if (list.length || !locId || shopId === "discount") return list;
     return fillerItems(shopId, locId);

@@ -20,6 +20,7 @@ import { monPic } from "../emomon/ui.js";
 import { emoFight, emoBoot } from "./emoCorners.js";
 import { promoView } from "./promo.js";
 import { doorGate } from "../ui/doorGate.js";
+import { survivalEffects, survivalArrival } from "./survivalLand.js";
 
 const pname = pid => displayName(Store.player(pid));
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -113,6 +114,7 @@ export async function arrivalExtra(s, loc) {
     if (loc.dark && X.ownsTypes(pid, ["Light", "Electric"])) { Sound.bonus(); await alertBox("💡 이모몬스터 도움을 받았다", ["Light / Electric 몬스터가 어둠을 밝혀 줘서 화면이 정상으로 보입니다!"]); }
     if (loc.cursed) toast("🥶 저주받은 카지노: 펫 · 스페셜 펫 · 이펙트가 작동하지 않고 RTP가 10% 낮습니다", "warn", 5000);
     if (loc.magma) toast("🌋 Magma Town: 30초마다 HP −10", "warn", 4000);
+    await survivalArrival(pid, loc);
     if (loc.sugar) toast(`🍬 Sugar Casino: 버튼을 누를 때마다 당 수치가 오릅니다 (${X.sugarBug(pid) ? "🐛 Bug 몬스터 보유 → 0~15%씩" : "5~30%씩"}). 100%가 되면 사망!`, "warn", 5000);
 }
 
@@ -171,8 +173,12 @@ export function mapEffects(loc, t, pid, { root, onDead, onChange }) {
         document.body.append(ov);
         cleanups.push(() => { document.removeEventListener("mousemove", mv); ov.remove(); });
     }
+    // 🔄 Survival Land (패자부활전): disasters · button tax · church
+    const sv = survivalEffects(loc, t, pid, { root, onDead: () => { stop(); onDead(); }, onChange });
+    if (sv) cleanups.push(() => sv.stop());
     let magmaAcc = 0;
     function tick() {
+        sv?.tick();
         if (!t.running) return;
         // 🌋 HP −10 every 30 s
         if (loc.magma && ++magmaAcc >= 30) {
@@ -185,7 +191,7 @@ export function mapEffects(loc, t, pid, { root, onDead, onChange }) {
         if (loc.sugar && Math.random() < 1 / 25) sugarUp(X.SUGAR_IDLE);
     }
     function stop() { while (cleanups.length) cleanups.pop()(); }
-    return { hud: sugarBar, el: parts, tick, stop };
+    return { hud: sugarBar || sv?.hud || null, el: parts, tick, stop };
 }
 
 // ================================================================ ⛓️ terrorist kidnap room

@@ -9,6 +9,7 @@
 //   scene scripts: jackpot 30s · npc_kill 20s · battle 30s · death 20s · handpay 20s
 //   beg 10s · champion 10s · lotto 20s · promo 20s · poop 15s · bunker 15s · kidnap 15s — all played back in ≤ 15 s (HL_MAX_SEC)
 // =====================================================================
+import * as RV from "../game/revival.js";
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confetti, Activity } from "../core/fx.js";
@@ -54,7 +55,8 @@ export function highlightView(pid, { onChange = () => { }, hold = null } = {}) {
             h("div.gh-hero", h("div.gh-reel", "🎞️"), h("div",
                 h("h3", "🎬 Gamblers Highlight"),
                 h("p", "잠시 쉬어가세요! 지금까지 Gamblers에서 나온 하이라이트 순간 하나를 랜덤으로 감상하면 ", h("b", `${fmt(HL_REWARD[0])} ~ ${fmt(HL_REWARD[1])} G`), "를 드립니다."),
-                h("small.muted", "시즌당 1회 · 감상하는 동안 턴 시간은 계속 흐릅니다 (NPC는 나타나지 않습니다)"))),
+                h("small.muted", "시즌당 1회 · 감상하는 동안 턴 시간은 계속 흐릅니다 (NPC는 나타나지 않습니다)"),
+                RV.inRevival(pid) ? h("p.notice.rv-reset", "🔄 패자부활전: 이번 시즌에 이미 감상했어도 패자부활전에서는 다시 감상할 수 있습니다! (끝나면 원래대로)") : null)),
             h("div.gh-kinds", Object.entries(HL_KINDS).map(([k, K]) => h("span" + (counts[k] ? ".on" : ""), `${K.emoji} ${K.label} ${counts[k] || 0}`))),
             done ? h("div.gh-done", "✅ 이번 시즌에 이미 감상했습니다. 다음 시즌에 또 만나요!")
                 : !all.length ? h("div.gh-done", "🎞️ 아직 저장된 하이라이트가 없습니다. 시즌이 진행되면 하이라이트가 쌓입니다!")

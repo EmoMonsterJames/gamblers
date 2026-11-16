@@ -594,10 +594,11 @@ export const passIdOf = loc => loc.req?.pass || "pass_" + loc.id;
 // Sale: every pass is sold at exactly ONE other map's general shop (no duplicates),
 // each map sells at most 2 passes, spread over the regions; price 45,000~50,000 G.
 const passRnd = (() => { let h = 2166136261; for (const c of "gamblers-map-passes") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
-const passSellers = LOCATIONS.filter(l => l.shops.includes("general"));
+const passSellers = LOCATIONS.filter(l => l.shops.includes("general") && l.region !== "survival"); // 🔄 Survival Land shops sell only Survival Land passes
 const passLoad = {};
 // pass prices: the new regions 45,000G · ☠️ Dead Land 10,000G · 🧗 Difficult Land 35,000G · 👹 NPC Land 40,000G (💀 Death Casino 35,000G) · older maps 45,000~50,000G
 const NEW_PASS_REGIONS = ["restricted", "desert", "emoland"];
+export const SURVIVAL_PASS_PRICE = 45000;
 // 🏬 백화점 maps: their passes cost more
 const PASS_PRICE_BY_ID = { riches: 100000, goldbar: 100000, diamond_casino: 100000, lgbt_nation: 100000, combo_town: 100000, hurry_town: 100000, terror_casino: 55000, magma_town: 55000, death_door: 55000, radioactive: 55000 };
 function passPrice(l) {
@@ -614,6 +615,14 @@ for (const l of LOCATIONS) {
     const ex = ITEMS.find(i => i.id === id);
     if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
     else ITEMS.push({ id, name: `${l.name} 맵권`, emoji: "🎟️", loc: l.id, desc: "사용하면 이 맵으로 바로 이동합니다 — 턴 시작 때나 턴 도중 언제든 (남은 시간은 그대로). 국적 전용 맵 입장 가능. 입장 조건(장비·입장료)이 있는 맵은 그 조건을 갖춰야 이동할 수 있습니다." });
+    // 🔄 Survival Land passes: 45,000G, sold only at the other Survival Land maps, usable only during the 패자부활전
+    if (l.region === "survival") {
+        const it = ITEMS.find(i => i.id === id);
+        it.survival = true; it.emoji = "🔄";
+        it.desc = "🔄 패자부활전 전용 · 사용하면 Survival Land의 이 맵으로 바로 이동합니다 (남은 시간은 그대로). 패자부활전 동안에만 쓸 수 있습니다.";
+        SHOPS.general.list.push({ cat: "item", id, price: SURVIVAL_PASS_PRICE, locs: LOCATIONS.filter(x => x.region === "survival" && x.id !== l.id).map(x => x.id) });
+        continue;
+    }
     // least-loaded sellers first, preferably in another region
     let cand = passSellers.filter(s => s.id !== l.id && (passLoad[s.id] || 0) < 2);
     const min = Math.min(...cand.map(s => passLoad[s.id] || 0));
@@ -627,6 +636,7 @@ for (const l of LOCATIONS) {
     SHOPS.general.list.push({ cat: "item", id, price: passPrice(l) ?? rndPrice, locs: [seller.id] });
 }
 export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
+export const isSurvivalPass = id => !!ITEM_BY_ID[id]?.survival;
 
 // the map that sells a new frame / effect must have that shop (adds 💠 포인트+골드 상점 where needed)
 for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) for (const lid of it.locs || []) {
@@ -714,6 +724,9 @@ export const NPCS = [
       moves: [{ steal: [10000, 10000] }, { steal: [20000, 20000] }, { steal: [50000, 50000] }, { steal: [30000, 30000] }, { stealPts: 50 }, { stealPts: 100 }, { stealPts: 10 }, { steal: [5000, 5000] }, { stealAll: "bizGold" }, { stealAll: "loanGold" }] },
     { id: "terrorist", name: "Terrorist", emoji: "🥷", art: "💣", color: "#3f3f46", align: "evil", deadOnly: true,
       moves: [{ kill: true, w: 10 }, { hp: -15, w: 30 }, { kidnap: true, w: 40 }, { hp: -20, steal: [10000, 10000], w: 20 }] },
+    // ⛪ Foggy Church (Survival Land) only: sermon = 30 s of hymns (play time keeps running) · donation = give real gold or get hurt
+    { id: "priest", name: "Priest", emoji: "🧑‍⚖️", art: "📖", color: "#1f2937", align: "evil", churchOnly: true,
+      moves: [{ sermon: 30 }, { donation: true }] },
     // 🎅 arctic (빙하) region only · 🦹 terrorist kidnap room only (always there)
     { id: "santa", name: "산타크로스", emoji: "🎅", art: "🎁", color: "#dc2626", align: "good", arcticOnly: true,
       moves: [{ hp: 10 }, { give: [1000, 1000] }, { give: [2000, 2000] }, { hp: 20 }, { cureFlu: true }, { giftBox: true }] },
@@ -732,8 +745,10 @@ export const SANTA_GIFTS = [
 // who can show up on this map: npcOnly → that one · Dead Land → DEAD_NPC_IDS · anywhere else → the normal NPCs
 export function npcPool(loc) {
     if (loc?.npcOnly) { const n = NPCS.find(x => x.id === loc.npcOnly); if (n) return [n]; }
+    // ⛪ Foggy Church: the Priest comes along with the Dead Land NPCs (about 1 visit in 3 is the Priest)
+    if (loc?.church) { const dead = DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean), pr = NPCS.find(n => n.id === "priest"); return [pr, pr, pr, ...dead].filter(Boolean); }
     if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
-    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && (!n.arcticOnly || loc?.region === "arctic"));
+    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && !n.churchOnly && (!n.arcticOnly || loc?.region === "arctic"));
 }
 // a move by its weight (w, default 1)
 export const moveChance = (npc, m) => (m.w ?? 1) / npc.moves.reduce((a, x) => a + (x.w ?? 1), 0);
@@ -744,7 +759,7 @@ export function pickNpcMove(npc) {
 }
 export const HOPE_MESSAGES = ["잘될거에요", "대박나세요", "우승할거에요"];
 // a move is "harmful" when it can hurt the player (NPC 공격 Block 권 blocks these)
-export const npcHarmful = m => !!(m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
+export const npcHarmful = m => !!(m.sermon || m.donation || m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
 // evil = harmful moves only · good = helpful only · neutral = both (curses / idling count as neither)
 export function npcAlign(n) {
     if (n.align) return n.align;
