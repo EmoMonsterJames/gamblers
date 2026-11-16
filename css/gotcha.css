@@ -67,3 +67,8 @@ button.gc-mon.add:hover { border-color: var(--gold); }
 .dr-legend { list-style: none; padding: 0; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 12px; max-width: 640px; font-size: 13px; }
 .dr-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
 @media (max-width: 420px) { .dr-label { transform: rotate(var(--a)) translateY(-80px); } }
+.dr-dead { color: #f87171; font-weight: 800; }
+.dr-wheel.tight .dr-label { width: 44px; margin-left: -22px; transform: rotate(var(--a)) translateY(-122px); }
+.dr-wheel.tight .dr-label span { font-size: 16px; }
+.dr-wheel.tight .dr-label small { font-size: 10px; }
+@media (max-width: 420px) { .dr-wheel.tight .dr-label { transform: rotate(var(--a)) translateY(-92px); } }

@@ -4,6 +4,7 @@
 // 🏬 백화점 — every good except monsters, at the admin's price, found by search.
 //    One visit per season (the turn of the first purchase), up to 3 purchases in it.
 //    Entry: a roulette once per round — refused 35% · 1,000 / 3,000 / 5,000 / 10,000G or free (13% each).
+//    In Dead Land maps: refused 65% · the other five 7% each.
 //
 // 🎰 Monster Gotcha — a capsule machine that sells monsters.
 //    Door: 60% let in / 40% turned away, decided once per round. 1 purchase per round.
@@ -13,7 +14,7 @@
 // =====================================================================
 import { Store } from "../core/store.js";
 import { CATS, saleOf } from "../data/catalogAdmin.js";
-import { SHOPS } from "../data/catalog.js";
+import { SHOPS, LOC_BY_ID } from "../data/catalog.js";
 import { S, log, name } from "./season.js";
 import { cat, species, emoItem, EMO_ITEMS, LAB_ONLY, EMO, weaponPrice, traitPrice, monOn, weaponOn, traitOn } from "../emomon/data.js";
 import * as M from "../emomon/game.js";
@@ -45,13 +46,17 @@ export const DEPT_DOOR = [
     { id: "g10k", label: "10,000G 지불 후 입장", emoji: "💰", fee: 10000, w: 13, color: "#b45309" },
     { id: "free", label: "무료 입장", emoji: "🎉", fee: 0, w: 13, color: "#0e7490" }
 ];
+// ☠️ Dead Land 백화점: refused 65% · the other five 7% each
+export const DEPT_DOOR_DEAD = DEPT_DOOR.map(d => ({ ...d, w: d.id === "no" ? 65 : 7 }));
+export const deptDoorFor = locId => LOC_BY_ID[locId]?.region === "deadland" ? DEPT_DOOR_DEAD : DEPT_DOOR;
 // → null (not spun this round) | { round, id, ok, fee, broke }
 export const deptDoorState = pid => { const d = ps_(pid)?.deptDoor; return d?.round === S().round ? d : null; };
-export function deptDoorRoll(pid) {
+export function deptDoorRoll(pid, locId) {
     const ps = ps_(pid), s = S();
     if (ps.deptDoor?.round === s.round) return ps.deptDoor;
-    let x = Math.random() * 100, pick = DEPT_DOOR[0];
-    for (const d of DEPT_DOOR) { if ((x -= d.w) < 0) { pick = d; break; } }
+    const odds = deptDoorFor(locId);
+    let x = Math.random() * 100, pick = odds[0];
+    for (const d of odds) { if ((x -= d.w) < 0) { pick = d; break; } }
     const r = { round: s.round, id: pick.id, ok: pick.fee != null, fee: pick.fee || 0, broke: false };
     if (r.ok && r.fee > ps.money) { r.ok = false; r.broke = true; }        // can't pay the fee → turned away
     if (r.ok && r.fee) ps.money -= r.fee;

@@ -24,9 +24,12 @@ const HEAD_W = 54;
 const SLIP_RATE = 0.35; // chance the claw drops its first ball
 
 // safe: the mission winners (not candidates) — shown on their own next to the machine
-export function clawElimination(cands, { onDone = () => { }, safe = [] } = {}) {
-    const many = cands.length > 3;
-    const B = cands.length > 12 ? 50 : 60; // ball size
+// pool: everyone passed → every live player's ball goes in the machine and the claw pulls out the
+// candidates (the round's 3 lowest earners), so the pick still plays out on screen
+export function clawElimination(cands, { onDone = () => { }, safe = [], pool = null } = {}) {
+    const many = pool ? pool.length > cands.length : cands.length > 3;
+    const inMachine = pool || cands;
+    const B = inMachine.length > 12 ? 50 : 60; // ball size
     const status = h("p.claw-status");
     const tray = h("div.claw-tray");
     const btn = h("button.btn.red.huge");
@@ -44,7 +47,7 @@ export function clawElimination(cands, { onDone = () => { }, safe = [] } = {}) {
             h("div.claw-rail"), h("div.claw-chute", h("span", "OUT")), claw);
         // the pile: bottom-up rows across the right ~78% of the glass
         const per = Math.max(3, Math.floor(400 / (B + 4)));
-        shuffle(cands).forEach((pid, i) => {
+        shuffle(inMachine).forEach((pid, i) => {
             const row = Math.floor(i / per), col = i % per;
             const ball = h("div.claw-ball", { "data-id": pid }, avatar(pid, B - 8, { effect: false, frame: false }));
             const f = Math.min(1, 0.22 + (col + (row % 2) * 0.5) / (per + 0.5) * 0.78 + (Math.random() * 0.02 - 0.01));
@@ -54,8 +57,8 @@ export function clawElimination(cands, { onDone = () => { }, safe = [] } = {}) {
             balls.set(pid, ball);
             machine.append(ball);
         });
-        status.textContent = `탈락 후보 ${cands.length}명의 프로필 공이 들어 있습니다. 집게가 3개를 뽑습니다!`;
-        btn.textContent = "🕹️ 집게 시작 — 3명 뽑기";
+        status.textContent = pool ? `모두 미션 성공! ${pool.length}명의 프로필 공이 들어 있습니다. 집게가 탈락 후보 ${cands.length}명을 뽑습니다!` : `탈락 후보 ${cands.length}명의 프로필 공이 들어 있습니다. 집게가 3개를 뽑습니다!`;
+        btn.textContent = `🕹️ 집게 시작 — ${Math.min(3, cands.length)}명 뽑기`;
         btn.onclick = runClaw;
         wrap.append(h("div.claw-stage", machine, safePanel), h("h4.claw-tray-title", "🎯 뽑힌 공"), tray, status, h("div.row.center", btn));
     } else {
@@ -158,7 +161,7 @@ export function clawElimination(cands, { onDone = () => { }, safe = [] } = {}) {
         btn.disabled = true;
         const picks = shuffle(cands).slice(0, 3);
         const slips = new Map(); // pid → times dropped
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < picks.length; i++) {
             const pid = picks[i];
             status.textContent = `🕹️ ${i + 1}번째 공을 노리는 중…`;
             // 0~3 drops of this very ball (0: 50% · 1: 25% · 2: 15% · 3: 10%)

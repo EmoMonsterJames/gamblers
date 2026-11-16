@@ -850,14 +850,17 @@ function judgeStage(s) {
     const failed = s.order.filter(pid => !s.results[pid]?.pass);
     // 🕹️ claw machine: > 3 candidates → the claw pulls 3 balls → 1 saved → 1 of the last 2 is out
     let done = false;
-    const claw = clawElimination([...s.candidates], { safe: passed.filter(pid => !s.candidates.includes(pid) && !s.ps[pid].out), onDone: loser => {
+    // everyone passed → all live balls go in and the claw pulls out the 3 lowest earners
+    const live = s.order.filter(pid => !s.ps[pid].out);
+    const pool = s.allPassed && live.length > s.candidates.length ? live : null;
+    const claw = clawElimination([...s.candidates], { pool, safe: pool ? [] : passed.filter(pid => !s.candidates.includes(pid) && !s.ps[pid].out), onDone: loser => {
         if (done) return; done = true;
         G.eliminate(loser);
         render();
     } });
     return h("div.judge-stage",
         h("h2.stage-title", `ROUND ${s.round} 결과`),
-        s.allPassed ? h("div.notice", "모두 미션 성공! 이번 라운드 손익 하위 3명이 탈락 후보가 됩니다.") : null,
+        s.allPassed ? h("div.notice", "모두 미션 성공! 집게가 이번 라운드 손익 하위 3명을 탈락 후보로 뽑습니다.") : null,
         ...(s.exempt || []).map(x => h("div.notice.exempt", avatar(x.pid, 40, { effect: false }), h("span", `⭐ ${displayName(Store.player(x.pid))}은(는) ${x.why}으로 인해 탈락후보에서 면제되었다!`))),
         h("div.judge-cols",
             h("div.jcol.ok", h("h3", `✅ 성공 ${passed.length}`), h("div.jlist", passed.map(pid => miniPlayer(pid, s.ps[pid], s.results[pid]?.exempt ? h("span.exempt-tag", { title: `${s.results[pid].exempt}으로 인해 면제` }, "⭐ 면제") : null)))),

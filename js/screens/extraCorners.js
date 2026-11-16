@@ -295,6 +295,7 @@ export function postView(p) {
     const pl = Store.player(p.pid);
     return h("div.cm-post", fxl, h("div.cm-head", pl ? avatar(p.pid, 34, { effect: false }) : null, h("b", pl ? displayName(pl) : "?"), h("small.muted", ` · 시즌 ${p.season} · ${new Date(p.at).toLocaleDateString()}`)), txt);
 }
+let cmSeason = null; // 💬 which season's comments are shown (null → current season)
 function commentView(pid, { onChange = () => { } } = {}) {
     const ps = G.S().ps[pid];
     const wrap = h("div.community");
@@ -318,7 +319,7 @@ function commentView(pid, { onChange = () => { } } = {}) {
             if (!(await confirmBox(`코멘트를 ${fmt(X.COMMENT.FEE)}G에 작성할까요?${Object.keys(style).length ? `\n사용되는 꾸미기 아이템 ${Object.keys(style).length}개는 사라집니다.` : ""}`, "작성", "취소"))) return;
             const r = X.writePost(pid, ta.value, style);
             if (!r.ok) return toast(r.why, "warn");
-            Sound.cash(); toast("💬 코멘트 작성 완료!", "ok"); onChange(); draw();
+            cmSeason = G.S().number; Sound.cash(); toast("💬 코멘트 작성 완료!", "ok"); onChange(); draw();
         } }, posted ? "이번 시즌 작성 완료" : `💬 코멘트 작성 (${fmt(X.COMMENT.FEE)}G)`);
         const champ = X.isChampion(pid);
         const shop = h("div.cm-shop", CM_GOODS.map(g => {
@@ -332,13 +333,17 @@ function commentView(pid, { onChange = () => { } } = {}) {
             } }, h("span.cm-ico", g.kind === "color" ? h("i.cm-swatch" + (["rainbow", "goldsilver"].includes(cmColor(g.ref)?.css) ? "." + cmColor(g.ref).css : ""), { style: { background: cmColor(g.ref)?.css } }) : g.emoji),
                 h("b", g.name), h("small", blocked ? "🏆 시즌 우승 전적 필요" : priceLabel(g)), ps.items[g.id] > 0 ? h("em", `보유 ${ps.items[g.id]}`) : null);
         }));
-        const list = X.posts();
+        const all = X.posts(), seasons = [...new Set([G.S().number, ...all.map(p => p.season)])].sort((a, b) => b - a);
+        if (cmSeason !== "all" && !seasons.includes(cmSeason)) cmSeason = G.S().number;
+        const list = cmSeason === "all" ? all : all.filter(p => p.season === cmSeason);
+        const seasonBar = h("div.bk-tabs.cm-seasons", [["all", `전체 (${all.length})`], ...seasons.map(n => [n, `시즌 ${n} (${all.filter(p => p.season === n).length})`])].map(([k, l]) => h("button.bk-tab" + (k === cmSeason ? ".on" : ""), { onclick: () => { cmSeason = k; draw(); } }, l)));
         wrap.replaceChildren(
             h("h3", "💬 커뮤니티"),
             h("p.muted.small", "코멘트는 시즌이 바뀌어도 남습니다 · 플레이어당 시즌 1회 · 꾸미기 아이템은 1회용입니다"),
             h("div.cm-write", ta, sels, h("div.row.end", writeBtn)),
             h("details.cm-shop-wrap", h("summary", "🛍️ 커뮤니티 상점"), shop),
-            h("div.cm-list", list.length ? list.slice(0, 100).map(postView) : h("p.muted.center", "아직 코멘트가 없습니다 — 첫 코멘트를 남겨 보세요!")));
+            seasonBar,
+            h("div.cm-list", list.length ? list.slice(0, 100).map(postView) : h("p.muted.center", cmSeason === G.S().number || cmSeason === "all" ? "아직 코멘트가 없습니다 — 첫 코멘트를 남겨 보세요!" : `시즌 ${cmSeason}에는 코멘트가 없습니다`)));
     };
     draw();
     return wrap;
