@@ -45,8 +45,10 @@ export const inRevival = pid => revivalOpen() && !!rv().saved?.[pid];
 export const outCount = () => { const s = S(); return s ? s.roster.length - G.alive().length : 0; };
 
 // 🔒 Survival Land is only on the map while the revival runs
+// (and in the admin's 🧪 맵 시뮬레이션 — test mode, not the test season — so its maps can be tried)
+export const survivalSim = () => !!S()?.sandbox && !S()?.testSeason;
 export function syncSurvivalLand() {
-    const open = revivalOpen();
+    const open = revivalOpen() || survivalSim();
     for (const r of REGIONS) if (r.revival || r.id === "survival") r.off = !open;
     // a map the admin switched off (🌍 지역·맵 관리) stays closed
     for (const l of LOCATIONS) if (l.revival || l.region === "survival") l.off = !open || !!Store.maps?.locs?.[l.id]?.off;
