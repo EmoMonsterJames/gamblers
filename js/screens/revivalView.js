@@ -151,22 +151,46 @@ function resultStage(s, rerender) {
     const head = h("h2.stage-title", "🔄 패자부활전 결과", h("small", s.mission?.text || ""));
     if (!W.length) {
         setTimeout(() => Sound.lose(), 100);
+        RV.setRevivalRanks(null, null);
         return h("div.rv-stage.rv-result", head, cols, h("div.center-card", h("div.rv-none", "🥀"), h("h2", "부활자 없음"), h("p", "모두 미션에 실패하여 이번 패자부활전으로 살아나는 플레이어는 없습니다.")),
-            h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(null) }, "▶ 시즌으로 돌아가기")));
+            revivalRankList(R), h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(null) }, "▶ 시즌으로 돌아가기")));
     }
     if (W.length === 1) {
         const pid = W[0];
         setTimeout(() => { Sound.fanfare(); confetti(120, ["🔄", "🎉", "✨"]); }, 150);
+        RV.setRevivalRanks(pid, null);
         return h("div.rv-stage.rv-result", head, cols, h("div.center-card.rv-win", h("div.rv-win-tag", "REVIVED"), avatar(pid, 170), h("h2", `🎉 ${nm(pid)} 부활!`), h("p", "미션을 성공한 유일한 플레이어 — 집게 없이 바로 부활합니다! (FULL HP로 복귀)")),
-            h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(pid) }, "🔄 부활 확정 · 시즌으로")));
+            revivalRankList(R), h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(pid) }, "🔄 부활 확정 · 시즌으로")));
+    }
+    // the claw already decided (the screen was redrawn): show its result, never a second draw
+    const decided = R.ranks ? Object.keys(R.ranks).find(p => R.ranks[p] === 1) : null;
+    if (decided != null) {
+        const w = +decided;
+        return h("div.rv-stage.rv-result", head, cols, h("div.center-card.rv-win", h("div.rv-win-tag", "REVIVED"), avatar(w, 150), h("h2", `🎉 ${nm(w)} 부활!`)),
+            revivalRankList(R), h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(w) }, `🔄 ${nm(w)} 부활 확정 · 시즌으로`)));
     }
     let done = false;
     const claw = clawChampion(W, {
         chute: "REVIVE", winTag: "🔄 REVIVED", winLine: n => `🔄 ${n} 패자부활!!!`,
         intro: `미션 성공자 ${W.length}명의 공이 들어 있습니다. 집게가 REVIVE 구멍에 떨어뜨리는 공의 주인이 부활합니다!`,
-        onDone: w => { if (done) return; done = true; const b = h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(w) }, `🔄 ${nm(w)} 부활 확정 · 시즌으로`)); claw.after(b); }
+        onDone: (w, second) => {
+            if (done) return; done = true;
+            RV.setRevivalRanks(w, second);
+            claw.after(revivalRankList(R), h("div.row.center", h("button.btn.gold.huge", { onclick: () => finish(w) }, `🔄 ${nm(w)} 부활 확정 · 시즌으로`)));
+        }
     });
     return h("div.rv-stage.rv-result", head, cols, h("h3.center", "🕹️ 단 1명만 부활합니다!"), claw);
+}
+// 🏅 the revival ranking (also kept in 📜 시즌 요약)
+function revivalRankList(R) {
+    const ranks = R.ranks || {}, list = Object.keys(ranks).map(Number).sort((a, b) => ranks[a] - ranks[b]);
+    if (!list.length) return null;
+    const W = R.winners || [];
+    const why = pid => ranks[pid] === 1 && W.includes(pid) ? "🔄 부활" : ranks[pid] === 2 && R.second === pid ? "🕹️ 집게 결승" : R.dead?.includes(pid) ? "☠️ 플레이 중 사망" : W.includes(pid) ? "✅ 미션 성공" : "❌ 미션 실패";
+    return h("div.rv-ranks", h("h3", "🏅 패자부활전 순위"),
+        h("ol.rv-rank-list", list.map(pid => h("li" + (ranks[pid] === 1 && W.includes(pid) ? ".win" : R.dead?.includes(pid) ? ".dead" : ""),
+            h("b.rv-rank-no", `${ranks[pid]}등`), avatar(pid, 34, { effect: false }), h("span", nm(pid)), h("small", why(pid))))),
+        h("p.small.muted", "플레이 중 사망한 플레이어가 꼴찌 (먼저 죽을수록 아래) · 살아남았지만 미션에 실패한 플레이어는 집게가 먼저 꺼냅니다 · 마지막 2명 중 1명 부활, 1명은 2등. 시즌 순위는 바뀌지 않습니다."));
 }
 
 // ---- in-turn bar: reset note + 🔤 letter submission

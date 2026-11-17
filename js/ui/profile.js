@@ -1,6 +1,6 @@
 // Profile pictures (frame + effect), pets, and the full player card.
 import { h, fmt, esc } from "../core/util.js";
-import { particles } from "../core/fx.js";
+import { particles, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { lang } from "../core/i18n.js";
 import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK, attackCount } from "../data/catalog.js";
@@ -29,10 +29,28 @@ export function avatar(pid, size = 64, { effect = true, frame = true, cls = "" }
         if (hl) el.append(h("span.av-badge.av-h", { style: { fontSize: fs } }, hl));
         const dis = Store.season?.ps?.[pid]?.dis;
         if (dis && Object.values(dis).some(Boolean) && !Store.season.ps[pid].out)
-            el.append(h("span.av-sick", { style: { fontSize: Math.max(10, Math.round(size * 0.2)) + "px" }, title: `질병: ${[dis.flu && "독감", dis.cancer && "암"].filter(Boolean).join(" · ")}` }, "⚠️"));
+            el.append(h("span.av-sick", { style: { fontSize: Math.max(10, Math.round(size * 0.2)) + "px" }, title: `질병: ${[dis.flu && "독감", dis.cancer && "암"].filter(Boolean).join(" · ")} — 눌러서 질병 정보 보기`,
+                role: "button", onclick: e => { e.preventDefault(); e.stopPropagation(); sickInfo(pid); } }, "⚠️"));
     }
     return el;
 }
+// ⚠️ on a sick player's picture → which diseases, what they do, how to cure them
+async function sickInfo(pid) {
+    const { DISEASES } = await import("../game/extra.js"); // lazy: game/extra.js pulls in the season rules
+    const ps = Store.season?.ps?.[pid];
+    const list = Object.keys(ps?.dis || {}).filter(k => ps.dis[k]);
+    if (!list.length) return;
+    modal(h("div.sick-info", list.map(k => {
+        const d = DISEASES[k] || { name: k, emoji: "🦠" };
+        return h("div.sick-card",
+            h("div.sick-card-head", h("span.sick-ico", d.emoji), h("div", h("b", `${d.name}${d.en ? ` (${d.en})` : ""}`), h("small", "감염 중"))),
+            h("ul",
+                d.hp ? h("li", `🩸 라운드가 시작될 때마다 HP −${d.hp}`) : null,
+                h("li", "☠️ HP가 0이 되면 바로 사망합니다"),
+                h("li", "💊 치료: ", h("b", ITEM_BY_ID[d.cure]?.name || d.cure || "치료제"), " 사용 또는 🏥 Player Clinic 치료")));
+    })), { title: `🦠 질병 정보 · ${displayName(Store.player(pid))}` });
+}
+
 // frame preview for shops / inventory (a smiley instead of a player)
 export function framePreview(fr, size = 64) {
     const el = h("div.avatar.preview." + fr.cls + (fr.deco ? ".fr-has-deco" : ""), { style: { width: size + "px", height: size + "px", ...(fr.deco ? { fontSize: size + "px" } : {}) } }, h("div.fr-dummy", "🙂"));

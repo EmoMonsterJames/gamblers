@@ -661,3 +661,4 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .loc-main .gc-name { font-size: 21px; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .loc-main .gc-name .gc-ico { font-size: 22px; }
 .loc-main .gc-desc { margin-top: auto; }
+.ss-rv { margin-top: 4px; } .ss-tag.rv-ok { background: #14b8a62a; color: #5eead4; } .ss-tag.rv-bad { background: #64748b33; color: #cbd5e1; }

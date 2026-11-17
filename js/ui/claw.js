@@ -7,7 +7,7 @@
 //   then 1 of the 3 is saved at random, and the last 2 face a tense draw.
 //   ≤ 3 candidates: no claw — straight to the save (3) / the final draw (2).
 //   onDone(eliminatedPid) is called once the loser is shown.
-// clawChampion(two, { onDone }): the final tie-break — the claw decides the champion.
+// clawChampion(two, { onDone }): the final tie-break — the claw decides the champion (onDone(winner, otherFinalist)).
 // winnerCelebration(s, { actions }):the roster lined up left / right, the
 //   champion in the middle with blinking WINNER signs, balloons and fireworks.
 // =====================================================================
@@ -388,7 +388,7 @@ export function clawChampion(two, { onDone = () => { }, chute = "WIN", intro = n
         status.textContent = winLine ? winLine(nm(winner)) : `👑 ${nm(winner)} 시즌 우승!!!`;
         Sound.fanfare(); confetti(160, ["👑", "🎉", "✨", "🪙"]);
         await sleep(3000);
-        onDone(winner);
+        onDone(winner, loser); // loser: the other ball left in the final (패자부활전 2위)
     };
     return wrap;
 }

@@ -18,7 +18,7 @@
 .avatar .av-g { left: -2%; background: #64748b; }
 .avatar .av-g.g-F { background: #ec4899; } .avatar .av-g.g-M { background: #3b82f6; } .avatar .av-g.g-O { background: #a855f7; }
 .avatar .av-h { right: -2%; background: #111827; border: 1px solid #facc15; color: #facc15; }
-.avatar .av-sick { position: absolute; bottom: -4%; left: 50%; margin-left: -.6em; z-index: 3; animation: blinkWarn 1s infinite; filter: drop-shadow(0 0 4px #ef4444); pointer-events: none; }
+.avatar .av-sick { position: absolute; bottom: -4%; left: 50%; margin-left: -.6em; z-index: 3; animation: blinkWarn 1s infinite; filter: drop-shadow(0 0 4px #ef4444); pointer-events: auto; cursor: pointer; }
 .emo-sick-warn { display: inline-block; animation: blinkWarn 1s infinite; color: #f87171; font-weight: 900; margin-left: 4px; }
 
 /* ---------- Dead Land warning / sickness popups */
@@ -251,3 +251,10 @@
 @keyframes ratGold { from { transform: scale(.3) rotate(-90deg); } to { transform: scale(1.2); } }
 @keyframes ratUp { to { transform: translateY(-18px); opacity: 0; } }
 .kr-ratcount { position: relative; z-index: 2; font-size: 13px; font-weight: 700; color: #fde047; }
+/* 🦠 disease info (⚠️ on a profile picture) */
+.sick-info { display: grid; gap: 10px; }
+.sick-card { border: 1px solid #ef444466; background: #450a0a55; border-radius: 14px; padding: 10px 14px; }
+.sick-card-head { display: flex; align-items: center; gap: 10px; }
+.sick-card-head .sick-ico { font-size: 40px; }
+.sick-card-head small { display: block; color: #fca5a5; }
+.sick-card ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; }

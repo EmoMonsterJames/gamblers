@@ -50,6 +50,20 @@ function detail(d, r) {
         e.exempt?.length ? h("div.ss-res.muted", "⭐ 면제: ", e.exempt.map(chip)) : null);
 }
 
+
+// 🔄 패자부활전 참여 기록: 성공 / 실패 · N등 (the season rank itself never changes)
+function revivalTag(d, pid) {
+    for (const e of d.history || []) {
+        if (e.revivalRank && e.ranks?.[pid] != null) {
+            const ok = e.revived === pid;
+            return h("div.ss-rv", h("span.ss-tag" + (ok ? ".rv-ok" : ".rv-bad"), ok ? "🔄 패자부활전 참여: 성공" : `🔄 패자부활전 참여: 실패 · ${e.ranks[pid]}등`),
+                h("small.muted", ` (R${e.round} · ${e.total}명 참여${ok ? " · 1등으로 부활" : ""})`));
+        }
+        // seasons from before the revival ranking: only who came back is known
+        if (e.revival && e.revived === pid && !(d.history || []).some(x => x.revivalRank)) return h("div.ss-rv", h("span.ss-tag.rv-ok", "🔄 패자부활전 참여: 성공"));
+    }
+    return null;
+}
 function seasonView(d) {
     const live = d.status !== "done";
     const list = rows(d);
@@ -63,14 +77,14 @@ function seasonView(d) {
         d.roster.length ? h("ol.ss-list", list.map(r => h("li.ss-row" + (r.alive ? ".alive" : r.rank === 1 ? ".champ" : ".out"),
             h("div.ss-rank", r.alive ? "–" : `${r.rank}위`),
             avatar(r.pid, 44, { effect: false }),
-            h("div.ss-body", h("div.ss-name", h("b", nameOf(r.pid)), h("small.muted", ` ${Store.player(r.pid)?.player_name || ""}`), h("small.ss-no", ` #${d.roster.indexOf(r.pid) + 1}`)), detail(d, r)))))
+            h("div.ss-body", h("div.ss-name", h("b", nameOf(r.pid)), h("small.muted", ` ${Store.player(r.pid)?.player_name || ""}`), h("small.ss-no", ` #${d.roster.indexOf(r.pid) + 1}`)), detail(d, r), revivalTag(d, r.pid)))))
             : h("p.muted", "아직 참가자 선발 중입니다."));
 }
 
 export function seasonSummaryPage() {
     const tabs = h("div.tabs"), body = h("div.ss-body-wrap", h("p.muted", "불러오는 중…"));
     const page = h("div.page.season-summary", h("h2.page-title", "📜 시즌 요약"),
-        h("p.muted", "시즌별 우승부터 20위까지의 순위와, 각 플레이어가 어떤 미션에서 누구와 대결하거나 어떤 후보들과 남아 탈락했는지 보여줍니다. 진행 중인 시즌은 라운드가 끝날 때마다 실시간으로 갱신됩니다."),
+        h("p.muted", "시즌별 우승부터 20위까지의 순위와, 각 플레이어가 어떤 미션에서 누구와 대결하거나 어떤 후보들과 남아 탈락했는지 보여줍니다. 🔄 패자부활전에 참여한 플레이어는 성공 / 실패 · 패자부활전 등수가 함께 표시됩니다. 진행 중인 시즌은 라운드가 끝날 때마다 실시간으로 갱신됩니다."),
         tabs, body);
     let digests = [], cur = null, sig = "";
     // a host / local player has the freshest state in memory; read-only cloud viewers rely on the server

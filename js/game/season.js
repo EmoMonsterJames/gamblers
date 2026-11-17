@@ -708,6 +708,8 @@ export function npcHit(pid, npc, move) {
 // death outside the judge (reaper): out at once, the turn is over
 export function killPlayer(pid, why, { npc = null } = {}) {
     const s = S();
+    // 🔊 screens that care (Survival Land death toll) hear it before the turn moves on
+    if (!s.ps[pid]?.out) document.dispatchEvent(new CustomEvent("gb:death", { detail: { pid, why } }));
     if (RV.revivalTurns() && RV.inRevival(pid)) { RV.revivalKill(pid, why); return; } // 🔄 a death in the revival = a failed revival
     if (s.ps[pid].out) return;
     const rank = alive().length;

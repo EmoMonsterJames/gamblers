@@ -18,6 +18,8 @@ import { avatar } from "../ui/profile.js";
 import { quizQuestion } from "../data/quiz.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+// 🌪️ a disaster / 🧠 a quiz at least once in this many seconds of play
+const DIS_MAX = 110, QUIZ_MAX = 110;
 const ps_ = pid => G.S()?.ps?.[pid];
 async function alertBox(title, lines, cls = "") {
     const m = modal(h("div.alert-box" + (cls ? "." + cls.split(" ").join(".") : ""), ...[].concat(lines).filter(Boolean).map(t => typeof t === "string" ? h("p", t) : t),
@@ -54,7 +56,23 @@ const SFX = {
     quake() { noise(1.8, 0.14); tone(48, 1.8, "sine", 0.18, 0, -12); tone(70, 1.2, "triangle", 0.06, 0.3, -30); },
     wind() { noise(2.6, 0.07); noise(1.6, 0.05, 0.8); tone(240, 2.4, "sawtooth", 0.008, 0, 380); },
     flood() { Sound.splash(); for (let i = 0; i < 6; i++) tone(300 + Math.random() * 400, 0.08, "sine", 0.03, 0.2 + i * 0.18, 200); },
-    bubble() { tone(500 + Math.random() * 300, 0.07, "sine", 0.025, 0, 300); }
+    bubble() { tone(500 + Math.random() * 300, 0.07, "sine", 0.025, 0, 300); },
+    // ❤ HP lost: a body hit + a dull heart thump (heavier for bigger hits)
+    hurt(n = 5) {
+        const k = Math.min(1, n / 30);
+        noise(0.12, 0.1 + k * 0.08);
+        tone(210, 0.16, "square", 0.05 + k * 0.03, 0, -120);
+        tone(62, 0.28, "sine", 0.22 + k * 0.1, 0.04, -20);
+        tone(54, 0.22, "sine", 0.16, 0.26, -14);
+    },
+    // ☠️ death: the heart slows down and stops (flatline), then a low bell tolls over a dark drone
+    death() {
+        [0, 0.75, 1.65].forEach((w, i) => { tone(66 - i * 4, 0.2, "sine", 0.3 - i * 0.06, w, -16); tone(56 - i * 4, 0.18, "sine", 0.22 - i * 0.05, w + 0.2, -12); });
+        tone(988, 2.6, "sine", 0.035, 2.3);
+        [3.3, 5.6].forEach(w => { tone(98, 3.6, "sine", 0.16, w, -6); tone(147, 3.2, "triangle", 0.045, w, -6); tone(196, 2.6, "sine", 0.03, w + 0.02, -8); tone(233, 2.2, "sine", 0.018, w + 0.05, -10); });
+        tone(49, 6.5, "sawtooth", 0.02, 2.6, -8);
+        noise(1.6, 0.03, 3.3);
+    }
 };
 
 // ---------------------------------------------------------------- effects during a turn
@@ -62,6 +80,8 @@ const SFX = {
 // only one set of overlays at a time: a re-render of the turn screen replaces the old one
 let current = null;
 export function stopSurvivalFx() { current?.stop(); current = null; }
+// what the turn screen puts in its left bar (⛪ the devil statue)
+export const survivalSide = () => current?.side || null;
 export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     stopSurvivalFx();
     if (!loc?.revival) return null;
@@ -97,8 +117,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
             const r = b.getBoundingClientRect(), f = h("div.rv-btn-tax", `❤ −${loc.buttonTax}`);
             f.style.left = (r.left + r.width / 2) + "px"; f.style.top = (r.top + window.scrollY) + "px";
             document.body.append(f); setTimeout(() => f.remove(), 900);
-            tone(180, 0.08, "square", 0.04);
-            onChange?.();
+            onChange?.(); // the HP watcher plays the hit sound
         };
         root.addEventListener("click", onClick, true);
         cleanups.push(() => root.removeEventListener("click", onClick, true));
@@ -107,7 +126,8 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
 
     // ====================================================== 🌪️ Disaster Casino
     let water = null, oxyBar = null, oxyFill = null, oxyTxt = null;
-    const D = loc.disaster ? (t.dis ||= { next: rint(25, 55), flood: null, oxy: 100 }) : null;
+    const D = loc.disaster ? (t.dis ||= { next: rint(20, 45), since: 0, flood: null, oxy: 100 }) : null;
+    const lastDis = h("span.rv-tag.red.rv-last-dis", { hidden: true });
     const drawWater = () => {
         if (!water) return;
         const lv = D.flood ? D.flood.level : 0;
@@ -125,7 +145,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         oxyBar = h("div.rv-oxy", h("div.rv-oxy-track", oxyFill), oxyTxt);
         document.body.append(water, oxyBar);
         cleanups.push(() => { water.remove(); oxyBar.remove(); });
-        parts.push(h("button.rv-tag.blue", { onclick: () => alertBox("🌪️ Disaster Casino 규칙", DISASTER_RULES) }, "🌪️ 재난 규칙 ⓘ"));
+        parts.push(h("button.rv-tag.blue", { onclick: () => alertBox("🌪️ Disaster Casino 규칙", DISASTER_RULES) }, "🌪️ 재난 규칙 ⓘ"), lastDis);
         drawWater();
     }
     function quake() {
@@ -156,9 +176,9 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         } else toast(d ? `🌪️ 강풍! HP −${d} (빼앗길 아이템이 없었다)` : "🌪️ 강풍! 몬스터 덕분에 무사 (빼앗길 아이템도 없음)", "warn", 3200);
         return r;
     }
-    function startFlood(maxStage) {
-        // stage weights: 1 = 40% · 2 = 35% · 3 = 25% (with other disasters: at most 2)
-        const r = Math.random(), target = r < 0.4 ? 1 : r < 0.75 || maxStage < 3 ? 2 : 3;
+    // stage weights: 1 = 40% · 2 = 35% · 3 = 25% (with other disasters: at most 2)
+    function floodStage(maxStage) { const r = Math.random(); return r < 0.4 ? 1 : r < 0.75 || maxStage < 3 ? 2 : 3; }
+    function startFlood(target) {
         D.flood = { level: 0, target, phase: "rise", hold: rint(10, 18), hit2: false, hit3: false, tank: false, breath: 0 };
         SFX.flood();
         toast(`🌊 홍수 발생! 물이 차오릅니다… (${target}단계)`, "warn", 3200);
@@ -196,27 +216,48 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         drawWater();
     }
     let disBusy = false;
+    // what one disaster does to THIS player (shown on the SOS alarm)
+    const disInfo = (k, stage) => {
+        if (k === "quake") { const d = DISASTER.quake(pid); return { name: "🫨 지진", hp: `HP −${d}`, note: d < 10 ? "🪨 Earth 몬스터 덕분에 절반" : "" }; }
+        if (k === "wind") { const d = DISASTER.wind(pid); return { name: "🌪️ 강풍", hp: d ? `HP −${d}` : "HP 감소 없음", note: (d ? "" : "🪽 Fly / Air / Space 몬스터 덕분 · ") + "아이템 1개를 빼앗김" }; }
+        const d2 = DISASTER.flood2(pid);
+        if (stage === 1) return { name: "🌊 홍수 1단계", hp: "HP 감소 없음", note: "물이 ⅓ 차오릅니다" };
+        if (stage === 2) return { name: "🌊 홍수 2단계", hp: d2 ? `HP −${d2}` : "HP 감소 없음", note: d2 ? "물이 ⅔ 차오릅니다" : "💧 Water / 🧊 Ice 몬스터 덕분" };
+        const f3 = DISASTER.flood3(pid);
+        return { name: "🌊 홍수 3단계", hp: `${d2 ? `HP −${d2} → ` : ""}3초마다 HP −${f3.hp}`, note: ps_(pid)?.items?.oxygen > 0 ? "🤿 산소통으로 버팁니다" : `산소통이 없으면 산소가 3초마다 ${f3.oxy[0]}~${f3.oxy[1]}% 줄어듭니다` };
+    };
     async function disasterTick() {
         await floodTick();
         if (dead || disBusy) return;
-        if (--D.next > 0) return;
-        if (activityBusy()) { D.next = 3; return; } // after the spin / popup
-        D.next = rint(35, 85);
+        D.since = (D.since || 0) + 1;
+        // at least one disaster every 2 minutes of play: past DIS_MAX it comes even during a spin (never on top of a popup)
+        const force = D.since >= DIS_MAX;
+        if (--D.next > 0 && !force) return;
+        if (force ? document.querySelector(".modal-back:not(.out)") : activityBusy()) { D.next = 3; return; } // after the spin / popup
         const deep = D.flood && D.flood.level >= 3;
         // pick the disasters: one, sometimes two or three together
         const pool = deep ? [] : ["quake", "wind", ...(D.flood ? [] : ["flood"])];
-        if (!pool.length) return;
+        if (!pool.length) { D.next = 3; return; } // deep water: quake / wind wait until it goes down
+        D.next = rint(30, 75); D.since = 0;
         const n = Math.random() < 0.65 ? 1 : Math.random() < 0.7 ? 2 : 3;
         const now = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(n, pool.length));
+        const stage = now.includes("flood") ? floodStage(now.length > 1 ? 2 : 3) : 0;
         disBusy = true;
         const was = t.running; t.running = false;
         SFX.sos();
-        const alarm = h("div.rv-alarm", h("b", "🚨 SOS 재난 경보 🚨"), h("span", now.map(k => ({ quake: "🫨 지진", wind: "🌪️ 강풍", flood: "🌊 홍수" }[k])).join(" + ")));
+        const info = now.map(k => disInfo(k, stage));
+        const alarm = h("div.rv-alarm",
+            h("b", "🚨 SOS 재난 경보 🚨"),
+            now.length > 1 ? h("div.rv-alarm-multi", `⚠️ 재난 ${now.length}개 동시 발생! — ${info.map(x => x.name).join(" + ")}`) : null,
+            h("div.rv-alarm-list", info.map(x => h("div.rv-alarm-item", h("span.n", x.name), h("span.hp", x.hp), x.note ? h("small", x.note) : null))));
         document.body.append(alarm);
-        await sleep(1600);
-        alarm.remove();
+        lastDis.replaceChildren(`🚨 ${now.length > 1 ? "동시 발생: " : "최근 재난: "}`, h("b", info.map(x => `${x.name} (${x.hp})`).join(" + ")));
+        lastDis.hidden = false;
+        await sleep(2800);
+        alarm.classList.add("out");
+        setTimeout(() => alarm.remove(), 400);
         t.running = was;
-        if (now.includes("flood")) startFlood(now.length > 1 ? 2 : 3);
+        if (now.includes("flood")) startFlood(stage);
         if (now.includes("quake") && quake().dead) { disBusy = false; return; }
         if (now.includes("wind")) await wind();
         disBusy = false;
@@ -233,8 +274,9 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         statue.querySelector(".rv-statue-lv").textContent = `😈 ${Math.min(100, C.level)} / 100`;
     };
     if (loc.church) {
-        statue = h("div.rv-statue", { title: "악마의 조각상 — 100이 되면 깨지고 악마의 휠이 돌아갑니다" }, h("div.rv-statue-body", h("span.rv-statue-face", "😈"), h("i.rv-eye.l"), h("i.rv-eye.r"), h("div.rv-statue-base", "🗿")), h("small.rv-statue-lv"));
-        document.body.append(statue);
+        // sits in the left bar under the pet / pet effect (seasonView sideCard → survivalSide())
+        statue = h("div.rv-statue.in-side", { title: "악마의 조각상 — 100이 되면 깨지고 악마의 휠이 돌아갑니다" }, h("small.rv-statue-title", "😈 악마의 조각상"),
+            h("div.rv-statue-body", h("span.rv-statue-face", "😈"), h("i.rv-eye.l"), h("i.rv-eye.r"), h("div.rv-statue-base", "🗿")), h("small.rv-statue-lv"));
         cleanups.push(() => { statue.remove(); fogEl?.remove(); });
         parts.push(h("button.rv-tag.gray", { onclick: () => alertBox("⛪ Foggy Church 규칙", CHURCH_RULES) }, "⛪ 교회 규칙 ⓘ"));
         drawStatue();
@@ -276,14 +318,17 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     }
 
     // ====================================================== 🧠 Quiz Casino: a quiz at least once every 2 minutes
-    const Q = loc.quiz ? (t.quiz ||= { next: rint(20, 60), asked: 0, right: 0 }) : null;
+    const Q = loc.quiz ? (t.quiz ||= { next: rint(15, 45), since: 0, asked: 0, right: 0 }) : null;
     let quizBusy = false;
     if (loc.quiz) parts.push(h("button.rv-tag.blue", { onclick: () => alertBox("🧠 Quiz Casino 규칙", QUIZ_RULES) }, "🧠 퀴즈 규칙 ⓘ"));
     async function quizTick() {
         if (quizBusy || dead) return;
-        if (--Q.next > 0) return;
-        if (activityBusy()) { Q.next = 2; return; } // right after the spin / popup
-        Q.next = rint(45, 110); // < 2 minutes to the next one
+        Q.since = (Q.since || 0) + 1;
+        // at least one quiz every 2 minutes of play: past QUIZ_MAX it comes even during a spin (never on top of a popup)
+        const force = Q.since >= QUIZ_MAX;
+        if (--Q.next > 0 && !force) return;
+        if (force ? document.querySelector(".modal-back:not(.out)") : activityBusy()) { Q.next = 2; return; } // right after the spin / popup
+        Q.next = rint(40, 90); Q.since = 0;
         quizBusy = true;
         const r = await quizPopup(pid);
         Q.asked++; if (r.ok) Q.right++;
@@ -292,14 +337,31 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         if (r.dead) die();
     }
 
+    // ====================================================== 🔊 every HP loss on a Survival Land map: a hit sound · death: a long, heavy toll
+    let lastHp = ps_(pid)?.hp ?? 0, mourned = false;
+    const hpWatch = () => {
+        const hp = ps_(pid)?.hp ?? 0;
+        if (hp < lastHp) { if (hp <= 0) mourn(); else SFX.hurt(lastHp - hp); }
+        lastHp = hp;
+    };
+    function mourn() { if (mourned) return; mourned = true; SFX.death(); }
+    const hpTimer = setInterval(hpWatch, 120);
+    const onDeath = e => { if (e.detail?.pid === pid) mourn(); };
+    document.addEventListener("gb:death", onDeath);
+    cleanups.push(() => { clearInterval(hpTimer); document.removeEventListener("gb:death", onDeath); });
+
     function tick() {
         if (dead || !t.running) return;
         if (loc.disaster) disasterTick();
         if (loc.church) churchTick();
         if (loc.quiz) quizTick();
     }
-    function stop() { dead = true; while (cleanups.length) cleanups.pop()(); if (current?.stop === stop) current = null; }
-    current = { stop };
+    function stop() {
+        // a death that ended the turn before the watcher saw it
+        if (!mourned && lastHp > 0 && (ps_(pid)?.hp ?? 1) <= 0) mourn();
+        dead = true; while (cleanups.length) cleanups.pop()(); if (current?.stop === stop) current = null;
+    }
+    current = { stop, side: statue };
     return { hud: parts.length ? h("div.rv-tags", parts) : null, tick, stop };
 }
 
@@ -499,14 +561,6 @@ export async function priestVisit(pid, npc, move) {
     return { kill: !!out.r.dead, donation: out.paid };
 }
 
-// ---------------------------------------------------------------- arrival popups (map rules)
-export async function survivalArrival(pid, loc) {
-    if (!loc?.revival) return;
-    if (loc.disaster) { Sound.boom(); await alertBox("🌪️ Disaster Casino", ["재난이 랜덤하게 일어나는 위험한 카지노입니다!", ...DISASTER_RULES], "warn"); }
-    if (loc.buttonTax) { Sound.boom(); await alertBox("🔘 Button Casino", [`이 맵에서는 플레이 화면의 버튼을 누를 때마다 HP −${loc.buttonTax}!`, "게임 선택 · 스핀 · 탭 · 상점 버튼 모두 포함됩니다. HP가 바닥나면 즉사합니다."], "warn"); }
-    if (loc.church) { Sound.boom(); await alertBox("⛪ Foggy Church", CHURCH_RULES, "warn"); }
-    if (loc.quiz) { Sound.bonus(); await alertBox("🧠 Quiz Casino", QUIZ_RULES); }
-    if (loc.inferno) { Sound.boom(); await alertBox("🔥 Inferno Casino", ["모든 코너(게임 · 상점 등)는 죽음의 룰렛을 돌려야 이용할 수 있습니다: ☠️ 20% 바로 사망 · 🚪 50% 코너 이용 · 💥 30% HP −20 (꽝 → 다시 돌리기).",
-        "☠️ Suicide Spin: 빨간 X 프로필 3개 = 바로 사망 · 🔪 Kill Me Gently: 칼이 프로필에 박히면 바로 사망 · 🔥 Plinko / 💣 Bomb Pick: 즉사 칸 있음.", "🚫 이 맵에서는 맵권을 쓸 수 없습니다."], "warn"); }
-    if (loc.arcade) await alertBox("🕹️ Arcade", ["랜덤으로 선택된 아케이드 게임을 완주해 🏰 보스성에 도착하세요! (기회 2번)", "이 맵의 슬롯 · 카지노 · 상점 · 몬스터 Capture 코너는 아케이드 안에서 발견해야 이용할 수 있습니다.", "🕹️ ARCADE 탭에서 시작합니다."]);
-}
+// ---------------------------------------------------------------- arrival (map rules)
+// no popups when a Survival Land map is entered: the rules sit behind the ⓘ tags on the map
+export async function survivalArrival() { }

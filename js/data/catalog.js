@@ -745,8 +745,8 @@ export const SANTA_GIFTS = [
 // who can show up on this map: npcOnly → that one · Dead Land → DEAD_NPC_IDS · anywhere else → the normal NPCs
 export function npcPool(loc) {
     if (loc?.npcOnly) { const n = NPCS.find(x => x.id === loc.npcOnly); if (n) return [n]; }
-    // ⛪ Foggy Church: the Priest comes along with the Dead Land NPCs (about 1 visit in 3 is the Priest)
-    if (loc?.church) { const dead = DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean), pr = NPCS.find(n => n.id === "priest"); return [pr, pr, pr, ...dead].filter(Boolean); }
+    // ⛪ Foggy Church: only the Priest comes
+    if (loc?.church) { const pr = NPCS.find(n => n.id === "priest"); if (pr) return [pr]; }
     if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
     return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && !n.churchOnly && (!n.arcticOnly || loc?.region === "arctic"));
 }

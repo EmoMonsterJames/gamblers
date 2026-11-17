@@ -46,7 +46,7 @@ import { deptView, gotchaView } from "./gotcha.js";
 import * as RV from "../game/revival.js";
 import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
 import { arcadeView, CORNER_KINDS } from "./arcade.js";
-import { stopSurvivalFx, infernoGate, INFERNO_FREE } from "./survivalLand.js";
+import { stopSurvivalFx, survivalSide, infernoGate, INFERNO_FREE } from "./survivalLand.js";
 
 let root = null, timer = null;
 // 🕹️ the running arcade (kept across re-renders of the turn screen) + the screen's current hooks
@@ -740,6 +740,7 @@ function locationStage(s) {
         h("div.ls-pet", ps.pet ? petView(ps.pet, ps.petEffect, 90) : h("div.muted", "펫 없음")),
         ...luckLines(luck),
         ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
+        survivalSide(), // ⛪ Foggy Church: the devil statue
         ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
     const side = h("div.loc-side", sideCard());
     // 🎟️ lotto draw show: the turn clock stops (no play time used, no NPC visits) until it is over
@@ -785,6 +786,7 @@ function locationStage(s) {
     const passBtns = loc.noPass || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
     // 🍬 sugar · 🌑 dark · 🌋 magma
     const fx = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+    if (survivalSide()) side.replaceChildren(sideCard()); // the statue exists only now
     // 🕹️ Arcade hooks (the arcade instance outlives re-renders of this screen)
     arcadeHooks = {
         hp: () => G.S().ps[pid]?.hp ?? 0,

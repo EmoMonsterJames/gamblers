@@ -350,7 +350,9 @@ const moveText = m => m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0]
     : m.copy ? "📋 COPY — 플레이어의 무기를 복사해서 공격"
     : m.hope ? "🌈 희망의 메세지 (\"잘될거에요\" · \"대박나세요\" · \"우승할거에요\")"
     : m.gift ? `🎁 ${ITEM_BY_ID[m.gift]?.name || m.gift} 선물`
-    : m.shop ? "🧳 보따리상점 OPEN (랜덤 5개 할인 판매 · 플레이어당 1회 구매)" : "?";
+    : m.shop ? "🧳 보따리상점 OPEN (랜덤 5개 할인 판매 · 플레이어당 1회 구매)"
+    : m.sermon ? `📖 설교 — ${m.sermon}초 동안 찬양을 들으며 기다림 (플레이 시간은 계속 흐름)`
+    : m.donation ? "🙏 기부 강요 — 내 원래 골드에서 기부 (1,000G 이하: HP −60~즉사 · 10,000G 이하: HP −30~50 · 50,000G 이하: HP −10~30 · 그 이상: 축복)" : "?";
 // loc: the map · active: NPCs are out on this map this round (season only)
 export function npcInfo(loc, { active = null } = {}) {
     const mapP = Math.round(G.npcMapChance(loc) * 100);
@@ -362,7 +364,7 @@ export function npcInfo(loc, { active = null } = {}) {
                 h("li", `NPC는 모든 맵에 나오지 않고, 라운드마다 무작위로 정해진 맵에만 나타납니다. 이 맵이 뽑힐 확률: `, h("b", mapP + "%")),
                 h("li", "NPC가 있는 맵에서 플레이하면 턴마다 ", h("b", "40~70%"), " 확률로 습격을 받고, 습격은 플레이 중 무작위 시점에 ", h("b", "1~3회"), " 일어납니다."),
                 h("li", `습격마다 아래 NPC ${npcPool(loc).length}명 중 1명이 같은 확률(`, h("b", pct(1 / npcPool(loc).length)), ")로 나오고, 그 NPC의 기술 중 하나를 표시된 확률로 씁니다."),
-                loc.deadNpc ? h("li.npc-always", "☠️ Dead Land: 이 지역 전용 NPC만 나타납니다.") : null,
+                loc.church ? h("li.npc-always", "⛪ Foggy Church: Priest만 나타납니다.") : loc.deadNpc ? h("li.npc-always", "☠️ Dead Land: 이 지역 전용 NPC만 나타납니다.") : null,
                 loc.region === "arctic" ? h("li.npc-always", "🎅 빙하 지역: 이 지역에서만 산타크로스가 나타납니다!") : null,
                 loc.kidnap ? h("li.npc-always", "🦹 납치 공간에는 Terrorist Boss가 항상 나타납니다 (턴마다 최소 1회).") : null,
                 h("li", "NPC 종류: ", alignBadge({ align: "evil", moves: [] }), " 공격만 함 · ", alignBadge({ align: "neutral", moves: [] }), " 공격도 하고 돕기도 함 · ", alignBadge({ align: "good", moves: [] }), " 돕기만 함"),

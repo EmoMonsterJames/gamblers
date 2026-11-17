@@ -368,9 +368,26 @@ function mergeBack(pid) {
     if (iv.fxLost) own.petEffect = null;
     return own;
 }
+// ---------------------------------------------------------------- 🏅 revival ranks (shown in 📜 시즌 요약; the season ranks stay as they are)
+//   1위 the revived player · 2위 the other ball left with them in the final claw
+//   then the other mission winners · then the survivors who failed the mission (the claw takes their balls out first)
+//   · last the players who died while playing: the first to die (in the drawn play order) is last
+export function setRevivalRanks(winner = null, second = null) {
+    const R = rv();
+    if (!R || R.ranks) return R?.ranks || null;
+    const order = R.order || R.pids || [], dead = (R.dead || []).filter(p => order.includes(p)), W = (R.winners || []).filter(p => !dead.includes(p));
+    const top = [winner, second].filter((p, i, a) => p != null && order.includes(p) && a.indexOf(p) === i);
+    const list = [...top, ...shuffle(W.filter(p => !top.includes(p))), ...shuffle(order.filter(p => !dead.includes(p) && !W.includes(p) && !top.includes(p))), ...[...dead].reverse()];
+    R.ranks = Object.fromEntries(list.map((p, i) => [p, i + 1]));
+    R.second = second ?? null;
+    Store.saveSeason(true);
+    return R.ranks;
+}
 export function finishRevival(winner = null) {
     const s = S(), R = rv();
     if (!R || R.phase !== "result") return;
+    const ranks = setRevivalRanks(winner, R.second ?? null) || {};
+    s.history.push({ round: s.round, revivalRank: true, revived: winner ?? null, ranks: { ...ranks }, total: Object.keys(ranks).length, mission: s.mission ? { text: s.mission.text, type: s.mission.type } : null });
     for (const pid of R.pids) s.ps[pid] = mergeBack(pid);
     if (winner != null && s.ps[winner]) {
         const ps = s.ps[winner], old = ps.rank;

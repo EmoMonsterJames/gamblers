@@ -108,6 +108,8 @@ export async function arrivalExtra(s, loc) {
     for (const k of a?.sick || []) {
         const d = X.DISEASES[k];
         Sound.hit();
+        // 🔄 Survival Land: no popups on entry — a toast instead (the ⚠️ on the profile opens the details)
+        if (loc.revival) { toast(`${d.emoji} ${d.name} 감염! 라운드마다 HP −${d.hp} · 프로필의 ⚠️를 눌러 자세히 보기`, "warn", 4500); continue; }
         await alertBox(`${d.emoji} ${d.name} 감염!`, [h("div.sick-pop", d.emoji), `${loc.emoji} ${loc.name}에서 ${d.name}에 걸렸습니다!`,
             `라운드가 시작될 때마다 HP −${d.hp} · HP가 0이 되면 바로 사망합니다.`, `치료: ${ITEM_BY_ID[d.cure]?.name || d.cure} 사용 또는 Player Clinic 치료`], "warn sick");
     }

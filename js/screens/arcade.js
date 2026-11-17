@@ -4,7 +4,7 @@
 // slot-machine boss. ← → move · ↓ crouch / swim down / drop / enter a door ·
 // ↑ jump (swim up under water) · SPACE throws an arcade orb (5 to start, max 10).
 //   · one random stage per arrival: 🌊 Sea (상) · 🏜️ Desert (중) · 🏘️ Village (중) · 👻 Haunted House (상)
-//   · ~1:30 long, 2:00 limit · 2 tries per turn (a pit / time out uses one)
+//   · ~2:30 long, 3:00 limit · 2 tries per turn (a pit / time out uses one)
 //   · touching a monster HP −10, a shot HP −5 (the player's real revival HP)
 //   · 🎰 slot · 🃏 casino · 🏪 shop · 🔍 capture doors along the way: ↓ at a door
 //     pauses the arcade and the turn clock and opens that corner (found corners stay open)
@@ -17,14 +17,14 @@ import { confetti } from "../core/fx.js";
 import { Store } from "../core/store.js";
 
 export const ARCADE_STAGES = {
-    sea:     { name: "바다 아케이드", emoji: "🌊", diff: "상", len: 5600, water: true, sky: ["#0c4a6e", "#082f49", "#020617"] },
-    desert:  { name: "사막 아케이드", emoji: "🏜️", diff: "중", len: 7600, oasis: true, sky: ["#fde68a", "#f59e0b", "#b45309"] },
-    village: { name: "빌리지 아케이드", emoji: "🏘️", diff: "중", len: 7600, sky: ["#7dd3fc", "#bae6fd", "#e0f2fe"] },
-    haunted: { name: "유령의집 아케이드", emoji: "👻", diff: "상", len: 7400, sky: ["#1e1b4b", "#2e1065", "#0a0118"] }
+    sea:     { name: "바다 아케이드", emoji: "🌊", diff: "상", len: 9300, water: true, sky: ["#0c4a6e", "#082f49", "#020617"] },
+    desert:  { name: "사막 아케이드", emoji: "🏜️", diff: "중", len: 12700, oasis: true, sky: ["#fde68a", "#f59e0b", "#b45309"] },
+    village: { name: "빌리지 아케이드", emoji: "🏘️", diff: "중", len: 12700, sky: ["#7dd3fc", "#bae6fd", "#e0f2fe"] },
+    haunted: { name: "유령의집 아케이드", emoji: "👻", diff: "상", len: 12300, sky: ["#1e1b4b", "#2e1065", "#0a0118"] }
 };
-export const ARCADE_TRIES = 2, ARCADE_LIMIT = 120, ORB_START = 5, ORB_MAX = 10;
+export const ARCADE_TRIES = 2, ARCADE_LIMIT = 180, ORB_START = 5, ORB_MAX = 10;
 export const CORNER_KINDS = { slot: { emoji: "🎰", label: "SLOT", tab: "arc:slot" }, casino: { emoji: "🃏", label: "CASINO", tab: "arc:casino" }, shop: { emoji: "🏪", label: "SHOP", tab: "shop:general" }, capture: { emoji: "🔍", label: "CAPTURE", tab: "emo:capture" } };
-export const ARCADE_KEYS = "← → 이동 · ↓ 엎드리기 / 아래로 헤엄 / 발판 내려가기 / 문 들어가기 · ↑ 점프 (물속: 위로 헤엄) · SPACE 구슬 발사";
+export const ARCADE_KEYS = "← → 이동 · ↓ 엎드리기 / 아래로 헤엄 / 발판 내려가기 / 문 들어가기 · ↑ 점프 · ↑↑ 2단 점프 (물속: 위로 헤엄) · SPACE 구슬 발사";
 
 const W = 960, H = 480, GY = 416;
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -103,9 +103,9 @@ function buildLevel(kind) {
         plats.push({ x: px, y, w, h: 18 });
         if (Math.random() < 0.55) blocks.push({ x: px + w / 2 - 16, y: y - 120, w: 32, h: 32, used: false, item: Math.random() < 0.55 ? "orb" : "heart" });
     }
-    // corner doors: 🎰 🃏 🏪 🔍 spread along the stage
-    const kinds = ["slot", "casino", "shop", "capture"].sort(() => Math.random() - 0.5);
-    kinds.forEach((k, i) => doors.push({ kind: k, x: Math.round(L * (0.17 + i * 0.19)), y: GY - 92, w: 80, h: 92 }));
+    // corner doors: only 2 of 🎰 🃏 🏪 🔍 per stage (random), far apart
+    const kinds = ["slot", "casino", "shop", "capture"].sort(() => Math.random() - 0.5).slice(0, 2);
+    kinds.forEach((k, i) => doors.push({ kind: k, x: Math.round(L * (0.3 + i * 0.35)), y: GY - 92, w: 80, h: 92 }));
     // monsters
     const pool = POOLS[kind];
     const gap = hard ? 300 : 380;
@@ -129,13 +129,17 @@ const onGround = (ground, x) => ground.some(g => x >= g.x0 && x <= g.x1);
 
 // ---------------------------------------------------------------- the view
 export function arcadeView(pid, t, opts) {
-    const A = (t.arcade ||= { stage: pick(Object.keys(ARCADE_STAGES)), tries: 0, castle: false, boss: false, found: [] });
-    const S = ARCADE_STAGES[A.stage];
+    // stage: null until the arcade game roulette has picked one (pickStage)
+    const A = (t.arcade ||= { stage: null, tries: 0, castle: false, boss: false, found: [] });
+    let S = A.stage ? ARCADE_STAGES[A.stage] : null;
     const canvas = h("canvas.arc-canvas", { width: W, height: H, tabindex: 0 });
     const g = canvas.getContext("2d");
     const hud = h("div.arc-hud");
     const panel = h("div.arc-panel");
-    const el = h("div.arc-root.game-screen", h("div.arc-top", h("b", `${S.emoji} ${S.name}`), h("span.arc-diff", `난이도 ${S.diff}`), h("span", `기회 ${Math.max(0, ARCADE_TRIES - A.tries)} / ${ARCADE_TRIES}`)), h("div.arc-stage", canvas, panel), hud, h("p.arc-keys", "🎮 ", ARCADE_KEYS));
+    const topName = h("b"), topDiff = h("span.arc-diff");
+    const drawTop = () => { topName.textContent = S ? `${S.emoji} ${S.name}` : "🕹️ 아케이드 게임 뽑기"; topDiff.textContent = S ? `난이도 ${S.diff}` : "랜덤 선택"; };
+    drawTop();
+    const el = h("div.arc-root.game-screen", h("div.arc-top", topName, topDiff, h("span", `기회 ${Math.max(0, ARCADE_TRIES - A.tries)} / ${ARCADE_TRIES}`)), h("div.arc-stage", canvas, panel), hud, h("p.arc-keys", "🎮 ", ARCADE_KEYS));
     const face = new Image(); face.crossOrigin = "anonymous"; face.src = Store.player(pid)?.profile_image || "";
     const keys = {};
     let lv = null, P = null, shots = [], foeShots = [], coins = [], cash = [], fx = [], cam = 0, time = 0, raf = 0, last = 0, running = false, mode = "menu", boss = null, stopped = false, bossTimers = null;
@@ -147,7 +151,7 @@ export function arcadeView(pid, t, opts) {
         const k = KEYMAP[e.key];
         if (!k || !running) return;
         e.preventDefault();
-        if (!keys[k]) { keys[k] = true; if (k === "u") P.jumpQ = 0.12; if (k === "f") shoot(); if (k === "d") door(); }
+        if (!keys[k]) { keys[k] = true; if (k === "u") jumpKey(); if (k === "f") shoot(); if (k === "d") door(); }
     };
     const up = e => { const k = KEYMAP[e.key]; if (k) keys[k] = false; };
     window.addEventListener("keydown", down);
@@ -156,14 +160,52 @@ export function arcadeView(pid, t, opts) {
     // ---- panels
     function showPanel(...kids) { panel.replaceChildren(...kids); panel.classList.add("on"); }
     function hidePanel() { panel.classList.remove("on"); panel.replaceChildren(); }
+    // ↑ on the ground: jump · ↑ again in the air: a second, higher jump (once until landing) · under water: swim up
+    function jumpKey() {
+        if (!P || P.water || P.stun > 0) { if (P) P.jumpQ = 0.12; return; }
+        if (P.ground) { P.jumpQ = 0.12; return; }
+        if (P.dbl) return;
+        P.dbl = true; P.jumpQ = 0; P.ground = false;
+        P.vy = -760;
+        tone(660, 0.07, "square", 0.03, 0, 420); tone(990, 0.1, "triangle", 0.03, 0.05, 300);
+        fx.push({ txt: "⬆⬆", x: P.x + 2, y: P.y + P.h + 8, t: 0.6, c: "#fde047" });
+    }
+    // 🎲 every arcade game is shown, then the roulette lands on one at random
+    async function pickStage() {
+        mode = "pick"; setBusy(true);
+        const ids = Object.keys(ARCADE_STAGES);
+        const cards = ids.map(id => { const x = ARCADE_STAGES[id]; return h("div.arc-pick", { "data-id": id }, h("div.arc-pick-ico", x.emoji), h("b", x.name), h("small", `난이도 ${x.diff}`)); });
+        const msg = h("p.arc-pick-msg", "아케이드 게임 4종 중 하나를 랜덤으로 뽑습니다…");
+        showPanel(h("div.arc-card.arc-pick-card", h("h3", "🎲 아케이드 게임 뽑기"), h("div.arc-pick-grid", cards), msg));
+        await sleep(1300);
+        const win = pick(ids);
+        // ~3 laps, slowing down, ending on the drawn game
+        const steps = ids.length * 3 + ids.indexOf(win) + 1;
+        for (let i = 0; i < steps; i++) {
+            if (stopped) return;
+            cards.forEach((c, j) => c.classList.toggle("on", j === i % ids.length));
+            tone(700 + (i % ids.length) * 90, 0.05, "square", 0.025);
+            await sleep(70 + Math.pow(i / steps, 2.4) * 420);
+        }
+        if (stopped) return;
+        A.stage = win; S = ARCADE_STAGES[win];
+        Store.saveSeason(true); opts.onChange?.();
+        cards.forEach(c => c.classList.toggle("win", c.dataset.id === win));
+        msg.replaceChildren("👉 ", h("b", `${S.emoji} ${S.name}`), ` 당첨! (난이도 ${S.diff})`);
+        Sound.bonus();
+        drawTop(); draw0();
+        await sleep(1700);
+        if (!stopped) menu();
+    }
     function menu() {
+        if (!A.stage) return pickStage();
         mode = "menu"; setBusy(false);
         if (A.boss) return showPanel(h("div.arc-card.win", h("div.arc-big", "🏆"), h("h3", "ARCADE CLEAR!"), h("p", "보스를 무찔렀습니다! 미션 \"보스맵 clear\" 성공.")));
         if (A.tries >= ARCADE_TRIES) return showPanel(h("div.arc-card.lose", h("div.arc-big", "💀"), h("h3", "GAME OVER"), h("p", "아케이드 기회 2번을 모두 썼습니다.")));
         showPanel(h("div.arc-card",
-            h("div.arc-big", S.emoji), h("h3", A.castle ? "🏰 보스와의 대결" : S.name), h("small", `난이도 ${S.diff} · 길이 약 1분 30초 · 제한 시간 2분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
-            h("div.arc-keys-box", h("b", "조종키"), h("div", "⬅️ ➡️ 이동"), h("div", "⬆️ 점프", S.water ? " (물속에서는 위로 헤엄 · 동작이 느려집니다)" : ""), h("div", "⬇️ 엎드리기 · 아래로 · 🚪 코너 문 들어가기"), h("div", "␣ SPACE 구슬 발사 (기본 5개 · 최대 10개 · 보스 HP −10)")),
-            h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 🎰 🃏 🏪 🔍 코너 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
+            h("div.arc-big", S.emoji), h("h3", A.castle ? "🏰 보스와의 대결" : S.name), h("small", `난이도 ${S.diff} · 길이 약 2분 30초 · 제한 시간 3분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
+            h("div.arc-keys-box", h("b", "조종키"), h("div", "⬅️ ➡️ 이동"), h("div", "⬆️ 점프 · ⬆️⬆️ 공중에서 한 번 더 누르면 더 높이 2단 점프", S.water ? " (물속에서는 위로 헤엄 · 동작이 느려집니다)" : ""), h("div", "⬇️ 엎드리기 · 아래로 · 🚪 코너 문 들어가기"), h("div", "␣ SPACE 구슬 발사 (기본 5개 · 최대 10개 · 보스 HP −10)")),
+            h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 스테이지마다 🎰 🃏 🏪 🔍 중 2개 코너 문이 있어요. 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
             h("button.btn.gold.big", { onclick: () => A.castle ? startBoss() : startStage() }, A.castle ? "⚔️ 보스전 시작" : "▶ START")));
     }
 
@@ -239,6 +281,7 @@ export function arcadeView(pid, t, opts) {
     function update(dt) {
         if (mode === "stage") { time -= dt; if (time <= 0) return fail("⏰ 시간 초과!"); }
         P.inv = Math.max(0, P.inv - dt); P.cool = Math.max(0, P.cool - dt); P.jumpQ = Math.max(0, P.jumpQ - dt); P.stun = Math.max(0, P.stun - dt);
+        if (P.ground || P.water) P.dbl = false; // the 2nd jump comes back on landing
         P.water = inWater(P.x + P.w / 2, P.y + P.h / 2);
         const slow = P.water ? 0.55 : 1, maxV = (P.water ? 150 : 250), acc = P.water ? 700 : 1900;
         const ctl = P.stun <= 0;
@@ -256,7 +299,7 @@ export function arcadeView(pid, t, opts) {
         } else {
             P.vy += 1900 * dt;
             if (ctl && P.jumpQ > 0 && P.ground) { P.vy = -650; P.ground = false; P.jumpQ = 0; tone(520, 0.08, "square", 0.03, 0, 320); }
-            if (!keys.u && P.vy < -250) P.vy += 2600 * dt; // short hop
+            if (!keys.u && P.vy < -250 && !P.dbl) P.vy += 2600 * dt; // short hop (not after the 2nd jump)
             P.vy = Math.min(900, P.vy);
         }
         // move + collide
@@ -600,7 +643,10 @@ export function arcadeView(pid, t, opts) {
     function stop() { stopped = true; halt(); setBusy(false); window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); }
     menu();
     draw0();
-    function draw0() { lv = buildLevel(A.stage); P = newPlayer(80, GY - 40); draw(); }
+    function draw0() {
+        if (!A.stage) { g.fillStyle = "#0b0420"; g.fillRect(0, 0, W, H); g.font = "120px sans-serif"; g.textAlign = "center"; g.fillText("🕹️", W / 2, H / 2 + 40); g.textAlign = "left"; return; }
+        lv = buildLevel(A.stage); P = newPlayer(80, GY - 40); draw();
+    }
     // test hook (admin map test / debugging): warp along the stage, jump to the boss
     el.arcDebug = { get P() { return P; }, get lv() { return lv; }, get boss() { return boss; }, warp: x => { if (P) { P.x = x; P.y = GY - 120; } }, toBoss: () => { A.castle = true; startBoss(); } };
     return { el, pause, resume, stop, get mode() { return mode; } };
