@@ -12,7 +12,7 @@
 // arcadeView(pid, t, { hurt, heal, onCorner, onDead, onWin, onChange }) → { el, pause, resume, stop }
 // =====================================================================
 import { h, sleep } from "../core/util.js";
-import { Sound, tone, noise } from "../core/sound.js";
+import { Sound, tone, noise, midi, bgmVoice, bgmNoise, kick } from "../core/sound.js";
 import { confetti } from "../core/fx.js";
 import { Store } from "../core/store.js";
 
@@ -25,6 +25,110 @@ export const ARCADE_STAGES = {
 export const ARCADE_TRIES = 2, ARCADE_LIMIT = 180, ORB_START = 5, ORB_MAX = 10;
 export const CORNER_KINDS = { slot: { emoji: "🎰", label: "SLOT", tab: "arc:slot" }, casino: { emoji: "🃏", label: "CASINO", tab: "arc:casino" }, shop: { emoji: "🏪", label: "SHOP", tab: "shop:general" }, capture: { emoji: "🔍", label: "CAPTURE", tab: "emo:capture" } };
 export const ARCADE_KEYS = "← → 이동 · ↓ 엎드리기 / 아래로 헤엄 / 발판 내려가기 / 문 들어가기 · ↑ 점프 · ↑↑ 2단 점프 (물속: 위로 헤엄) · SPACE 구슬 발사";
+
+// ---- 🎵 chiptune BGM: one loop per stage + the boss fight (plays only while the arcade is running)
+// lead / bass: 8th notes ("." rest, "-" hold the note before, "|" bar line) · drums: 16ths (k kick · s snare · h hat)
+const NOTE = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
+const seq = s => s.replace(/\|/g, " ").trim().split(/\s+/).map(x => { if (x === ".") return 0; if (x === "-") return -1; const m = /^([A-G]#?)(\d)$/.exec(x); return m ? 12 * (+m[2] + 1) + NOTE[m[1]] : 0; });
+// parts: 4-bar sections { lead, bass, drums? } (32 eighths each) · form: the order they play in, e.g. "A B A C D B"
+// → a long loop (~45–75 s) instead of one short phrase repeating
+function chipSong(name, { bpm, parts, form, drums: baseDrums, leadType = "square", leadVol = 0.045, bassType = "triangle", bassVol = 0.1, extra }) {
+    const order = form.split(/\s+/);
+    const Ld = seq(order.map(p => parts[p].lead).join(" ")), B = seq(order.map(p => parts[p].bass).join(" "));
+    const drums = order.map(p => (parts[p].drums || baseDrums).repeat(4)).join("");
+    return {
+        name, bpm, steps: Ld.length * 2,
+        play(a, out, step, t, len) {
+            const e = step >> 1;
+            if (!(step & 1)) {
+                const n = Ld[e];
+                if (n > 0) { let d = 1; while (Ld[(e + d) % Ld.length] === -1 && d < 8) d++; bgmVoice(a, out, t, { freq: midi(n), type: leadType, dur: len * 2 * d * 0.92, vol: leadVol, cut: 3400, cutEnd: 1400, attack: 0.004 }); }
+                const b = B[e % B.length];
+                if (b > 0) bgmVoice(a, out, t, { freq: midi(b), type: bassType, dur: len * 1.8, vol: bassVol, cut: 1000, cutEnd: 300, attack: 0.004 });
+            }
+            const dr = drums[step % drums.length];
+            if (dr === "k") kick(a, out, t, 0.3);
+            else if (dr === "s") bgmNoise(a, out, t, { dur: 0.1, vol: 0.06, hp: 1800 });
+            else if (dr === "h") bgmNoise(a, out, t, { dur: 0.03, vol: 0.022, hp: 7500 });
+            extra?.(a, out, step, t, len);
+        }
+    };
+}
+const ARCADE_BGM = {
+    // 🌊 bouncy D-major sea shanty with bubble blips
+    sea: chipSong("arcade_sea", {
+        bpm: 132, leadType: "triangle", leadVol: 0.07, drums: "k.h.s.h.k.k.s.h.", form: "A B A C D B C A",
+        parts: {
+            A: { lead: "D5 F#5 A5 - F#5 A5 B5 A5 | G5 - E5 - F#5 - D5 - | E5 F#5 G5 - B5 A5 G5 F#5 | E5 - A4 - D5 - - .",
+                 bass: "D3 . A2 . D3 . A2 . | G2 . D3 . G2 . D3 . | E2 . B2 . E2 . B2 . | A2 . E3 . A2 . C#3 ." },
+            B: { lead: "B4 D5 F#5 - E5 D5 C#5 - | D5 - B4 - A4 - F#4 - | G4 B4 D5 - G5 F#5 E5 D5 | C#5 - E5 - A5 - - .",
+                 bass: "B2 . F#3 . B2 . F#3 . | G2 . D3 . G2 . D3 . | E2 . B2 . E2 . B2 . | A2 . E3 . A2 . A2 ." },
+            C: { lead: "A5 . A5 B5 A5 F#5 D5 . | G5 . G5 A5 G5 E5 C#5 . | F#5 . F#5 G5 F#5 D5 B4 . | C#5 D5 E5 F#5 G5 A5 B5 C#6",
+                 bass: "D3 D3 A2 A2 D3 D3 A2 A2 | E3 E3 A2 A2 E3 E3 A2 A2 | B2 B2 F#2 F#2 B2 B2 F#2 F#2 | A2 A2 A2 A2 A2 A2 C#3 C#3", drums: "k.hhs.h.k.hhs.hs" },
+            D: { lead: "D6 - - - A5 - - - | B5 - - - F#5 - - - | G5 - - - D5 - - - | E5 - - - A4 - - -",
+                 bass: "D3 - . . F#2 - . . | B2 - . . F#2 - . . | G2 - . . D3 - . . | A2 - . . A2 - . .", drums: "k.......h......." }
+        },
+        extra: (a, o, s, t) => { if (s % 16 === 14) bgmVoice(a, o, t, { freq: 900 + Math.random() * 500, type: "sine", dur: 0.08, vol: 0.025, cut: 5000, cutEnd: 3000, attack: 0.002 }); }
+    }),
+    // 🏜️ E phrygian-dominant caravan groove
+    desert: chipSong("arcade_desert", {
+        bpm: 116, leadVol: 0.04, drums: "k..k..s.k.k...s.", form: "A B A C D A B C",
+        parts: {
+            A: { lead: "E5 F5 G#5 - F5 E5 F5 - | E5 - D5 C5 B4 - . . | A4 B4 C5 - B4 C5 D5 - | E5 F5 E5 D5 E5 - - .",
+                 bass: "E2 . E2 B2 E2 . E2 B2 | E2 . E2 B2 F2 . F2 C3 | A2 . A2 E3 D2 . D2 A2 | E2 . E2 B2 E2 . F2 ." },
+            B: { lead: "B4 C5 B4 A4 G#4 - A4 B4 | C5 - B4 A4 G#4 - F4 E4 | F4 G#4 A4 B4 C5 D5 C5 B4 | A4 G#4 F4 - E4 - - .",
+                 bass: "A2 . A2 E3 A2 . A2 E3 | E2 . E2 B2 E2 . E2 B2 | F2 . F2 C3 F2 . F2 C3 | E2 . E2 B2 E2 . E2 ." },
+            C: { lead: "E6 - D6 C6 B5 - C6 B5 | A5 - G#5 - F5 E5 F5 - | G#5 A5 B5 - A5 G#5 F5 - | E5 - - - E5 F5 G#5 B5",
+                 bass: "E2 . B2 . E2 . B2 . | D2 . A2 . D2 . A2 . | C2 . G2 . F2 . C3 . | E2 . B2 . E2 . E2 ." },
+            D: { lead: "E5 . . . . . . . | F5 . . . . . . . | G#5 . . . . . . . | B5 - A5 - G#5 - F5 -",
+                 bass: "E2 . E2 . E2 . E2 . | F2 . F2 . F2 . F2 . | E2 . E2 . E2 . E2 . | E2 . F2 . G#2 . A2 .", drums: "k.kk.ks.k.k.kss." }
+        },
+        extra: (a, o, s, t) => { if (s % 4 === 2) bgmVoice(a, o, t, { freq: 1150, type: "sine", dur: 0.05, vol: 0.03, cut: 6000, cutEnd: 3000, attack: 0.001 }); }
+    }),
+    // 🏘️ cheerful C-major village march (oom-pah bass)
+    village: chipSong("arcade_village", {
+        bpm: 144, drums: "k.h.s.h.k.h.s.h.", form: "A B A C D B A D",
+        parts: {
+            A: { lead: "C5 E5 G5 E5 C6 - G5 - | A5 G5 F5 E5 D5 - . . | F5 A5 C6 A5 G5 - E5 - | D5 E5 F5 D5 C5 - - .",
+                 bass: "C3 G3 C3 G3 C3 G3 C3 G3 | F2 C3 F2 C3 G2 D3 G2 D3 | F2 C3 F2 C3 C3 G3 C3 G3 | G2 D3 G2 D3 C3 G3 C3 ." },
+            B: { lead: "E5 - D5 C5 D5 - G4 - | E5 - D5 C5 D5 - - . | F5 - E5 D5 E5 - C5 - | D5 E5 D5 B4 C5 - - .",
+                 bass: "C3 G3 C3 G3 G2 D3 G2 D3 | C3 G3 C3 G3 G2 D3 G2 D3 | F2 C3 F2 C3 C3 G3 C3 G3 | G2 D3 G2 D3 C3 G3 C3 ." },
+            C: { lead: "A4 C5 E5 - A5 - E5 - | G4 B4 D5 - G5 - D5 - | F4 A4 C5 - F5 - C5 - | E5 - G#4 - B4 - E5 -",
+                 bass: "A2 E3 A2 E3 A2 E3 A2 E3 | G2 D3 G2 D3 G2 D3 G2 D3 | F2 C3 F2 C3 F2 C3 F2 C3 | E2 B2 E2 B2 E2 B2 E2 B2", drums: "k...s...k.k.s..." },
+            D: { lead: "C6 B5 A5 G5 A5 G5 F5 E5 | F5 E5 D5 C5 D5 - G5 - | C6 B5 A5 G5 A5 G5 F5 E5 | D5 G5 B5 D6 C6 - - .",
+                 bass: "C3 G3 C3 G3 C3 G3 C3 G3 | F2 C3 F2 C3 G2 D3 G2 D3 | F2 C3 F2 C3 C3 G3 C3 G3 | G2 D3 G2 D3 C3 G3 C3 .", drums: "k.hhs.h.k.hhs.ss" }
+        }
+    }),
+    // 👻 slow A-minor creep with a low drone
+    haunted: chipSong("arcade_haunted", {
+        bpm: 104, leadType: "triangle", leadVol: 0.075, bassType: "sine", bassVol: 0.12, drums: "k.......s.......", form: "A B C A D B C D",
+        parts: {
+            A: { lead: "A4 . C5 . E5 - D#5 - | E5 . F5 E5 D5 - - . | C5 . E5 . A5 - G#5 - | F5 E5 D5 C5 B4 - G#4 .",
+                 bass: "A2 - . . A2 - . . | D3 - . . D3 - . . | F2 - . . F2 - . . | E2 - . . E2 - G#2 ." },
+            B: { lead: "E5 - - . F5 - E5 . | D#5 - E5 - . . . . | C5 - - . D5 - C5 . | B4 - G#4 - . . . .",
+                 bass: "A2 - . . A2 - . . | B2 - . . B2 - . . | A2 - . . A2 - . . | E2 - . . E2 - . ." },
+            C: { lead: "A4 A#4 B4 C5 C#5 D5 D#5 E5 | . . . . E5 - . . | F5 E5 D#5 D5 C#5 C5 B4 A#4 | A4 - - - . . . .",
+                 bass: "A2 . A2 . A2 . A2 . | E2 - . . E2 - . . | D2 . D2 . D2 . D2 . | A2 - . . . . . .", drums: "k...h...s...h..." },
+            D: { lead: "A5 . . . E5 . . . | F5 . . . C5 . . . | D5 . . . A4 . . . | G#4 . . . B4 . E5 .",
+                 bass: "A2 - - - . . . . | F2 - - - . . . . | D2 - - - . . . . | E2 - - - . . . .", drums: "................" }
+        },
+        extra: (a, o, s, t, len) => { if (s % 32 === 0) bgmVoice(a, o, t, { freq: midi(33), type: "sawtooth", dur: len * 30, vol: 0.03, cut: 420, cutEnd: 200, attack: 0.4 }); }
+    }),
+    // 🏰 fast E-minor boss battle
+    boss: chipSong("arcade_boss", {
+        bpm: 168, leadVol: 0.045, bassType: "sawtooth", bassVol: 0.06, drums: "k.h.s.hkk.h.s.h.", form: "A A B C A B C B",
+        parts: {
+            A: { lead: "E5 . E5 G5 . E5 B5 A5 | G5 . F#5 . E5 . D5 . | E5 . E5 G5 . E5 C6 B5 | A5 G5 F#5 D5 E5 - - .",
+                 bass: "E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 C2 C3 D2 D3 D2 D3 | E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 D2 D3 E2 E3 E2 E3" },
+            B: { lead: "B5 . A5 . G5 . F#5 . | G5 . A5 . B5 . E5 . | C6 . B5 . A5 . G5 . | F#5 G5 A5 B5 F#5 - - .",
+                 bass: "E2 E3 E2 E3 E2 E3 E2 E3 | G2 G3 G2 G3 G2 G3 G2 G3 | A2 A3 A2 A3 A2 A3 A2 A3 | B2 B3 B2 B3 B2 B3 B2 B3" },
+            C: { lead: "E6 . D6 . B5 . G5 . | A5 . B5 . G5 . E5 . | D6 . C6 . A5 . F#5 . | G5 . A5 . B5 - B5 .",
+                 bass: "C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | B1 B2 B1 B2 B1 B2 B1 B2 | E2 E3 E2 E3 B1 B2 B1 B2", drums: "kkh.s.hkkkh.s.ss" }
+        }
+    })
+};
+const ARCADE_BGM_NAMES = new Set(Object.values(ARCADE_BGM).map(s => s.name));
+const ARCADE_BGM_VOL = 0.4;
 
 const W = 960, H = 480, GY = 416;
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -237,8 +341,13 @@ export function arcadeView(pid, t, opts) {
         Sound.boom();
         canvas.focus();
     }
-    function go() { running = true; setBusy(true); last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
-    function halt() { running = false; cancelAnimationFrame(raf); for (const k in keys) keys[k] = false; }
+    // 🎵 the stage's own BGM (boss track in the boss fight) while running; silent in menus / pauses / corners
+    function music(on) {
+        if (on) { const s = mode === "boss" ? ARCADE_BGM.boss : ARCADE_BGM[A.stage]; if (s && Sound.bgmPlaying !== s.name) Sound.bgm(s, ARCADE_BGM_VOL); }
+        else if (ARCADE_BGM_NAMES.has(Sound.bgmPlaying)) Sound.bgmStop();
+    }
+    function go() { running = true; setBusy(true); last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); music(true); }
+    function halt() { running = false; cancelAnimationFrame(raf); for (const k in keys) keys[k] = false; music(false); }
 
     function fail(why) {
         halt(); setBusy(false);
@@ -427,11 +536,25 @@ export function arcadeView(pid, t, opts) {
                 m.y = GY - m.h;
                 if (m.cool <= 0 && Math.abs(px - mx) < 420) { m.cool = rnd(1.6, 2.6); foeShots.push({ pearl: true, x: mx, y: m.y, vx: rnd(-30, 30), vy: -420, r: 8, life: 1.6 }); tone(700, 0.05, "sine", 0.03); }
                 break;
-            case "shark": // big, wanders, then dashes toward the player's side (does not follow)
-                if (m.state === "dash") { m.x += m.vx * dt; m.dash -= dt; if (m.dash <= 0) { m.state = "idle"; m.cool = rnd(2.5, 4); } }
-                else { m.x += Math.sin(m.t * 0.7) * 60 * dt; m.y = m.home + Math.sin(m.t) * 50; if (m.cool <= 0 && Math.abs(px - mx) < 520) { m.state = "dash"; m.vx = Math.sign(px - mx) * 520; m.dash = 1.1; noise(0.3, 0.05); } }
+            case "shark": { // big, wanders, then dashes in ANY direction (up · down · diagonal · sideways), sometimes a 3-dash frenzy
+                const sharkDash = (ang, spd, dur) => { m.state = "dash"; m.vx = Math.cos(ang) * spd; m.vy = Math.sin(ang) * spd; m.dash = dur; noise(0.3, 0.05); };
+                if (m.state === "dash") {
+                    m.x += m.vx * dt; m.y += m.vy * dt; m.dash -= dt;
+                    if (m.y <= 60 || m.y >= GY - m.h) m.vy = -m.vy; // bounce off the surface / sea floor
+                    if (m.dash <= 0) {
+                        if (m.frenzy > 0) { m.frenzy--; sharkDash(rnd(0, Math.PI * 2), 480, 0.55); } // next dash: a random way
+                        else { m.state = "idle"; m.vx = m.vy = 0; m.home = m.y; m.t = 0; m.cool = rnd(2.2, 3.6); }
+                    }
+                } else {
+                    m.x += Math.sin(m.t * 0.7) * 60 * dt; m.y = m.home + Math.sin(m.t) * 50;
+                    if (m.cool <= 0 && Math.hypot(px - mx, py - my) < 560) {
+                        if (Math.random() < 0.3) { m.frenzy = 2; sharkDash(rnd(0, Math.PI * 2), 480, 0.55); tone(160, 0.25, "sawtooth", 0.04, 0, -60); } // 🦈 frenzy: 3 dashes, all around
+                        else sharkDash(Math.atan2(py - my, px - mx) + rnd(-0.6, 0.6), 520, 1.0); // at the player, from any angle
+                    }
+                }
                 m.y = Math.max(60, Math.min(GY - m.h, m.y));
                 break;
+            }
             case "star": // lies on the floor, then flies at the player like a throwing star
                 if (m.state === "idle") { m.y = GY - m.h; if (Math.abs(px - mx) < 340) { m.state = "fly"; const d = Math.hypot(px - mx, py - my) || 1; m.vx = (px - mx) / d * 420; m.vy = (py - my) / d * 420; } }
                 else { m.x += m.vx * dt; m.y += m.vy * dt; m.spin = (m.spin || 0) + dt * 14; if (m.y > H + 50 || m.y < -50 || Math.abs(m.x - P.x) > 1000) m.dead = true, m.fade = 0; }
@@ -573,6 +696,10 @@ export function arcadeView(pid, t, opts) {
             const flip = m.k === "fish" || m.k === "shark" || m.k === "dog" || m.k === "car" || m.k === "dragon" ? (m.vx > 0 || (m.k === "car" && P.x > m.x)) : false;
             const sz = m.M.big || Math.max(m.w, m.h);
             if (m.k === "star" && m.state === "fly") { g.save(); g.translate(m.x + m.w / 2, m.y + m.h / 2); g.rotate(m.spin || 0); drawE(g, "⭐", 0, 0, sz); g.restore(); }
+            else if (m.k === "shark" && m.state === "dash" && !m.dead) { // nose points where it dashes
+                const tilt = Math.atan2(m.vy, Math.abs(m.vx) || 1) * (m.vx > 0 ? 1 : -1);
+                g.save(); g.translate(m.x + m.w / 2, m.y + m.h / 2); g.rotate(Math.max(-1.2, Math.min(1.2, tilt))); drawE(g, m.M.e, 0, 0, sz, { flip }); g.restore();
+            }
             else drawE(g, m.M.e, m.x + m.w / 2, m.y + m.h / 2, sz, { dark: !!m.M.dark, flip });
             if (m.M.crown) drawE(g, "👑", m.x + m.w / 2, m.y - 4, 20);
             if (m.k === "dragon" && !m.dead) { g.fillStyle = "#ef4444"; g.fillRect(m.x, m.y - 8, m.w * (m.hp / 3), 4); }
