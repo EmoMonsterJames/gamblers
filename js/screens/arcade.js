@@ -171,13 +171,13 @@ export function arcadeView(pid, t, opts) {
         fx.push({ txt: "⬆⬆", x: P.x + 2, y: P.y + P.h + 8, t: 0.6, c: "#fde047" });
     }
     // 🎲 every arcade game is shown, then the roulette lands on one at random
-    // lobby: show every arcade game first; ▶ START draws one at random and starts it right away
+    // lobby: show every arcade game first; the player presses 🎲 to draw one, then ▶ START on the drawn game
     function pickStage() {
         mode = "menu"; setBusy(false);
         const ids = Object.keys(ARCADE_STAGES);
         const cards = ids.map(id => { const x = ARCADE_STAGES[id]; return h("div.arc-pick", { "data-id": id }, h("div.arc-pick-ico", x.emoji), h("b", x.name), h("small", `난이도 ${x.diff}`)); });
-        const msg = h("p.arc-pick-msg", "▶ START 를 누르면 위 4종 중 하나가 랜덤으로 선택되어 바로 시작합니다.");
-        const btn = h("button.btn.gold.big", { onclick: () => { btn.disabled = true; btn.textContent = "🎲 뽑는 중…"; rollStage(ids, cards, msg); } }, "▶ START");
+        const msg = h("p.arc-pick-msg", "🎲 아케이드 뽑기 버튼을 누르면 위 4종 중 하나가 랜덤으로 뽑힙니다.");
+        const btn = h("button.btn.gold.big", { onclick: () => { btn.disabled = true; btn.textContent = "🎲 뽑는 중…"; rollStage(ids, cards, msg); } }, "🎲 아케이드 뽑기");
         showPanel(h("div.arc-card.arc-pick-card", h("h3", "🕹️ 아케이드 게임"), h("small", `길이 약 2분 30초 · 제한 시간 3분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
             h("div.arc-pick-grid", cards), msg,
             h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 스테이지마다 🎰 🃏 🏪 🔍 중 2개 코너 문이 있어요. 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
@@ -203,7 +203,7 @@ export function arcadeView(pid, t, opts) {
         Sound.bonus();
         drawTop(); draw0();
         await sleep(1500);
-        if (!stopped) startStage();
+        if (!stopped) menu();
     }
     function menu() {
         if (!A.stage) return pickStage();
