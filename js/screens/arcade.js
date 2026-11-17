@@ -311,15 +311,24 @@ export function arcadeView(pid, t, opts) {
             P.vy = Math.min(900, P.vy);
         }
         // move + collide
-        const prevBottom = P.y + P.h;
+        const prevBottom = P.y + P.h, prevTop = P.y, prevX = P.x;
         P.x += P.vx * dt; P.y += P.vy * dt;
         P.x = Math.max(0, Math.min(lv.L - P.w, P.x));
         P.ground = false;
         if (P.y < 20 && P.water) { P.y = 20; P.vy = Math.max(0, P.vy); }
         if (P.y + P.h >= GY && prevBottom <= GY + 12 && onGround(lv.ground, P.x + P.w / 2)) { P.y = GY - P.h; P.vy = 0; P.ground = true; }
+        // platforms are solid: land on top, bump your head from below, blocked at the sides
+        // (no jumping up through them) · ↓ on top drops down through that one platform only
+        if (P.dropPl && (P.y > P.dropPl.y + P.dropPl.h || P.x + P.w <= P.dropPl.x || P.x >= P.dropPl.x + P.dropPl.w)) P.dropPl = null;
         for (const pl of lv.plats) {
-            if (keys.d && !P.water) continue; // drop through
-            if (P.vy >= 0 && prevBottom <= pl.y + 4 && P.y + P.h >= pl.y && P.x + P.w > pl.x && P.x < pl.x + pl.w) { P.y = pl.y - P.h; P.vy = 0; P.ground = true; }
+            if (pl === P.dropPl) continue;
+            if (!(P.x + P.w > pl.x && P.x < pl.x + pl.w)) continue;
+            const overlapY = P.y + P.h > pl.y && P.y < pl.y + pl.h;
+            if (P.vy >= 0 && prevBottom <= pl.y + 4 && P.y + P.h >= pl.y) {
+                if (keys.d && !P.water) { P.dropPl = pl; continue; } // drop through
+                P.y = pl.y - P.h; P.vy = 0; P.ground = true;
+            } else if (overlapY && prevTop >= pl.y + pl.h - 6) { P.y = pl.y + pl.h; if (P.vy < 0) P.vy = 60; }
+            else if (overlapY) { P.x = prevX + P.w / 2 < pl.x + pl.w / 2 ? pl.x - P.w : pl.x + pl.w; P.vx = 0; }
         }
         for (const b of lv.blocks) {
             if (P.vy < 0 && hit(P, b) && P.y > b.y + b.h - 18) { P.vy = 120; if (!b.used) { b.used = true; lv.items.push({ kind: b.item, x: b.x + 2, y: b.y - 34, w: 28, h: 28, pop: 0.3 }); Sound.coin(); } }
