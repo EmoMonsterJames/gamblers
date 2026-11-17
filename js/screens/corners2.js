@@ -4,6 +4,7 @@
 //   💼 직업 — a random job, 10 s of work, the job's time comes off the turn
 //   👹 NPC — 40~70% chance of 1~3 one-sided NPC attacks during a turn
 // =====================================================================
+import { priestVisit } from "./survivalLand.js";
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { confirmBox, confetti, modal, Activity, toast } from "../core/fx.js";
@@ -224,6 +225,7 @@ export async function npcAttack(pid) {
     const pool = npcPool(LOC_BY_ID[G.S().turn?.loc]);
     const npc = pool[Math.floor(Math.random() * pool.length)];
     const move = pickNpcMove(npc);
+    if (npc.churchOnly) return priestVisit(pid, npc, move); // ⛪ 🔄 Foggy Church Priest has its own screen
     const kind = move.hp && move.steal ? "hp" : NEW_KINDS.find(k => move[k]) || (move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove"
         : move.idle ? "idle" : move.hope ? "hope" : move.gift ? "gift" : move.shop ? "shop" : move.copy ? "copy" : "curse");
     const friendly = ["give", "heal", "idle", "hope", "gift", "shop", "cureFlu", "giftBox"].includes(kind);

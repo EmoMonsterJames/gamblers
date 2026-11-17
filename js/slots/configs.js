@@ -422,14 +422,22 @@ for (const m of NEW_MAPS) for (const [i, s] of mapSlots(m).entries()) {
         const tot = Object.values(features).reduce((a, f) => a + f.p, 0);
         for (const f of Object.values(features)) f.p *= (1 / every) / tot;
     }
-    SLOTS.push(video({
+    const v = video({
         id, name: s.name, brand: s.brand, progressive: true, region: m.region,
         desc: `${m.name}의 대표 슬롯! ${t.label}.${every ? ` 보너스 약 ${every}스핀에 1번.` : ""}`,
         theme: { bg: `linear-gradient(180deg,${s.bg[0]},${s.bg[1]})`, accent: s.acc, glow: s.acc, font: s.font || "'Lilita One', sans-serif" },
         highs: s.hi.map(e => ({ e })), lows: s.lo.map(e => ({ e })),
         wild: { e: s.wild, name: "WILD", w: t.wildW, ...(t.wildFree ? { wFree: t.wildFree } : {}) },
         look: t.look(s.sp), features, px: RULE_PX[id] ?? t.px, ...(every ? { bonusEvery: every } : {})
-    }));
+    });
+    // 🔥 Inferno Casino death symbols (pay nothing): DX = the player's X-marked profile · KN = a knife (screens/infernoSlots.js)
+    if (s.x?.sym) {
+        v.syms[s.x.sym] = s.x.mode === "knife" ? { e: "🔪", name: "Knife" } : { e: "☠️", name: "X Profile" };
+        v.w[s.x.sym] = s.x.w;
+        Object.assign(v, { inferno: s.x.mode, deathSym: s.x.sym });
+        v.desc += s.x.mode === "knife" ? " 🔪 칼 심볼이 나올 때마다 칼이 내 프로필로 날아가 가까워지고, 프로필에 완전히 박히면 바로 사망!" : " ☠️ 빨간 X가 새겨진 내 프로필 아이콘이 한 번에 3개 나오면 바로 사망!";
+    }
+    SLOTS.push(v);
 }
 SLOTS.push(...SPECIAL_SLOTS, ...THEME_SLOTS, ...SKY_SLOTS, ...REALM_SLOTS, ...WONDER_SLOTS);
 
@@ -446,6 +454,6 @@ for (const s of SLOTS) s.px = PX[s.id] ?? s.px;
 export const SLOT_BY_ID = Object.fromEntries(SLOTS.map(s => [s.id, s]));
 export const BRAND_LOGO = {
     "BLK": "images/slots/brands/blk.svg", "CLOUD GAMING": "images/slots/brands/cloud-gaming.svg", "CLOVER-TECH": "images/slots/brands/clover-tech.svg",
-    "DAEBAK": "images/slots/brands/daebak.svg", "IPEX": "images/slots/brands/ipex.svg", "Rabbit-Gaming": "images/slots/brands/rabbit-gaming.svg",
+    "DAEBAK": "images/slots/brands/daebak.svg", "Death Slot": "images/slots/brands/death-slot.svg", "IPEX": "images/slots/brands/ipex.svg", "Rabbit-Gaming": "images/slots/brands/rabbit-gaming.svg",
     "HYHG GAMING": "images/slots/brands/hyhg-gaming.svg", "Classic Gaming": "images/slots/brands/classic-gaming.svg", "Scrooge-Slots": "images/slots/brands/scrooge-slots.svg", "YG GAMING": "images/slots/brands/yg-gaming.svg"
 };

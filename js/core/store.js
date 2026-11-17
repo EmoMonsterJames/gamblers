@@ -314,7 +314,9 @@ export const Store = {
     },
 
     // ------------------------------------------------------------ season
+    beforeSave: [], // hooks run before every season save (game/revival.js: 패자부활전 inventory bookkeeping)
     saveSeason(immediate = false) {
+        for (const f of this.beforeSave) try { f(); } catch (e) { console.error(e); }
         this.saveLocal();
         clearTimeout(this._saveTimer);
         const go = () => this.pushSeason();

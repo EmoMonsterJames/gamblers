@@ -12,17 +12,20 @@ import { particles } from "../core/fx.js";
 import { shopListing, discountItems } from "../data/catalogAdmin.js";
 import { letterCard, npcTicket } from "../ui/letterCard.js";
 import { reportsOf } from "../game/bank.js";
+import * as RV from "../game/revival.js";
 
 export function shopView(shopId, pid, locId, onChange) {
     const shop = SHOPS[shopId];
     const ps = S().ps[pid];
     const wrap = h("div.shop.shop-" + shopId);
     // discount shop: a seeded handful per map per round; other shops: their list + second-shop listings
-    const list = () => shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId);
+    // 🔄 패자부활전: no random map ticket (only Survival Land passes work there)
+    const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => !RV.inRevival(pid) || it.id !== "map_random");
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
             h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.limit" + (buysLeft(pid, shopId) <= 0 ? ".none" : ""), `이번 라운드 구매 ${Math.max(0, buysLeft(pid, shopId))} / ${SHOP_LIMIT[shopId] ?? 1}`), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : shop.cur === "PG" ? `💎 ${fmt(ps.points)} P · 💰 ${fmt(ps.money)} G` : `💰 ${fmt(ps.money)} G`)),
+            RV.inRevival(pid) ? h("p.notice.rv-shop-note", RV.SHOP_NOTE) : "",
             shopId === "pointgold" ? h("p.muted.shop-note", "💠 포인트와 골드를 함께 내는 상점입니다. ⭐ 특수프레임 / 특수프레임효과는 이 상점에서만 팔아요 — 맵마다 상품이 하나씩 다릅니다.") : "",
             h("div.shop-grid", list().map(it => {
                 const e = catalogEntry(it.cat, it.id);
@@ -82,6 +85,8 @@ export async function checkGoods(ps, cat, id, e) {
 }
 // hand a bought good to the player (shops + the 보따리상인)
 export function giveGoods(pid, cat, id) {
+    // 🔄 패자부활전: bought with revival gold → revival inventory (gone when the revival ends)
+    if (RV.inRevival(pid) && !giveGoods.inner) { giveGoods.inner = true; try { return RV.purchase(pid, () => giveGoods(pid, cat, id)); } finally { giveGoods.inner = false; } }
     const ps = S().ps[pid], d = Store.getDecor(pid);
     switch (cat) {
         case "item": ps.items[id] = (ps.items[id] || 0) + 1; break;

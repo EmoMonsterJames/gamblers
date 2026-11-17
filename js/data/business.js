@@ -50,7 +50,7 @@ const ALL_REGIONS = REGIONS.map(r => r.id);
 export const BIZ_TYPES = {
     icecream: { id: "icecream", name: "Ice Cream Shop", ko: "아이스크림 가게", emoji: "🍦", color: "#f9a8d4", price: 300000, pts: 30, max: 3, rank: 6,
         listed: ["riches", "twins", "blackout", "plaza"],
-        open: [R("cl1", 8000), R("cl2", 8000), R("fantasy", 8000), R("arctic", 10000), R("richland", 10000), R("combo", 5000)],
+        open: [R("cl1", 8000), R("cl2", 8000), R("fantasy", 8000), R("arctic", 10000), R("richland", 10000), R("combo", 5000), R("survival", 20000)],
         entry: { fee: 300, chance: 1 }, cut: 0.004,
         menu: [
             { id: "popsicle", name: "Popsicle", emoji: "🍡", hp: 20, price: 16750 },
@@ -60,14 +60,14 @@ export const BIZ_TYPES = {
             { id: "cake", name: "Ice Cream Cake", emoji: "🎂", hp: "full", price: 90040 }] },
     marshall: { id: "marshall", name: "Marshall Tea", ko: "마샬티 가게", emoji: "🍵", color: "#a3e635", price: 100000, pts: 10, max: 5, rank: 10, nation: "Emo World",
         listed: ["highlimit", "emo", "emo2"],
-        open: [R("space", 5000), R("cl1", 30000, ["twins", "dungtown", "noluck"]), R("npcland", 5000), R("under", 20000, ["blackout"])],
+        open: [R("space", 5000), R("cl1", 30000, ["twins", "dungtown", "noluck"]), R("npcland", 5000), R("under", 20000, ["blackout"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "biscuit", name: "Marshall Biscuit", emoji: "🍪", hp: 10, price: 8020 },
             { id: "tea", name: "Marshall Tea", emoji: "🍵", hp: 30, price: 22970 }] },
     kimchi: { id: "kimchi", name: "Bosongi Kimchi", ko: "보송이김치 상점", emoji: "🥬", color: "#ef4444", price: 100000, pts: 10, max: 5, rank: 10, nation: "Emo World",
         listed: ["wealthy", "graveyard", "bubble", "seaside"],
-        open: [R("sky", 5000), R("cl2", 30000, ["gambleables", "ribbit", "emo2"]), R("combo", 5000), R("cl1", 30000, ["noluck"])],
+        open: [R("sky", 5000), R("cl2", 30000, ["gambleables", "ribbit", "emo2"]), R("combo", 5000), R("cl1", 30000, ["noluck"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "mini", name: "미니 보송이 김치", emoji: "🫙", hp: 10, price: 8040 },
@@ -75,14 +75,14 @@ export const BIZ_TYPES = {
     kkomeal: { id: "kkomeal", name: "Kkomeal", ko: "꼬밀", emoji: "🍱", color: "#fbbf24", price: 100000, pts: 10, max: 5, rank: 10, nation: "MJ World",
         listed: ["mj2", "mj", "odd_casino", "slots_only"],
         // 'Rainbow Casino' sits in 판타지랜드, so it is opened with the 판타지랜드 tax
-        open: [R("deepsea", 8000), R("npcland", 5000), R("randomland", 20000, ["crazy_casino"]), R("fantasy", 30000, ["magic", "rainbow"])],
+        open: [R("deepsea", 8000), R("npcland", 5000), R("randomland", 20000, ["crazy_casino"]), R("fantasy", 30000, ["magic", "rainbow"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "sample", name: "꼬밀 샘플", emoji: "🥄", hp: 10, price: 8960 },
             { id: "kit", name: "꼬밀 밀키트", emoji: "🍱", hp: 30, price: 25070 }] },
     cafe: { id: "cafe", name: "Cafe", ko: "까페", emoji: "☕", color: "#b45309", price: 300000, pts: 30, max: 2, rank: 6,
         listed: ["sky_bridge", "foggy", "blackwater", "diamond_casino"],
-        open: [R("cl1", 8000), R("cl2", 8000), R("under", 8000), R("deepsea", 10000), R("randomland", 10000), R("npcland", 5000)],
+        open: [R("cl1", 8000), R("cl2", 8000), R("under", 8000), R("deepsea", 10000), R("randomland", 10000), R("npcland", 5000), R("survival", 20000)],
         entry: { fee: 300, chance: 1 }, cut: 0.004,
         menu: [
             { id: "refresh", name: "Refreshment", emoji: "🧃", hp: 20, price: 16850 },
@@ -90,7 +90,7 @@ export const BIZ_TYPES = {
             { id: "roastery", name: "Fine Roastery Coffee", emoji: "🫘", hp: "full", price: 92040 }] },
     juice: { id: "juice", name: "Transparent Juice", ko: "투명쥬스", emoji: "🥤", color: "#7dd3fc", price: 100000, pts: 10, max: 5, rank: 10, nation: "Foggy Nation",
         listed: ["balloon", "weird_casino", "foggy", "ghost", "dracula"],
-        open: [R("sky", 8000), R("spooky", 30000, ["spooky", "ghost"]), R("combo", 5000), R("fantasy", 30000, ["magic"])],
+        open: [R("sky", 8000), R("spooky", 30000, ["spooky", "ghost"]), R("combo", 5000), R("fantasy", 30000, ["magic"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "s", name: "투명주스 (미니)", emoji: "🥛", hp: 5, price: 4760 },
@@ -98,7 +98,7 @@ export const BIZ_TYPES = {
             { id: "l", name: "투명주스 (라지)", emoji: "🥤", hp: 30, price: 26070 }] },
     noodles: { id: "noodles", name: "Ant Leaf Noodles Shop", ko: "개밋잎국수", emoji: "🍜", color: "#84cc16", price: 100000, pts: 10, max: 5, rank: 10, nation: "Ground Town",
         listed: ["ground2", "underground", "western", "colosseum", "redblue"],
-        open: [R("under", 8000, ["dungeon", "ground2"]), R("cl1", 30000, ["ground"]), R("combo", 6000), R("noslot", 20000, ["picky"])],
+        open: [R("under", 8000, ["dungeon", "ground2"]), R("cl1", 30000, ["ground"]), R("combo", 6000), R("noslot", 20000, ["picky"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "sample", name: "개밋잎국수 (샘플)", emoji: "🥢", hp: 10, price: 8410 },
@@ -110,14 +110,14 @@ export const BIZ_TYPES = {
         market: [{ cat: "item", id: "hp_50" }, { cat: "item", id: "map_random" }, { cat: "weapon", id: "punch" }, { cat: "pet", id: "poop" }] },
     greens: { id: "greens", name: "Puseonggui Greens Shop", ko: "푸성귀 가게", emoji: "🌿", color: "#22c55e", price: 100000, pts: 10, max: 5, rank: 10, nation: "Dung Town",
         listed: ["dungtown", "magic", "beggar_shelter", "dove"],
-        open: [R("cl2", 30000, ["dung2"]), R("randomland", 30000, ["plaza"]), R("combo", 5000), R("deepsea", 20000, ["bubble"])],
+        open: [R("cl2", 30000, ["dung2"]), R("randomland", 30000, ["plaza"]), R("combo", 5000), R("deepsea", 20000, ["bubble"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.75 }, cut: 0.003,
         menu: [
             { id: "jji", name: "찌", emoji: "🌱", hp: 5, price: 4610 },
             { id: "greens", name: "푸성귀", emoji: "🥬", hp: 30, price: 25970 }] },
     cookie: { id: "cookie", name: "Shape Cookie", ko: "도형쿠키", emoji: "🍪", color: "#f59e0b", price: 100000, pts: 10, max: 5, rank: 10, nation: "Polynesia",
         listed: ["poly2", "stars", "space_center", "wealthy", "super"],
-        open: [R("cl1", 30000, ["poly"]), R("arctic", 30000, ["ice"]), R("npcland", 5000), R("randomland", 20000, ["odd_casino"])],
+        open: [R("cl1", 30000, ["poly"]), R("arctic", 30000, ["ice"]), R("npcland", 5000), R("randomland", 20000, ["odd_casino"]), R("survival", 20000)],
         entry: { fee: 100, chance: 0.7 }, cut: 0.003,
         menu: [
             { id: "circle", name: "동그라미쿠키", emoji: "⚪", hp: 5, price: 4860 },

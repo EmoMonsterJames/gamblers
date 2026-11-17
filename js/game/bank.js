@@ -158,7 +158,7 @@ export function openSpots(type, { except = null } = {}) {
     return T.open.map(o => ({
         region: o.region, tax: o.tax, name: REGION_BY_ID[o.region]?.name || o.region, emoji: REGION_BY_ID[o.region]?.emoji || "",
         maps: (o.maps === "all" ? LOCATIONS.filter(l => l.region === o.region) : o.maps.map(id => LOC_BY_ID[id]).filter(Boolean))
-            .filter(l => !l.off).map(l => ({ loc: l, taken: taken.has(l.id) }))
+            .filter(l => !l.off || (l.region === "survival" && !Store.maps?.locs?.[l.id]?.off)).map(l => ({ loc: l, taken: taken.has(l.id) })) // 🔄 Survival Land maps are hidden outside the revival but can still hold a business
     })).filter(r => r.maps.length);
 }
 export function buyStatus(type, pid) {

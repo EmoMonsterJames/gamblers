@@ -7,6 +7,7 @@
 // One challenge per player per round; an unfinished word stays with the
 // player (it can be finished at any Spelling Bee map this round or later).
 // =====================================================================
+import * as RV from "../game/revival.js";
 import { h, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, confetti, bigWin } from "../core/fx.js";
@@ -23,7 +24,8 @@ export function spellingView(pid, loc, onChange) {
     const wrap = h("div.spelling");
     const sp = ps.spell;
     const playedThisRound = ps.spellRound === s.round && !sp;
-    const head = h("div.sb-head", h("span.sb-bee", "🐝"), h("div", h("b", "SPELLING BEE"), h("small", `알파벳권으로 단어를 완성하고 ${fmt(SPELL_MIN)}~${fmt(SPELL_MAX)} G 상금을 받으세요!`)));
+    const head = h("div.sb-head", h("span.sb-bee", "🐝"), h("div", h("b", "SPELLING BEE"), h("small", `알파벳권으로 단어를 완성하고 ${fmt(SPELL_MIN)}~${fmt(SPELL_MAX)} G 상금을 받으세요!`),
+        RV.inRevival(pid) ? h("small.rv-reset", " · 🔄 패자부활전: 도전 횟수가 리셋되어 다시 도전할 수 있습니다 (상금은 패자부활전 골드)") : null));
 
     // ---- 🎟️ entry gate: pay SPELL_FEE, then a random 50/50 allow / deny (no refund on deny)
     if (!sp && !playedThisRound && ps.spellPass !== s.round) {

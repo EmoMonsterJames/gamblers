@@ -105,6 +105,8 @@ for (const m of NEW_MAPS) for (const [i, c] of mapCasinos(m).entries()) {
     if (c.kind === "scratch") g.syms = c.syms;
     if (c.kind === "plinko") g.buckets = [25, 5, 2, 1.2, 0, 0, 0, 1.2, 2, 5, 25];
     else g.table = KIND_TABLE[c.kind](c);
+    // 🔥 Inferno Casino: an instant-death outcome (Plinko: the ☠️ centre bucket · Bomb Pick: the ☠️ bomb)
+    if (c.death) { g.death = c.death; if (c.kind === "plinko") g.deathBucket = 5; }
     CASINO_GAMES.push(g);
 }
 
@@ -184,6 +186,9 @@ export function playCasino(g, bet, luck = {}, choice) {
             if (e2 && e2.m > 0) { entry = { ...e2, boosted: true }; break; }
         }
     }
+    // ☠️ death games: the skull bucket / bomb kills; a normal miss never lands on the skull bucket
+    if (g.death && Math.random() < g.death) entry = { m: 0, lose: true, death: true, bucket: g.deathBucket };
+    else if (g.deathBucket != null && entry.bucket === g.deathBucket) entry = { ...entry, bucket: Math.random() < 0.5 ? g.deathBucket - 1 : g.deathBucket + 1 };
     const payout = Math.min(CONFIG.CASINO_MAX_WIN, Math.round(bet * entry.m));
     let points = 0;
     if (Math.random() < CONFIG.CASINO_POINT_CHANCE) {

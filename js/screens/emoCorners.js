@@ -3,6 +3,7 @@
 //   🔍 EmoMon Capture (every map unless turned off) · 🏥 Monster Hospital · 🧪 Monster Lab
 //   📖 EmoMon Dex (every map)
 // =====================================================================
+import * as RV from "../game/revival.js";
 import { emoSlots } from "../game/extra.js";
 import { h, fmt, sleep, put } from "../core/util.js";
 import { Sound } from "../core/sound.js";
@@ -42,7 +43,7 @@ async function buyFlow(pid, name, price, kind, give) {
     if (!canPay(ps, price)) { toast("골드 · 포인트가 부족합니다", "warn"); return false; }
     if (!(await confirmBox(`${name}을(를) ${priceLabel(price)}에 구매할까요?\n${per} 남은 구매: ${left}회 → ${left - 1}회`, "구매", "취소"))) return false;
     if (!canPay(ps, price) || (kind === "lab" ? M.labBuysLeft(pid) : M.shopBuysLeft(pid)) <= 0) return false;
-    pay(ps, price); give(); M.countBuy(pid, kind);
+    pay(ps, price); RV.purchase(pid, give); M.countBuy(pid, kind); // 🔄 패자부활전 purchases are revival inventory
     G.log(`${kind === "lab" ? "🧪" : "🛒"} ${pname(pid)} ${name} 구매 (${priceLabel(price)})`);
     Store.saveSeason(true);
     Sound.coin(); toast(`${name} 구매!`, "ok");
@@ -204,6 +205,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                 M.release(pid, choice);
             }
             M.addMon(pid, mon);
+            RV.noteCatch(pid, M.typesOf(mon)); // 🔄 capture mission (caught monsters are kept after the revival)
             toast(`🐾 ${species(mon.sid).name}이(가) 동료가 되었습니다!`, "ok", 3000);
             return true;
         }

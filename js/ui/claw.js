@@ -18,6 +18,7 @@ import { Store } from "../core/store.js";
 import { avatar, displayName } from "./profile.js";
 
 const nm = pid => displayName(Store.player(pid));
+const pick1 = a => a[Math.floor(Math.random() * a.length)];
 const MOVE = 900;       // claw travel / rope time (ms)
 const HEAD = 34;        // claw head height (px)
 const HEAD_W = 54;
@@ -250,20 +251,25 @@ export function clawElimination(cands, { onDone = () => { }, safe = [], pool = n
 // The 2 finalists split the final 1 : 1, so the claw picks the champion: the ball it
 // drops into the WIN chute wins. Built for suspense — the claw hovers between the two
 // balls, a countdown, failed grabs that slip, a wobbling carry and a heartbeat that speeds up.
-export function clawChampion(two, { onDone = () => { } } = {}) {
-    const B = 104;
-    const winner = two[Math.random() < 0.5 ? 0 : 1], loser = two.find(p => p !== winner);
-    const status = h("p.claw-status", "두 결승 진출자의 공이 들어 있습니다. 집게가 WIN 구멍에 떨어뜨리는 공의 주인이 시즌 우승자!");
+// opts (패자부활전 reuses it with any number of balls): chute label, intro text, the winner tag / line
+export function clawChampion(two, { onDone = () => { }, chute = "WIN", intro = null, winTag = "👑 CHAMPION", winLine = null } = {}) {
+    const N = two.length;
+    const B = N <= 2 ? 104 : N <= 4 ? 84 : N <= 6 ? 68 : 54;
+    const winner = two[Math.floor(Math.random() * N)], loser = pick1(two.filter(p => p !== winner));
+    const status = h("p.claw-status", intro || "두 결승 진출자의 공이 들어 있습니다. 집게가 WIN 구멍에 떨어뜨리는 공의 주인이 시즌 우승자!");
     const btn = h("button.btn.gold.huge", "🕹️ 운명의 집게 작동");
     const count = h("div.clawf-count");
     const rope = h("div.claw-rope"), head = h("div.claw-head", h("i.claw-l"), h("i.claw-r"));
     const claw = h("div.claw", rope, head);
-    const machine = h("div.claw-machine.clawf", { style: { "--b": B + "px" } }, h("div.claw-rail"), h("div.claw-chute", h("span", "WIN")), claw, count);
+    const machine = h("div.claw-machine.clawf", { style: { "--b": B + "px" } }, h("div.claw-rail"), h("div.claw-chute", h("span", chute)), claw, count);
     const balls = new Map();
+    const per = Math.min(N, 5);
     two.forEach((pid, i) => {
         const ball = h("div.claw-ball", { "data-id": pid }, avatar(pid, B - 10, { effect: false, frame: false }));
-        ball.style.left = `calc(${i ? 76 : 44}% - ${B / 2}px)`;
-        ball.style.top = `${380 - B - 6}px`;
+        const row = Math.floor(i / per), col = i % per;
+        const x = N === 2 ? (i ? 76 : 44) : 34 + col * (58 / Math.max(1, per - 1)) + (row % 2) * 4;
+        ball.style.left = `calc(${x}% - ${B / 2}px)`;
+        ball.style.top = `${380 - B - 6 - row * B * 0.92}px`;
         ball.style.setProperty("--h", (pid * 47) % 360);
         balls.set(pid, ball); machine.append(ball);
     });
@@ -338,9 +344,9 @@ export function clawChampion(two, { onDone = () => { } } = {}) {
         // 1) the claw hesitates between the two balls, slower each time
         status.textContent = "집게가 고민하고 있습니다… 👀";
         const hovers = 5 + Math.floor(Math.random() * 2);
-        let first = two[Math.floor(Math.random() * 2)];
+        let first = two[Math.floor(Math.random() * N)];
         for (let i = 0; i < hovers; i++) {
-            const pid = (hovers - 1 - i) % 2 === 0 ? first : two.find(p => p !== first);
+            const pid = N === 2 ? ((hovers - 1 - i) % 2 === 0 ? first : two.find(p => p !== first)) : i === hovers - 1 ? first : pick1(two);
             await moveClaw(ballX(pid), 600 + i * 260);
             light(pid); Sound.tick();
             status.textContent = `👀 ${nm(pid)} 쪽으로…?`;
@@ -350,8 +356,8 @@ export function clawChampion(two, { onDone = () => { } } = {}) {
         beat = 800;
         await countdown();
         // 3) failed grabs (always when it goes for the loser first, sometimes even on the winner)
-        const tries = first === loser ? [loser] : Math.random() < 0.5 ? [winner] : [];
-        if (tries.length && Math.random() < 0.45) tries.push(tries[0] === loser ? winner : loser);
+        const tries = first !== winner ? [first] : Math.random() < 0.5 ? [winner] : [];
+        if (tries.length && Math.random() < 0.45) tries.push(tries[0] !== winner ? winner : loser);
         for (const pid of tries) {
             light(pid); await lift(pid); await slip(pid);
             beat = Math.max(420, beat - 150);
@@ -376,10 +382,10 @@ export function clawChampion(two, { onDone = () => { } } = {}) {
         beating = false;
         Sound.boom(); machine.classList.add("flash");
         wrap.classList.remove("tense");
-        tags.get(winner).classList.add("win"); tags.get(winner).querySelector(".claw-tag").textContent = "👑 CHAMPION";
-        tags.get(loser).classList.add("lose");
+        tags.get(winner).classList.add("win"); tags.get(winner).querySelector(".claw-tag").textContent = winTag;
+        for (const p of two) if (p !== winner) tags.get(p).classList.add("lose");
         light(null);
-        status.textContent = `👑 ${nm(winner)} 시즌 우승!!!`;
+        status.textContent = winLine ? winLine(nm(winner)) : `👑 ${nm(winner)} 시즌 우승!!!`;
         Sound.fanfare(); confetti(160, ["👑", "🎉", "✨", "🪙"]);
         await sleep(3000);
         onDone(winner);
