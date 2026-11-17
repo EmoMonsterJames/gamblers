@@ -171,13 +171,21 @@ export function arcadeView(pid, t, opts) {
         fx.push({ txt: "⬆⬆", x: P.x + 2, y: P.y + P.h + 8, t: 0.6, c: "#fde047" });
     }
     // 🎲 every arcade game is shown, then the roulette lands on one at random
-    async function pickStage() {
-        mode = "pick"; setBusy(true);
+    // lobby: show every arcade game first; ▶ START draws one at random and starts it right away
+    function pickStage() {
+        mode = "menu"; setBusy(false);
         const ids = Object.keys(ARCADE_STAGES);
         const cards = ids.map(id => { const x = ARCADE_STAGES[id]; return h("div.arc-pick", { "data-id": id }, h("div.arc-pick-ico", x.emoji), h("b", x.name), h("small", `난이도 ${x.diff}`)); });
-        const msg = h("p.arc-pick-msg", "아케이드 게임 4종 중 하나를 랜덤으로 뽑습니다…");
-        showPanel(h("div.arc-card.arc-pick-card", h("h3", "🎲 아케이드 게임 뽑기"), h("div.arc-pick-grid", cards), msg));
-        await sleep(1300);
+        const msg = h("p.arc-pick-msg", "▶ START 를 누르면 위 4종 중 하나가 랜덤으로 선택되어 바로 시작합니다.");
+        const btn = h("button.btn.gold.big", { onclick: () => { btn.disabled = true; btn.textContent = "🎲 뽑는 중…"; rollStage(ids, cards, msg); } }, "▶ START");
+        showPanel(h("div.arc-card.arc-pick-card", h("h3", "🕹️ 아케이드 게임"), h("small", `길이 약 2분 30초 · 제한 시간 3분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
+            h("div.arc-pick-grid", cards), msg,
+            h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 스테이지마다 🎰 🃏 🏪 🔍 중 2개 코너 문이 있어요. 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
+            btn));
+    }
+    async function rollStage(ids, cards, msg) {
+        mode = "pick"; setBusy(true);
+        msg.textContent = "🎲 아케이드 게임을 랜덤으로 뽑습니다…";
         const win = pick(ids);
         // ~3 laps, slowing down, ending on the drawn game
         const steps = ids.length * 3 + ids.indexOf(win) + 1;
@@ -194,8 +202,8 @@ export function arcadeView(pid, t, opts) {
         msg.replaceChildren("👉 ", h("b", `${S.emoji} ${S.name}`), ` 당첨! (난이도 ${S.diff})`);
         Sound.bonus();
         drawTop(); draw0();
-        await sleep(1700);
-        if (!stopped) menu();
+        await sleep(1500);
+        if (!stopped) startStage();
     }
     function menu() {
         if (!A.stage) return pickStage();
