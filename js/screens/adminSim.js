@@ -39,6 +39,7 @@ export function adminSimPage() {
             h("div.am-grid", h("label.cf", h("small", "📍 체험할 지역"), regSel), h("label.cf", h("small", "📍 체험할 맵 (턴이 시작되면 이 맵으로 바로 들어갑니다 · 테스트 중에도 상단 바에서 바꿀 수 있어요)"), mapSel)),
             h("label.am-tog", kit, "지역 입장 아이템 · 알파벳 카드 · 연장권 등 테스트 키트 지급"),
             h("div.row", h("button.btn.gold.big", { onclick: go }, "🧪 시뮬레이션 시작"))),
+        survivalCard(),
         testSeasonCard());
 }
 
@@ -76,4 +77,68 @@ function testSeasonCard() {
         h("div.row", h("span", "선택: ", count), h("button.btn.small.ghost", { onclick: random }, `🎲 랜덤 ${TEST_SEASON_MAX}명`), h("button.btn.small.ghost", { onclick: () => { picked.clear(); sync(); } }, "선택 해제")),
         grid,
         h("div.row", h("button.btn.gold.big", { onclick: go }, "🏁 테스트 시즌 시작")));
+}
+
+// 🏝 Survival Land (EmoMonster survival maps, public.maps): pick a map → test bots stand on it in a separate
+// sim season (emo_sv_sim_start) and the real survival screen opens in a new window. Nothing counts.
+const SV_GROUPS = [["normal", "🗺 일반 맵", m => !m.special], ["special", "⚠️ 특수 맵", m => m.special && m.special !== "attr"], ["attr", "✨ 속성 맵", m => m.special === "attr"]];
+const SV_WIN = "emoSvSim";
+let svSimId = null;
+const svActor = () => { try { return localStorage.getItem("EMO_CURRENT_PLAYER") || "0"; } catch { return "0"; } };
+const svUrl = id => `EmoMonster/pages/survival.html?sim=${encodeURIComponent(id)}`;
+function survivalCard() {
+    const pc = Store.publicClient();
+    const card = h("div.ag-card.sv-sim-card", h("h3", "🏝 Survival Land 맵 체험"),
+        h("p.muted", "EmoMonster 서바이벌 맵을 골라 테스트 봇들과 함께 실제 규칙 그대로 체험합니다. 별도의 시뮬레이션 시즌이 만들어지고 새 창에서 실제 맵 화면이 열립니다 — 봇들의 턴을 직접 플레이하고, 타일을 쓰고, 라운드를 넘겨 보세요. 랭킹·명예의 전당·기록에는 남지 않습니다."));
+    if (!pc || !Store.user) return card.appendChild(h("p.notice", "클라우드 관리자 로그인이 필요합니다 (⚙️ 관리자 페이지).")), card;
+    card.append(h("p.notice", "ℹ️ 시뮬레이션 창은 EmoMonster에 관리자 계정으로 로그인되어 있어야 봇 턴을 진행할 수 있습니다. 새 시뮬레이션을 시작하면 이전 시뮬레이션은 삭제됩니다."));
+    let maps = [], sel = null;
+    const info = h("div.sv-sim-info.muted", "맵을 고르세요.");
+    const bots = h("input.num", { type: "number", min: 1, max: 10, value: 4 });
+    const out = h("div.small");
+    const runBtn = h("button.btn.gold.big", { disabled: true, onclick: () => run() }, "🏝 Survival 체험 시작");
+    const stopBtn = h("button.btn.red", { disabled: !svSimId, onclick: () => stop() }, "⏹ 시뮬레이션 종료");
+    const board = h("div.sv-sim-board", h("p.muted", "맵을 불러오는 중…"));
+    const pickMap = m => {
+        sel = m;
+        board.querySelectorAll(".sv-sim-tile").forEach(el => el.classList.toggle("on", el.dataset.id === String(m.id)));
+        info.replaceChildren(h("b", `#${m.map_no} ${m.name}`), ` · ${"★".repeat(m.difficulty || 1)} · 정원 ${m.capacity || "∞"}${m.special ? ` · ${m.special}` : ""}`);
+        info.classList.remove("muted");
+        bots.value = Math.min(10, Math.max(2, m.capacity || 4));
+        runBtn.disabled = false;
+    };
+    const tile = m => h("button.sv-sim-tile", { "data-id": m.id, title: m.name, style: { "--bg": `url('${new URL(`EmoMonster/${m.image || "images/maps/forest.png"}`, location.href).href}')` }, onclick: () => pickMap(m) },
+        h("span.sv-sim-no", `#${m.map_no}`), h("b", m.name), h("small", `${"★".repeat(m.difficulty || 1)}${m.capacity ? ` · 👥${m.capacity}` : ""}`));
+    const draw = () => board.replaceChildren(...SV_GROUPS.map(([k, label, f]) => {
+        const list = maps.filter(f);
+        return list.length ? h("div.sv-sim-group", h("h4", `${label} (${list.length})`), h("div.sv-sim-grid", list.map(tile))) : null;
+    }));
+    pc.from("maps").select("id,map_no,name,kind,special,difficulty,capacity,image,active").eq("kind", "field").order("map_no").then(({ data, error }) => {
+        if (error) return board.replaceChildren(h("p.notice", `맵을 불러오지 못했습니다: ${error.message}`));
+        maps = (data || []).filter(m => m.active !== false);
+        if (!maps.length) return board.replaceChildren(h("p.muted", "Survival 맵이 없습니다. EmoMonster 맵 생성기에서 만들어 주세요."));
+        draw();
+    });
+    async function run() {
+        if (!sel) return;
+        const n = Math.min(10, Math.max(1, +bots.value || 4));
+        const win = window.open("", SV_WIN, "width=1280,height=900");
+        runBtn.disabled = true;
+        const { data, error } = await pc.rpc("emo_sv_sim_start", { p_actor: svActor(), p_map: String(sel.id), p_bots: n });
+        runBtn.disabled = false;
+        if (error) { win?.close(); return toast(error.message === "ADMIN_ONLY" ? "EmoMonster 관리자 계정으로 로그인한 뒤 다시 시도하세요" : `시작 실패: ${error.message}`, "warn"); }
+        svSimId = data.season_id;
+        const url = svUrl(svSimId);
+        if (win) win.location.href = url; else window.open(url, SV_WIN);
+        stopBtn.disabled = false;
+        out.replaceChildren(`✅ 테스트 봇 ${data.bots}명이 `, h("b", sel.name), "에 섰습니다 — ", h("a", { href: url, target: SV_WIN }, "시뮬레이션 창 열기"));
+    }
+    async function stop() {
+        if (!svSimId) return;
+        const { error } = await pc.rpc("emo_sv_sim_stop", { p_actor: svActor(), p_season: String(svSimId) });
+        if (error) return toast(`종료 실패: ${error.message}`, "warn");
+        svSimId = null; stopBtn.disabled = true; out.textContent = "시뮬레이션을 종료했습니다.";
+    }
+    card.append(board, info, h("div.am-grid", h("label.cf", h("small", "테스트 봇 수 (1~10)"), bots)), h("div.row", runBtn, stopBtn), out);
+    return card;
 }

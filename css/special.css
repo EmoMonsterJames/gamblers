@@ -661,3 +661,17 @@
 .loc-head .loc-timer { display: flex; align-items: center; gap: 10px; }
 .loc-head .loc-timer .row { flex-direction: column; gap: 4px; }
 .loc-head .mission-prog { flex: 1 1 160px; min-width: 160px; }
+
+/* ---- 🏝 Survival Land map simulation (admin map simulation) ---- */
+.sv-sim-card { margin-top: 16px; }
+.sv-sim-board { display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+.sv-sim-group h4 { margin: 0 0 6px; font-size: 14px; }
+.sv-sim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.sv-sim-tile { position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 2px; min-height: 84px; padding: 8px; border-radius: 12px; border: 2px solid var(--line); color: #fff; text-align: left; cursor: pointer; overflow: hidden;
+    background: linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.75)), var(--bg) center / cover no-repeat, #1e293b; transition: transform .12s, border-color .12s; }
+.sv-sim-tile:hover { transform: translateY(-2px); }
+.sv-sim-tile.on { border-color: #facc15; box-shadow: 0 0 0 2px rgba(250, 204, 21, .45); }
+.sv-sim-tile b { font-size: 13px; line-height: 1.2; text-shadow: 0 1px 2px #000; }
+.sv-sim-tile small { font-size: 11px; color: #fde68a; text-shadow: 0 1px 2px #000; }
+.sv-sim-no { position: absolute; top: 6px; left: 8px; font-size: 11px; font-weight: 700; background: rgba(0,0,0,.55); padding: 1px 6px; border-radius: 8px; }
+.sv-sim-info { min-height: 20px; }

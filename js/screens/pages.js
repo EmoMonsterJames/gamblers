@@ -186,7 +186,7 @@ export function adminPage() {
         h("div.admin-card", h("h3", "🏦 은행 · Self-Business 관리"), h("p.muted", "Business Bank 계좌(코드·Business Gold), 대기 중인 송금, 지금까지 개설된 비즈니스(소유자·위치·매출)를 관리합니다."), h("a.btn.gold", { href: "#/admin-bank" }, "관리하기")),
         h("div.admin-card", h("h3", "🐾 몬스터 관리 (EmoMon)"), h("p.muted", "몬스터 생성기, 몬스터 · 무기 · 속성 · 특성 · 몬스터 아이템 관리, 맵별 Capture 설정, EmoMonster 데이터 가져오기."), h("a.btn.gold", { href: "#/admin-emo" }, "관리하기")),
         h("div.admin-card", h("h3", "📊 리소스 대시보드"), h("p.muted", "Supabase DB·GitHub 저장소·Cloudflare Pages 한도·브라우저 사용량을 한도 대비로 점검하고, 가장 부하가 큰 지표와 과부하 여부를 보여줍니다."), h("a.btn.gold", { href: "#/admin-resources" }, "점검하기")),
-        h("div.admin-card", h("h3", "🧪 맵 시뮬레이션"), h("p.muted", "테스트 플레이어로 지역·맵·상점·코너·NPC·미션을 실제처럼 체험합니다. 테스트 중에는 아무것도 저장되지 않습니다."), h("a.btn.gold", { href: "#/admin-sim" }, "체험하기")),
+        h("div.admin-card", h("h3", "🧪 맵 시뮬레이션"), h("p.muted", "테스트 플레이어로 지역·맵·상점·코너·NPC·미션을 실제처럼 체험합니다. 🏝 Survival Land 맵도 테스트 봇과 함께 체험할 수 있습니다. 테스트 중에는 아무것도 저장되지 않습니다."), h("a.btn.gold", { href: "#/admin-sim" }, "체험하기")),
         h("div.admin-card", h("h3", "🏁 테스트 시즌"), h("p.muted", "플레이어를 최대 20명 골라 실제 시즌처럼 끝까지 진행합니다. 모두 초기화된 상태로 시작하며, 아무것도 저장되지 않고 실제 시즌 데이터에 영향이 없습니다."), h("a.btn.gold", { href: "#/admin-test" }, "시작하기")),
         h("div.admin-card", h("h3", "🎰 슬롯게임 생성기"), h("p.muted", "새 슬롯의 사양을 입력하면 Claude에게 전달할 프롬프트를 만들어 줍니다."), h("a.btn.gold", { href: "#/slotgen" }, "열기")),
         h("div.admin-card", h("h3", "턴 시간"),
