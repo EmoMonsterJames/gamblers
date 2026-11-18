@@ -13,6 +13,9 @@ import {
     PETS, PET_EFFECTS, WEAPONS, FRAMES, PROFILE_EFFECTS, ITEMS, SHOPS, LOCATIONS,
     PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET, EXTRA_LETTERS, letterSale, cardId
 } from "./catalog.js";
+import { EMO_ITEMS } from "../emomon/data.js";
+// EmoMon items the discount shop may carry (gold-priced, not LAB-only)
+const EMO_SALE = EMO_ITEMS.filter(e => e.gold > 0 && !e.noSale && !e.pts);
 
 export const CATS = {
     weapon:  { label: "무기",        list: WEAPONS,         map: WEAPON_BY_ID,  shop: "weapon", custom: true },
@@ -152,7 +155,40 @@ export function discountItems(locId, seed = "") {
     const chosen = [...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)];
     // + the 알파벳권 whose discount home is this map
     const letters = cardsAt(locId).filter(c => c.shop === "discount").map(c => ({ cat: "item", id: cardId(c.letter), price: letterSale(c.letter).price }));
-    return [...chosen, ...letters].map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.max(100, Math.round(it.price * (100 - off) / 100 / 100) * 100), was: it.price, off }; });
+    const fixed = discountExtras(locId).filter(x => !chosen.some(c => c.cat === x.cat && c.id === x.id));
+    return [...chosen, ...letters, ...fixed].map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.max(100, Math.round(it.price * (100 - off) / 100 / 100) * 100), was: it.price, off, ...(it.extra ? { extra: true } : {}) }; });
+}
+
+// 🏷️ + 3 FIXED extra goods per discount map (EmoMon items included), picked once per map:
+// never something that map's 일반 / 포인트 / 포인트+골드 상점 already sells, and never the same as another discount map's extras.
+const EXTRA_N = 3;
+let extraCache = null;
+export function discountExtras(locId) {
+    const maps = LOCATIONS.filter(l => l.discount && !l.off);
+    const key = maps.map(l => `${l.id}/${locationShops(l).join(",")}`).join("|") + "|" + EMO_SALE.length;
+    if (extraCache?.key !== key) {
+        const rnd = seeded("gamblers-discount-extras");
+        const gold = ["general", "weapon", "pet", "decor"].flatMap(sid => shopItems(sid).map(it => ({ cat: it.cat, id: it.id, price: it.price })))
+            // weapons / pets are listed per map in their own shops (locs) — fine as extras; one-map frames / effects stay at their map
+            .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)) && (["weapon", "pet", "effect"].includes(it.cat) || !saleOf(it.cat, it.id).locs));
+        const emo = EMO_SALE.map(e => ({ cat: "emo", id: e.id, price: e.gold }));
+        const pool = [...new Map([...gold, ...emo].map(it => [`${it.cat}:${it.id}`, it])).values()];
+        const used = new Set(), out = {};
+        for (const l of maps) {
+            const sold = new Set(["general", "point", "pointgold"].flatMap(sid => shopListing(sid, l.id).map(it => `${it.cat}:${it.id}`)));
+            let cand = pool.filter(it => !used.has(`${it.cat}:${it.id}`) && !sold.has(`${it.cat}:${it.id}`));
+            const pick = [];
+            // at least one EmoMon item per map while they last
+            const emoCand = cand.filter(it => it.cat === "emo");
+            if (emoCand.length) pick.push(emoCand[Math.floor(rnd() * emoCand.length)]);
+            cand = cand.filter(it => !pick.includes(it));
+            while (pick.length < EXTRA_N && cand.length) pick.push(cand.splice(Math.floor(rnd() * cand.length), 1)[0]);
+            for (const it of pick) used.add(`${it.cat}:${it.id}`);
+            out[l.id] = pick.map(it => ({ ...it, extra: true }));
+        }
+        extraCache = { key, out };
+    }
+    return extraCache.out[locId] || [];
 }
 
 // ---------------------------------------------------------------- alphabet cards

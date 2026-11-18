@@ -916,6 +916,14 @@ export function openSlot(cfg, ctx) {
             cabinet.append(l); Sound.bonus(); await sleep(1800); l.remove(); frame.classList.remove("omen-shake");
         }
         if (o.fx === "text") { const t = h("div.omen-text", o.text); cabinet.append(t); Sound.tease(); await sleep(1700); t.remove(); }
+        // Clockwork Fate: a clock ticking faster and faster
+        if (o.fx === "tick") {
+            const l = h("div.omen-pop", Array.from({ length: 12 }, (_, i) => h("i", { style: { left: 4 + rnd() * 90 + "%", top: 10 + rnd() * 75 + "%", "--d": (i * 0.1) + "s", "--r": (rnd() * 40 - 20) + "deg" } }, o.chars[i % o.chars.length])));
+            const t = o.text ? h("div.omen-text", o.text) : null;
+            cabinet.append(l); if (t) cabinet.append(t);
+            for (let i = 0, d = 0; i < 16; i++) { d += Math.max(40, 180 - i * 10); setTimeout(() => Sound.tick(), d); }
+            await sleep(1800); l.remove(); t?.remove();
+        }
         if (o.fx === "shake") { frame.classList.add("omen-shake"); Sound.boom(); if (o.scream) Sound.scream?.(); await sleep(1100); frame.classList.remove("omen-shake"); }
         if (o.fx === "rain") {
             const l = h("div.omen-coins.full", Array.from({ length: 28 }, (_, i) => h("i", { style: { left: 4 + rnd() * 92 + "%", "--d": rnd() * 0.9 + "s" } }, o.chars[i % o.chars.length])));

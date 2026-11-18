@@ -29,6 +29,7 @@ import { THEME_MACHINES } from "./themeEngine.js";
 import { SKY_MACHINES } from "./skyEngine.js";
 import { REALM_MACHINES } from "./realmEngine.js";
 import { WONDER_MACHINES } from "./wonderEngine.js";
+import { MYTH_MACHINES } from "./mythEngine.js";
 let ptCfg = null; // slot being spun (for the bet-scaled P chance)
 
 // ------------------------------------------------------------ jackpots
@@ -152,7 +153,7 @@ function finish(cfg, ctx, o) {
 
 export function specialSpin(cfg, ctx) {
     ptCfg = cfg;
-    const fn = { sp_kitchen: kitchen, sp_dj: dj, sp_orb: orbSlot, sp_pod: orbSlot, sp_pillars: pillars, sp_gift: gift, sp_heist: heist }[cfg.engine] || THEME_MACHINES[cfg.engine] || SKY_MACHINES[cfg.engine] || REALM_MACHINES[cfg.engine] || WONDER_MACHINES[cfg.engine];
+    const fn = { sp_kitchen: kitchen, sp_dj: dj, sp_orb: orbSlot, sp_pod: orbSlot, sp_pillars: pillars, sp_gift: gift, sp_heist: heist }[cfg.engine] || THEME_MACHINES[cfg.engine] || SKY_MACHINES[cfg.engine] || REALM_MACHINES[cfg.engine] || WONDER_MACHINES[cfg.engine] || MYTH_MACHINES[cfg.engine];
     return fn(cfg, ctx);
 }
 function ctl(cfg, ctx) {

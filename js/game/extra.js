@@ -312,16 +312,15 @@ export function keepMons() {
     }
     if (n) Store.saveEmokeep();
 }
-// a random opponent player who owns a monster (season or not), never the player themself
+// a random opponent player — ANY registered player (season participant or not), never the player themself.
+// Players with a known monster (this season / remembered from a past season) bring it; the rest get a generated one.
 export function arenaPlayerPool(pid) {
-    const s = S(), out = new Map();
-    for (const id of s.roster || []) if (+id !== +pid && monsOf(id).length) out.set(+id, "season");
-    for (const id of Object.keys(Store.emokeep || {})) if (+id !== +pid && !out.has(+id) && Store.player(+id)) out.set(+id, "keep");
-    return [...out.keys()];
+    return Store.players.map(p => +p.id).filter(id => id !== +pid);
 }
+export const arenaInSeason = foePid => (S()?.roster || []).some(id => +id === +foePid);
 // the opponent's monster for the arena: a COPY at full HP / PP and no status — the real one is never touched
 export function arenaFoeMon(foePid) {
-    const live = EM?.battleMon(foePid) || monsOf(foePid)[0];
+    const live = S()?.ps?.[foePid] ? (EM?.battleMon(foePid) || monsOf(foePid)[0]) : null; // non-season players have no ps
     const src = live || Store.emokeep?.[foePid];
     if (!src) return null;
     return { ...structuredClone(src), uid: "arena-" + (src.uid || foePid), hp: null, pp: {}, diseases: [], from: "arena" };

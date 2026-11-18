@@ -10,6 +10,7 @@ import { THEME_HOME } from "../slots/themeConfigs.js";
 import { SKY_HOME } from "../slots/skyConfigs.js";
 import { REALM_HOME } from "../slots/realmConfigs.js";
 import { WONDER_HOME } from "../slots/wonderConfigs.js";
+import { MYTH_HOME } from "../slots/mythConfigs.js";
 export { REGIONS, REGION_ITEMS };
 export const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
@@ -583,6 +584,8 @@ for (const [sid, lid] of Object.entries(SKY_HOME)) { const l = LOCATIONS.find(x 
 // the 10 round-8 machines — js/slots/realmConfigs.js
 for (const [sid, lid] of Object.entries(REALM_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 for (const [sid, lid] of Object.entries(WONDER_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
+// the 11 round-10 machines — js/slots/mythConfigs.js
+for (const [sid, lid] of Object.entries(MYTH_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 
 // earn corners: `earn: true` (old saves) = the classic four
 export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];

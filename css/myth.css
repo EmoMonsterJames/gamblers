@@ -1,0 +1,109 @@
+/* =====================================================================
+   Round-10 slot machines (js/slots/mythConfigs.js · mythEngine.js)
+   skins · drift cover · wild multipliers · panels · omen extras
+   ===================================================================== */
+
+/* ---- drift cover: the machine's icons sweep across + a centre badge */
+.cv-drift .cv-badge { left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 6px 16px; border-radius: 999px; background: #000b; color: var(--glow, #fde68a); border: 2px solid var(--accent, #fbbf24); font: 900 18px 'Lilita One', sans-serif; letter-spacing: 2px; white-space: nowrap; animation: drBadge .9s ease-out both; z-index: 2; }
+.cv-drift .dr-i { left: -12%; top: var(--y); font-size: 34px; animation: drSweep .85s cubic-bezier(.3, .1, .6, 1) calc(var(--i) * 28ms) both; filter: drop-shadow(0 0 8px var(--glow, #fff)); }
+@keyframes drSweep { 0% { transform: translateX(0) rotate(-20deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateX(min(118vw, 900px)) rotate(25deg); opacity: 0; } }
+@keyframes drBadge { 0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+/* ---- wild multipliers (W2 · W3 · W4 · W5 · W10) */
+.sym.r10-mult span { filter: drop-shadow(0 0 10px #facc15) drop-shadow(0 0 4px #fff); }
+.sym.r10-mult::before { position: absolute; top: 4%; right: 6%; z-index: 2; font: 900 calc(var(--cell, 60px) * .2) 'Lilita One', sans-serif; color: #fde047; text-shadow: 0 0 6px #000, 0 0 2px #000; }
+.sym.s-W2.r10-mult::before { content: "x2"; } .sym.s-W3.r10-mult::before { content: "x3"; } .sym.s-W4.r10-mult::before { content: "x4"; }
+.sym.s-W5.r10-mult::before { content: "x5"; } .sym.s-W10.r10-mult::before { content: "x10"; color: #f0abfc; }
+.sym.r10-heal span { filter: drop-shadow(0 0 10px #4ade80); }
+.sym.r10-drain span { filter: drop-shadow(0 0 12px #f43f5e); animation: omenShake .3s 3; }
+.sym.r10-coin span, .sym.r10-orb span { filter: drop-shadow(0 0 10px #facc15); }
+.sym.r10-orb span { filter: drop-shadow(0 0 12px #c084fc) drop-shadow(0 0 4px #fff); }
+.sym.r10-balloon span { animation: giftBob .9s infinite; display: inline-block; }
+.sym .spb.frame { top: 2%; bottom: auto; background: linear-gradient(135deg, #b45309, #fde047); color: #1c1917; border-color: #fff; box-shadow: 0 0 12px #facc15; }
+.sym.r10-idle span { opacity: .35; font-size: .7em; }
+.sym.r10-mod span { font: 900 calc(var(--cell, 60px) * .38) 'Rye', serif; color: #fde68a; text-shadow: 0 0 10px #f59e0b; }
+.sym.r10-water span { filter: drop-shadow(0 0 10px #38bdf8); }
+.sym.r10-rock { background: repeating-linear-gradient(45deg, #44403c 0 8px, #292524 8px 16px) !important; }
+.sym.r10-pot-y span { filter: drop-shadow(0 0 10px #facc15); } .sym.r10-pot-b span { filter: drop-shadow(0 0 10px #38bdf8); } .sym.r10-pot-r span { filter: drop-shadow(0 0 10px #ef4444); }
+
+/* ---- 👻 Spooky Mansion */
+.cabinet.skin-r10spooky .reels { background: radial-gradient(ellipse at 50% 30%, #1e293b, #0b0613 75%); box-shadow: inset 0 0 40px #000, 0 0 0 3px #4c1d95; }
+.cabinet.skin-r10spooky .reel .sym { background: linear-gradient(180deg, #1e1b4bcc, #0b0613ee); box-shadow: inset 0 0 0 1px #a3e63533; }
+.cabinet.skin-r10spooky .reels::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--fx, 30%) 40%, #fef9c322 0 12%, transparent 30%); animation: flashSweep 6s ease-in-out infinite; }
+@keyframes flashSweep { 0%, 100% { --fx: 20%; opacity: .6; } 50% { --fx: 80%; opacity: 1; } }
+.cabinet.possessed-mode .reels { animation: omenShake .25s 4; box-shadow: inset 0 0 60px #dc2626, 0 0 30px #dc2626; }
+.cabinet.hunt-mode .reels { box-shadow: inset 0 0 50px #a3e63555, 0 0 0 3px #a3e635; }
+.spp-bar.hp i { background: linear-gradient(90deg, #dc2626, #f97316 40%, #4ade80); }
+
+/* ---- 🎪 Midnight Big Top */
+.cabinet.skin-r10bigtop .reels { background: repeating-linear-gradient(90deg, #7f1d1d 0 24px, #fef2f2 24px 48px); padding: 6px; box-shadow: inset 0 0 0 4px #fde047; }
+.cabinet.skin-r10bigtop .reel .sym { background: #1c1917e6; }
+.cabinet.bt-dark .reels { background: repeating-linear-gradient(90deg, #450a0a 0 24px, #1c1917 24px 48px); box-shadow: inset 0 0 0 4px #7f1d1d, 0 0 40px #7f1d1d; filter: saturate(.8); }
+.cabinet.bt-dark { --glow: #f43f5e; }
+.cabinet.freak-mode .reels { box-shadow: inset 0 0 0 4px #f43f5e, 0 0 30px #fde047; }
+.spp-bar.hat i { background: linear-gradient(90deg, #1c1917, #f43f5e); } .spp-bar.fear i { background: linear-gradient(90deg, #fde047, #dc2626); }
+
+/* ---- ⚙️ Clockwork Fate: three brass ring bands, pointer rows */
+.cabinet.skin-r10rings .reels { background: radial-gradient(circle, #fde68a 0 6%, #b45309 6.5% 30%, #78350f 30.5% 60%, #451a03 60.5%); padding: 10px; gap: 8px; border-radius: 24px; box-shadow: inset 0 0 0 4px #f59e0b, 0 0 30px #b4530988; }
+.cabinet.skin-r10rings .reel { border-radius: 18px; background: #1c1917aa; box-shadow: inset 0 0 0 3px #f59e0b; }
+.cabinet.skin-r10rings .reel:nth-child(1) { background: linear-gradient(180deg, #78350fcc, #451a03cc); }
+.cabinet.skin-r10rings .reel:nth-child(3) { background: linear-gradient(180deg, #1c1917, #292524); }
+.cabinet.skin-r10rings .reel .sym::after { content: ""; position: absolute; left: -6px; top: 50%; border: 6px solid transparent; border-left-color: #fde047; transform: translateY(-50%); }
+.cabinet.alch-mode .reels { box-shadow: inset 0 0 0 4px #4ade80, 0 0 40px #4ade8088; }
+
+/* ---- 🌾 Harvest Hex: hex field (odd columns shifted half a cell) */
+.cabinet.skin-r10hex .reels { background: radial-gradient(ellipse at 50% 45%, #a3e635, #4d7c0f 60%, #365314); padding-bottom: 6%; gap: 0; border-radius: 30px; }
+.cabinet.skin-r10hex .reel { overflow: visible; background: none; }
+.cabinet.skin-r10hex .reel:nth-child(even) { transform: translateY(10%); }
+.cabinet.skin-r10hex .reel .sym:not(.sym-empty):not(.r10-off) { clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); background: linear-gradient(135deg, #fde68a, #a16207 90%); }
+.cabinet.skin-r10hex .reel .sym.hit { background: radial-gradient(circle, #fefce8, #facc15) !important; }
+.cabinet.skin-r10hex .sym-empty, .cabinet.skin-r10hex .sym.r10-off { visibility: hidden; }
+
+/* ---- 💼 Vault Breaker: capsules */
+.cabinet.skin-r10vault .reels { background: conic-gradient(from 0deg, #1e293b, #334155, #1e293b, #713f12, #1e293b); padding: 8px; gap: 5px; border-radius: 20px; box-shadow: inset 0 0 0 3px #fbbf24; }
+.cabinet.skin-r10vault .reel .sym { border-radius: 999px; background: linear-gradient(90deg, #e2e8f033, #0f172acc 45%, #fbbf2433); box-shadow: inset 0 0 0 2px #fbbf2466; }
+
+/* ---- 🎣 Deepwater sonar: 8 sectors around, 3 rings deep */
+.cabinet.skin-r10sonar .reels { background: radial-gradient(circle at 50% 50%, #155e75 0 20%, #0e7490 20.5% 21%, #083344 21.5% 45%, #0e7490 45.5% 46%, #082f49 46.5% 70%, #020617 71%); padding: 8px; gap: 3px; border-radius: 40px; position: relative; overflow: hidden; }
+.cabinet.skin-r10sonar .reels::before { content: ""; position: absolute; inset: -40%; background: conic-gradient(from 0deg, #22d3ee55, transparent 40deg); animation: sonarSweep 3s linear infinite; pointer-events: none; }
+@keyframes sonarSweep { to { transform: rotate(360deg); } }
+.cabinet.skin-r10sonar .reel .sym { border-radius: 50%; background: #082f49aa; box-shadow: inset 0 0 0 1px #22d3ee55; }
+.cabinet.skin-r10sonar .reel .sym[data-s^="L"] span { font-size: .85em; }
+.cabinet.chum-mode .reels { box-shadow: inset 0 0 50px #b91c1c88; }
+
+/* ---- 🌋 Magma Core */
+.cabinet.skin-r10magma .reels { background: linear-gradient(180deg, #292524, #431407); box-shadow: inset 0 -20px 40px #f97316aa, 0 0 0 3px #f97316; }
+.cabinet.skin-r10magma .reel .sym { background: linear-gradient(180deg, #44403ccc, #1c1917ee); }
+.cabinet.skin-r10magma .reel .sym[data-s^="L"] span { font: 900 calc(var(--cell, 60px) * .42) 'Lilita One', sans-serif; color: #fdba74; text-shadow: 0 0 8px #c2410c; }
+.cabinet.forge-mode .reels { box-shadow: inset 0 0 60px #ef4444, 0 0 30px #f97316; }
+.spp-bar.pot-y i { background: #facc15; } .spp-bar.pot-b i { background: #38bdf8; } .spp-bar.pot-r i { background: #ef4444; }
+
+/* ---- 🚀 Astral Ascension */
+.cabinet.skin-r10astral .reels { background: radial-gradient(ellipse at 50% 100%, #7c3aed88, #020617 70%), #020617; box-shadow: inset 0 0 0 2px #c084fc, 0 0 30px #7c3aed88; }
+.cabinet.skin-r10astral .reel .sym { background: #1e1b4b99; }
+.cabinet.nebula-mode .reels { background: radial-gradient(circle at 30% 30%, #db277766, transparent 50%), radial-gradient(circle at 70% 70%, #7c3aed88, transparent 55%), #020617; }
+
+/* ---- 🪆 The Doll Factory */
+.cabinet.skin-r10doll .reels { background: repeating-linear-gradient(0deg, #3f1d38 0 18px, #4c1d3b 18px 36px); box-shadow: inset 0 0 0 4px #f9a8d4, 0 0 26px #7f1d1d; }
+.cabinet.skin-r10doll .reel .sym { background: #fdf2f8; border-radius: 10px; box-shadow: inset 0 0 0 2px #be185d55; }
+.cabinet.doll-mode .reels { box-shadow: inset 0 0 0 4px #fde68a, 0 0 30px #f9a8d4; }
+
+/* ---- 🐨 Eucalyptus Rush */
+.cabinet.skin-r10koala .reels { background: linear-gradient(180deg, #65a30d, #3f6212); box-shadow: inset 0 0 0 4px #a16207; }
+.cabinet.skin-r10koala .reel .sym { background: #fefce8e6; border-radius: 12px; }
+.cabinet.canopy-mode .reels { background: radial-gradient(circle at 50% 0%, #fef08a, #65a30d 60%); }
+
+/* ---- 📖 Grimoire of Fortune: a book with a magic aura */
+.cabinet.skin-r10book .reels { background: linear-gradient(90deg, #fef3c7 0 49.4%, #78350f 49.5% 50.5%, #fef3c7 50.6%); padding: 10px 14px; border-radius: 10px 10px 18px 18px; box-shadow: 0 0 0 6px #7c2d12, 0 0 0 9px #fbbf24, 0 0 40px #e879f9aa; animation: bookAura 2.4s ease-in-out infinite; }
+@keyframes bookAura { 50% { box-shadow: 0 0 0 6px #7c2d12, 0 0 0 9px #fbbf24, 0 0 70px #e879f9; } }
+.cabinet.skin-r10book .reel .sym { background: #fffbeb; color: #1c1917; box-shadow: inset 0 0 0 1px #d6d3d1; }
+.cabinet.book-mode .reels { box-shadow: 0 0 0 6px #7c2d12, 0 0 0 9px #e879f9, 0 0 80px #e879f9; }
+.w10-book b { color: #fde68a; }
+
+/* ---- omen extras */
+.ob-rise b, .ob-fall b, .ob-jump b, .ob-inferno b { position: absolute; bottom: 18%; left: 0; right: 0; text-align: center; font: 900 30px 'Lilita One', sans-serif; color: #fde68a; text-shadow: 0 0 12px #000; }
+.ob-jump span { font-size: 130px; animation: obJump 1.9s cubic-bezier(.3, .1, .4, 1) both; }
+@keyframes obJump { 0% { transform: translate(-260px, 220px) rotate(-40deg); opacity: 0; } 15% { opacity: 1; } 50% { transform: translate(0, -120px) rotate(10deg); } 100% { transform: translate(260px, 240px) rotate(70deg); opacity: 0; } }
+.ob-inferno { background: radial-gradient(circle at 50% 100%, #f97316ee, #dc262699 45%, transparent 75%); animation: obInferno 1.9s ease-in-out both; }
+.ob-inferno span { font-size: 200px; animation: obGrow 1.9s ease-in both; filter: drop-shadow(0 0 40px #f97316); }
+@keyframes obInferno { 0% { opacity: 0; } 25%, 80% { opacity: 1; } 100% { opacity: 0; } }

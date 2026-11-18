@@ -132,6 +132,7 @@ export function addToRoster(pid) {
 // items · pet + pet effect · weapons · EmoMon (monsters, bags, extra slots) · lotto items.
 // Saved for the whole roster when a season ends, given back when the player joins another season.
 // Gold and points carry over too (the carried gold replaces the start gold; wallet gold is added on top). HP starts fresh.
+export const LOAN_PENALTY_GOLD = 100000;
 const EMO_KEEP = ["mons", "battle", "bag", "wbag", "tbag", "extraSlots"];
 export function stashOf(ps, season) {
     const emo = ps.emo ? Object.fromEntries(EMO_KEEP.filter(k => ps.emo[k] != null).map(k => [k, structuredClone(ps.emo[k])])) : null;
@@ -140,7 +141,9 @@ export function stashOf(ps, season) {
         season, items: Object.fromEntries(Object.entries(ps.items || {}).filter(([, n]) => n > 0)),
         pet: ps.pet || null, petEffect: ps.petEffect || null, weapons: [...(ps.weapons || [])],
         emo, lotto: ps.lotto ? Object.fromEntries(Object.entries(ps.lotto).filter(([, n]) => n > 0)) : null,
-        money: Math.max(0, Math.round(ps.money || 0)), points: Math.round(ps.points || 0)
+        money: Math.max(0, Math.round(ps.money || 0)), points: Math.round(ps.points || 0),
+        // 🏦 eliminated with an unpaid loan → next season the debt is forgiven but the season gold is only LOAN_PENALTY_GOLD
+        ...(ps.loan && ps.loan.owed > 0 ? { unpaidLoan: { owed: Math.round(ps.loan.owed), principal: ps.loan.principal, type: ps.loan.type, out: !!ps.out } } : {})
     };
 }
 export function stashSeason(s = S()) {
@@ -160,17 +163,26 @@ function restoreStash(pid) {
     ps.weapons = [...ps.weapons, ...(st.weapons || [])];
     if (st.emo) ps.emo = { ...structuredClone(st.emo), finds: 0 };
     if (st.lotto) ps.lotto = { ...st.lotto };
-    if (st.money != null) ps.money += st.money; // carried gold comes ON TOP of the new season's start gold
     if (st.points != null) ps.points = st.points;
     delete Store.stash[pid];
     Store.saveStash();
+    if (st.unpaidLoan) {
+        // 🏦 the loan is forgiven, but the whole season gold is just 100,000G (no start gold, no carried gold)
+        ps.money = LOAN_PENALTY_GOLD;
+        ps.loanPenalty = { ...st.unpaidLoan, season: st.season, carried: st.money || 0, shown: false };
+        log(`🏦 ${name(pid)} 시즌 ${st.season}에서 대출 ${st.unpaidLoan.owed.toLocaleString()}G를 갚지 않고 탈락 → 빚 탕감 · 페널티로 시즌 골드 ${LOAN_PENALTY_GOLD.toLocaleString()}G만 지급`);
+        log(`🎒 ${name(pid)} 시즌 ${st.season}의 포인트 · 아이템 · 펫 · 무기 · 몬스터를 가지고 합류 (골드 이월 없음)`);
+        return;
+    }
+    if (st.money != null) ps.money += st.money; // carried gold comes ON TOP of the new season's start gold
     log(`🎒 ${name(pid)} 시즌 ${st.season}의 골드 · 포인트 · 아이템 · 펫 · 무기 · 몬스터를 가지고 합류${st.money != null ? ` (이월 ${st.money.toLocaleString()}G + 시작 ${CONFIG.START_MONEY.toLocaleString()}G · ${(st.points || 0).toLocaleString()}P)` : ""}`);
 }
 export function rosterFull() { return S().roster.length >= Math.min(CONFIG.SEASON_SIZE, Store.players.length); }
 
 export const alive = () => S().roster.filter(pid => !S().ps[pid].out);
 export const name = pid => { const p = Store.player(pid); return p ? `${(lang() === "en" && p.player_name) || p.name_ko || p.player_name}` : "?"; };
-export function log(msg) { const s = S(); if (!s) return; s.log.unshift({ t: Date.now(), msg }); s.log = s.log.slice(0, 200); }
+// every entry remembers whose turn it was (pid) so the in-play log can show only that player's lines
+export function log(msg, pids) { const s = S(); if (!s) return; const who = [...new Set([...(pids || []), s.turn?.pid].filter(Boolean))]; s.log.unshift({ t: Date.now(), msg, ...(who.length ? { pids: who } : {}) }); s.log = s.log.slice(0, 300); }
 
 // ---------------------------------------------------------------- rounds
 export function tierForRound() {
@@ -706,10 +718,10 @@ export function npcHit(pid, npc, move) {
     return out;
 }
 // death outside the judge (reaper): out at once, the turn is over
-export function killPlayer(pid, why, { npc = null } = {}) {
+export function killPlayer(pid, why, { npc = null, quiet = false } = {}) {
     const s = S();
     // 🔊 screens that care (Survival Land death toll) hear it before the turn moves on
-    if (!s.ps[pid]?.out) document.dispatchEvent(new CustomEvent("gb:death", { detail: { pid, why } }));
+    if (!s.ps[pid]?.out) document.dispatchEvent(new CustomEvent("gb:death", { detail: { pid, why, npc: !!npc, quiet } }));
     if (RV.revivalTurns() && RV.inRevival(pid)) { RV.revivalKill(pid, why); return; } // 🔄 a death in the revival = a failed revival
     if (s.ps[pid].out) return;
     const rank = alive().length;

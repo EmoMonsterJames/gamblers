@@ -20,6 +20,7 @@ import { monPic } from "../emomon/ui.js";
 import { emoFight, emoBoot } from "./emoCorners.js";
 import { promoView } from "./promo.js";
 import { doorGate } from "../ui/doorGate.js";
+import { reactionBar } from "./social.js";
 import { survivalEffects, survivalArrival } from "./survivalLand.js";
 
 const pname = pid => displayName(Store.player(pid));
@@ -291,7 +292,7 @@ function hopeBoxes(pid) {
 
 // ================================================================ 💬 Community
 const ANIM_LETTERS = { wander: "cm-wander", spin: "cm-spin", combo: "cm-combo" };
-export function postView(p) {
+export function postView(p, pid = null, redraw = () => { }) {
     const st = p.style || {};
     const c = cmColor(st.color), f = cmFont(st.font), fx = cmEffect(st.effect);
     const txt = h("div.cm-text" + (c?.css === "rainbow" ? ".rainbow" : c?.css === "goldsilver" ? ".goldsilver" : "") + (st.bold ? ".bold" : "") + (st.underline ? ".under" : "") + (st.anim === "shake" || st.anim === "combo" ? ".shake" : ""),
@@ -301,7 +302,7 @@ export function postView(p) {
     else txt.textContent = p.text;
     const fxl = fx ? h("div.cm-fx.fx-" + fx.id, ...Array.from({ length: 8 }, (_, i) => h("i", { style: { left: (i * 13 + 4) + "%", "--d": (i * 0.35) + "s" } }, fx.fx[i % fx.fx.length]))) : null;
     const pl = Store.player(p.pid);
-    return h("div.cm-post", fxl, h("div.cm-head", pl ? avatar(p.pid, 34, { effect: false }) : null, h("b", pl ? displayName(pl) : "?"), h("small.muted", ` · 시즌 ${p.season} · ${new Date(p.at).toLocaleDateString()}`)), txt);
+    return h("div.cm-post", fxl, h("div.cm-head", pl ? avatar(p.pid, 34, { effect: false }) : null, h("b", pl ? displayName(pl) : "?"), h("small.muted", ` · 시즌 ${p.season} · ${new Date(p.at).toLocaleDateString()}`)), txt, reactionBar(p, pid, redraw));
 }
 let cmSeason = null; // 💬 which season's comments are shown (null → current season)
 function commentView(pid, { onChange = () => { } } = {}) {
@@ -351,7 +352,7 @@ function commentView(pid, { onChange = () => { } } = {}) {
             h("div.cm-write", ta, sels, h("div.row.end", writeBtn)),
             h("details.cm-shop-wrap", h("summary", "🛍️ 커뮤니티 상점"), shop),
             seasonBar,
-            h("div.cm-list", list.length ? list.slice(0, 100).map(postView) : h("p.muted.center", cmSeason === G.S().number || cmSeason === "all" ? "아직 코멘트가 없습니다 — 첫 코멘트를 남겨 보세요!" : `시즌 ${cmSeason}에는 코멘트가 없습니다`)));
+            h("div.cm-list", list.length ? list.slice(0, 100).map(p => postView(p, pid, draw)) : h("p.muted.center", cmSeason === G.S().number || cmSeason === "all" ? "아직 코멘트가 없습니다 — 첫 코멘트를 남겨 보세요!" : `시즌 ${cmSeason}에는 코멘트가 없습니다`)));
     };
     draw();
     return wrap;
@@ -364,7 +365,7 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
         const left = X.arenaLeft(pid), me = M.fighterOf(pid);
         wrap.replaceChildren(
             h("h3", "🏟️ 아레나"),
-            h("ul.small.muted", h("li", "무작위 상대와 1:1 EmoMon 배틀 — 70% 몬스터를 가진 플레이어 · 30% NPC Battler"),
+            h("ul.small.muted", h("li", "무작위 상대와 1:1 EmoMon 배틀 — 70% 등록된 플레이어 (시즌 참가자 · 비참가자 모두) · 30% NPC Battler"),
                 h("li", "상대는 언제나 HP · PP 가득, 상태이상 없이 싸우고 배틀 뒤 원래 상태로 돌아갑니다"),
                 h("li", "내 몬스터의 HP · PP · 상태이상은 배틀 후에도 그대로 남습니다"),
                 h("li", `🏆 승리 상금: 골드 ${fmt(X.ARENA_PRIZE[0])}~${fmt(X.ARENA_PRIZE[1])}G 또는 포인트 ${X.ARENA_PRIZE_PTS[0]}~${X.ARENA_PRIZE_PTS[1]}P (둘 중 하나 랜덤) · 패배는 보상 없음 · 시즌당 ${X.ARENA_PER_SEASON}회`),
@@ -381,8 +382,11 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
             const pool = X.arenaPlayerPool(pid);
             let foeMon, foeLabel;
             if (pool.length && Math.random() >= X.ARENA_NPC) {
+                // any registered player — season participant or not; no known monster → a generated one under their name
                 const foePid = pool[Math.floor(Math.random() * pool.length)];
-                foeMon = X.arenaFoeMon(foePid); foeLabel = `${pname(foePid)}의 몬스터`;
+                foeMon = X.arenaFoeMon(foePid);
+                if (!foeMon) { foeMon = M.makeBattler(); foeMon.trainer = pname(foePid); }
+                foeLabel = `${pname(foePid)}${X.arenaInSeason(foePid) ? "" : " (비시즌)"}의 몬스터`;
             }
             if (!foeMon) { foeMon = M.makeBattler(); foeLabel = foeMon.trainer; }
             X.useArena(pid);

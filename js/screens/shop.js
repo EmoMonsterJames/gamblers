@@ -13,6 +13,9 @@ import { shopListing, discountItems } from "../data/catalogAdmin.js";
 import { letterCard, npcTicket } from "../ui/letterCard.js";
 import { reportsOf } from "../game/bank.js";
 import * as RV from "../game/revival.js";
+import { emoItem } from "../emomon/data.js";
+// 🐾 EmoMon items (discount-shop extras) go into the EmoMon bag
+const entryOf = (cat, id) => cat === "emo" ? emoItem(id) : catalogEntry(cat, id);
 
 export function shopView(shopId, pid, locId, onChange) {
     const shop = SHOPS[shopId];
@@ -28,7 +31,7 @@ export function shopView(shopId, pid, locId, onChange) {
             RV.inRevival(pid) ? h("p.notice.rv-shop-note", RV.SHOP_NOTE) : "",
             shopId === "pointgold" ? h("p.muted.shop-note", "💠 포인트와 골드를 함께 내는 상점입니다. ⭐ 특수프레임 / 특수프레임효과는 이 상점에서만 팔아요 — 맵마다 상품이 하나씩 다릅니다.") : "",
             h("div.shop-grid", list().map(it => {
-                const e = catalogEntry(it.cat, it.id);
+                const e = entryOf(it.cat, it.id);
                 if (!e) return null;
                 const owned = (it.cat === "pet" && ps.pet === it.id) || (it.cat === "effect" && ps.petEffect === it.id)
                     || (it.cat === "frame" && d.ownedFrames.includes(it.id)) || (it.cat === "peffect" && d.ownedEffects.includes(it.id));
@@ -40,7 +43,8 @@ export function shopView(shopId, pid, locId, onChange) {
                     h("div.sitem-name", e.name),
                     h("div.sitem-desc", desc(it.cat, e)),
                     it.off ? h("div.sitem-sale", h("s", fmt(it.was)), ` -${it.off}%`) : null,
-                    have ? h("small.have", `보유 ${have}`) : null,
+                    it.extra ? h("small.have.extra-tag", it.cat === "emo" ? "🐾 이 맵 전용 · 이모몬스터 아이템" : "📌 이 맵 전용 추가 상품") : null,
+                    have ?h("small.have", `보유 ${have}`) : null,
                     atkFull ? h("small.have.warn", `공격 무기 ${CONFIG.MAX_ATTACK_WEAPONS}개 꽉 참`) : null,
                     h("button.btn.small" + (afford && !owned ? ".gold" : ".ghost"), { disabled: owned || !afford, onclick: () => buy(it, e) },
                         owned ? "보유중" : priceLabel(priceOf(it, shop.cur))));
@@ -90,6 +94,7 @@ export function giveGoods(pid, cat, id) {
     const ps = S().ps[pid], d = Store.getDecor(pid);
     switch (cat) {
         case "item": ps.items[id] = (ps.items[id] || 0) + 1; break;
+        case "emo": { const em = (ps.emo ||= {}); em.bag ||= {}; em.bag[id] = (em.bag[id] || 0) + 1; break; }
         case "weapon": ps.weapons.push(id); break;
         case "pet":
             if (ps.pet) { ps.items.pet_swap--; log(`🔁 ${name(pid)} 펫 교체: ${PET_BY_ID[ps.pet]?.name || ps.pet} → ${PET_BY_ID[id]?.name || id}`); }
@@ -108,9 +113,11 @@ export function art(cat, e) {
     if (e.letter) return letterCard(e.letter, 58);
     if (e.npcBlock) return npcTicket(e.npcBlock, 58);
     if (e.superLetter) return h("div.big-emoji.super-q", "❓");
+    if (cat === "emo" && e.img) return h("img.emo-shop-img", { src: e.img, alt: e.name, width: 56, height: 56 });
     return h("div.big-emoji", e.emoji || "🎁");
 }
 export function desc(cat, e) {
+    if (cat === "emo") return `🐾 몬스터 아이템${e.note ? " · " + e.note : ""}`;
     if (cat === "pet") return `${e.kind === "special" ? "특수펫 · 승률+보너스" : "일반펫 · 승률"} +${e.boost}%`;
     if (cat === "effect") return `${e.kind === "special" ? "특수펫효과 · 승률+보너스" : "일반펫효과 · 승률"} +${e.boost}%`;
     if (cat === "weapon") return weaponDesc(e);

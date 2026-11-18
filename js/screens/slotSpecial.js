@@ -216,7 +216,61 @@ const FX = {
     redmoon: { icon: "🌕🍷", text: "BLOOD MOON RISE!", snd: "boom", cls: "fire", shake: true },
     bride: { icon: "⚰️👰", text: "VAMPIRE BRIDE!", snd: "boom", cls: "ghost", shake: true },
     coffin: { icon: "⚰️💰", text: "COFFIN LID CREAK!", snd: "cash", cls: "gold" },
-    crypt: { icon: "✝️⚱️✝️", text: "CASTLE CRYPT BONUS!", snd: "boom", cls: "fire", shake: true }
+    crypt: { icon: "✝️⚱️✝️", text: "CASTLE CRYPT BONUS!", snd: "boom", cls: "fire", shake: true },
+    // ---- round 10
+    charm: { icon: "🧿🛡️👻", text: "부적이 폴터가이스트를 막았다!", snd: "chime", cls: "potion" },
+    polter: { icon: "👻💢", text: "POLTERGEIST! -10 HP", snd: "hit", cls: "ghost", shake: true },
+    seance: { icon: "🔮🕯️🔮", text: "SÉANCE BEGINS…", snd: "boom", cls: "ghost", shake: true },
+    ghostattack: { icon: "👻💥", text: "유령 습격! 코인 1개 강탈 · -5 HP", snd: "hit", cls: "ghost", shake: true },
+    hunt: { icon: "🕰️🔦", text: "MIDNIGHT HUNT!", snd: "boom", cls: "ghost" },
+    potion: { icon: "🧪❤️", text: "+5 HP POTION", snd: "chime", cls: "potion" },
+    exorcism: { icon: "💀✝️💀", text: "HP 0 — LAST STAND!", snd: "boom", cls: "fire", shake: true },
+    revive: { icon: "❤️‍🩹", text: "REVIVED · 50 HP", snd: "bonus", cls: "potion" },
+    possessed: { icon: "😈🔦😈", text: "POSSESSED SUPER SPIN!", snd: "boom", cls: "fire", shake: true },
+    fear: { icon: "😱", text: "FEAR MULTIPLIER!", snd: "boom", cls: "fire", shake: true },
+    mirror: { icon: "🪞🃏🪞", text: "FUNHOUSE MIRROR MAZE!", snd: "bonus", cls: "gold" },
+    knives: { icon: "🔪🎯🔪", text: "WHEEL OF KNIVES!", snd: "boom", cls: "fire", shake: true },
+    assistant: { icon: "👩😱", text: "조수를 맞혔다! 던지기 종료", snd: "miss", cls: "ghost" },
+    freak: { icon: "🎟️🤡🎟️", text: "FREAKSHOW!", snd: "boom", cls: "gold" },
+    encore: { icon: "🎩🎈🎩", text: "RINGMASTER'S ENCORE!", snd: "boom", cls: "gold", shake: true },
+    overdrive: { icon: "⚡⚙️⚡", text: "OVERDRIVE!", snd: "boom", cls: "potion", shake: true },
+    tarot: { icon: "🔍🌟", text: "TAROT CONSTELLATIONS!", snd: "bonus", cls: "gold" },
+    alchemist: { icon: "⚙️⚗️⚙️", text: "ALCHEMIST'S VAULT!", snd: "boom", cls: "gold", shake: true },
+    ufo: { icon: "🛸✨🌾", text: "CROP CIRCLE!", snd: "whoosh", cls: "potion", shake: true },
+    scarecrow: { icon: "🐦‍⬛🎃🐦‍⬛", text: "SCARECROW TOWER DEFENSE!", snd: "boom", cls: "gold" },
+    seeds: { icon: "🌱✖️", text: "MULTIPLIER SEEDS!", snd: "chime", cls: "potion" },
+    auction: { icon: "🔨📦", text: "BARN AUCTION!", snd: "bonus", cls: "gold" },
+    greenhouse: { icon: "🚿🌱🚿", text: "GREENHOUSE GRAFTING!", snd: "boom", cls: "potion" },
+    ticker: { icon: "🐂📈", text: "INSIDER TRADING!", snd: "boom", cls: "gold" },
+    safe: { icon: "🗝️🔐", text: "SAFE-CRACKING!", snd: "bonus", cls: "gold" },
+    deadbolt: { icon: "🔒💼", text: "DEADBOLT! 미스터리 서류가방", snd: "boom", cls: "fire", shake: true },
+    takeover: { icon: "💼🏢💼", text: "HOSTILE TAKEOVER!", snd: "boom", cls: "gold", shake: true },
+    dice: { icon: "🎲🎲", text: "ALL-IN!", snd: "boom", cls: "gold", shake: true },
+    mergerfail: { icon: "📉💀", text: "합병 실패…", snd: "miss", cls: "ghost" },
+    tug: { icon: "🎣🗡️", text: "FISH ON!", snd: "boom", cls: "potion", shake: true },
+    chum: { icon: "🪣🦈🪣", text: "FEEDING FRENZY!", snd: "splash", cls: "potion", shake: true },
+    crab: { icon: "🛟🦀🛟", text: "CRAB TRAP DEPTH DROP!", snd: "splash", cls: "potion" },
+    forge: { icon: "🔴🔥🔴", text: "SMELTING FORGE!", snd: "boom", cls: "fire", shake: true },
+    geode: { icon: "🔵💎🔵", text: "GEODE PICK-ME!", snd: "bonus", cls: "gold" },
+    blast: { icon: "🧨🌋🧨", text: "MAGMA BLAST!", snd: "boom", cls: "fire", shake: true },
+    dynamite: { icon: "💣💥", text: "DYNAMITE CROSS BLAST!", snd: "boom", cls: "fire", shake: true },
+    nitro: { icon: "🧪💥", text: "NITRO! 폭발 반경 확대", snd: "boom", cls: "fire" },
+    fuse: { icon: "🪢✖️2", text: "2x FUSE! 모든 값 두 배", snd: "cash", cls: "gold" },
+    nav: { icon: "🧭🌟", text: "CELESTIAL NAVIGATOR!", snd: "whoosh", cls: "potion" },
+    warpcore: { icon: "🔮⚡🔮", text: "WARP CORE 무작위 발동!", snd: "boom", cls: "potion", shake: true },
+    warp: { icon: "🚀🔮🚀", text: "WARP CORE LADDER!", snd: "boom", cls: "gold", shake: true },
+    crack: { icon: "🔮💥", text: "", snd: "coin", cls: "potion" },
+    capture: { icon: "🖼️🟡🖼️", text: "FRAME CAPTURE!", snd: "cash", cls: "gold" },
+    quilt: { icon: "🧵🪡🧵", text: "PATCHWORK QUILT!", snd: "whoosh", cls: "gold" },
+    musicbox: { icon: "🎩🎶🎩", text: "MUSIC BOX WHEEL!", snd: "boom", cls: "gold", shake: true },
+    blitz: { icon: "🐨🏅🐨", text: "KOALA BLITZ!", snd: "boom", cls: "gold", shake: true },
+    chomp: { icon: "🪃💰", text: "DOUBLE-CHOMP XTRA HIT!", snd: "cash", cls: "gold", shake: true },
+    canopy: { icon: "🌳🐨🌳", text: "TREETOP CANOPY!", snd: "boom", cls: "potion" },
+    bookgrow: { icon: "📚📖✨", text: "THE GRIMOIRE OPENS!", snd: "boom", cls: "gold", shake: true },
+    magicpage: { icon: "✨🪄✨", text: "MAGIC PAGE!", snd: "bonus", cls: "gold" },
+    kiss: { icon: "💋💋💋", text: "KISS PAGE!", snd: "bonus", cls: "fire" },
+    joker: { icon: "🃏🎰", text: "JACKPOT PAGE!", snd: "boom", cls: "gold", shake: true },
+    wizard: { icon: "🧙🪄", text: "WIZARD PAGE!", snd: "boom", cls: "potion", shake: true }
 };
 // the spin mechanic of the round-7 machines: a cover over the reels that plays while they land
 const COVERS = {
@@ -253,7 +307,9 @@ const COVERS = {
     flashlight: n => [h("b.cv-light"), ...Array.from({ length: n }, (_, i) => h("i.cv-crate", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } }))],
     chime: n => [h("b.cv-chime", "🔔"), ...Array.from({ length: n }, (_, i) => h("i.cv-frame", { style: { "--c": i % 4, "--r": Math.floor(i / 4) } }, "🖼️"))],
     shovel: n => [h("b.cv-shovel", "⛏️"), ...Array.from({ length: n }, (_, i) => h("i.cv-stone", { style: { "--c": i % 5, "--r": Math.floor(i / 5) } }, "🪦"))],
-    organ: n => [h("b.cv-organ", "🎹"), ...Array.from({ length: n }, (_, i) => h("i.cv-glass", { style: { "--c": i % 5, "--r": Math.floor(i / 5), "--h": (i * 47) % 360 } }))]
+    organ: n => [h("b.cv-organ", "🎹"), ...Array.from({ length: n }, (_, i) => h("i.cv-glass", { style: { "--c": i % 5, "--r": Math.floor(i / 5), "--h": (i * 47) % 360 } }))],
+    // ---- round 10: the machine's own icons drift across in a wave + a centre badge
+    drift: (n, cfg) => [h("b.cv-badge", cfg?.coverText || "✦"), ...Array.from({ length: 14 }, (_, i) => h("i.dr-i", { style: { "--i": i, "--y": (i * 37) % 86 + "%" } }, (cfg?.coverIcons || ["✨"])[i % (cfg?.coverIcons?.length || 1)]))]
 };
 
 export async function playSpecial(res, api) {
@@ -474,7 +530,7 @@ export async function playSpecial(res, api) {
     // the spin mechanic (clouds blown away, radar flyby, tile wave …) drawn over the landing reels
     function spinCover(kind) {
         const n = (cfg.reels || 5) * (cfg.rows || 3);
-        const el = h("div.sk-cover.cv-" + kind, { style: { "--cols": cfg.reels || 5, "--rows": cfg.rows || 3 } }, ...(COVERS[kind]?.(n) || []));
+        const el = h("div.sk-cover.cv-" + kind, { style: { "--cols": cfg.reels || 5, "--rows": cfg.rows || 3 } }, ...(COVERS[kind]?.(n, cfg) || []));
         if (api.turbo()) el.classList.add("fast");
         frame.append(el);
         if (kind === "clouds" || kind === "radar") Sound.chime?.();
@@ -587,7 +643,7 @@ export async function playSpecial(res, api) {
         } else if (p.mode === "gauge") {
             // tap-to-stop: the needle sweeps the gauge; a tap (or the timer) stops it on the engine's step
             const steps = p.steps.map((s, i) => h("span.gg-step", { style: { "--i": i } }, s));
-            const needle = h("i.gg-needle"), rocket = h("b.gg-rocket", "🚀");
+            const needle = h("i.gg-needle"), rocket = h("b.gg-rocket", p.rocket || "🚀");
             area.append(h("div.gg-track", steps, needle), rocket);
             let stopped = false, pos = 0, dir = 1;
             const iv = setInterval(() => { if (stopped) return; pos += dir * 0.06; if (pos > 1 || pos < 0) { dir *= -1; pos = Math.max(0, Math.min(1, pos)); } needle.style.left = pos * 100 + "%"; }, 30);
@@ -684,17 +740,17 @@ export async function playSpecial(res, api) {
     // ------------------------------------------------------------ Gift Top Offer (deal or no deal)
     async function offer(p) {
         const box = h("div.offer-box");
-        const wrap = h("div.offer-wrap", h("div.offer-head", "🎁 TOP OFFER — 받을까, 다음 상자를 열까?"), box);
+        const wrap = h("div.offer-wrap", h("div.offer-head", p.head || "🎁 TOP OFFER — 받을까, 다음 상자를 열까?"), box);
         overlay.append(wrap);
         const label = o => o.jp ? `${o.k} JACKPOT` : `${o.k} = ${fmt(o.v)} G`;
         let taken = null;
         for (let i = 0; i < p.offers.length && !taken; i++) {
             const o = p.offers[i];
             const last = i === p.offers.length - 1;
-            box.replaceChildren(h("div.offer-gift.pop", "🎁"), h("div.offer-val" + (o.jp ? ".jp" : ""), label(o)), h("small", `${i + 1} / ${p.offers.length}${last ? " · 마지막 상자!" : ""}`));
+            box.replaceChildren(h("div.offer-gift.pop", p.icon || "🎁"), h("div.offer-val" + (o.jp ? ".jp" : ""), label(o)), h("small", `${i + 1} / ${p.offers.length}${last ? " · 마지막 상자!" : ""}`));
             Sound.bonus();
             if (last) { await pace(900); taken = o; break; }
-            const take = h("button.btn.gold.big", "받기 (DEAL)"), next = h("button.btn.ghost.big", "다음 상자 ▶");
+            const take = h("button.btn.gold.big", p.take || "받기 (DEAL)"), next = h("button.btn.ghost.big", p.next || "다음 상자 ▶");
             box.append(h("div.offer-btns", take, next));
             const auto = o.v >= 10 * bet; // the auto choice mirrors the engine's assumption
             const ans = await new Promise(r => { take.onclick = () => r(true); next.onclick = () => r(false); });
@@ -895,7 +951,7 @@ export async function playSpecial(res, api) {
     async function laser(p) {
         const grid = h("div.laser-grid");
         const tally = h("div.laser-tally", "x0");
-        overlay.append(h("div.laser-wrap", h("div.laser-head", "📘 레이저 노드를 해킹하라! 🚨 경보 = 종료 · 모든 안전 노드 = TIME VAULT"), tally, grid));
+        overlay.append(h("div.laser-wrap", h("div.laser-head", p.head || "📘 레이저 노드를 해킹하라! 🚨 경보 = 종료 · 모든 안전 노드 = TIME VAULT"), tally, grid));
         let k = 0, mult = 0;
         await new Promise(done => {
             for (let i = 0; i < p.nodes; i++) {
@@ -1056,6 +1112,18 @@ export function buildPanel(cfg, state = {}) {
         el.append(h("div.sk-strip.w9-gothic", h("i", "🦇"), h("b", "CRIMSON MOON · 1024 WAYS"), moon, h("i", "🦇")));
         custom("moon", v => { moon.textContent = v ? "🌕" : "🌑"; moon.classList.toggle("on", !!v); });
     }
+    // ---- round 10
+    else if (E === "sp_spooky") { el.append(h("span.spp-ico", "🔦"), bar("hp", "❤️ INVESTIGATOR HP", "hp")); parts.hp.fmt = v => `${v} HP`; }
+    else if (E === "sp_bigtop") { el.append(h("span.spp-ico", "🎩"), bar("hat", "🎩 RINGMASTER", "hat"), bar("fear", "😱 FEAR LEVEL", "fear")); parts.hat.fmt = v => `${Math.floor(v)}/100`; parts.fear.fmt = v => "😱".repeat(v || 1); }
+    else if (E === "sp_fate") aura("⚙️", "CLOCKWORK FATE · 3 RINGS · 3 POINTERS", "🔭");
+    else if (E === "sp_harvest") el.append(h("div.sk-strip.w9-hud", h("i", "🚜"), h("b", "HARVEST HEX · 19 FIELDS · 💧 관개 = x2"), h("i", "🌾")));
+    else if (E === "sp_vault") { el.append(h("span.spp-ico", "💼"), bar("brief", "💼 HOSTILE TAKEOVER", "brief")); }
+    else if (E === "sp_sonar") aura("📡", "DEEPWATER SONAR · 3 RINGS × 8 SECTORS", "🎣");
+    else if (E === "sp_magma") { el.append(bar("pot_y", "🧨 TNT", "pot-y"), bar("pot_b", "🔵 DRILL", "pot-b"), bar("pot_r", "🔴 CAULDRON", "pot-r")); }
+    else if (E === "sp_ascend") aura("🔮", "ASTRAL ASCENSION · 구슬 6개 = WARP CORE", "🚀");
+    else if (E === "sp_doll") { el.append(h("span.spp-ico", "🖼️"), bar("frames", "🔘 GOLDEN FRAMES (다음 스핀)", "frames")); parts.frames.fmt = v => `${v}개`; }
+    else if (E === "sp_koala") aura("🐨", "EUCALYPTUS RUSH · 메달 6개 = STAY & SPIN", "🪃");
+    else if (E === "sp_grimoire") el.append(h("div.sk-strip.w10-book", h("i", "📚"), h("b", "GRIMOIRE OF FORTUNE · 3125 WAYS"), h("i", "🪄")));
     const set = (key, value, max) => {
         const p = parts[key]; if (!p) return;
         if (p.render) return p.render(value, max);
@@ -1086,5 +1154,10 @@ export function buildPanel(cfg, state = {}) {
     if (E === "sp_polarity") set("tug", 0);
     if (E === "sp_percent") set("rtp", state.streak || 0, cfg.features?.compound?.max || 5);
     if (E === "sp_festival") set("parade", state.parade || 0, cfg.features?.parade?.spins || 3);
+    if (E === "sp_spooky") set("hp", state.hp ?? 100, 100);
+    if (E === "sp_bigtop") { set("hat", Math.min(100, state.hat || 0), 100); set("fear", 1, 5); }
+    if (E === "sp_vault") set("brief", state.brief || 0, cfg.features?.takeover?.max || 10);
+    if (E === "sp_magma") for (const k of ["pot_y", "pot_b", "pot_r"]) set(k, 0, 3);
+    if (E === "sp_doll") set("frames", (state.frames || []).length, cfg.frames?.max || 6);
     return { el, set };
 }

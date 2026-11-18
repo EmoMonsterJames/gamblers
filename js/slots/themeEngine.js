@@ -2058,4 +2058,4 @@ export const THEME_MACHINES = Object.fromEntries(Object.entries({
 }).map(([k, fn]) => [k, wrap(fn)]));
 
 // shared with the round-7 sky machines (skyEngine.js)
-export { waysEval, linesEval, clusterEval, winP, refill, forceRun, nearMiss, freeLoop, cash, feat, endFeat, short, payKeys, highKeys, lowKeys, cellsAll, name, isW, cellsOf, txt };
+export { waysEval, linesEval, clusterEval, winP, refill, forceRun, nearMiss, freeLoop, cash, feat, endFeat, short, payKeys, highKeys, lowKeys, cellsAll, name, isW, cellsOf, txt, holdSpin, payBoard, coinMaker, cascade };

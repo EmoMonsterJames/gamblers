@@ -80,7 +80,14 @@ export const Store = {
                 sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, { db: { schema: CONFIG.SUPABASE_SCHEMA } });
                 const { data: sess } = await sb.auth.getSession();
                 this.user = sess?.session?.user || null;
-                sb.auth.onAuthStateChange((_e, s) => { this.user = s?.user || null; document.dispatchEvent(new Event("auth")); });
+                // only a real sign-in / sign-out re-renders the page: TOKEN_REFRESHED (hourly) and the
+                // SIGNED_IN that supabase-js re-fires when the tab regains focus used to rebuild the
+                // season screen mid-spin (a slot bonus vanished → back to the games tab, bet lost)
+                sb.auth.onAuthStateChange((_e, s) => {
+                    const was = this.user?.id || null;
+                    this.user = s?.user || null;
+                    if ((this.user?.id || null) !== was) document.dispatchEvent(new Event("auth"));
+                });
                 await this.pull();
                 this.mode = "cloud";
                 if (this.user) this.seedJackpotRows(); // rows for newly added slots

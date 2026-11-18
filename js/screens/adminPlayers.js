@@ -5,6 +5,7 @@ import { toast, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { COUNTRIES } from "../data/catalog.js";
 import { avatar, displayName } from "../ui/profile.js";
+import { jobList, saveJobs } from "../data/jobs.js";
 import {
     buildAvatar, toDataUri, parseGen, raceFromEthnicity, DEFAULTS, RACES, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
     HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames
@@ -22,12 +23,14 @@ const CHOICES = {
     gender: ["male", "female", "trans", "fluid"],
     preference: ["Straight", "Gay", "Bi", "Bi-Curious", "Tran-Curious"],
     school: [],
+    job: [], // 💼 filled from the managed job list (jobList)
     ethnicity: ["Human", "Rabbit", "Bunny", "Bear", "Ant", "Smile", "Cloud", "Kalisto", "Devil", "Angel", "Ghost", "Invisible", "Jiangshi", "Donglee", "Triangle", "Square", "Rectangle", "Trapezoid"]
 };
 const CUSTOM_OK = ["school", "ethnicity"]; // "직접 입력…" allowed
 function choices(k, current) {
     const used = Store.allPlayers.map(p => p[k]).filter(Boolean);
-    const base = CHOICES[k];
+    const base = k === "job" ? jobList() : CHOICES[k];
+    if (k === "job") return [...new Set([...base, current].filter(Boolean))]; // managed list only (+ the current value)
     const extra = [...new Set(used)].filter(x => !base.includes(x)).sort((a, b) => a.localeCompare(b));
     return [...new Set([...base, ...extra, current].filter(Boolean))];
 }
@@ -50,7 +53,7 @@ export function adminPlayersPage() {
     draw();
     return h("div.page.admin-players",
         h("div.row.between", h("h2.page-title", "🧑‍🤝‍🧑 플레이어 관리"),
-            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
+            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
         h("p.muted", Store.cloud ? "변경 사항은 Supabase에 바로 저장됩니다." : "로컬 모드: 이 브라우저에만 저장됩니다."),
         h("div.row", search, offChk, h("small.muted", `전체 ${Store.allPlayers.length}명 · 활성 ${Store.players.length}명`)),
         list);
@@ -184,4 +187,44 @@ function generatorPanel(initial, startOn, onImage) {
         set(patch) { Object.assign(o, patch); draw(); emit(); },
         disable() { if (!on) return; on = false; onChk.checked = false; draw(); }
     };
+}
+
+// ---------------------------------------------------------------- 💼 job list manager
+// The 직업 dropdown in the player form only offers these jobs. Renaming a job renames it on every player too.
+function jobManager() {
+    let jobs = jobList();
+    const list = h("div.jm-list");
+    const count = j => Store.allPlayers.filter(p => (p.job || "").trim() === j).length;
+    const addInp = h("input.input", { placeholder: "새 직업 이름", onkeydown: e => { if (e.key === "Enter") add(); } });
+    function add() {
+        const v = addInp.value.trim();
+        if (!v) return;
+        if (jobs.includes(v)) return toast("이미 있는 직업입니다", "warn");
+        jobs = [...jobs, v].sort((a, b) => a.localeCompare(b)); addInp.value = ""; draw();
+    }
+    function draw() {
+        list.replaceChildren(...jobs.map((j, i) => {
+            const inp = h("input.input", { value: j });
+            return h("div.jm-row", inp, h("small.muted", `${count(j)}명`),
+                h("button.btn.small.ghost", { onclick: () => {
+                    const v = inp.value.trim();
+                    if (!v || v === j) return;
+                    if (jobs.includes(v)) return toast("이미 있는 직업입니다", "warn");
+                    jobs[i] = v; renames.push([j, v]); draw();
+                } }, "✏️ 이름 변경"),
+                h("button.btn.small.ghost", { onclick: () => { jobs.splice(i, 1); draw(); } }, "🗑️"));
+        }));
+    }
+    const renames = [];
+    draw();
+    const m = modal(h("div.job-manager",
+        h("p.muted", "플레이어 편집의 💼 직업 드롭다운에 나오는 목록입니다. 이름을 바꾸면 그 직업을 가진 플레이어들도 함께 바뀝니다. (삭제해도 플레이어의 기존 직업 값은 그대로 남습니다)"),
+        h("div.row", addInp, h("button.btn.gold.small", { onclick: add }, "➕ 추가")),
+        list,
+        h("div.row", h("button.btn.gold", { onclick: async () => {
+            await saveJobs(jobs);
+            for (const [from, to] of renames) for (const p of Store.allPlayers.filter(x => (x.job || "").trim() === from)) await Store.savePlayer({ ...p, job: to });
+            toast("💼 직업 목록을 저장했습니다", "ok"); m.close();
+        } }, "💾 저장"), h("button.btn.ghost", { onclick: () => m.close() }, "취소"))),
+        { title: "💼 직업 관리", wide: true });
 }

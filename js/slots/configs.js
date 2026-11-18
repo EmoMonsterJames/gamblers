@@ -4,6 +4,7 @@ import { THEME_SLOTS } from "./themeConfigs.js";
 import { SKY_SLOTS } from "./skyConfigs.js";
 import { REALM_SLOTS } from "./realmConfigs.js";
 import { WONDER_SLOTS } from "./wonderConfigs.js";
+import { MYTH_SLOTS } from "./mythConfigs.js";
 // =====================================================================
 // Slot machine definitions (one per casino, no duplicates).
 // Symbols: e = emoji, img = image path. pay = [3,4,5 of a kind] in bet
@@ -439,7 +440,7 @@ for (const m of NEW_MAPS) for (const [i, s] of mapSlots(m).entries()) {
     }
     SLOTS.push(v);
 }
-SLOTS.push(...SPECIAL_SLOTS, ...THEME_SLOTS, ...SKY_SLOTS, ...REALM_SLOTS, ...WONDER_SLOTS);
+SLOTS.push(...SPECIAL_SLOTS, ...THEME_SLOTS, ...SKY_SLOTS, ...REALM_SLOTS, ...WONDER_SLOTS, ...MYTH_SLOTS);
 
 // RTP scale for line/way pays, from an 80k-spin simulation per machine:
 // base + free-spin ways ≈ 89% − (progressive share), so total RTP ≈ 89~91%.

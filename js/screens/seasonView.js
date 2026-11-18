@@ -47,8 +47,36 @@ import * as RV from "../game/revival.js";
 import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
 import { arcadeView, CORNER_KINDS } from "./arcade.js";
 import { stopSurvivalFx, survivalSide, infernoGate, INFERNO_FREE } from "./survivalLand.js";
+import { friendsView, helpView, voteStage } from "./social.js";
+import * as SO from "../game/social.js";
 
 let root = null, timer = null;
+
+// ☠️ the moment of death for every non-NPC death (sugar overdose, magma, HP 0 on a map, disasters, kidnap…)
+// NPC kills already have their own attack popup (corners2.npcAttack)
+export function deathPopup(pid, why) {
+    const nm = displayName(Store.player(pid));
+    const icon = (String(why).match(/^\p{Extended_Pictographic}️?/u) || ["☠️"])[0];
+    const cause = String(why).replace(/^\p{Extended_Pictographic}️?\s*/u, "").replace(/\s*사망$/, "").trim();
+    const target = h("div.npc-target.death-target", avatar(pid, 120, { effect: false }));
+    const box = h("div.npc-pop.k-kill.death-pop",
+        h("div.npc-arena", h("div.npc-art.death-cause", h("span.npc-body", icon)), h("div.npc-fx", h("span.npc-burst", "💀")), target),
+        h("div.npc-say", `${icon} ${cause}`),
+        h("div.npc-res", h("b", `☠️ ${nm}이(가) ${cause ? cause + " " : ""}사망하였습니다.`)),
+        h("p.muted.center", RV.inRevival(pid) ? "패자부활전에서 사망했습니다…" : "이번 시즌 탈락…"));
+    const m = modal(box, { title: "☠️ 사망!", closable: false });
+    Sound.boom();
+    setTimeout(() => { target.classList.add("hurt", "dead"); }, 350);
+    box.append(h("button.btn.gold.big", { onclick: () => m.close() }, "확인"));
+    return m.closed;
+}
+document.addEventListener("gb:death", e => {
+    const d = e.detail || {};
+    if (d.npc || d.quiet || d.pid == null) return;
+    const s = G.S();
+    if (!s || s.sandbox && !s.testSeason && !s.turn) return;
+    deathPopup(d.pid, d.why);
+});
 // 🕹️ the running arcade (kept across re-renders of the turn screen) + the screen's current hooks
 let arcadeInst = null, arcadeTurn = null, arcadeHooks = {}, cornerPaused = false;
 function arcadeFor(pid, t) {
@@ -80,11 +108,13 @@ function render() {
     RV.syncSurvivalLand();
     stopSurvivalFx(); // flood / fog / statue overlays of the previous screen
     if (RV.revivalDue()) RV.openRevival();
+    // 🗳️ 16 / 8 players left: this round is a vote instead of a mission (applies to the running season too)
+    if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason) && SO.voteDue()) SO.startVote();
     if (arcadeInst && (s.turn?.loc !== "arcade" || arcadeTurn !== s.turn)) { arcadeInst.stop(); arcadeInst = null; arcadeTurn = null; }
     const revStage = s.revival?.phase === "intro" ? (x => revivalIntroStage(x, render)) : s.status === "revival" ? (x => revivalStage(x, render)) : null;
     const stage = revStage || {
         select: selectStage, mission: missionStage, turns: turnsStage, judge: judgeStage, battle: battleMissionStage,
-        eliminated: eliminatedStage, final: finalStage, done: doneStage
+        eliminated: eliminatedStage, final: finalStage, done: doneStage, vote: x => voteStage(x, render)
     }[s.status] || (() => h("div", "?"));
     root.replaceChildren(...(s.sandbox ? [sandboxBar(s)] : []), header(s), h("div.season-body", h("div.stage", stage(s)), sidebar(s)));
 }
@@ -148,7 +178,23 @@ function header(s) {
 }
 function showLog() {
     const s = G.S();
-    modal(h("div.log", s.log.map(l => h("div", h("small", new Date(l.t).toLocaleTimeString()), " ", l.msg))), { title: "시즌 로그" });
+    const row = l => h("div", h("small", new Date(l.t).toLocaleTimeString()), " ", l.msg);
+    const pid = s.turn?.pid;
+    // 🎮 during a turn: only the lines about the player who is playing (tagged pid or their name in the text)
+    if (!pid) return modal(h("div.log", s.log.map(row)), { title: "시즌 로그" });
+    const p = Store.player(pid), names = [p?.name_ko, p?.player_name, G.name(pid)].filter(x => x && x.length >= 1);
+    const mine = s.log.filter(l => l.pids?.includes(pid) || names.some(n => l.msg.includes(n)));
+    let all = false;
+    const list = h("div.log");
+    const tabs = h("div.tabs");
+    const draw = () => {
+        tabs.replaceChildren(h("button.tab" + (!all ? ".on" : ""), { onclick: () => { all = false; draw(); } }, `👤 ${G.name(pid)} (${mine.length})`),
+            h("button.tab" + (all ? ".on" : ""), { onclick: () => { all = true; draw(); } }, `📋 전체 (${s.log.length})`));
+        const rows = all ? s.log : mine;
+        list.replaceChildren(...(rows.length ? rows.map(row) : [h("p.muted", "이 플레이어와 관련된 로그가 없습니다.")]));
+    };
+    draw();
+    modal(h("div", tabs, list), { title: `${G.name(pid)} 로그` });
 }
 
 let rosterOpen = false; // 참가자 명단 fold during a turn (kept while the sidebar re-renders)
@@ -210,6 +256,7 @@ function selectStage(s) {
         await machine.spin(p.id, G.selectionPool(), { tense: true });
         G.addToRoster(p.id);
         await reveal(p.id);
+        await loanPenaltyPopups();
         spinning = false;
         render();
     } }, "🎰 SPIN");
@@ -217,6 +264,7 @@ function selectStage(s) {
         if (spinning) return;
         for (const p of G.restSelection()) G.addToRoster(p.id);
         Sound.bonus(); confetti(60);
+        await loanPenaltyPopups();
         render();
     } }, "⏭ SKIP (나머지 즉시 선발)");
     const full = G.rosterFull();
@@ -234,6 +282,24 @@ function selectStage(s) {
         full ? h("div.row.center", h("button.btn.gold.huge", { onclick: () => { G.startRound(); render(); } }, "▶ 라운드 1 시작")) : h("div.row.center", spinBtn, skipBtn),
         grid);
 }
+// 🏦 picked again after being eliminated with an unpaid loan → explain the 100,000G penalty
+async function loanPenaltyPopups() {
+    const s = G.S();
+    for (const pid of s.roster) {
+        const lp = s.ps[pid]?.loanPenalty;
+        if (!lp || lp.shown) continue;
+        lp.shown = true; Store.saveSeason();
+        Sound.lose();
+        await alertBox("🏦 대출 미상환 페널티", [
+            h("div.lp-pop", avatar(pid, 90), h("b", displayName(Store.player(pid)))),
+            `시즌 ${lp.season}에서 대출 ${fmt(lp.owed)}G (원금 ${fmt(lp.principal)}G)를 갚지 않은 채로 ${lp.out ? "탈락" : "시즌을 마쳤"}습니다.`,
+            "✅ 남은 대출금은 모두 감면(탕감)되어 이번 시즌에 빚은 없습니다.",
+            `⚠️ 하지만 페널티로 이번 시즌 골드는 시작 골드 ${fmt(CONFIG.START_MONEY)}G 대신 ${fmt(G.LOAN_PENALTY_GOLD)}G만 지급됩니다.${lp.carried ? ` (지난 시즌 보유 골드 ${fmt(lp.carried)}G도 이월되지 않습니다)` : ""}`,
+            "이유: 빌린 돈을 갚지 않고 탈락하면 은행이 빚을 탕감해 주는 대신, 신용 불량 페널티로 다음 시즌 자금을 제한합니다. 포인트 · 아이템 · 펫 · 무기 · 몬스터는 그대로 가져옵니다."
+        ], "warn");
+    }
+}
+
 async function reveal(pid) {
     const card = h("div.reveal", h("div.reveal-rays"), avatar(pid, 180), h("div.reveal-name", displayName(Store.player(pid))), h("div.reveal-sub", Store.player(pid).player_name));
     document.body.append(card);
@@ -631,10 +697,10 @@ function locationStage(s) {
         petHelp: (what, amount, credit) => { G.notePetHelp(pid, what, amount, credit); side.replaceChildren(sideCard()); },
         // 🔥 Inferno Casino death games: the player dies on the spot, the turn is over
         kill: async why => {
-            G.killPlayer(pid, why);
+            G.killPlayer(pid, why, { quiet: true });
             clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null;
             Sound.boom();
-            await alertBox("☠️ 사망", [why, "패자부활전에서 사망했습니다…"], "warn");
+            await deathPopup(pid, why);
             render();
         },
         close() { gameLayer?.remove(); gameLayer = null; tabBody(currentTab); }
@@ -653,7 +719,9 @@ function locationStage(s) {
     const rev = RV.inRevival(pid);
     // 🕹️ Arcade: only the corners found inside the game show up
     const arcadeTabs = () => [["arcade", "🕹️ ARCADE"], ...(t.arcade?.found || []).map(k => [CORNER_KINDS[k].tab, `${CORNER_KINDS[k].emoji} ${CORNER_KINDS[k].label}`]), ["inv", "🎒 인벤토리"], ["emo:dex", "📖 EmoMon Dex"], ["card", "🪪 프로필"]];
-    const tabList = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
+    // 👫 내 친구: on every map · 🤝 도움주기: on this season's 20 help maps
+    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...(SO.helpHere(loc) && !loc.kidnap ? [["help", "🤝 도움주기"]] : []), ["friends", "👫 내 친구"]); return l; };
+    const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
@@ -672,7 +740,7 @@ function locationStage(s) {
         refreshTabs();
         let content;
         // 🔥 Inferno Casino: every corner is behind the death roulette (once open, it stays open for this visit)
-        if (loc.inferno && !INFERNO_FREE.includes(id) && !(t.infOpen || []).includes(id)) {
+        if (loc.inferno && !INFERNO_FREE.includes(id) && id !== "friends" && !(t.infOpen || []).includes(id)) {
             const label = tabList().find(([k]) => k === id)?.[1] || "코너";
             body.replaceChildren(infernoGate(pid, t, id, label, { onOpen: () => tabBody(id), onDead: () => { clearInterval(timer); fx.stop(); render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }));
             return;
@@ -686,6 +754,8 @@ function locationStage(s) {
             onTried: () => escapeWait?.()
         });
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "friends") content = friendsView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "help") content = helpView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
         else if (id === "arcade") content = arcadeFor(pid, t).el;
         else if (id === "arc:slot" || id === "arc:casino") content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")),

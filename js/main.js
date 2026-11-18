@@ -61,6 +61,12 @@ function route() {
     document.getElementById("boot")?.remove();
     await startI18n([...REGIONS.map(r => [r.name, r.en]), ...LOCATIONS.map(l => [l.name, l.en])]);
     window.addEventListener("hashchange", route);
-    document.addEventListener("auth", () => route());
+    // never tear down an open game (a slot bonus in progress): re-render once it is closed
+    let authWait = null;
+    document.addEventListener("auth", () => {
+        if (!document.querySelector(".game-layer")) return route();
+        if (authWait) return;
+        authWait = setInterval(() => { if (!document.querySelector(".game-layer")) { clearInterval(authWait); authWait = null; route(); } }, 1000);
+    });
     route();
 })();
