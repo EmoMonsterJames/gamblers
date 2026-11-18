@@ -157,11 +157,12 @@ export function spinDeathWheel() {
 // → { dead, hp, gold }
 export function applyHarm(pid, { hp = 0, gold = 0, kill = false } = {}, place = "") {
     const ps = ps_(pid);
-    if (kill) { killPlayer(pid, `${place}에서 사망`); return { dead: true }; }
+    // (🎭 death shield: killPlayer() → false, the player stays at HP 1)
+    if (kill) { if (killPlayer(pid, `${place}에서 사망`) === false) return { hp: ps.hp, shield: true }; return { dead: true }; }
     let lost = 0;
     if (gold) { lost = Math.min(gold, Math.max(0, ps.money)); ps.money -= lost; log(`💸 ${name(pid)} ${place} ${lost.toLocaleString()}G 잃음`); }
     if (hp) {
-        if (ps.hp <= hp) { killPlayer(pid, `${place}에서 HP가 바닥나 사망`); return { dead: true }; }
+        if (ps.hp <= hp) { if (killPlayer(pid, `${place}에서 HP가 바닥나 사망`) === false) return { hp: ps.hp, shield: true }; return { dead: true }; }
         ps.hp -= hp; log(`💔 ${name(pid)} ${place} HP −${hp}`);
     }
     Store.saveSeason(true);

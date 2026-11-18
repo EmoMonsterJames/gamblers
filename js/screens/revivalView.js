@@ -2,7 +2,7 @@
 // 🔄 패자부활전 screens (rules: game/revival.js)
 //   intro   — popup "10명의 플레이어가 탈락하여…" + 관리자 "패자부활전 진행하기"
 //   march   — the eliminated walk into Survival Land one by one (random order)
-//   mission — the revival mission roulette (one of 7)
+//   mission — the revival mission roulette (one of 6)
 //   turns   — the normal turn screens (seasonView.js) in Survival Land
 //   result  — mission winners → the claw picks the one who comes back
 // =====================================================================
@@ -20,14 +20,15 @@ import { letterCard } from "../ui/letterCard.js";
 const nm = pid => displayName(Store.player(pid));
 const survivalMaps = () => LOCATIONS.filter(l => l.region === "survival");
 const RULES = [
-    "탈락자 전원이 숨겨진 지역 🔄 Survival Land로 이동해 한 명씩 특별한 라운드(10분)를 플레이합니다.",
+    "탈락자 전원이 숨겨진 지역 🔄 Survival Land로 이동해 한 명씩 특별한 라운드(5분)를 플레이합니다.",
     `패자부활전 동안만 ❤ FULL HP · 💰 패자부활전 골드 ${fmt(RV.REVIVAL_GOLD)}G를 따로 받습니다 (원래 골드 · HP · 포인트는 그대로 보관).`,
     "탈락 당시의 아이템 · 펫 · 무기 · 이모몬스터를 그대로 가지고 갑니다.",
     "시즌 중에 쓴 코너 입장 · 시도 횟수는 패자부활전 동안 다시 리셋됩니다 (예: 🎬 Highlight 다시 감상 가능).",
     "패자부활전 골드로 산 것은 모두 별도 인벤토리 — 패자부활전이 끝나면 사라집니다. 직접 포획한 이모몬스터는 계속 가질 수 있습니다.",
     "패자부활전 골드 · 포인트로 번 돈은 원래 골드 · 포인트와 합쳐지지 않습니다.",
-    "Survival Land의 모든 맵은 턴 종료 버튼이 없습니다 — 시간이 끝날 때까지 플레이합니다. 맵권은 Survival Land 맵권만 사용 가능 (45,000G).",
-    "미션을 성공한 (그리고 끝까지 살아남은) 플레이어 중 🕹️ 집게가 단 1명을 부활시킵니다. 모두 실패하면 부활자는 없습니다."
+    "Survival Land의 모든 맵은 턴 종료 버튼이 없습니다 — 5분이 끝날 때까지 플레이합니다 (⏹️ 턴 종료권으로는 바로 끝낼 수 있음). 맵권은 Survival Land 맵권만 사용 가능 (45,000G) · 지금 맵에서 2분이 지나야 쓸 수 있습니다.",
+    "미션에 실패하면 그 자리에서 바로 탈락이 확정됩니다.",
+    "미션에 성공하고 5분을 끝까지 살아남으면 🏝️ 생존자 공간으로 이동 — 생존자 중 🕹️ 집게가 단 1명을 부활시킵니다. 모두 실패하면 부활자는 없습니다."
 ];
 
 // the big popup, once per intro (the stage stays behind it)
@@ -102,7 +103,7 @@ function marchStage(s, rerender) {
         h("p.muted.center", "이 순서가 패자부활 라운드의 플레이 순서가 됩니다."));
 }
 
-// ---- mission roulette (7 revival missions)
+// ---- mission roulette (6 revival missions)
 function missionStage(s, rerender) {
     const ms = RV.REVIVAL_MISSIONS;
     const cards = ms.map(m => h("div.mcard", { "data-id": m.id }, h("div.mc-ico", m.icon), h("div.mc-text", m.text)));
@@ -146,8 +147,8 @@ function resultStage(s, rerender) {
     const failed = R.order.filter(pid => !W.includes(pid));
     const finish = winner => { RV.finishRevival(winner); rerender(); };
     const cols = h("div.judge-cols",
-        h("div.jcol.ok", h("h3", `✅ 미션 성공 ${W.length}`), h("div.jlist", W.map(pid => h("div.rv-res", avatar(pid, 46, { effect: false }), h("b", nm(pid)))))),
-        h("div.jcol.bad", h("h3", `❌ 실패 ${failed.length}`), h("div.jlist", failed.map(pid => h("div.rv-res", avatar(pid, 46, { effect: false }), h("b", nm(pid)), R.dead.includes(pid) ? h("small", " ☠️ 사망") : null)))));
+        h("div.jcol.ok", h("h3", `🏝️ 생존자 공간 ${W.length}`), h("div.jlist", W.map(pid => h("div.rv-res", avatar(pid, 46, { effect: false }), h("b", nm(pid)))))),
+        h("div.jcol.bad", h("h3", `💀 탈락 ${failed.length}`), h("div.jlist", failed.map(pid => h("div.rv-res", avatar(pid, 46, { effect: false }), h("b", nm(pid)), R.dead.includes(pid) ? h("small", " ☠️ 사망") : null)))));
     const head = h("h2.stage-title", "🔄 패자부활전 결과", h("small", s.mission?.text || ""));
     if (!W.length) {
         setTimeout(() => Sound.lose(), 100);
@@ -197,6 +198,12 @@ function revivalRankList(R) {
 export function revivalBar(s, pid, onChange) {
     const m = s.mission, t = s.turn;
     const bar = h("div.rv-bar", h("span.rv-bar-tag", "🔄 패자부활전"), h("span.rv-bar-note", RV.RESET_NOTE));
+    // 🏝️ who already made it to the survivors' room · 💀 who is out for good
+    const done = (s.order || []).filter(p => s.results?.[p]);
+    const safe = done.filter(p => s.results[p].pass && !s.revival?.dead?.includes(p)), lost = done.filter(p => !safe.includes(p));
+    if (done.length) bar.append(h("div.rv-bar-rooms",
+        h("span.rv-room.safe", "🏝️ 생존자 공간 ", safe.length ? safe.map(p => avatar(p, 26, { effect: false, frame: false })) : h("small", "아직 없음")),
+        h("span.rv-room.lost", `💀 탈락 확정 ${lost.length}명`)));
     if (m?.type === "rv_letters") {
         const have = RV.lettersHave(pid), all = have.every(x => x.n > 0);
         bar.append(h("div.rv-submit", have.map(x => h("span.rv-l" + (x.n ? ".on" : ""), letterCard(x.L, 30), h("small", `×${x.n}`))),

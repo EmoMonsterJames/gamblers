@@ -16,6 +16,7 @@ import * as RV from "../game/revival.js";
 import { ITEM_BY_ID } from "../data/catalog.js";
 import { avatar } from "../ui/profile.js";
 import { quizQuestion } from "../data/quiz.js";
+import { survivalExtras } from "./survivalIce.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 // 🌪️ a disaster / 🧠 a quiz at least once in this many seconds of play
@@ -42,7 +43,7 @@ export const DISASTER_RULES = [
     "🌊 홍수 3단계(가득): 🤿 산소통 필요! 없으면 산소 레벨 100에서 3초마다 5~20% 감소 + HP −10 · 산소 0 또는 HP 0 = 즉사",
     "　└ 💧 Water: 산소 5~10% · HP −5 / 💨 Air: 산소 1~5% (HP −10) / 🧊 Ice: 산소 5~20% · HP −5",
     "재난은 동시에 일어날 수 있습니다 (홍수는 동시 발생 시 2단계까지) · 홍수 3단계일 땐 지진 · 강풍이 없습니다 · 물이 다 빠질 때까지 홍수는 다시 오지 않습니다",
-    "⏱️ 이 맵에서는 남은 시간이 5분 이하일 때만 다른 Survival Land 맵권을 쓸 수 있습니다"
+    "⏱️ Survival Land의 모든 맵: 지금 맵에서 2분이 지나야 다른 Survival Land 맵권을 쓸 수 있습니다"
 ];
 export const CHURCH_RULES = [
     "🌫️ 랜덤하게 안개가 10초 동안 화면 전체를 덮습니다",
@@ -96,6 +97,14 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     };
     const locEl = () => root.querySelector(".location");
     const parts = [];
+    // 📋 map messages (disasters · the devil statue) sit in the left bar under the pet / the statue — not as top-right toasts
+    const msgBox = h("div.rv-side-msgs");
+    const msg = (text, kind = "info", ms = 3000) => {
+        const el = h("div.rv-side-msg." + kind, text);
+        msgBox.prepend(el);
+        while (msgBox.children.length > 3) msgBox.lastChild.remove();
+        setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 500); }, ms);
+    };
 
     // ====================================================== 🔘 Button Casino
     if (loc.buttonTax) {
@@ -108,8 +117,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
             if (ps.hp <= loc.buttonTax) {
                 e.preventDefault(); e.stopPropagation();
                 Sound.boom(); toast("🔘 버튼을 누르다 HP가 바닥났다…", "error", 5000);
-                X.applyHarm(pid, { kill: true }, `${loc.emoji} ${loc.name}`);
-                setTimeout(die, 500);
+                if (X.applyHarm(pid, { kill: true }, `${loc.emoji} ${loc.name}`).dead) setTimeout(die, 500);
                 return;
             }
             ps.hp -= loc.buttonTax;
@@ -145,7 +153,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         oxyBar = h("div.rv-oxy", h("div.rv-oxy-track", oxyFill), oxyTxt);
         document.body.append(water, oxyBar);
         cleanups.push(() => { water.remove(); oxyBar.remove(); });
-        parts.push(h("button.rv-tag.blue", { onclick: () => alertBox("🌪️ Disaster Casino 규칙", DISASTER_RULES) }, "🌪️ 재난 규칙 ⓘ"), lastDis);
+        parts.push(h("button.rv-tag.blue", { onclick: () => alertBox("🌪️ Disaster Casino 규칙", DISASTER_RULES) }, "🌪️ 재난 규칙 ⓘ"));
         drawWater();
     }
     function quake() {
@@ -155,7 +163,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         document.body.classList.add("rv-quaking");
         setTimeout(() => { el?.classList.remove("rv-quake"); document.body.classList.remove("rv-quaking"); }, 2600);
         const d = DISASTER.quake(pid);
-        toast(`🫨 지진 발생! HP −${d}${d < 10 ? " (🪨 Earth 몬스터 덕분에 절반)" : ""}`, "warn", 3000);
+        msg(`🫨 지진 발생! HP −${d}${d < 10 ? " (🪨 Earth 몬스터 덕분에 절반)" : ""}`, "warn", 4000);
         return harm(d, "🫨 지진");
     }
     async function wind() {
@@ -173,7 +181,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
             await alertBox("🌪️ 강풍이 아이템을 빼앗아 갔다!", [h("div.rv-stolen", h("span", it?.emoji || "🎁"), h("b", it?.name || got.id)),
                 got.rev ? "패자부활전 인벤토리에서 빼앗겼습니다." : "패자부활전 인벤토리가 비어 있어 내 원래 아이템을 빼앗겼습니다!",
                 d ? `HP −${d}` : "🪽 Fly / Air / Space 몬스터 덕분에 HP는 그대로!"], "warn");
-        } else toast(d ? `🌪️ 강풍! HP −${d} (빼앗길 아이템이 없었다)` : "🌪️ 강풍! 몬스터 덕분에 무사 (빼앗길 아이템도 없음)", "warn", 3200);
+        } else msg(d ? `🌪️ 강풍! HP −${d} (빼앗길 아이템이 없었다)` : "🌪️ 강풍! 몬스터 덕분에 무사 (빼앗길 아이템도 없음)", "warn", 4000);
         return r;
     }
     // stage weights: 1 = 40% · 2 = 35% · 3 = 25% (with other disasters: at most 2)
@@ -181,7 +189,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     function startFlood(target) {
         D.flood = { level: 0, target, phase: "rise", hold: rint(10, 18), hit2: false, hit3: false, tank: false, breath: 0 };
         SFX.flood();
-        toast(`🌊 홍수 발생! 물이 차오릅니다… (${target}단계)`, "warn", 3200);
+        msg(`🌊 홍수 발생! 물이 차오릅니다… (${target}단계)`, "warn", 4000);
     }
     async function floodTick() {
         const F = D.flood;
@@ -194,25 +202,25 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         if (F.level >= 2 && !F.hit2) {
             F.hit2 = true;
             const d = DISASTER.flood2(pid);
-            if (d) { toast(`🌊 홍수 2단계! HP −${d}`, "warn", 2600); if (harm(d, "🌊 홍수").dead) return; }
-            else toast("🌊 홍수 2단계 — 💧 Water / 🧊 Ice 몬스터 덕분에 무사!", "ok", 2600);
+            if (d) { msg(`🌊 홍수 2단계! HP −${d}`, "warn", 4000); if (harm(d, "🌊 홍수").dead) return; }
+            else msg("🌊 홍수 2단계 — 💧 Water / 🧊 Ice 몬스터 덕분에 무사!", "ok", 4000);
         }
         // stage 3: an oxygen tank (used up) — or the oxygen level runs down
         if (F.level >= 3 && !F.hit3) {
             F.hit3 = true;
             const ps = ps_(pid);
-            if (ps.items.oxygen > 0) { ps.items.oxygen--; F.tank = true; Store.saveSeason(true); onChange?.(); toast("🤿 산소통 사용! 물속에서도 숨을 쉴 수 있습니다", "ok", 3500); }
-            else { D.oxy = 100; Sound.boom(); toast("🌊 홍수 3단계! 산소통이 없습니다 — 산소가 줄어듭니다!", "error", 4000); }
+            if (ps.items.oxygen > 0) { ps.items.oxygen--; F.tank = true; Store.saveSeason(true); onChange?.(); msg("🤿 산소통 사용! 물속에서도 숨을 쉴 수 있습니다", "ok", 4000); }
+            else { D.oxy = 100; Sound.boom(); msg("🌊 홍수 3단계! 산소통이 없습니다 — 산소가 줄어듭니다!", "error", 5000); }
         }
         if (F.level >= 3 && !F.tank && ++F.breath % 3 === 0) {
             const r = DISASTER.flood3(pid), lose = rint(r.oxy[0], r.oxy[1]);
             D.oxy = Math.max(0, D.oxy - lose);
             SFX.bubble(); SFX.bubble();
-            if (D.oxy <= 0) { drawWater(); toast("🫧 산소가 바닥났다…", "error", 5000); X.applyHarm(pid, { kill: true }, "🌊 홍수 (산소 0)"); setTimeout(die, 600); return; }
+            if (D.oxy <= 0) { drawWater(); toast("🫧 산소가 바닥났다…", "error", 5000); if (X.applyHarm(pid, { kill: true }, "🌊 홍수 (산소 0)").dead) setTimeout(die, 600); else D.oxy = 30; return; }
             if (harm(r.hp, "🌊 홍수 (산소 부족)").dead) return;
         }
         if (F.level < 3 && F.hit3 && !F.tank) D.oxy = Math.min(100, D.oxy + 4); // breathing again above water
-        if (F.phase === "drain" && F.level <= 0) { D.flood = null; D.oxy = 100; toast("🌊 물이 모두 빠졌습니다", "info", 2200); }
+        if (F.phase === "drain" && F.level <= 0) { D.flood = null; D.oxy = 100; msg("🌊 물이 모두 빠졌습니다", "info", 3000); }
         drawWater();
     }
     let disBusy = false;
@@ -298,7 +306,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
             drawStatue();
             statue.classList.remove("grow"); void statue.offsetWidth; statue.classList.add("grow");
             tone(90, 0.6, "sawtooth", 0.04, 0, -30);
-            toast(`😈 악마의 조각상이 자랐다… (${C.level}/100)`, C.level >= 70 ? "warn" : "info", 2000);
+            msg(`😈 악마의 조각상이 자랐다… (${C.level}/100)`, C.level >= 70 ? "warn" : "info", 3000);
         }
         if (C.level >= 100) {
             if (activityBusy()) return; // after the spin / popup
@@ -361,7 +369,12 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         if (!mourned && lastHp > 0 && (ps_(pid)?.hp ?? 1) <= 0) mourn();
         dead = true; while (cleanups.length) cleanups.pop()(); if (current?.stop === stop) current = null;
     }
-    current = { stop, side: statue };
+    // 🎵 map loop · 🧊 Icy Castle hammer · 🦋 Decalcomania mirror · Icy Breath / Profile Copy (survivalIce.js)
+    const extra = survivalExtras(loc, t, pid, { root, harm, msg, rulesBox: alertBox, die, onChange });
+    cleanups.push(() => extra.stop());
+    parts.push(...extra.parts);
+    const sideEl = h("div.rv-side", statue, extra.side, loc.disaster ? lastDis : null, msgBox);
+    current = { stop, side: sideEl };
     return { hud: parts.length ? h("div.rv-tags", parts) : null, tick, stop };
 }
 
@@ -409,7 +422,7 @@ export const QUIZ_RULES = [
     "💡 힌트는 3개 — 볼 때마다 HP −10 (1: 뜻 / 분야, 2·3: 오답 하나씩 지우기).",
     "❌ 틀리면 Penalty 룰렛: 30% 바로 사망 · 20% HP −10 · 30% HP −20 · 20% HP −30.",
     "⏱️ 퀴즈를 푸는 시간도 플레이 시간에 포함됩니다 (시계는 계속 흐릅니다).",
-    "🎟️ 이 맵에서는 다른 Survival Land 맵권으로 언제든 이동할 수 있습니다."
+    "🎟️ 이 맵에서 2분이 지나면 다른 Survival Land 맵권으로 이동할 수 있습니다."
 ];
 // → { ok, dead }
 export async function quizPopup(pid) {
@@ -510,6 +523,7 @@ export async function priestVisit(pid, npc, move) {
         await m.closed;
         return blocked;
     }
+    G.noteNpcAttack(pid, npc.id);
     if (move.sermon) {
         const secs = move.sermon;
         say.textContent = "📖 \"회개하라… 찬양을 들으라…\" — 설교 공격!";

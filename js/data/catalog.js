@@ -351,6 +351,7 @@ export const ITEMS = [
     ...REGION_ITEMS.map(r => ({ id: r.id, name: r.name, emoji: r.emoji, desc: r.desc, region: r.region })),
     ...ALPHABET.map(l => ({ id: cardId(l), name: `알파벳 카드 ${l}`, emoji: "🔤", letter: l, desc: "미션·맵 입장·Spelling Bee에 1번 쓰고 사라집니다." })),
     ...EXTRA_LETTERS.map(l => ({ id: cardId(l), name: `알파벳권 ${l}`, emoji: circled(l), letter: l, extra: true, desc: "🐝 Spelling Bee 코너에서 단어를 만들 때 1번 쓰고 사라집니다." })),
+    { id: "turn_end",     name: "턴 종료권",          emoji: "⏹️", desc: "사용하면 턴 종료 제약(🔒 5분 이하부터 · 납치 공간 등)에 상관없이 지금 바로 턴을 끝냅니다 (1회용 · 🔄 Survival Land에서도 사용 가능)." },
     { id: "map_random",   name: "랜덤 맵권",          emoji: "🗺️", desc: "사용하면 지금 입장 가능한 모든 지역의 모든 맵 중 한 곳으로 바로 이동합니다 (턴 시작 때나 턴 도중, 남은 시간은 그대로)." },
     { id: "gotcha_blank", name: "꽝 캡슐", emoji: "🥚", desc: "Monster Gotcha에서 나온 꽝 캡슐입니다. Monster Gotcha 코너의 ♻️ 꽝 캡슐 수거에서 한꺼번에 반납하면 100~1,000G를 받습니다 (많이 모을수록 더 많이)." },
     { id: "slot_boost",   name: "슬롯 보너스 당첨 UP", emoji: "🎰", boost: "slot",   desc: "사용 후 30초 동안 모든 슬롯에서 보너스가 터질 확률이 최대 50%로! (베팅이 높을수록 확률이 줄어듭니다 · 1회용)" },
@@ -641,6 +642,22 @@ for (const l of LOCATIONS) {
 export const isPass = id => !!ITEMS.find(i => i.id === id)?.loc;
 export const isSurvivalPass = id => !!ITEM_BY_ID[id]?.survival;
 
+// ⏹️ 턴 종료권: 20 random maps (fixed, seeded) among those with an 일반 상점 or a 포인트 상점 —
+// 25,000G at an 일반 상점 · 40P at a 포인트 상점 (a map that has both sells it in one of them)
+export const TURN_END_GOLD = 25000, TURN_END_PTS = 40, TURN_END_MAPS = 20;
+{
+    const rnd = (() => { let h = 2166136261; for (const c of "gamblers-turn-end-pass") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
+    const pool = LOCATIONS.filter(l => !l.kidnap && l.region !== "survival" && (l.shops.includes("general") || l.shops.includes("point")));
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    const gold = [], pts = [];
+    for (const l of pool.slice(0, TURN_END_MAPS)) {
+        const g = l.shops.includes("general"), p = l.shops.includes("point");
+        (p && (!g || rnd() < 0.4) ? pts : gold).push(l.id);
+    }
+    if (gold.length) SHOPS.general.list.push({ cat: "item", id: "turn_end", price: TURN_END_GOLD, locs: gold });
+    if (pts.length) SHOPS.point.list.push({ cat: "item", id: "turn_end", price: TURN_END_PTS, locs: pts, ...(gold.length ? { alt: true } : {}) });
+}
+
 // the map that sells a new frame / effect must have that shop (adds 💠 포인트+골드 상점 where needed)
 for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) for (const lid of it.locs || []) {
     const l = LOCATIONS.find(x => x.id === lid);
@@ -730,6 +747,18 @@ export const NPCS = [
     // ⛪ Foggy Church (Survival Land) only: sermon = 30 s of hymns (play time keeps running) · donation = give real gold or get hurt
     { id: "priest", name: "Priest", emoji: "🧑‍⚖️", art: "📖", color: "#1f2937", align: "evil", churchOnly: true,
       moves: [{ sermon: 30 }, { donation: true }] },
+    // 🧊 Icy Castle (Survival Land) only: freeze = Icy Breath (the whole play screen frozen for 30 s, the clock keeps running)
+    { id: "ice_queen", name: "Ice Queen", emoji: "👸", art: "❄️", color: "#0ea5e9", align: "evil", survivalOnly: true,
+      moves: [{ hp: -20, w: 10 }, { hp: -30, w: 10 }, { kill: true, w: 5 }, { freeze: 30, name: "Icy Breath", w: 75 }] },
+    // 🦋 Decalcomania Casino (Survival Land) only: profileCopy = a devil copy of the player plays for them for 60 s
+    { id: "fake_profile", name: "Fake Profile", emoji: "🎭", art: "😈", color: "#a21caf", align: "evil", survivalOnly: true,
+      moves: [{ profileCopy: 60, name: "Profile Copy" }] },
+    // 🦟 모기 숲 (Survival Land) only: tiny bites come often and quietly (an alarm under the pet, no attack screen) ·
+    //    only the cancer bite gets the attack popup · the big one always starts a battle (screens/survivalMosquito.js)
+    { id: "tiny_mosquito", name: "Tiny Mosquito", emoji: "🦟", art: "🩸", color: "#4d7c0f", align: "evil", survivalOnly: true,
+      moves: [{ hp: -1, bite: true, name: "물기", w: 95 }, { disease: "cancer", w: 5 }] },
+    { id: "monster_mosquito", name: "Monster Mosquito", emoji: "🦟", art: "💉", color: "#14532d", align: "evil", survivalOnly: true, big: true,
+      moves: [{ battle: "mosquito", name: "Battle" }] },
     // 🎅 arctic (빙하) region only · 🦹 terrorist kidnap room only (always there)
     { id: "santa", name: "산타크로스", emoji: "🎅", art: "🎁", color: "#dc2626", align: "good", arcticOnly: true,
       moves: [{ hp: 10 }, { give: [1000, 1000] }, { give: [2000, 2000] }, { hp: 20 }, { cureFlu: true }, { giftBox: true }] },
@@ -748,10 +777,12 @@ export const SANTA_GIFTS = [
 // who can show up on this map: npcOnly → that one · Dead Land → DEAD_NPC_IDS · anywhere else → the normal NPCs
 export function npcPool(loc) {
     if (loc?.npcOnly) { const n = NPCS.find(x => x.id === loc.npcOnly); if (n) return [n]; }
+    // a map with its own NPC list (🦟 모기 숲: Tiny Mosquito · Monster Mosquito)
+    if (loc?.npcList) { const l = loc.npcList.map(id => NPCS.find(x => x.id === id)).filter(Boolean); if (l.length) return l; }
     // ⛪ Foggy Church: only the Priest comes
     if (loc?.church) { const pr = NPCS.find(n => n.id === "priest"); if (pr) return [pr]; }
     if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
-    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && !n.churchOnly && (!n.arcticOnly || loc?.region === "arctic"));
+    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && !n.churchOnly && !n.survivalOnly && (!n.arcticOnly || loc?.region === "arctic"));
 }
 // a move by its weight (w, default 1)
 export const moveChance = (npc, m) => (m.w ?? 1) / npc.moves.reduce((a, x) => a + (x.w ?? 1), 0);
@@ -762,7 +793,7 @@ export function pickNpcMove(npc) {
 }
 export const HOPE_MESSAGES = ["잘될거에요", "대박나세요", "우승할거에요"];
 // a move is "harmful" when it can hurt the player (NPC 공격 Block 권 blocks these)
-export const npcHarmful = m => !!(m.sermon || m.donation || m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
+export const npcHarmful = m => !!(m.battle || m.freeze || m.profileCopy || m.sermon || m.donation || m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
 // evil = harmful moves only · good = helpful only · neutral = both (curses / idling count as neither)
 export function npcAlign(n) {
     if (n.align) return n.align;

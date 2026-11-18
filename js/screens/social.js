@@ -46,11 +46,12 @@ export function friendsView(pid, { onChange = () => { } } = {}) {
         drawList();
         void results;
         const tabs = h("div.bk-tabs", SO.REL_ORDER.map(k => h("button.bk-tab" + (friendTab === k ? ".on" : ""), { onclick: () => { friendTab = k; draw(); } },
-            `${SO.RELS[k].emoji} ${SO.RELS[k].label} (${mine.filter(r => r.rel === k).length})`)));
+            `${SO.RELS[k].emoji} ${SO.RELS[k].label} (${mine.filter(r => r.rel === k).length}/${SO.MAX_PER_REL})`)));
         const shown = mine.filter(r => r.rel === friendTab);
         wrap.replaceChildren(
             h("h3", "👫 내 친구"),
             h("p.muted.small", "플레이어를 검색해서 친구 · 가족 · 지인 · 기타로 추가하세요. 한쪽에서 추가하면 바로 서로 등록됩니다. 관계는 시즌이 바뀌어도 남고, 💞 친밀도(투표 탈락)에 반영됩니다."),
+            h("p.small.fr-limit", `📌 이번 시즌 추가 ${SO.addsThisSeason(pid)} / ${SO.ADD_PER_SEASON}명 (친구 · 가족 · 지인 · 기타 통틀어) · 관계별 최대 ${SO.MAX_PER_REL}명`),
             h("div.fr-add", relSel, noteInp, search, list),
             tabs,
             h("div.fr-list", shown.length ? shown.map(r => h("div.fr-row", avatar(r.other, 52, { effect: false }),
@@ -89,8 +90,11 @@ function reactWho(p, kind, pid, redraw) {
     const list = [...(p[kind] || [])].sort((a, b) => String(b.at).localeCompare(String(a.at)));
     const canReact = pid != null && +p.pid !== +pid;
     const on = canReact && list.some(x => +x.pid === +pid);
+    // another comment already holds this season's press (taking this one back / switching here is always fine)
+    const used = canReact && !on && !(p.likes || []).concat(p.dislikes || []).some(x => +x.pid === +pid) && SO.reactedThisSeason(pid, p.id);
     const m = modal(h("div.react-who",
-        canReact ? h("div.row.center", h("button.btn" + (on ? ".ghost" : ".gold"), { onclick: () => {
+        canReact && used ? h("p.muted.center.small", "💖 하트 · 👎 싫어요는 시즌당 1회만 누를 수 있습니다 — 이번 시즌에는 이미 다른 코멘트에 눌렀습니다 (그걸 취소하면 다시 누를 수 있어요)") :
+        canReact ? h("div.row.center", h("small.muted", "시즌당 1회 (하트 · 싫어요 통틀어) "), h("button.btn" + (on ? ".ghost" : ".gold"), { onclick: () => {
             const r = SO.react(pid, p.id, kind);
             if (!r.ok) return toast(r.why, "warn");
             r.on ? (Sound.coin(), toast(`${label}를 눌렀습니다`, "ok")) : toast(`${label}를 취소했습니다`, "info");

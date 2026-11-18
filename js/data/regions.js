@@ -399,10 +399,11 @@ export const NEW_MAPS = [
     // =========================================================== 🔄 Survival Land (패자부활전 only — see game/revival.js)
     // revival: only reachable during the revival round · noEnd: the turn can never be ended by hand (only time up / death)
     // deadNpc: Dead Land NPCs (no Terrorist) · survivalOnly passes: 45,000G, sold only in Survival Land shops
-    //   disaster: earthquake / flood / gale (screens/survivalLand.js) · passLate: Survival Land passes only with ≤ 5:00 left
+    //   disaster: earthquake / flood / gale (screens/survivalLand.js)
+//   every Survival Land map: a 5-minute turn · other Survival Land passes only after 2:00 on the map (game/revival.js)
     //   arcade: the arcade platformer (screens/arcade.js) — its corners are found inside the game
     //   buttonTax: HP −5 for every button pressed in the play area · church: fog · devil statue · Priest NPC
-    { id: "disaster_casino", region: "survival", name: "Disaster Casino", emoji: "🌪️", color: "#0369a1", x: 22, y: 28, shops: ["general", "weapon"], npc: "always", deadNpc: true, revival: true, noEnd: true, disaster: true, passLate: true, highlight: true,
+    { id: "disaster_casino", region: "survival", name: "Disaster Casino", emoji: "🌪️", color: "#0369a1", x: 22, y: 28, shops: ["general", "weapon"], npc: "always", deadNpc: true, revival: true, noEnd: true, disaster: true, highlight: true,
       slots: [sl("Catastrophe Reels", "IPEX", "dragon", "🌋 🌊 🌪️", "⚡ 🧯", "🆘", "🚨", "#0c4a6e", "#020617", "#38bdf8")],
       casinos: [cg("wheel", "Disaster Wheel", "🌪️", "재난 휠! 최대 x30"), cg("dice", "Quake Dice", "🫨", "지진 주사위! 6-6 이면 x30")] },
     { id: "arcade", region: "survival", name: "Arcade", emoji: "🕹️", color: "#7c3aed", x: 74, y: 24, shops: ["general"], npc: "always", deadNpc: true, revival: true, noEnd: true, arcade: true, capture: true,
@@ -424,7 +425,22 @@ export const NEW_MAPS = [
       slots: [{ ...sl("Suicide Spin", "Death Slot", "dragon", "💀 ⚰️ 🩸", "🕯️ ⛓️", "☠️", "🪦", "#450a0a", "#0a0000", "#ef4444"), x: { mode: "suicide", sym: "DX", w: 1.7 } },
               { ...sl("Kill Me Gently", "Death Slot", "rabbit", "🗡️ 🌹 🩸", "🕯️ 🥀", "💀", "⚰️", "#1c1917", "#000000", "#f43f5e"), x: { mode: "knife", sym: "KN", w: 1.1 } }],
       casinos: [cg("plinko", "Inferno Plinko", "🔥", "지옥 플링코! ☠️ 해골 칸에 떨어지면 바로 사망 · 양 끝 x25", { death: 0.08 }),
-                cg("pick", "Bomb Pick", "💣", "폭탄 4개 중 하나를 고르세요! ☠️ 바로 사망 폭탄 주의", { n: 4, closed: "💣", prize: "💰", miss: "💥", death: 0.1 })] }
+                cg("pick", "Bomb Pick", "💣", "폭탄 4개 중 하나를 고르세요! ☠️ 바로 사망 폭탄 주의", { n: 4, closed: "💣", prize: "💰", miss: "💥", death: 0.1 })] },
+    //   icy: 40% flu on arrival · every corner behind a solid ice wall — 🔨 hammer (30 hits, 10 s recharge) breaks it at random
+    //        · only the 👸 Ice Queen comes (Icy Breath: the whole screen freezes for 30 s) — screens/survivalIce.js
+    { id: "icy_castle", region: "survival", name: "Icy Castle", emoji: "🧊", color: "#38bdf8", x: 10, y: 48, shops: ["general", "weapon"], npc: "always", npcOnly: "ice_queen", revival: true, noEnd: true, icy: true, fluChance: 0.4, capture: true, highlight: true,
+      slots: [sl("Frozen Throne", "IPEX", "pearl", "🧊 ❄️ 👑", "⛄ 🔷", "💎", "🏰", "#0c4a6e", "#020617", "#7dd3fc")],
+      casinos: [cg("wheel", "Blizzard Crown Wheel", "❄️", "얼음 여왕의 휠! 최대 x30"), cg("hilo", "Frostbite Hi-Lo", "🧊", "꽁꽁 언 하이로우")] },
+    //   decal: the play screen is split like a decalcomania — two identical halves, every object real on one side and
+    //          fake (slightly off) on the other · a fake one pressed = HP −10 · only the 🎭 Fake Profile comes (Profile Copy)
+    { id: "decal_casino", region: "survival", name: "Decalcomania Casino", emoji: "🦋", color: "#c026d3", x: 90, y: 48, shops: ["general", "pet"], npc: "always", npcOnly: "fake_profile", revival: true, noEnd: true, decal: true, capture: true, spell: true,
+      slots: [sl("Mirror Mirror", "IPEX", "dragon", "🦋 🪞 🎭", "🃏 🔮", "🪞", "🎭", "#4a044e", "#0a0010", "#f0abfc")],
+      casinos: [cg("coinflip", "Twin Flip", "🪞", "거울 동전 던지기! x1.9"), cg("pick", "Which Is Real?", "🎭", "가면 3개 중 진짜는?", { n: 3, closed: "🎭", prize: "💰", miss: "🃏" })] },
+    //   mosquito: little mosquitoes buzz all over the play screen · 🦟 Tiny Mosquito bites often (HP −1, 5% cancer) ·
+    //             a giant mosquito egg grows under the pet → at 100 it hatches the 🦟 Monster Mosquito (battle — lose = death)
+    { id: "mosquito_forest", region: "survival", name: "모기 숲", emoji: "🦟", color: "#4d7c0f", x: 50, y: 10, shops: ["general", "weapon"], npc: "always", npcList: ["tiny_mosquito", "monster_mosquito"], revival: true, noEnd: true, mosquito: true, capture: true,
+      slots: [sl("Bloodsucker Bayou", "IPEX", "ghost", "🦟 🩸 🌿", "🍃 🐸", "🌳", "🥚", "#14532d", "#020a04", "#84cc16")],
+      casinos: [cg("dice", "Swamp Dice", "🦟", "늪지 주사위! 6-6 이면 x30"), cg("pick", "Egg Hunt", "🥚", "알 4개 중 하나… 모기알 주의!", { n: 4, closed: "🥚", prize: "💰", miss: "🦟" })] }
 ];
 // the room terrorists drag a kidnapped player into (not on any map — see game/extra.js)
 export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "always", npcOnly: "terror_boss", kidnap: true, slots: [], casino: [] };

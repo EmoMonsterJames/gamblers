@@ -2,13 +2,14 @@
 // 🕹️ ARCADE — Survival Land side-scroller (패자부활전 only).
 // The player's profile picture runs to the 🏰 boss castle, then fights the
 // slot-machine boss. ← → move · ↓ crouch / swim down / drop / enter a door ·
-// ↑ jump (swim up under water) · SPACE throws an arcade orb (5 to start, max 10).
+// ↑ jump (swim up under water) · SPACE throws an arcade orb (5 to start, max 20).
 //   · one random stage per arrival: 🌊 Sea (상) · 🏜️ Desert (중) · 🏘️ Village (중) · 👻 Haunted House (상)
 //   · ~2:30 long, 3:00 limit · 2 tries per turn (a pit / time out uses one)
 //   · touching a monster HP −10, a shot HP −5 (the player's real revival HP)
 //   · 🎰 slot · 🃏 casino · 🏪 shop · 🔍 capture doors along the way: ↓ at a door
 //     pauses the arcade and the turn clock and opens that corner (found corners stay open)
 //   · ❤ hearts +10 HP · 🔮 orbs refill the weapon
+//   · ⏰ time out HP −50 (warned before the start) · 🏆 boss clear → 🎫 미션완료권 (onWin)
 // arcadeView(pid, t, { hurt, heal, onCorner, onDead, onWin, onChange }) → { el, pause, resume, stop }
 // =====================================================================
 import { h, sleep } from "../core/util.js";
@@ -22,7 +23,14 @@ export const ARCADE_STAGES = {
     village: { name: "빌리지 아케이드", emoji: "🏘️", diff: "중", len: 12700, sky: ["#7dd3fc", "#bae6fd", "#e0f2fe"] },
     haunted: { name: "유령의집 아케이드", emoji: "👻", diff: "상", len: 12300, sky: ["#1e1b4b", "#2e1065", "#0a0118"] }
 };
-export const ARCADE_TRIES = 2, ARCADE_LIMIT = 180, ORB_START = 5, ORB_MAX = 10;
+export const ARCADE_TRIES = 2, ARCADE_LIMIT = 180, ORB_START = 5, ORB_MAX = 20;
+// ⏰ a stage not finished within the 3:00 limit costs HP −50 ·
+// 🏆 the boss cleared = a 🎫 미션완료권 (usable in the revival)
+export const ARCADE_TIMEOUT_HP = 50;
+// 🎲 the arcade game is drawn by itself this many seconds after the arcade opens
+export const ARCADE_AUTO_PICK = 5;
+// ▶ …then START presses itself after a 3-second count
+export const ARCADE_AUTO_START = 3;
 export const CORNER_KINDS = { slot: { emoji: "🎰", label: "SLOT", tab: "arc:slot" }, casino: { emoji: "🃏", label: "CASINO", tab: "arc:casino" }, shop: { emoji: "🏪", label: "SHOP", tab: "shop:general" }, capture: { emoji: "🔍", label: "CAPTURE", tab: "emo:capture" } };
 export const ARCADE_KEYS = "← → 이동 · ↓ 엎드리기 / 아래로 헤엄 / 발판 내려가기 / 문 들어가기 · ↑ 점프 · ↑↑ 2단 점프 (물속: 위로 헤엄) · SPACE 구슬 발사";
 
@@ -246,7 +254,7 @@ export function arcadeView(pid, t, opts) {
     const el = h("div.arc-root.game-screen", h("div.arc-top", topName, topDiff, h("span", `기회 ${Math.max(0, ARCADE_TRIES - A.tries)} / ${ARCADE_TRIES}`)), h("div.arc-stage", canvas, panel), hud, h("p.arc-keys", "🎮 ", ARCADE_KEYS));
     const face = new Image(); face.crossOrigin = "anonymous"; face.src = Store.player(pid)?.profile_image || "";
     const keys = {};
-    let lv = null, P = null, shots = [], foeShots = [], coins = [], cash = [], fx = [], cam = 0, time = 0, raf = 0, last = 0, running = false, mode = "menu", boss = null, stopped = false, bossTimers = null;
+    let lv = null, P = null, shots = [], foeShots = [], coins = [], cash = [], fires = [], fx = [], cam = 0, time = 0, raf = 0, last = 0, running = false, mode = "menu", boss = null, stopped = false, bossTimers = null;
     const setBusy = b => el.classList.toggle("busy", b);
 
     // ---- input
@@ -280,11 +288,23 @@ export function arcadeView(pid, t, opts) {
         mode = "menu"; setBusy(false);
         const ids = Object.keys(ARCADE_STAGES);
         const cards = ids.map(id => { const x = ARCADE_STAGES[id]; return h("div.arc-pick", { "data-id": id }, h("div.arc-pick-ico", x.emoji), h("b", x.name), h("small", `난이도 ${x.diff}`)); });
-        const msg = h("p.arc-pick-msg", "🎲 아케이드 뽑기 버튼을 누르면 위 4종 중 하나가 랜덤으로 뽑힙니다.");
-        const btn = h("button.btn.gold.big", { onclick: () => { btn.disabled = true; btn.textContent = "🎲 뽑는 중…"; rollStage(ids, cards, msg); } }, "🎲 아케이드 뽑기");
+        const msg = h("p.arc-pick-msg", `🎲 ${ARCADE_AUTO_PICK}초 뒤에 위 4종 중 하나가 자동으로 뽑힙니다.`);
+        // no button: a 5-second countdown, then the roulette runs by itself
+        const btn = h("div.arc-auto", h("b.arc-auto-n", String(ARCADE_AUTO_PICK)), h("small", "초 뒤 자동 뽑기"));
+        let left = ARCADE_AUTO_PICK;
+        const cd = setInterval(() => {
+            if (stopped || mode !== "menu" || A.stage) { clearInterval(cd); return; }
+            if (!document.body.contains(btn)) return; // the arcade tab is not on screen: wait
+            left--;
+            btn.querySelector(".arc-auto-n").textContent = String(Math.max(0, left));
+            tone(left > 0 ? 660 : 990, 0.06, "square", 0.025);
+            if (left <= 0) { clearInterval(cd); btn.replaceChildren(h("b", "🎲 뽑는 중…")); rollStage(ids, cards, msg); }
+        }, 1000);
         showPanel(h("div.arc-card.arc-pick-card", h("h3", "🕹️ 아케이드 게임"), h("small", `길이 약 2분 30초 · 제한 시간 3분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
             h("div.arc-pick-grid", cards), msg,
             h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 스테이지마다 🎰 🃏 🏪 🔍 중 2개 코너 문이 있어요. 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
+            h("div.arc-warn", h("b", "⚠️ 경고: 스테이지 제한 시간 3분"), h("span", `시간 안에 🏰 보스성에 들어가지 못하면 ❤ HP −${ARCADE_TIMEOUT_HP} (+ 기회 1번 소모 · HP가 바닥나면 사망)`)),
+            h("p.small.arc-rule", "🏆 보스 클리어 보상: 🎫 미션완료권 (패자부활 미션 통과)"),
             btn));
     }
     async function rollStage(ids, cards, msg) {
@@ -307,18 +327,37 @@ export function arcadeView(pid, t, opts) {
         Sound.bonus();
         drawTop(); draw0();
         await sleep(1500);
-        if (!stopped) menu();
+        if (!stopped) { menu(); autoStart(); }
     }
     function menu() {
         if (!A.stage) return pickStage();
         mode = "menu"; setBusy(false);
-        if (A.boss) return showPanel(h("div.arc-card.win", h("div.arc-big", "🏆"), h("h3", "ARCADE CLEAR!"), h("p", "보스를 무찔렀습니다! 미션 \"보스맵 clear\" 성공.")));
+        if (A.boss) return showPanel(h("div.arc-card.win", h("div.arc-big", "🏆"), h("h3", "ARCADE CLEAR!"), h("p", "보스를 무찔렀습니다! 보상 🎫 미션완료권을 받았습니다 (🎒 인벤토리에서 사용).")));
         if (A.tries >= ARCADE_TRIES) return showPanel(h("div.arc-card.lose", h("div.arc-big", "💀"), h("h3", "GAME OVER"), h("p", "아케이드 기회 2번을 모두 썼습니다.")));
         showPanel(h("div.arc-card",
             h("div.arc-big", S.emoji), h("h3", A.castle ? "🏰 보스와의 대결" : S.name), h("small", `난이도 ${S.diff} · 길이 약 2분 30초 · 제한 시간 3분 · 남은 기회 ${ARCADE_TRIES - A.tries}번`),
-            h("div.arc-keys-box", h("b", "조종키"), h("div", "⬅️ ➡️ 이동"), h("div", "⬆️ 점프 · ⬆️⬆️ 공중에서 한 번 더 누르면 더 높이 2단 점프", S.water ? " (물속에서는 위로 헤엄 · 동작이 느려집니다)" : ""), h("div", "⬇️ 엎드리기 · 아래로 · 🚪 코너 문 들어가기"), h("div", "␣ SPACE 구슬 발사 (기본 5개 · 최대 10개 · 보스 HP −10)")),
+            h("div.arc-keys-box", h("b", "조종키"), h("div", "⬅️ ➡️ 이동"), h("div", "⬆️ 점프 · ⬆️⬆️ 공중에서 한 번 더 누르면 더 높이 2단 점프", S.water ? " (물속에서는 위로 헤엄 · 동작이 느려집니다)" : ""), h("div", "⬇️ 엎드리기 · 아래로 · 🚪 코너 문 들어가기"), h("div", `␣ SPACE 구슬 발사 (기본 ${ORB_START}개 · 최대 ${ORB_MAX}개 · 보스 HP −10)`)),
             h("p.small", "괴물과 부딪히면 HP −10 · 탄환 HP −5 · 밟거나 구슬로 처치! 스테이지마다 🎰 🃏 🏪 🔍 중 2개 코너 문이 있어요. 문 앞에서 ⬇️ — 이용하는 동안 시간이 멈춥니다."),
-            h("button.btn.gold.big", { onclick: () => A.castle ? startBoss() : startStage() }, A.castle ? "⚔️ 보스전 시작" : "▶ START")));
+            h("div.arc-warn", h("b", "⚠️ 경고: 스테이지 제한 시간 3분"), h("span", `시간 안에 🏰 보스성에 들어가지 못하면 ❤ HP −${ARCADE_TIMEOUT_HP} (+ 기회 1번 소모 · HP가 바닥나면 사망)`)),
+            h("p.small.arc-rule", "🏆 보스 클리어 보상: 🎫 미션완료권 (패자부활 미션 통과)"),
+            h("button.btn.gold.big.arc-start", { onclick: () => A.castle ? startBoss() : startStage() }, A.castle ? "⚔️ 보스전 시작" : "▶ START")));
+    }
+    // ▶ after the automatic draw: a 3-second count, then START is pressed by itself
+    function autoStart() {
+        let left = ARCADE_AUTO_START;
+        const tick = () => {
+            if (stopped || mode !== "menu") return;
+            const btn = panel.querySelector(".arc-start");
+            if (!btn) return;
+            if (!document.body.contains(btn)) { setTimeout(tick, 500); return; } // the arcade tab is not on screen: wait
+            if (left <= 0) { btn.textContent = "▶ START!"; tone(1320, 0.12, "square", 0.04); btn.click(); return; }
+            btn.textContent = `▶ START — ${left}`;
+            btn.classList.remove("arc-count"); void btn.offsetWidth; btn.classList.add("arc-count");
+            tone(780, 0.07, "square", 0.03);
+            left--;
+            setTimeout(tick, 1000);
+        };
+        tick();
     }
 
     // ---- stage
@@ -334,9 +373,9 @@ export function arcadeView(pid, t, opts) {
     function startBoss() {
         lv = { kind: "boss", S, L: W, ground: [{ x0: 0, x1: W }], plats: [{ x: 360, y: 280, w: 240, h: 18 }], blocks: [], mons: [], items: [], doors: [], water: [], castle: null };
         P = { ...newPlayer(80, GY - 60), orbs: Math.max(P?.orbs ?? ORB_START, ORB_START) };
-        boss = { x: 720, y: GY - 150, w: 120, h: 150, vx: 0, vy: 0, hp: 100, inv: 0, ground: true, reel: [0, 0, 0], next: 1.2 };
-        bossTimers = { coin: 2.5, cash: 5, ammo: 7 };
-        shots = []; foeShots = []; coins = []; cash = []; fx = []; cam = 0; mode = "boss";
+        boss = { x: 720, y: GY - 150, w: 120, h: 150, vx: 0, vy: 0, hp: 100, inv: 0, ground: true, reel: [0, 0, 0], next: 1.2, ang: 0, spin: 0 };
+        bossTimers = { coin: 2.5, cash: 5, ammo: 7, spin: rnd(6, 9) };
+        shots = []; foeShots = []; coins = []; cash = []; fires = []; fx = []; cam = 0; mode = "boss";
         hidePanel(); go();
         Sound.boom();
         canvas.focus();
@@ -349,12 +388,17 @@ export function arcadeView(pid, t, opts) {
     function go() { running = true; setBusy(true); last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); music(true); }
     function halt() { running = false; cancelAnimationFrame(raf); for (const k in keys) keys[k] = false; music(false); }
 
-    function fail(why) {
+    function fail(why, timeout = false) {
         halt(); setBusy(false);
         A.tries++; Store.saveSeason(true); opts.onChange?.();
         Sound.lose();
         el.querySelector(".arc-top span:last-child").textContent = `기회 ${Math.max(0, ARCADE_TRIES - A.tries)} / ${ARCADE_TRIES}`;
-        showPanel(h("div.arc-card.lose", h("div.arc-big", "💥"), h("h3", why), h("p", A.tries >= ARCADE_TRIES ? "아케이드 기회를 모두 썼습니다." : `기회가 1번 소모되었습니다. 남은 기회 ${ARCADE_TRIES - A.tries}번`),
+        // ⏰ the stage not finished in time: HP −50 on top of the lost try
+        if (timeout) {
+            const r = opts.hurt(ARCADE_TIMEOUT_HP);
+            if (r?.dead) { showPanel(h("div.arc-card.lose", h("div.arc-big", "☠️"), h("h3", "⏰ 시간 초과 — HP −" + ARCADE_TIMEOUT_HP), h("p", "HP가 바닥나 사망했습니다."))); setTimeout(() => opts.onDead?.(), 1200); return; }
+        }
+        showPanel(h("div.arc-card.lose", h("div.arc-big", "💥"), h("h3", why), h("p", timeout ? `❤ HP −${ARCADE_TIMEOUT_HP} · ` : "", A.tries >= ARCADE_TRIES ? "아케이드 기회를 모두 썼습니다." : `기회가 1번 소모되었습니다. 남은 기회 ${ARCADE_TRIES - A.tries}번`),
             A.tries < ARCADE_TRIES ? h("button.btn.gold.big", { onclick: startStage }, "🔁 다시 도전") : null));
     }
     function hurt(n) {
@@ -396,7 +440,7 @@ export function arcadeView(pid, t, opts) {
     }
     const inWater = (x, y) => lv.water.some(w => x > w.x0 && x < w.x1 && y > w.top);
     function update(dt) {
-        if (mode === "stage") { time -= dt; if (time <= 0) return fail("⏰ 시간 초과!"); }
+        if (mode === "stage") { time -= dt; if (time <= 0) return fail("⏰ 시간 초과!", true); }
         P.inv = Math.max(0, P.inv - dt); P.cool = Math.max(0, P.cool - dt); P.jumpQ = Math.max(0, P.jumpQ - dt); P.stun = Math.max(0, P.stun - dt);
         if (P.ground || P.water) P.dbl = false; // the 2nd jump comes back on landing
         P.water = inWater(P.x + P.w / 2, P.y + P.h / 2);
@@ -595,7 +639,7 @@ export function arcadeView(pid, t, opts) {
         halt(); setBusy(false);
         A.castle = true; Store.saveSeason(true); opts.onChange?.();
         Sound.fanfare(); confetti(60, ["🏰", "✨", "🪙"]);
-        showPanel(h("div.arc-card.win", h("div.arc-big", "🏰"), h("h3", "아케이드 성공! 보스성 입장"), h("p", "보스: 거대한 슬롯머신 (HP 100). 밟거나 구슬로 공격! 💵 돈다발에 맞으면 3초 동안 못 움직이고, 🪙 코인은 밟거나 구슬로 없애지 않으면 계속 튕겨 다닙니다."),
+        showPanel(h("div.arc-card.win", h("div.arc-big", "🏰"), h("h3", "아케이드 성공! 보스성 입장"), h("p", "보스: 거대한 슬롯머신 (HP 100). 밟거나 구슬로 공격! 💵 돈다발을 잡으면 개당 +100G (내 원래 골드로!) · 🪙 코인은 밟거나 구슬로 없애지 않으면 계속 튕겨 다닙니다 · 🔥 불 코인은 3초 뒤 불덩이로 떨어집니다 (닿으면 HP −3) · 🌀 보스가 회전하며 방 안을 빠르게 튕겨 다니기도 합니다!"),
             h("button.btn.gold.big", { onclick: startBoss }, "⚔️ 보스전 시작")));
     }
 
@@ -604,16 +648,40 @@ export function arcadeView(pid, t, opts) {
         const B = boss;
         B.inv = Math.max(0, B.inv - dt);
         B.reel = B.reel.map((r, i) => r + dt * (6 + i * 2));
-        // crazy jumps all over the room
-        B.next -= dt;
-        if (B.ground && B.next <= 0) { B.vy = -rnd(620, 980); B.vx = (rnd(60, W - 60 - B.w) - B.x) * rnd(0.9, 1.4); B.ground = false; B.next = rnd(0.6, 1.8); tone(140, 0.2, "square", 0.05, 0, 120); }
-        B.vy += 1500 * dt; B.x += B.vx * dt; B.y += B.vy * dt;
-        if (B.x < 0) { B.x = 0; B.vx = Math.abs(B.vx); } if (B.x + B.w > W) { B.x = W - B.w; B.vx = -Math.abs(B.vx); }
-        if (B.y + B.h >= GY) { B.y = GY - B.h; B.vy = 0; B.vx *= 0.2; if (!B.ground) { Sound.hit(); fx.push({ txt: "💥", x: B.x + B.w / 2, y: GY - 10, t: 0.4, c: "#fff" }); } B.ground = true; }
+        // 🌀 spin attack: now and then the boss spins round and round (random direction / speed)
+        // and ricochets fast all over the boss room — walls, floor and ceiling
+        bossTimers.spin -= dt;
+        if (B.spin <= 0 && bossTimers.spin <= 0 && B.ground) {
+            B.spin = rnd(3.2, 4.6); B.spinDir = Math.random() < 0.5 ? -1 : 1; B.spinRate = rnd(9, 16);
+            const a = rnd(-2.6, -0.5), sp = rnd(620, 820);
+            B.vx = Math.cos(a) * sp * (Math.random() < 0.5 ? -1 : 1); B.vy = Math.sin(a) * sp; B.ground = false;
+            Sound.boom(); fx.push({ txt: "🌀 회전 공격!", x: B.x, y: B.y - 16, t: 1.2, c: "#f472b6" });
+        }
+        if (B.spin > 0) {
+            B.spin -= dt;
+            B.ang += B.spinDir * B.spinRate * dt;
+            if (Math.random() < dt * 1.2) { B.spinDir = -B.spinDir; B.spinRate = rnd(8, 18); } // turns the other way at random
+            B.x += B.vx * dt; B.y += B.vy * dt;
+            if (B.x < 0) { B.x = 0; B.vx = Math.abs(B.vx); tone(220, 0.06, "square", 0.04); }
+            if (B.x + B.w > W) { B.x = W - B.w; B.vx = -Math.abs(B.vx); tone(220, 0.06, "square", 0.04); }
+            if (B.y < 10) { B.y = 10; B.vy = Math.abs(B.vy); tone(260, 0.06, "square", 0.04); }
+            if (B.y + B.h > GY) { B.y = GY - B.h; B.vy = -Math.abs(B.vy); Sound.hit(); }
+            if (B.spin <= 0) { B.spin = 0; B.ang = 0; B.vx *= 0.3; B.vy = 0; bossTimers.spin = rnd(7, 11); B.next = rnd(0.8, 1.6); }
+        } else {
+            // crazy jumps all over the room
+            B.next -= dt;
+            if (B.ground && B.next <= 0) { B.vy = -rnd(620, 980); B.vx = (rnd(60, W - 60 - B.w) - B.x) * rnd(0.9, 1.4); B.ground = false; B.next = rnd(0.6, 1.8); tone(140, 0.2, "square", 0.05, 0, 120); }
+            B.vy += 1500 * dt; B.x += B.vx * dt; B.y += B.vy * dt;
+            if (B.x < 0) { B.x = 0; B.vx = Math.abs(B.vx); } if (B.x + B.w > W) { B.x = W - B.w; B.vx = -Math.abs(B.vx); }
+            if (B.y + B.h >= GY) { B.y = GY - B.h; B.vy = 0; B.vx *= 0.2; if (!B.ground) { Sound.hit(); fx.push({ txt: "💥", x: B.x + B.w / 2, y: GY - 10, t: 0.4, c: "#fff" }); } B.ground = true; }
+        }
         // throws a coin now and then — coins bounce around until stomped / shot
         bossTimers.coin -= dt;
-        if (bossTimers.coin <= 0) { bossTimers.coin = rnd(2.2, 3.6); const cx = B.x + B.w / 2, cy = B.y + 30, d = Math.hypot(P.x - cx, P.y - cy) || 1; coins.push({ x: cx, y: cy, vx: (P.x - cx) / d * 340, vy: (P.y - cy) / d * 340 - 120, r: 13 }); Sound.coin(); }
+        if (bossTimers.coin <= 0) { bossTimers.coin = rnd(2.2, 3.6); const cx = B.x + B.w / 2, cy = B.y + 30, d = Math.hypot(P.x - cx, P.y - cy) || 1; coins.push({ x: cx, y: cy, vx: (P.x - cx) / d * 340, vy: (P.y - cy) / d * 340 - 120, r: 13, fire: Math.random() < 0.4, age: 0 }); Sound.coin(); }
         for (const c of coins) {
+            c.age = (c.age || 0) + dt;
+            // 🔥 a fire coin bounces for 3 s, then turns into a fireball that drops onto the floor / a platform
+            if (c.fire && c.age >= 3) { c.dead = true; fires.push({ x: c.x, y: c.y, vy: 60, r: 15, land: null }); tone(180, 0.3, "sawtooth", 0.04, 0, -80); noise(0.25, 0.05); continue; }
             c.vy += 600 * dt; c.x += c.vx * dt; c.y += c.vy * dt;
             if (c.x < c.r) { c.x = c.r; c.vx = Math.abs(c.vx); } if (c.x > W - c.r) { c.x = W - c.r; c.vx = -Math.abs(c.vx); }
             if (c.y > GY - c.r) { c.y = GY - c.r; c.vy = -Math.max(380, Math.abs(c.vy) * 0.95); } if (c.y < c.r) { c.y = c.r; c.vy = Math.abs(c.vy); }
@@ -625,17 +693,38 @@ export function arcadeView(pid, t, opts) {
         // 💵 money bundles rain from the top: a hit = frozen for 3 s
         bossTimers.cash -= dt;
         if (bossTimers.cash <= 0) { bossTimers.cash = rnd(4.5, 7); for (let i = 0; i < rint(3, 5); i++) cash.push({ x: rnd(30, W - 60), y: -rnd(20, 200), vy: rnd(160, 260), w: 40, h: 24 }); tone(1000, 0.2, "triangle", 0.03); }
-        for (const c of cash) { c.y += c.vy * dt; if (hit(P, c)) { c.dead = true; P.stun = 3; P.vx = 0; Sound.stop(); fx.push({ txt: "💫 3초 기절!", x: P.x, y: P.y - 20, t: 1.2, c: "#fbbf24" }); } if (c.y > GY) c.dead = true; }
+        // 💵 a bundle caught = +100G into the player's OWN gold (not the revival gold)
+        for (const c of cash) { c.y += c.vy * dt; if (hit(P, c)) { c.dead = true; const gg = opts.gold?.(100) ?? 0; Sound.coin(); fx.push({ txt: gg ? `💰 +${gg}G (내 골드)` : "💵", x: P.x, y: P.y - 20, t: 1.2, c: "#fde047" }); } if (c.y > GY) c.dead = true; }
         cash = cash.filter(c => !c.dead);
+        // 🔥 fireballs: fall onto the floor or the middle platform, burn there for 2 s, then go out · touch = HP −3
+        for (const f of fires) {
+            if (f.land == null) {
+                f.vy = Math.min(700, f.vy + 1300 * dt); const ny = f.y + f.vy * dt;
+                const pl = lv.plats.find(p => f.x > p.x && f.x < p.x + p.w && f.y + f.r <= p.y + 2 && ny + f.r >= p.y);
+                if (pl) { f.y = pl.y - f.r; f.land = 2; Sound.hit(); }
+                else if (ny + f.r >= GY) { f.y = GY - f.r; f.land = 2; Sound.hit(); }
+                else f.y = ny;
+            } else { f.land -= dt; if (f.land <= 0) f.dead = true; }
+            f.t = (f.t || 0) + dt;
+            if (!f.dead && !f.hitDone && hit(P, { x: f.x - f.r, y: f.y - f.r, w: f.r * 2, h: f.r * 2 })) { f.hitDone = true; fireHurt(3); }
+        }
+        fires = fires.filter(f => !f.dead);
         // orb refills now and then
         bossTimers.ammo -= dt;
         if (bossTimers.ammo <= 0) { bossTimers.ammo = rnd(7, 10); lv.items.push({ kind: Math.random() < 0.7 ? "orb" : "heart", x: rnd(60, W - 90), y: rnd(200, 330), w: 28, h: 28 }); }
         // stomp / orbs hurt the boss · touching it hurts the player
         if (hit(P, B)) {
-            if (P.vy > 60 && P.y + P.h - B.y < 30) { P.vy = -560; bossHit(10, "STOMP!"); }
+            if (P.vy > 60 && P.y + P.h - B.y < 30 && !(B.spin > 0)) { P.vy = -560; bossHit(10, "STOMP!"); }
             else hurt(10);
         }
         for (const s of shots) if (s.life > 0 && hit({ x: s.x - s.r, y: s.y - s.r, w: s.r * 2, h: s.r * 2 }, B)) { s.life = 0; bossHit(10, "−10"); }
+    }
+    // 🔥 a fireball burns once per fireball (even while blinking)
+    function fireHurt(n) {
+        Sound.hit();
+        fx.push({ txt: `🔥 ❤ −${n}`, x: P.x, y: P.y - 10, t: 0.9, c: "#fb923c" });
+        const r = opts.hurt(n);
+        if (r?.dead) { halt(); setBusy(false); showPanel(h("div.arc-card.lose", h("div.arc-big", "☠️"), h("h3", "HP가 바닥났습니다…"), h("p", "불덩이에 타서 사망했습니다."))); setTimeout(() => opts.onDead?.(), 1200); }
     }
     function bossHit(n, txt) {
         if (boss.inv > 0) return;
@@ -649,7 +738,7 @@ export function arcadeView(pid, t, opts) {
         Sound.jackpot(); confetti(160, ["🪙", "💰", "🎰", "🏆"]);
         draw();
         await sleep(400);
-        showPanel(h("div.arc-card.win", h("div.arc-big", "🏆"), h("h3", "BOSS CLEAR!"), h("p", "거대한 슬롯머신 보스를 무찔렀습니다! 아케이드 게임 완료.")));
+        showPanel(h("div.arc-card.win", h("div.arc-big", "🏆"), h("h3", "BOSS CLEAR!"), h("p", "거대한 슬롯머신 보스를 무찔렀습니다! 아케이드 게임 완료."), h("p", h("b", "🎁 보상: 🎫 미션완료권 1장"), " — 🎒 인벤토리에서 사용하면 패자부활 미션이 통과됩니다.")));
         opts.onWin?.();
     }
 
@@ -748,6 +837,7 @@ export function arcadeView(pid, t, opts) {
         const B = boss;
         g.save();
         if (B.inv > 0 && Math.floor(B.inv * 20) % 2) g.globalAlpha = 0.5;
+        if (B.ang) { g.translate(B.x + B.w / 2, B.y + B.h / 2); g.rotate(B.ang); g.translate(-(B.x + B.w / 2), -(B.y + B.h / 2)); }
         // cabinet
         const grd = g.createLinearGradient(B.x, B.y, B.x + B.w, B.y);
         grd.addColorStop(0, "#b91c1c"); grd.addColorStop(0.5, "#ef4444"); grd.addColorStop(1, "#7f1d1d");
@@ -763,7 +853,19 @@ export function arcadeView(pid, t, opts) {
         g.fillStyle = "#facc15"; g.fillRect(B.x + B.w - 4, B.y + 50, 8, 40); g.beginPath(); g.arc(B.x + B.w, B.y + 46, 9, 0, 7); g.fill();
         g.textAlign = "left"; g.globalAlpha = 1;
         g.restore();
-        for (const c of coins) drawE(g, "🪙", c.x, c.y, c.r * 2.1);
+        for (const c of coins) {
+            drawE(g, "🪙", c.x, c.y, c.r * 2.1);
+            if (c.fire) { // 🔥 drawn on the coin · flickers just before it turns into a fireball
+                const warn = c.age > 2 && Math.floor(c.age * 10) % 2;
+                drawE(g, "🔥", c.x, c.y - 1, c.r * (warn ? 1.6 : 1.2));
+            }
+        }
+        for (const f of fires) {
+            const fl = 1 + Math.sin((f.t || 0) * 18) * 0.12, fade = f.land != null ? Math.min(1, f.land / 0.5) : 1;
+            g.globalAlpha = fade; g.shadowColor = "#f97316"; g.shadowBlur = 18;
+            drawE(g, "🔥", f.x, f.y - 4, f.r * 2.4 * fl);
+            g.shadowBlur = 0; g.globalAlpha = 1;
+        }
         for (const c of cash) drawE(g, "💵", c.x + c.w / 2, c.y + c.h / 2, 30);
     }
     function drawHud() {
@@ -792,6 +894,6 @@ export function arcadeView(pid, t, opts) {
         lv = buildLevel(A.stage); P = newPlayer(80, GY - 40); draw();
     }
     // test hook (admin map test / debugging): warp along the stage, jump to the boss
-    el.arcDebug = { get P() { return P; }, get lv() { return lv; }, get boss() { return boss; }, warp: x => { if (P) { P.x = x; P.y = GY - 120; } }, toBoss: () => { A.castle = true; startBoss(); } };
+    el.arcDebug = { get P() { return P; }, get lv() { return lv; }, get boss() { return boss; }, get coins() { return coins; }, get fires() { return fires; }, warp: x => { if (P) { P.x = x; P.y = GY - 120; } }, toBoss: () => { A.castle = true; startBoss(); }, setTime: s => { time = s; }, killBoss: () => { if (boss) bossHit(999, "TEST"); } };
     return { el, pause, resume, stop, get mode() { return mode; } };
 }

@@ -27,14 +27,25 @@ export const REL_ORDER = ["friend", "family", "acq", "etc"];
 export const relations = () => (C().friends ||= []);
 export const relationOf = (a, b) => relations().find(r => (same(r.a, a) && same(r.b, b)) || (same(r.a, b) && same(r.b, a))) || null;
 export const friendsOf = pid => relations().filter(r => same(r.a, pid) || same(r.b, pid)).map(r => ({ ...r, other: same(r.a, pid) ? +r.b : +r.a }));
+// limits: a player adds at most 2 relations per season (친구 · 가족 · 지인 · 기타 together),
+// and has at most 20 of each kind
+export const ADD_PER_SEASON = 2, MAX_PER_REL = 20;
+const curSeason = () => S()?.number ?? null;
+export const addsThisSeason = pid => relations().filter(r => same(r.by ?? r.a, pid) && r.season != null && r.season === curSeason()).length;
+export const relCount = (pid, rel, skip = null) => friendsOf(pid).filter(r => r.rel === rel && !(skip != null && same(r.other, skip))).length;
 // one side adds → both sides are registered at once (a pair has one relation; adding again changes it)
 export function addRelation(a, b, rel, note = "") {
     if (same(a, b)) return { ok: false, why: "자기 자신은 추가할 수 없습니다" };
     if (!RELS[rel]) return { ok: false, why: "관계를 고르세요" };
     note = rel === "etc" ? String(note || "").trim().slice(0, 30) : "";
     if (rel === "etc" && !note) return { ok: false, why: "기타 관계의 설명을 입력하세요" };
+    const had = relationOf(a, b);
+    if (!had && addsThisSeason(a) >= ADD_PER_SEASON) return { ok: false, why: `친구 추가는 시즌당 최대 ${ADD_PER_SEASON}명까지입니다 (친구 · 가족 · 지인 · 기타 통틀어)` };
+    if (relCount(a, rel, b) >= MAX_PER_REL) return { ok: false, why: `${RELS[rel].label}은(는) 최대 ${MAX_PER_REL}명까지 추가할 수 있습니다` };
+    if (relCount(b, rel, a) >= MAX_PER_REL) return { ok: false, why: `${name(b)}님의 ${RELS[rel].label}이(가) 이미 ${MAX_PER_REL}명입니다` };
     const list = relations().filter(r => !((same(r.a, a) && same(r.b, b)) || (same(r.a, b) && same(r.b, a))));
-    list.push({ a: +a, b: +b, rel, note, season: S()?.number ?? null, at: new Date().toISOString() });
+    // changing an existing relation keeps who added it and when (it is not a new add)
+    list.push(had ? { ...had, rel, note } : { a: +a, b: +b, by: +a, rel, note, season: curSeason(), at: new Date().toISOString() });
     C().friends = list;
     log(`👫 ${name(a)} ↔ ${name(b)} ${RELS[rel].label}${note ? ` (${note})` : ""} 등록`, [a, b]);
     save(); Store.saveSeason?.();
@@ -47,6 +58,11 @@ export function removeRelation(a, b) {
 
 // ================================================================ 💖 / 👎 comment reactions
 export const postById = id => (C().posts || []).find(p => p.id === id);
+// 💖 + 👎 together: one standing press per player per season — taking it back frees it again
+// (counted from the reactions themselves: a heart / dislike pressed this season and still on a comment)
+const seasonReacts = (pid, skipPost = null) => (C().posts || []).filter(p => p.id !== skipPost)
+    .some(p => [...(p.likes || []), ...(p.dislikes || [])].some(r => same(r.pid, pid) && r.season != null && r.season === curSeason()));
+export const reactedThisSeason = (pid, postId = null) => seasonReacts(pid, postId);
 export function react(pid, postId, kind) { // kind: "likes" | "dislikes" — pressing again takes it back
     const p = postById(postId);
     if (!p) return { ok: false, why: "코멘트를 찾을 수 없습니다" };
@@ -54,9 +70,11 @@ export function react(pid, postId, kind) { // kind: "likes" | "dislikes" — pre
     const other = kind === "likes" ? "dislikes" : "likes";
     p[kind] ||= []; p[other] ||= [];
     const had = p[kind].some(r => same(r.pid, pid));
+    // a new press (not a take-back, not switching on this same comment) while another one stands this season → no
+    if (!had && seasonReacts(pid, p.id)) return { ok: false, why: "하트 · 싫어요는 시즌당 1회만 누를 수 있습니다 (다른 코멘트에 누른 것을 취소하면 다시 누를 수 있어요)" };
     p[kind] = p[kind].filter(r => !same(r.pid, pid));
     p[other] = p[other].filter(r => !same(r.pid, pid)); // a heart and a dislike never together
-    if (!had) p[kind].push({ pid: +pid, season: S()?.number ?? null, at: new Date().toISOString() });
+    if (!had) p[kind].push({ pid: +pid, season: curSeason(), at: new Date().toISOString() });
     save();
     return { ok: true, on: !had };
 }

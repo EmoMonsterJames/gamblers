@@ -109,14 +109,15 @@ export function marchDone() { const R = rv(); if (R?.phase === "march") { R.phas
 
 // ---------------------------------------------------------------- missions (one drawn at random)
 export const REVIVAL_MISSIONS = [
-    { id: "rv_slot100", type: "rv_slot100", v: 100000, spins: 100, icon: "🎰", text: "🎰 슬롯 게임으로 100번 안에 100,000골드 이상 벌기" },
-    { id: "rv_arcade", type: "rv_arcade", icon: "🕹️", text: "🕹️ Arcade 맵에서 보스맵 clear하기" },
-    { id: "rv_casino", type: "casino_net", v: 10000, icon: "🃏", text: "🃏 카지노 게임으로 10,000골드 이상 벌기" },
-    { id: "rv_capture", type: "rv_capture", mtype: "?", icon: "🔍", text: "🔍 랜덤으로 선택된 속성의 이모몬스터 캡쳐하기" },
-    { id: "rv_bonus20", type: "rv_slotbonus", v: 20, icon: "🎁", text: "🎁 아무 슬롯게임에서나 보너스 20번 이상 터뜨리기" },
-    { id: "rv_spell", type: "spell", icon: "🐝", text: "🐝 Spelling Bee 완성하기" },
-    { id: "rv_letters", type: "rv_letters", letters: "?", icon: "🔤", text: "🔤 랜덤으로 선택된 서로 다른 알파벳 카드 / 알파벳권 3개 제출하기" }
+    { id: "rv_slot100", type: "rv_slot100", v: 50000, spins: 100, icon: "🎰", text: "🎰 슬롯 게임으로 100번 안에 50,000골드 이상 벌기" },
+    { id: "rv_casino", type: "casino_net", v: 5000, icon: "🃏", text: "🃏 카지노 게임으로 5,000골드 이상 벌기" },
+    { id: "rv_win15", type: "slot_wins", v: 15, icon: "🎉", text: "🎉 아무 슬롯게임에서나 Win 15번 이상 터뜨리기" },
+    { id: "rv_capture1", type: "rv_capture1", icon: "🔍", text: "🔍 이모몬스터 한 마리 캡쳐하기" },
+    { id: "rv_bonus5", type: "rv_slotbonus", v: 5, icon: "🎁", text: "🎁 슬롯 게임으로 보너스 5번 이상 터뜨리기" },
+    { id: "rv_npc", type: "rv_npc", icon: "🛡️", text: "🛡️ NPC 공격을 1회 받고 살아남기" }
 ];
+// 🔄 every Survival Land map: a 5-minute turn · a pass to another Survival Land map only after 2:00 on the current one
+export const SURVIVAL_SECONDS = 300, PASS_WAIT = 120;
 export function setRevivalMission(base) {
     const s = S(), R = rv();
     const m = { ...base, revival: true };
@@ -139,11 +140,15 @@ export function setRevivalMission(base) {
 
 // ---------------------------------------------------------------- mission checks (season.js missionMet / missionProgress)
 const capOk = (m, st) => (st.caught || []).some(types => types.some(t => String(t).toLowerCase() === String(m.mtype).toLowerCase()));
+// 🛡️ NPC attacks that landed this turn (blocked ones never count)
+export const npcHits = st => (st.npc || []).filter(x => x.harm).length;
 export function revivalMet(m, st) {
     switch (m.type) {
         case "rv_slot100": return !!st.r100;
         case "rv_arcade": return !!st.arcadeBoss;
         case "rv_capture": return capOk(m, st);
+        case "rv_capture1": return (st.caught || []).length >= 1;
+        case "rv_npc": return npcHits(st) >= 1;
         case "rv_slotbonus": return (st.slotBonus || 0) >= m.v;
         case "rv_letters": return !!st.lettersOk;
     }
@@ -152,9 +157,11 @@ export function revivalMet(m, st) {
 export function revivalProgress(m, st) {
     const met = revivalMet(m, st);
     switch (m.type) {
+        case "rv_capture1": return { cur: met ? 1 : 0, goal: 1, label: met ? "🔍 이모몬스터 포획 성공!" : "🔍 EmoMon Capture에서 아무 몬스터나 1마리 잡으세요" };
+        case "rv_npc": return { cur: met ? 1 : 0, goal: 1, label: met ? "🛡️ NPC 공격을 받고 살아남았다! (턴이 끝날 때까지 살아 있어야 성공)" : "🛡️ NPC 공격을 1번 맞고 살아남으세요 (Block 권으로 막으면 인정 안 됨)" };
         case "rv_slot100": {
             const sp = st.spins || 0;
-            if (met) return { cur: 1, goal: 1, label: "🎰 100번 안에 100,000G 달성!" };
+            if (met) return { cur: 1, goal: 1, label: `🎰 100번 안에 ${m.v.toLocaleString()}G 달성!` };
             if (sp >= m.spins) return { cur: 0, goal: 1, label: `스핀 ${sp}회 — 100번 안에 달성하지 못했습니다 (실패)` };
             return { cur: Math.max(0, st.slotNet || 0), goal: m.v, label: `슬롯 손익 ${Math.round(st.slotNet || 0).toLocaleString()} / ${m.v.toLocaleString()} G · 스핀 ${sp} / ${m.spins}` };
         }
@@ -244,6 +251,15 @@ export function reconcile(pid) {
 }
 Store.beforeSave.push(() => { if (revivalOpen()) for (const pid of rv().pids || []) if (rv().inv?.[pid]) reconcile(pid); });
 
+// 🏆 the Arcade boss reward: a 🎫 미션완료권 that passes the revival mission (revival goods — gone when the revival ends)
+export function grantBossPass(pid) {
+    const R = rv(), ps = S().ps[pid], iv = R?.inv?.[pid];
+    if (iv) reconcile(pid);
+    ps.items.mission_pass = (ps.items.mission_pass || 0) + 1;
+    if (iv && inRevival(pid)) { iv.r["i:mission_pass"] = (iv.r["i:mission_pass"] || 0) + 1; iv.last = counts(ps); }
+    G.log(`🎫 ${G.name(pid)} 아케이드 보스 클리어 보상 — 미션완료권 획득!`);
+    Store.saveSeason(true);
+}
 // a purchase with revival gold: whatever `give` adds is revival inventory
 export function purchase(pid, give) {
     if (!inRevival(pid)) return give();
@@ -334,6 +350,14 @@ export function monToSteal(pid) {
 }
 // 🧑‍⚖️ Priest's donation comes out of the player's OWN gold (put aside during the revival)
 export const ownGold = pid => Math.max(0, Math.round(rv()?.saved?.[pid]?.money ?? S().ps[pid]?.money ?? 0));
+// 🕹️ arcade boss money goes to the player's OWN gold (it stays after the revival)
+export function addOwnGold(pid, g) {
+    const o = rv()?.saved?.[pid];
+    if (o && revivalOpen()) o.money = (o.money || 0) + g; else if (S()?.ps?.[pid]) S().ps[pid].money += g;
+    const t = S()?.turn;
+    if (t?.pid === pid) t.stats.arcadeCash = (t.stats.arcadeCash || 0) + g;
+    Store.saveSeason();
+}
 export function payOwnGold(pid, g) {
     const o = rv()?.saved?.[pid];
     const take = Math.max(0, Math.min(Math.round(g), ownGold(pid)));
@@ -413,13 +437,20 @@ export function finishRevival(winner = null) {
 }
 
 // ---------------------------------------------------------------- map passes
-// during the revival only Survival Land passes work; 🌪️ Disaster Casino: only with ≤ 5:00 left
-export const PASS_LATE = 300;
+// during the revival only Survival Land passes work · on any Survival Land map: only after 2:00 of play there
+// seconds still to wait before a pass works on the current Survival Land map (0 = free to go)
+export function survivalPassWait() {
+    const t = S()?.turn;
+    if (!t?.loc || LOC_BY_ID[t.loc]?.region !== "survival") return 0;
+    const since = (t.mapAt ?? t.remaining) - t.remaining;
+    return Math.max(0, PASS_WAIT - since);
+}
+export const survivalWaitText = () => { const w = survivalPassWait(); return `⏱️ Survival Land에서는 이 맵에서 2분이 지나야 다른 맵권을 쓸 수 있습니다 (${Math.floor(w / 60)}:${String(w % 60).padStart(2, "0")} 남음)`; };
 export function revivalPassBlock(itemId) {
     const t = S()?.turn;
     if (!revivalTurns() || !inRevival(t?.pid)) return isSurvivalPass(itemId) ? "🔄 Survival Land 맵권은 패자부활전에서만 쓸 수 있습니다" : null;
     if (!isSurvivalPass(itemId)) return "🔄 패자부활전 중에는 Survival Land 맵권만 쓸 수 있습니다";
-    if (LOC_BY_ID[t?.loc]?.passLate && (t.remaining ?? 0) > PASS_LATE) return "🌪️ Disaster Casino에서는 남은 시간이 5분 이하일 때만 다른 Survival Land 맵권을 쓸 수 있습니다";
+    if (survivalPassWait() > 0) return survivalWaitText();
     return null;
 }
 export const survivalPassOf = itemId => isSurvivalPass(itemId) ? ITEM_BY_ID[itemId] : null;

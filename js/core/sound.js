@@ -387,14 +387,75 @@ function bgmStart(name, vol = 0.5) {
     } catch { }
 }
 
+// ---------------------------------------------------------------- map ambience (a 2nd, quiet loop under the game BGM)
+// 🔄 Survival Land maps: a looping background track at ~¼ of the normal BGM volume
+let amb = null;
+function ambStop() {
+    if (!amb) return;
+    clearInterval(amb.timer);
+    try { amb.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.2); const g = amb.gain; setTimeout(() => g.disconnect(), 1200); } catch { }
+    amb = null;
+}
+function ambStart(key, song, vol = 0.12) {
+    if (amb?.key === key) return;
+    ambStop();
+    if (!song) return;
+    try {
+        const a = ac(), gain = a.createGain();
+        gain.gain.setValueAtTime(0.0001, a.currentTime);
+        gain.gain.linearRampToValueAtTime(muted ? 0 : vol, a.currentTime + 1.5);
+        gain.connect(a.destination);
+        const len = song.step || 60 / song.bpm / 4;
+        const b = amb = { key, gain, step: 0, next: a.currentTime + 0.1, vol };
+        b.timer = setInterval(() => {
+            if (amb !== b) return;
+            if (b.next < a.currentTime) b.next = a.currentTime + 0.05;
+            while (b.next < a.currentTime + 0.25) {
+                if (!muted && !bgm) song.play(a, gain, b.step, b.next, len); // a game's own BGM is playing: the map loop rests
+                b.step = (b.step + 1) % song.steps; b.next += len;
+            }
+        }, 60);
+    } catch { }
+}
+
+// 🦟 Mosquito Forest: a thin, quiet mosquito whine that comes and goes (a continuous voice, not a loop)
+let buzz = null;
+function buzzSet(on, vol = 0.010) {
+    if (!on) {
+        if (!buzz) return;
+        const b = buzz; buzz = null;
+        try { b.g.gain.setTargetAtTime(0, ctx.currentTime, 0.15); setTimeout(() => { try { b.o.stop(); b.l.stop(); b.l2.stop(); } catch { } }, 900); } catch { }
+        return;
+    }
+    if (buzz || muted) return;
+    try {
+        const a = ac(), o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain();
+        const l = a.createOscillator(), lg = a.createGain(), l2 = a.createOscillator(), lg2 = a.createGain();
+        o.type = "sawtooth"; o.frequency.value = 610;
+        l.frequency.value = 9; lg.gain.value = 35; l.connect(lg).connect(o.frequency);       // the wing flutter
+        f.type = "bandpass"; f.frequency.value = 1100; f.Q.value = 4;
+        l2.frequency.value = 0.23; lg2.gain.value = vol * 0.7; l2.connect(lg2).connect(g.gain); // closer … further
+        g.gain.value = 0;
+        o.connect(f).connect(g).connect(a.destination);
+        o.start(); l.start(); l2.start();
+        g.gain.setTargetAtTime(muted ? 0 : vol, a.currentTime, 0.6);
+        buzz = { o, l, l2, g, vol };
+    } catch { }
+}
+
 export const Sound = {
+    buzz: buzzSet,
     get muted() { return muted; },
     toggle() {
         muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { }
         if (bgm) try { bgm.gain.gain.setTargetAtTime(muted ? 0 : bgm.vol, ctx.currentTime, 0.05); } catch { }
+        if (amb) try { amb.gain.gain.setTargetAtTime(muted ? 0 : amb.vol, ctx.currentTime, 0.05); } catch { }
+        if (buzz && muted) buzzSet(false); // (the Mosquito Forest screen starts it again when sound comes back)
         return muted;
     },
     bgm: bgmStart, bgmStop,
+    amb: ambStart, ambStop,
+    get ambPlaying() { return amb?.key || null; },
     get bgmPlaying() { return bgm?.name || null; },
     tick() { tone(880 + Math.random() * 200, 0.03, "square", 0.025); },
     click() { tone(520, 0.05, "triangle", 0.05); },

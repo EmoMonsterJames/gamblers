@@ -47,6 +47,8 @@ import * as RV from "../game/revival.js";
 import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
 import { arcadeView, CORNER_KINDS } from "./arcade.js";
 import { stopSurvivalFx, survivalSide, infernoGate, INFERNO_FREE } from "./survivalLand.js";
+import { iceWrap } from "./survivalIce.js";
+import { setMapBackdrop, clearMapBackdrop } from "../ui/mapBackdrop.js";
 import { friendsView, helpView, voteStage } from "./social.js";
 import * as SO from "../game/social.js";
 
@@ -84,7 +86,7 @@ function arcadeFor(pid, t) {
         arcadeInst?.stop();
         cornerPaused = false;
         const call = k => (...a) => arcadeHooks[k]?.(...a);
-        arcadeInst = arcadeView(pid, t, { hp: call("hp"), hurt: call("hurt"), heal: call("heal"), onCorner: call("onCorner"), onResume: call("onResume"), onWin: call("onWin"), onDead: call("onDead"), onChange: call("onChange") });
+        arcadeInst = arcadeView(pid, t, { hp: call("hp"), hurt: call("hurt"), heal: call("heal"), gold: call("gold"), onCorner: call("onCorner"), onResume: call("onResume"), onWin: call("onWin"), onDead: call("onDead"), onChange: call("onChange") });
         arcadeTurn = t;
     }
     return arcadeInst;
@@ -107,6 +109,9 @@ function render() {
     // 🔄 패자부활전: Survival Land opens only while it runs · the 10th player out stops the season before the next round
     RV.syncSurvivalLand();
     stopSurvivalFx(); // flood / fog / statue overlays of the previous screen
+    if (!(s.turn?.loc && LOC_BY_ID[s.turn.loc]?.region === "survival")) Sound.ambStop(); // 🎵 Survival Land map loop only on those maps
+    // 🖼️ the page around the play screen: a scene that fits the map being played
+    if (s.turn?.loc && LOC_BY_ID[s.turn.loc]) setMapBackdrop(LOC_BY_ID[s.turn.loc]); else clearMapBackdrop();
     if (RV.revivalDue()) RV.openRevival();
     // 🗳️ 16 / 8 players left: this round is a vote instead of a mission (applies to the running season too)
     if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason) && SO.voteDue()) SO.startVote();
@@ -360,7 +365,7 @@ function preTurn(s) {
     if (RV.revivalTurns()) return h("div.preturn.rv-preturn",
         h("h2.stage-title", `🔄 패자부활 ${s.turnIdx + 1}번째 플레이어`, h("small", `${s.order.length}명 중`)),
         playerCard(pid, ps),
-        h("p.notice.center", `❤ FULL HP · 💰 패자부활전 골드 ${fmt(RV.REVIVAL_GOLD)}G · 🔒 Survival Land에서는 턴을 끝낼 수 없습니다 (10분 동안 플레이)`),
+        h("p.notice.center", `❤ FULL HP · 💰 패자부활전 골드 ${fmt(RV.REVIVAL_GOLD)}G · 🔒 Survival Land에서는 턴을 끝낼 수 없습니다 (5분 동안 플레이) · 미션 실패 = 바로 탈락 · 성공 + 생존 = 🏝️ 생존자 공간`),
         h("div.row.center",
             h("button.btn.gold.huge", { onclick: () => { G.startTurn(); G.enterRegion("survival"); render(); } }, "🔄 턴 시작 — Survival Land 맵 뽑기"),
             h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 패자부활 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
@@ -697,7 +702,7 @@ function locationStage(s) {
         petHelp: (what, amount, credit) => { G.notePetHelp(pid, what, amount, credit); side.replaceChildren(sideCard()); },
         // 🔥 Inferno Casino death games: the player dies on the spot, the turn is over
         kill: async why => {
-            G.killPlayer(pid, why, { quiet: true });
+            if (G.killPlayer(pid, why, { quiet: true }) === false) { updateHud(); return; } // 🎭 death shield
             clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null;
             Sound.boom();
             await deathPopup(pid, why);
@@ -771,7 +776,7 @@ function locationStage(s) {
         else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
         else if (id === "inv") content = invWrap(inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
-            onMission: () => { if (G.useMissionPass()) { toast("🎫 미션완료권 사용! 이번 라운드 통과", "ok"); updateHud(); } else if (rev) toast("🔄 패자부활전에서는 미션완료권을 쓸 수 없습니다", "warn", 3500); },
+            onMission: () => { if (G.useMissionPass()) { toast(rev ? "🎫 미션완료권 사용! 패자부활 미션 통과 (5분을 끝까지 버티면 생존자 공간으로)" : "🎫 미션완료권 사용! 이번 라운드 통과", "ok", 4000); updateHud(); } },
             onHp: (item, n) => { const r = G.useHpItem(pid, item, n); if (r < 0) toast("HP가 이미 가득 찼습니다", "warn"); else if (r > 0) { Sound.coin(); toast(`❤ HP +${Math.round(r * 100) / 100}`, "ok"); updateHud(); } },
             onPlays: (kind, item, n) => { if (G.addPlays(pid, kind, item, n)) { toast(kind === "slot" ? `🎰 슬롯 +${n}회` : `🃏 카지노 +${n}회`, "ok"); updateHud(); } },
             onChange: () => side.replaceChildren(sideCard()),
@@ -780,7 +785,16 @@ function locationStage(s) {
             onRandomMap: rev ? null : () => moveRandom(),
             onRemoteBank: rev ? null : () => remoteBank(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
             onRemoteBiz: rev ? null : () => remoteBiz(pid, () => { updateHud(); side.replaceChildren(sideCard()); }),
-            onReports: () => reportList(pid)
+            onReports: () => reportList(pid),
+            // ⏹️ 턴 종료권: ends the turn now, whatever lock the map has (🔄 Survival Land too)
+            onEndTurn: async () => {
+                if (!(ps.items.turn_end > 0) || finishing) return;
+                if (!(await confirmBox("⏹️ 턴 종료권을 사용해 지금 바로 턴을 끝낼까요? (턴 종료 제약 무시 · 1회용)", "턴 종료", "취소"))) return;
+                ps.items.turn_end--;
+                G.log(`⏹️ ${displayName(Store.player(pid))} 턴 종료권 사용`);
+                Store.saveSeason(true);
+                finishTurn();
+            }
         }));
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
@@ -802,6 +816,8 @@ function locationStage(s) {
         else if (id === "gotcha") content = gotchaView(pid, loc.id, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
         if (loc.arcade && cornerPaused && id !== "arcade" && !id.startsWith("arc:")) content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")), content);
+        // 🧊 Icy Castle: every corner behind an ice wall until the hammer breaks it
+        if (loc.icy) content = iceWrap(loc, t, pid, id, content);
         body.replaceChildren(content);
     }
     const sideCard = () => h("div.loc-side-inner",
@@ -863,13 +879,15 @@ function locationStage(s) {
         hurt: n => {
             const q = G.S().ps[pid];
             if (!q) return { dead: true };
-            if (q.hp <= n) { G.killPlayer(pid, "🕹️ 아케이드에서 HP가 바닥나 사망"); return { dead: true }; }
+            if (q.hp <= n) { if (G.killPlayer(pid, "🕹️ 아케이드에서 HP가 바닥나 사망") === false) { updateHud(); return { hp: q.hp }; } return { dead: true }; }
             q.hp -= n; Store.saveSeason(); updateHud(); return { hp: q.hp };
         },
         heal: n => { const q = G.S().ps[pid], add = Math.max(0, Math.min(n, CONFIG.START_HP - q.hp)); q.hp += add; Store.saveSeason(); updateHud(); return add; },
+        // 💵 boss money: real gold — the player's OWN gold (kept aside during the revival), not the revival gold
+        gold: n => { RV.addOwnGold(pid, n); updateHud(); return n; },
         onCorner: kind => { cornerPaused = true; t.running = false; updateHud(); refreshTabs(); tabBody(CORNER_KINDS[kind].tab); },
         onResume: () => { if (cornerPaused) { cornerPaused = false; t.running = true; updateHud(); } },
-        onWin: () => { t.stats.arcadeBoss = true; G.log(`🕹️ ${displayName(Store.player(pid))} 아케이드 보스 격파!`); Store.saveSeason(true); updateHud(); toast("🏆 아케이드 보스 격파!", "ok", 4000); },
+        onWin: () => { t.stats.arcadeBoss = true; G.log(`🕹️ ${displayName(Store.player(pid))} 아케이드 보스 격파!`); RV.grantBossPass(pid); updateHud(); toast("🏆 아케이드 보스 격파! 보상 🎫 미션완료권 획득 (🎒 인벤토리에서 사용)", "ok", 5000); },
         onDead: () => { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; arcadeInst?.stop(); arcadeInst = null; render(); },
         onChange: () => updateHud()
     };
@@ -966,6 +984,8 @@ function locationStage(s) {
             avatar(pid, 120),
             h("h2", met ? "🎉 미션 성공!" : "💦 미션 실패…"),
             h("p", s.mission.text),
+            // 🔄 revival: a failure is out for good at once · a success goes to the survivors' room (the claw picks 1 later)
+            rev ? h("p.rv-turn-verdict" + (met ? ".ok" : ".bad"), met ? "🏝️ 5분을 끝까지 버텼습니다 — 생존자 공간으로 이동합니다! (생존자 중 1명만 부활)" : "💀 패자부활 미션 실패 — 탈락이 확정되었습니다") : null,
             h("div.tr-stats",
                 h("div", h("small", "슬롯 손익"), h("b", fmt(t.stats.slotNet) + " G")),
                 h("div", h("small", "카지노 손익"), h("b", fmt(t.stats.casinoNet) + " G")),

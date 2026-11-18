@@ -5,6 +5,8 @@
 //   👹 NPC — 40~70% chance of 1~3 one-sided NPC attacks during a turn
 // =====================================================================
 import { priestVisit } from "./survivalLand.js";
+import { specialNpcVisit } from "./survivalIce.js";
+import { mosquitoBite, mosquitoBattle } from "./survivalMosquito.js";
 import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { confirmBox, confetti, modal, Activity, toast } from "../core/fx.js";
@@ -226,6 +228,9 @@ export async function npcAttack(pid) {
     const npc = pool[Math.floor(Math.random() * pool.length)];
     const move = pickNpcMove(npc);
     if (npc.churchOnly) return priestVisit(pid, npc, move); // ⛪ 🔄 Foggy Church Priest has its own screen
+    if (move.freeze || move.profileCopy) return specialNpcVisit(pid, npc, move); // 🧊 Ice Queen Icy Breath · 🎭 Fake Profile Profile Copy
+    if (move.bite) return mosquitoBite(pid, npc, move);       // 🦟 a quiet bite: an alarm under the pet, no attack screen
+    if (move.battle) return mosquitoBattle(pid, npc, move);   // 🦟 Monster Mosquito: a battle (lose = death)
     const kind = move.hp && move.steal ? "hp" : NEW_KINDS.find(k => move[k]) || (move.steal ? "steal" : move.give ? "give" : move.hp ? (move.hp > 0 ? "heal" : "hp") : move.kill ? "kill" : move.nomove ? "nomove"
         : move.idle ? "idle" : move.hope ? "hope" : move.gift ? "gift" : move.shop ? "shop" : move.copy ? "copy" : "curse");
     const friendly = ["give", "heal", "idle", "hope", "gift", "shop", "cureFlu", "giftBox"].includes(kind);
@@ -256,7 +261,7 @@ export async function npcAttack(pid) {
         if (!friendly && (kind === "hp" || kind === "kill" || kind === "steal" || NEW_KINDS.includes(kind) || (kind === "copy" && out.hp))) target.classList.add("hurt");
         if (kind === "kill") { Sound.boom(); target.classList.add("dead"); } else if (kind === "give" || kind === "heal" || kind === "gift" || kind === "giftBox") Sound.cash(); else if (friendly) Sound.bonus(); else Sound.hit();
         say.textContent = kind === "curse" ? `${npc.emoji} "${CURSES[Math.floor(Math.random() * CURSES.length)]}"` : kind === "hope" ? `${npc.emoji} "${out.hope}"` : friendly ? `${npc.emoji} ${npc.name}` : `${npc.emoji} ${npc.name}의 공격!`;
-        res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.none ? (kind === "cureFlu" ? "🎅 독감에 걸려 있지 않아 그냥 웃으며 떠났다 (Ho Ho Ho!)" : kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : kind === "copy" ? "복사할 무기가 없어 아무 일도 없었다" : NEW_KINDS.includes(kind) ? "가진 것이 없어 아무 일도 없었다" : "무기가 없어 아무 일도 없었다") :
+        res.replaceChildren(h("b", out.kill ? "☠️ 즉사!!! 이번 시즌 탈락…" : out.shield ? "☠️ 즉사 공격!… 🛡️ 하지만 가짜 프로필이 조종하는 동안은 죽지 않는다 (HP 1)" : out.none ? (kind === "cureFlu" ? "🎅 독감에 걸려 있지 않아 그냥 웃으며 떠났다 (Ho Ho Ho!)" : kind === "steal" ? "가진 돈이 모자라 아무것도 뺏기지 않았다" : kind === "copy" ? "복사할 무기가 없어 아무 일도 없었다" : NEW_KINDS.includes(kind) ? "가진 것이 없어 아무 일도 없었다" : "무기가 없어 아무 일도 없었다") :
             out.kidnap ? "⛓️ 테러리스트에게 납치당했다!! 납치 공간으로 끌려갑니다…" :
             out.cured ? "💚 산타가 독감을 낫게 해 주었다!" :
             out.box ? `🎁 선물상자를 열었다 → ${out.box.emoji} ${out.box.name}!` :
@@ -328,7 +333,7 @@ export async function peddlerShop(pid) {
 // ------------------------------------------------------------------ 👹 NPC info (map popup)
 const PET_STEAL = { fx: "펫 이펙트", pet: "펫", sfx: "스페셜 펫 이펙트", spet: "스페셜 펫" };
 const STEAL_ALL = { gold: "보유 골드 전부", points: "포인트 전부", items: "아이템 전부", bizGold: "Business Gold 전부", loanGold: "대출 골드 전부" };
-const moveText = m => m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0])}G 강탈`
+const moveText = m => m.bite ? `🦟 물기 — HP ${m.hp} (공격 화면 없이 펫 아래에 알림만)` : m.battle ? "⚔️ Battle — 대왕모기 (HP 100)와 배틀! 지면 바로 사망" : m.freeze ? `🧊 ${m.name || "Icy Breath"} — 화면 전체가 얼어붙어 ${m.freeze}초 동안 아무것도 못함 (시간은 계속 흐름)` : m.profileCopy ? `😈 ${m.name || "Profile Copy"} — 가짜 프로필이 ${m.profileCopy}초 동안 대신 플레이` : m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0])}G 강탈`
     : m.breakWeapon ? "👾 Monster Magic! 무기 1개 파괴"
     : m.stealPet ? `😈 ${PET_STEAL[m.stealPet]} 훔치기 (없으면 효과 없음)`
     : m.disease ? (m.disease === "flu" ? "🤧 독감 감염 (라운드마다 HP −5)" : "🎗️ 암 감염 (라운드마다 HP −10)")

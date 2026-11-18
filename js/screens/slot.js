@@ -1827,9 +1827,54 @@ export function openSlot(cfg, ctx) {
     // tall special boards (Neon Blitz 8x6 …) start at the same compact size they keep after a spin
     if (special && rows > 5) cabinet.classList.add("sp-tall");
     initReels(); renderJackpots(); renderMeter();
+    fitSlotToScreen(root, cabinet, classic); // 📐 tall machines: the reels shrink until the whole cabinet fits the window
     // every machine has its own themed loop + SFX palette (core/gameAudio.js)
     const audio = gameAudio(cfg), songName = typeof audio.song === "string" ? audio.song : audio.song.name;
     Sound.palette(audio.sfx); Sound.bgm(audio.song);
     const jpTimer = setInterval(() => { if (!document.body.contains(root)) { clearInterval(jpTimer); if (Sound.bgmPlaying === songName) Sound.bgmStop(); if (Sound.paletteId === cfg.id) Sound.palette(null); } else if (!busy) renderJackpots(); }, 3000);
     return root;
+}
+
+// ---------------------------------------------------------------- 📐 fit a machine to the screen
+// Reels are sized by --cell (width-based). Machines with 4~6 rows (Prism Palace's honeycomb, vaults, double
+// reels …) grew taller than the window, so the reels ran off the bottom of the screen. While the machine is
+// open this keeps the WHOLE cabinet inside the window: 1) the cell shrinks (never below 46px, never above the
+// normal size) · 2) a machine whose board is not cell-sized (keypads, drums, double reels …) or that is still
+// too big is zoomed down as a whole. It follows window resizes and bonus modes that change the number of rows.
+// (all sizes are measured on screen, so it also works inside a zoomed area like 🦋 Decalcomania's halves)
+export function fitSlotToScreen(root, cabinet, classic = false) {
+    let last = 0;
+    const fit = () => {
+        if (!cabinet.isConnected) return;
+        const z0 = cabinet.style.zoom;
+        cabinet.style.zoom = "";
+        const avail = innerHeight - 16;
+        const reels = cabinet.querySelector(".reels");
+        if (reels) {
+            const natural = classic ? Math.min(120, innerWidth * 0.22) : Math.min(110, innerWidth * 0.15);
+            const cur = +reels.dataset.fitCell || natural;
+            const rh = reels.getBoundingClientRect().height, ch = cabinet.getBoundingClientRect().height;
+            if (rh && ch) {
+                const per = rh / cur; // screen px per px of cell
+                const want = Math.max(46, Math.min(natural, Math.floor((avail - (ch - rh)) / per)));
+                if (Math.abs(want - cur) >= 2) {
+                    if (want >= natural - 1) { reels.style.removeProperty("--cell"); delete reels.dataset.fitCell; }
+                    else { reels.style.setProperty("--cell", want + "px"); reels.dataset.fitCell = want; }
+                    cabinet.classList.toggle("fit-small", want < natural - 1);
+                }
+            }
+        }
+        // still taller than the window / wider than its column → the whole cabinet is zoomed down (not below 55%)
+        const r = cabinet.getBoundingClientRect(), room = root.getBoundingClientRect().width || innerWidth;
+        const z = Math.max(0.55, Math.min(1, avail / (r.height || 1), room / (r.width || 1)));
+        cabinet.style.zoom = z < 0.985 ? String(Math.floor(z * 100) / 100) : "";
+        void z0;
+    };
+    const loop = () => {
+        if (!root.isConnected && last) { removeEventListener("resize", fit); return; }
+        if (root.isConnected) { last = 1; fit(); }
+        setTimeout(loop, 400);
+    };
+    setTimeout(loop, 0);
+    addEventListener("resize", fit, { passive: true });
 }

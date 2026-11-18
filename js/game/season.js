@@ -601,7 +601,9 @@ export function npcHit(pid, npc, move) {
         Store.saveSeason(true);
         return out;
     }
-    if (move.hp && move.steal) {
+    if (move.freeze) out.freeze = move.freeze; // 🧊 Icy Breath (screens/survivalIce.js freezes the screen)
+    else if (move.profileCopy) out.profileCopy = move.profileCopy; // 🎭 Profile Copy (screens/survivalIce.js)
+    else if (move.hp && move.steal) {
         // 🥷 Terrorist: HP and gold in one blow
         const before = ps.hp; ps.hp = Math.max(1, ps.hp + move.hp); out.hp = ps.hp - before;
         const g = Math.min(rnd(move.steal), Math.max(0, ps.money)); ps.money -= g; out.gold = -g;
@@ -702,8 +704,8 @@ export function npcHit(pid, npc, move) {
         if (ix >= 0) { out.weapon = ps.weapons[ix]; ps.weapons[ix] = "no_move"; } else out.none = true;
     } else if (move.kill) { out.kill = true; }
     // mission stats: who hit the player during their turn and what it did
-    if (s.turn?.pid === pid) (s.turn.stats.npc ||= []).push({ npc: npc.id, hp: !!move.hp, gold: out.gold > 0 });
-    const what = out.kill ? "즉사!" : out.none ? "효과 없음" : out.kidnap ? "납치!" : out.broke ? `무기 ${WEAPON_BY_ID[out.broke]?.name || out.broke} 파괴`
+    if (s.turn?.pid === pid) (s.turn.stats.npc ||= []).push({ npc: npc.id, hp: !!move.hp, gold: out.gold > 0, harm: npcHarmful(move) });
+    const what = out.freeze ? `🧊 Icy Breath (${out.freeze}초 얼어붙음)` : out.profileCopy ? `😈 Profile Copy (${out.profileCopy}초 대신 플레이)` : out.kill ? "즉사!" : out.none ? "효과 없음" : out.kidnap ? "납치!" : out.broke ? `무기 ${WEAPON_BY_ID[out.broke]?.name || out.broke} 파괴`
         : out.stolePet ? `${out.stolePet.name} 강탈` : out.disease ? `${out.disease === "flu" ? "독감" : "암"} 감염` : out.items ? `아이템 ${out.items}개 전부 강탈`
         : out.bgold ? `Business Gold ${(-out.bgold).toLocaleString()} 강탈` : out.loanGold ? `대출 골드 ${(-out.loanGold).toLocaleString()} 강탈` : out.mon ? "이모몬스터 강탈"
         : out.cured ? "독감 치료" : out.box ? `선물상자 → ${out.box.name}` : out.stoleItem ? `${ITEM_BY_ID[out.stoleItem]?.name || out.stoleItem} 강탈`
@@ -712,16 +714,38 @@ export function npcHit(pid, npc, move) {
         : out.gold ? `${out.gold > 0 ? "+" : ""}${out.gold.toLocaleString()}G` : out.hp != null ? `HP ${out.hp > 0 ? "+" : ""}${out.hp}` : out.weapon ? "무기 → No Move" : "저주";
     log(`${npc.emoji} ${npc.name} → ${name(pid)}: ${what}`);
     if (s.turn?.pid === pid && s.turn.loc === KIDNAP_ID) noteKidnap(pid, { hit: { npc: npc.name, emoji: npc.emoji, what, kill: !!out.kill, blocked: false } });
-    if (out.kill) killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`, { npc });
+    if (out.kill && killPlayer(pid, `${npc.emoji} ${npc.name}에게 즉사`, { npc }) === false) { out.kill = false; out.shield = true; }
+    if (out.kill) { /* dead */ }
     else if (out.kidnap) kidnap(pid);
     else Store.saveSeason(true);
     return out;
 }
+// an NPC attack handled by its own screen (⛪ Priest …) — counts for the 🛡️ revival mission
+export function noteNpcAttack(pid, npcId) {
+    const t = S()?.turn;
+    if (t?.pid === pid) { (t.stats.npc ||= []).push({ npc: npcId, harm: true }); Store.saveSeason(); }
+}
+// 🎭 Profile Copy: 40% of the time the player can't die while the fake profile plays (until the minute is over)
+export function deathShield(pid) {
+    const t = S()?.turn;
+    return !!(t && +t.pid === +pid && t.possessSafe && (t.possessUntil || 0) > Date.now());
+}
 // death outside the judge (reaper): out at once, the turn is over
+// → false when the 🎭 death shield kept the player alive (HP 1)
 export function killPlayer(pid, why, { npc = null, quiet = false } = {}) {
     const s = S();
+    if (deathShield(pid)) {
+        const ps = s.ps[pid];
+        ps.hp = 1; // the deadly blow still lands — only the death is held off
+        log(`🛡️ ${name(pid)} 죽을 뻔했지만 (${why}) — 가짜 프로필이 조종하는 동안은 죽지 않습니다 (HP 1)`);
+        document.dispatchEvent(new CustomEvent("gb:shield", { detail: { pid, why } }));
+        Store.saveSeason(true);
+        return false;
+    }
     // 🔊 screens that care (Survival Land death toll) hear it before the turn moves on
-    if (!s.ps[pid]?.out) document.dispatchEvent(new CustomEvent("gb:death", { detail: { pid, why, npc: !!npc, quiet } }));
+    // (🔄 revival players are "out" already — their death in Survival Land is shown too, once)
+    const revDeath = RV.revivalTurns() && RV.inRevival(pid) && !RV.rv()?.dead?.includes(pid);
+    if (!s.ps[pid]?.out || revDeath) document.dispatchEvent(new CustomEvent("gb:death", { detail: { pid, why, npc: !!npc, quiet } }));
     if (RV.revivalTurns() && RV.inRevival(pid)) { RV.revivalKill(pid, why); return; } // 🔄 a death in the revival = a failed revival
     if (s.ps[pid].out) return;
     const rank = alive().length;
@@ -757,7 +781,7 @@ export const currentPid = () => S().order[S().turnIdx];
 export function startTurn() {
     const s = S();
     const pid = currentPid();
-    s.turn = { pid, loc: null, region: null, remaining: CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
+    s.turn = { pid, loc: null, region: null, remaining: RV.revivalTurns() ? RV.SURVIVAL_SECONDS : CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
     // ⛓️ kidnapped: no roulette — straight back into the terrorists' room (10 minutes as usual)
     if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; s.turn.kidnapIn = s.turn.remaining; }
     Store.saveSeason();
@@ -849,7 +873,7 @@ export function passNeeds(pid, loc) {
     if (loc.typeGate && !ownsTypes(pid, [typeGateType()])) missing.push(`이번 라운드 Type Casino는 ${typeGateType()} 속성 몬스터 보유자만 들어갈 수 있습니다`);
     if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
     if (RV.revivalTurns() && loc.region !== "survival") missing.push("🔄 패자부활전 중에는 Survival Land 맵으로만 이동할 수 있습니다");
-    if (RV.revivalTurns() && LOC_BY_ID[S().turn?.loc]?.passLate && (S().turn.remaining ?? 0) > RV.PASS_LATE) missing.push("🌪️ Disaster Casino에서는 남은 시간이 5분 이하일 때만 맵권을 쓸 수 있습니다");
+    if (RV.survivalPassWait() > 0) missing.push(RV.survivalWaitText());
     const fee = r.freeTypes && ownsTypes(pid, r.freeTypes) ? 0 : (r.fee || 0), feePts = r.feePts || 0;
     if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
     if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
@@ -882,7 +906,7 @@ export function crazyCut() {
 }
 export function hpToll(pid, dmg, place) {
     const ps = S().ps[pid];
-    if (ps.hp <= dmg) { killPlayer(pid, `${place}에서 사망`); return { dead: true }; }
+    if (ps.hp <= dmg) { if (killPlayer(pid, `${place}에서 사망`) === false) return { hp: ps.hp, shield: true }; return { dead: true }; }
     ps.hp -= dmg;
     log(`💔 ${name(pid)} ${place} HP −${dmg}`);
     Store.saveSeason(true);
@@ -938,6 +962,9 @@ export function setLocation(locId, { teleport = false } = {}) {
     // arrival rules: infection rolls (UI shows t.arrival.sick) · ⏱️ Hurry Up Town (10 min → 1 min, once)
     t.arrival = { loc: locId, sick: arrivalInfection(t.pid, loc) };
     if (loc.hurry && !t.hurried) { t.hurried = true; t.remaining = Math.min(t.remaining, 60); t.arrival.hurry = true; }
+    // 🔄 Survival Land: a 5-minute turn · ⏱️ the clock on arrival (passes to another Survival Land map only after 2:00 here)
+    if (loc.region === "survival" && !t.svCap) { t.svCap = true; t.remaining = Math.min(t.remaining, RV.SURVIVAL_SECONDS); }
+    t.mapAt = t.remaining;
     Store.saveSeason();
 }
 // map pass: skip both roulettes and go straight to that map
@@ -1056,7 +1083,8 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
         t.stats.five = (t.stats.five || 0) + (extra.five ? 1 : 0);
         if (extra.freeSpin) t.stats.freeSpins = (t.stats.freeSpins || 0) + 1;
         if (extra.bonus) t.stats.slotBonus = (t.stats.slotBonus || 0) + 1; // slot bonuses only (🔄 revival mission)
-        if (t.stats.spins <= 100 && t.stats.slotNet >= 100000) t.stats.r100 = true; // 100,000G within the first 100 spins
+        const r100 = s.mission?.type === "rv_slot100" ? s.mission : { v: 100000, spins: 100 }; // 🔄 revival: 50,000G within the first 100 spins
+        if (t.stats.spins <= r100.spins && t.stats.slotNet >= r100.v) t.stats.r100 = true;
         // first bonus of the turn: on which spin (bonus_in missions)
         if (extra.bonus && !t.stats.bonusAt) t.stats.bonusAt = t.stats.spins;
         // best single-spin win per brand and per bet (brand_win / bet_win missions)
@@ -1174,7 +1202,7 @@ export function missionProgress(m, st) {
 }
 export function useMissionPass() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
-    if (!(ps.items.mission_pass > 0) || t.ticket || RV.revivalTurns()) return false; // 🔄 not in the revival round
+    if (!(ps.items.mission_pass > 0) || t.ticket) return false; // 🔄 works in the revival too (passes the revival mission)
     ps.items.mission_pass--; t.ticket = true;
     log(`🎫 ${name(t.pid)} 미션완료권 사용!`);
     Store.saveSeason();

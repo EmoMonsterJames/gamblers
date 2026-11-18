@@ -230,3 +230,197 @@ body.rv-quaking .modal-back, body.rv-quaking .game-layer { animation: rvQuake .1
 .rv-rank-list li.dead { opacity: .75; }
 .rv-rank-no { min-width: 40px; text-align: right; color: #5eead4; }
 .rv-rank-list small { margin-left: auto; color: #94a3b8; }
+
+/* ===================================================================== new (Survival Land update) */
+/* 📋 map messages in the left bar (disasters under the pet · the devil statue's growth under the statue) */
+.rv-side { width: 100%; display: grid; gap: 6px; justify-items: center; }
+.rv-side:empty { display: none; }
+.rv-side .rv-last-dis { display: block; max-width: 100%; white-space: normal; text-align: center; line-height: 1.35; cursor: default; }
+.rv-side-msgs { width: 100%; display: grid; gap: 5px; }
+.rv-side-msgs:empty { display: none; }
+.rv-side-msg { font-size: 12.5px; font-weight: 800; line-height: 1.35; padding: 6px 8px; border-radius: 10px; background: #0f172ae6; border: 1px solid #334155; color: #e2e8f0; text-align: center; animation: rvMsgIn .3s cubic-bezier(.2,1.4,.4,1); transition: opacity .45s, transform .45s; }
+.rv-side-msg.warn { border-color: #f59e0b; color: #fde68a; background: #2a1606e6; }
+.rv-side-msg.error { border-color: #ef4444; color: #fecaca; background: #2a0606e6; }
+.rv-side-msg.ok { border-color: #22c55e; color: #bbf7d0; background: #052e16e6; }
+.rv-side-msg.out { opacity: 0; transform: translateY(-4px); }
+@keyframes rvMsgIn { from { opacity: 0; transform: translateY(6px) scale(.96); } }
+.rv-tag.purple { border-color: #d946ef; color: #f5d0fe; }
+
+/* 🏝️ revival bar: survivors' room · out for good */
+.rv-bar-rooms { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; width: 100%; }
+.rv-room { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.rv-room.safe { background: #052e16; border: 1px solid #22c55e; color: #bbf7d0; }
+.rv-room.lost { background: #2a0606; border: 1px solid #ef4444; color: #fecaca; }
+.rv-turn-verdict { font-weight: 900; padding: 8px 12px; border-radius: 12px; }
+.rv-turn-verdict.ok { background: #052e16; color: #86efac; border: 1px solid #22c55e; }
+.rv-turn-verdict.bad { background: #2a0606; color: #fca5a5; border: 1px solid #ef4444; }
+
+/* 🎲 arcade: the automatic draw countdown */
+.arc-auto { display: inline-flex; align-items: baseline; gap: 6px; padding: 8px 22px; border-radius: 999px; background: #1e1b4b; border: 2px solid #facc15; box-shadow: 0 0 18px #facc1555; }
+.arc-auto-n { font-family: var(--display, sans-serif); font-size: 34px; color: #fde047; line-height: 1; animation: rvBob .5s infinite alternate; }
+.arc-auto small { color: #e9d5ff; font-weight: 800; }
+
+/* 🧊 Icy Castle: the ice wall over a corner */
+.ice-wrap { position: relative; min-height: 340px; border-radius: 16px; overflow: hidden; }
+.ice-under { filter: blur(1.5px) saturate(.6); }
+.ice-wall { position: absolute; inset: 0; z-index: 5; cursor: crosshair;
+    background: linear-gradient(135deg, #e0f2fecc 0%, #7dd3fcd9 30%, #bae6fdcc 55%, #38bdf8d9 80%, #e0f2fecc 100%), repeating-linear-gradient(115deg, #ffffff22 0 6px, transparent 6px 22px);
+    box-shadow: inset 0 0 60px #ffffffaa, inset 0 0 0 3px #e0f2fe; backdrop-filter: blur(6px); display: grid; place-items: center; overflow: hidden; user-select: none; }
+.ice-wall::before { content: ""; position: absolute; inset: -40%; background: linear-gradient(105deg, transparent 40%, #ffffff88 48%, transparent 56%); animation: iceGlint 4.5s infinite; pointer-events: none; }
+@keyframes iceGlint { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+.ice-wall[data-stage="2"] { filter: brightness(.97); } .ice-wall[data-stage="3"] { filter: brightness(.92) saturate(.9); }
+.ice-cracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.ice-cracks polyline { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.ice-cracks .glow { stroke: #ffffffcc; stroke-width: 4px; }
+.ice-cracks .line { stroke: #0c4a6e; stroke-width: 1.6px; }
+.ice-label { position: relative; display: grid; justify-items: center; gap: 4px; padding: 10px 18px; border-radius: 14px; background: #0c4a6ecc; color: #e0f2fe; text-shadow: 0 2px 0 #000; pointer-events: none; }
+.ice-label b { font-size: 20px; } .ice-label small { font-weight: 800; }
+.ice-wall.hit { animation: iceHit .16s linear; }
+@keyframes iceHit { 25% { transform: translate(3px, -2px); } 50% { transform: translate(-3px, 2px); } 75% { transform: translate(2px, 1px); } }
+.ice-wall.nope { animation: iceHit .16s linear 2; }
+.ice-swing { position: absolute; font-size: 42px; transform-origin: 80% 90%; animation: iceSwing .4s ease-out forwards; pointer-events: none; z-index: 3; }
+@keyframes iceSwing { 0% { transform: translate(-30%, -80%) rotate(-70deg); } 45% { transform: translate(-30%, -80%) rotate(20deg); } 100% { transform: translate(-30%, -80%) rotate(5deg); opacity: 0; } }
+.ice-chip { position: absolute; color: #fff; font-size: 18px; pointer-events: none; animation: iceChip .6s ease-out forwards; text-shadow: 0 0 6px #7dd3fc; }
+@keyframes iceChip { to { transform: translate(30px, -40px) rotate(160deg); opacity: 0; } }
+.ice-wall.shatter { background: transparent; box-shadow: none; backdrop-filter: none; }
+.ice-wall.shatter::before, .ice-wall.shatter .ice-label, .ice-wall.shatter .ice-cracks { display: none; }
+.ice-shard { position: absolute; background: linear-gradient(135deg, #f0f9ff, #7dd3fc 60%, #38bdf8); box-shadow: inset 0 0 8px #fff; animation: iceShard .75s cubic-bezier(.2,.6,.4,1) forwards; }
+@keyframes iceShard { to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+/* 🔨 hammer gauge */
+.ice-hammer { width: 100%; display: grid; gap: 4px; padding: 8px 10px; border-radius: 12px; background: #082f49; border: 1px solid #38bdf8; }
+.ice-hammer-head { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.ice-hammer-ico { font-size: 24px; display: inline-block; animation: rvBob .7s infinite alternate; }
+.ice-hammer b { color: #e0f2fe; font-size: 14px; }
+.ice-hammer-bar { height: 10px; border-radius: 999px; background: #0c4a6e; overflow: hidden; border: 1px solid #0369a1; }
+.ice-hammer-bar i { display: block; height: 100%; background: linear-gradient(90deg, #7dd3fc, #e0f2fe); transition: width .2s linear; }
+.ice-hammer small { color: #7dd3fc; font-size: 11px; }
+.ice-hammer.cd { border-color: #f59e0b; } .ice-hammer.cd .ice-hammer-bar i { background: linear-gradient(90deg, #f59e0b, #fde68a); } .ice-hammer.cd .ice-hammer-ico { animation: none; filter: grayscale(1); }
+
+/* 🧊 Icy Breath: the whole play screen frozen */
+body.sv-frozen #app { filter: saturate(.35) brightness(1.08) hue-rotate(-10deg); transition: filter 1s; }
+.ice-freeze { position: fixed; inset: 0; z-index: 250; cursor: not-allowed; overflow: hidden; animation: fadein .6s; }
+.ice-frost { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 30%, #e0f2fe66 62%, #e0f2fef0 100%); animation: iceCreep 2.4s ease-out forwards; }
+.ice-frost.b { background: repeating-conic-gradient(from 10deg at 0 0, #ffffff14 0 4deg, transparent 4deg 11deg), repeating-conic-gradient(from 0deg at 100% 100%, #ffffff18 0 3deg, transparent 3deg 9deg); mix-blend-mode: screen; animation-duration: 3.2s; }
+@keyframes iceCreep { from { opacity: 0; transform: scale(1.25); } to { opacity: 1; transform: none; } }
+.ice-flake { position: absolute; color: #f0f9ff; text-shadow: 0 0 12px #7dd3fc; opacity: 0; transform: scale(.2) rotate(var(--r)); animation: iceFlake 1.6s var(--d) ease-out forwards; }
+@keyframes iceFlake { to { opacity: .9; transform: scale(1) rotate(var(--r)); } }
+.ice-freeze-box { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 6px; padding: 18px 28px; border-radius: 20px; background: #0c4a6ee6; border: 2px solid #e0f2fe; color: #f0f9ff; text-align: center; box-shadow: 0 0 40px #7dd3fc; max-width: calc(100vw - 32px); }
+.ice-freeze-ico { font-size: 64px; animation: rvShakeS .1s linear infinite; }
+.ice-freeze-box b { font-size: 22px; }
+.ice-freeze-cd { display: flex; align-items: baseline; gap: 4px; } .ice-freeze-n { font-family: var(--display, sans-serif); font-size: 48px; color: #fff; }
+.ice-freeze-box small { color: #bae6fd; }
+.ice-freeze.thaw { animation: iceThaw .9s forwards; }
+@keyframes iceThaw { to { opacity: 0; filter: blur(6px); } }
+.npc-target.frozen { filter: saturate(0) brightness(1.4) drop-shadow(0 0 12px #7dd3fc); }
+
+/* 😈 Profile Copy: the devil copy plays */
+.fp-layer { position: fixed; inset: 0; z-index: 240; pointer-events: none; }
+.fp-shield { position: absolute; inset: 0; pointer-events: auto; cursor: not-allowed; background: radial-gradient(ellipse at center, transparent 55%, #7f1d1d55 100%); animation: fpPulse 1.6s infinite alternate; }
+@keyframes fpPulse { to { opacity: .6; } }
+.fp-badge { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 20px 10px 14px; border-radius: 22px; background: #1c0505f2; border: 2px solid #ef4444; box-shadow: 0 0 26px #ef444488; pointer-events: none; z-index: 2; max-width: calc(100vw - 32px); }
+.fp-who { display: grid; justify-items: center; gap: 4px; }
+.fp-info { display: grid; gap: 2px; } .fp-info > b { color: #fecaca; }
+.fp-ctrl { font-family: var(--display, sans-serif); letter-spacing: 2px; color: #f87171; font-size: 15px; line-height: 1; padding: 2px 8px; border-radius: 6px; background: #450a0a; text-shadow: 0 0 10px #ef4444; }
+.fp-info small { color: #fecaca; font-weight: 800; }
+.fp-cd { display: flex; align-items: baseline; gap: 3px; color: #fde68a; font-weight: 900; } .fp-n { font-size: 22px; }
+.fp-layer.out { opacity: 0; transition: opacity .5s; }
+.fp-finger { position: fixed; z-index: 3; transform: translate(-30%, -8%); font-size: 40px; transition: left .45s cubic-bezier(.3,.7,.3,1), top .45s cubic-bezier(.3,.7,.3,1); pointer-events: none; }
+.fp-finger span { display: inline-block; filter: sepia(1) saturate(6) hue-rotate(-50deg) drop-shadow(0 0 8px #ef4444); }
+.fp-finger small { position: absolute; right: -14px; top: -8px; font-size: 20px; }
+.fp-finger.tap span { animation: fpTap .25s; }
+@keyframes fpTap { 50% { transform: translateY(10px) scale(.85); } }
+/* the devil copy of the profile picture */
+.fp-devil { position: relative; width: var(--s); height: var(--s); flex: 0 0 auto; }
+.fp-devil > .avatar { filter: sepia(.5) saturate(2.2) hue-rotate(-35deg) contrast(1.15) brightness(.9); }
+.fp-horn { position: absolute; top: -12%; width: 22%; height: 30%; background: linear-gradient(#ef4444, #7f1d1d); clip-path: polygon(50% 0, 100% 100%, 0 100%); z-index: 3; }
+.fp-horn.l { left: 14%; transform: rotate(-22deg); } .fp-horn.r { right: 14%; transform: rotate(22deg); }
+.fp-eye { position: absolute; top: 40%; width: 11%; height: 11%; border-radius: 50%; background: radial-gradient(circle, #fff 0 18%, #ff1a1a 30%, #7f1d1d 100%); box-shadow: 0 0 10px 3px #ff1a1a; z-index: 3; animation: fpEye 1s infinite alternate; }
+.fp-eye.l { left: 32%; } .fp-eye.r { right: 32%; }
+@keyframes fpEye { to { box-shadow: 0 0 16px 6px #ff1a1a; } }
+.fp-brow { position: absolute; top: 33%; width: 20%; height: 4%; background: #1c0505; border-radius: 4px; z-index: 3; }
+.fp-brow.l { left: 26%; transform: rotate(22deg); } .fp-brow.r { right: 26%; transform: rotate(-22deg); }
+.fp-mouth { position: absolute; left: 36%; top: 64%; width: 28%; height: 9%; border: 3px solid #1c0505; border-bottom: 0; border-radius: 50% 50% 0 0; z-index: 3; }
+
+/* 🦋 Decalcomania Casino: two halves, real and fake mixed */
+.dc-split { display: flex; gap: 0; align-items: stretch; min-width: 0; }
+.dc-split.rev { flex-direction: row-reverse; }
+.dc-half { flex: 1 1 0; min-width: 0; zoom: .62; }
+.dc-half .loc-main { min-height: 600px; }
+.dc-fold { flex: 0 0 18px; display: grid; place-items: center; background: linear-gradient(90deg, transparent, #f0abfc55, transparent); border-left: 1px dashed #f0abfc88; border-right: 1px dashed #f0abfc88; }
+.dc-fold span { font-size: 16px; animation: rvBob .8s infinite alternate; }
+.dc-fake.dc-v1 { filter: hue-rotate(38deg) saturate(1.25); }
+.dc-fake.dc-v2 { transform: rotate(-2.6deg); }
+.dc-fake.dc-v3 { transform: rotate(2.2deg) scale(.96); }
+.dc-fake.dc-v4 { filter: sepia(.45) hue-rotate(-24deg) brightness(1.06); }
+.dc-fake.dc-v5 { transform: skewX(-4deg) translateY(2px); filter: saturate(.7); }
+.dc-caught { outline: 3px solid #ef4444 !important; box-shadow: 0 0 18px #ef4444 !important; }
+.dc-ouch { position: fixed; z-index: 390; transform: translate(-50%, -100%); font-weight: 900; font-size: 22px; color: #ff4d6d; text-shadow: 0 2px 0 #000; pointer-events: none; animation: floatUp 1s forwards; white-space: nowrap; }
+@media (max-width: 800px) { .dc-half { zoom: .5; } }
+.arc-start.arc-count { animation: arcCount .9s ease-out; }
+@keyframes arcCount { 0% { transform: scale(1.18); box-shadow: 0 0 26px #facc15; } 100% { transform: none; } }
+
+/* 🦟 모기 숲 (Mosquito Forest) */
+.rv-tag.green { border-color: #84cc16; color: #d9f99d; }
+.mq-layer { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; }
+.mq-fly { position: fixed; left: 50%; top: 50%; transition-property: left, top; transition-timing-function: cubic-bezier(.4,.1,.6,.9); opacity: .85; filter: drop-shadow(0 1px 1px #000a); }
+.mq-fly i { display: inline-block; font-style: normal; animation: mqJitter .18s steps(2) infinite; }
+@keyframes mqJitter { 0% { translate: 0 0; } 50% { translate: 1px -2px; } 100% { translate: -1px 1px; } }
+/* 🥚 the giant egg under the pet */
+.mq-egg-box { width: 100%; display: grid; justify-items: center; gap: 2px; padding: 8px 10px 6px; border-radius: 12px; background: #052e16; border: 1px solid #4d7c0f; min-height: 120px; align-content: end; }
+.mq-egg-box.bit { animation: mqBit .35s; }
+@keyframes mqBit { 30% { box-shadow: 0 0 0 3px #ef4444, 0 0 14px #ef4444; } }
+.mq-egg-title { color: #bef264; font-weight: 900; font-size: 12px; }
+.mq-egg { position: relative; display: grid; place-items: center; transform: scale(var(--s, .6)); transform-origin: bottom center; transition: transform .8s cubic-bezier(.2,1.4,.4,1); }
+.mq-egg span { font-size: 54px; line-height: 1; filter: sepia(.4) hue-rotate(40deg) saturate(1.4) drop-shadow(0 0 8px #84cc1688); }
+.mq-egg.grow span { animation: rvShakeS .12s linear 6; }
+.mq-egg.shake span { animation: rvShakeS .22s linear infinite; }
+.mq-egg.shake2 span { animation: rvShakeS .08s linear infinite; filter: sepia(.4) hue-rotate(40deg) saturate(1.6) drop-shadow(0 0 14px #ef4444); }
+.mq-crack { position: absolute; inset: 18% 30%; opacity: 0; background: linear-gradient(115deg, transparent 45%, #1a2e05 46% 49%, transparent 50%), linear-gradient(65deg, transparent 55%, #1a2e05 56% 58%, transparent 59%); pointer-events: none; }
+.mq-egg.cracked .mq-crack { opacity: .9; }
+.mq-egg.hatch span { animation: mqHatch 1.3s forwards; }
+@keyframes mqHatch { 0% { transform: rotate(0); } 20% { transform: rotate(-14deg) scale(1.1); } 40% { transform: rotate(14deg) scale(1.15); } 70% { transform: scale(1.4); opacity: 1; } 100% { transform: scale(2); opacity: 0; filter: blur(3px); } }
+.mq-egg-lv { font-weight: 900; font-size: 11px; background: #000a; padding: 1px 6px; border-radius: 6px; color: #d9f99d; }
+/* ⚔️ the battle */
+.mq-battle { display: grid; gap: 10px; }
+.mq-arena { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 14px; border-radius: 16px; background: radial-gradient(ellipse at center, #365314, #052e16 70%, #020a04); overflow: hidden; min-height: 220px; }
+.mq-fighter { display: grid; justify-items: center; gap: 6px; }
+.mq-name { font-weight: 900; }
+.mq-hp { width: 100%; max-width: 220px; display: grid; gap: 2px; justify-items: center; }
+.mq-hp-bar { width: 100%; height: 12px; border-radius: 999px; background: #1f2937; overflow: hidden; border: 1px solid #000; }
+.mq-hp-bar i { display: block; height: 100%; background: linear-gradient(90deg, #22c55e, #86efac); transition: width .4s; }
+.mq-hp-bar.foe i { background: linear-gradient(90deg, #dc2626, #f87171); }
+.mq-vs { font-family: var(--display, sans-serif); font-size: 28px; color: #fde047; text-shadow: 0 2px 0 #000; }
+.mq-boss-wrap { position: relative; }
+.mq-boss { display: inline-block; font-size: 110px; line-height: 1; filter: drop-shadow(0 6px 10px #000) saturate(1.3); animation: mqHover 1.4s ease-in-out infinite alternate; }
+@keyframes mqHover { to { transform: translateY(-10px) rotate(-4deg); } }
+.mq-boss.mq-lunge { animation: mqLunge .5s; }
+@keyframes mqLunge { 40% { transform: translateX(-60px) scale(1.15); } }
+.mq-boss.mq-down { animation: mqDown 1s forwards; }
+@keyframes mqDown { to { transform: translateY(60px) rotate(160deg); opacity: .2; } }
+.mq-boss-blood { position: absolute; right: -6px; top: 30%; font-size: 26px; }
+.mq-hurt { animation: rvShakeS .1s linear 5; }
+.mq-hurt .avatar, .mq-hurt .mq-boss { filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4); }
+.mq-fx { position: absolute; inset: 0; pointer-events: none; }
+.mq-proj { position: absolute; top: 40%; font-size: 36px; }
+.mq-proj.to-foe { left: 22%; animation: mqToFoe .5s ease-in forwards; }
+.mq-proj.to-me { left: 72%; animation: mqToMe .5s ease-in forwards; }
+@keyframes mqToFoe { to { left: 72%; transform: scale(1.3); } }
+@keyframes mqToMe { to { left: 22%; transform: scale(1.3); } }
+.mq-swarm { position: absolute; left: 25%; top: 45%; font-size: 18px; animation: mqSwarm 1s var(--d) ease-in forwards; opacity: 0; }
+@keyframes mqSwarm { 0% { opacity: 1; transform: translate(calc(var(--dx) * 2), calc(var(--dy) * 2)); } 100% { opacity: 1; transform: translate(0, 0); } }
+.mq-status { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 6px; }
+.mq-tag { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: #1e293b; border: 1px solid #475569; }
+.mq-tag.red { border-color: #ef4444; color: #fecaca; } .mq-tag.blue { border-color: #38bdf8; color: #bae6fd; }
+.mq-log { text-align: center; font-weight: 800; font-size: 16px; padding: 8px 12px; border-radius: 12px; background: #0f172a; min-height: 40px; }
+.mq-weapons { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.mq-weapons > p, .mq-weapons > .btn { grid-column: 1 / -1; text-align: center; justify-self: center; }
+.mq-wbtn { display: grid; justify-items: center; gap: 2px; padding: 10px 8px; border-radius: 12px; background: #1e1b4b; border: 2px solid #4c1d95; transition: transform .1s, border-color .1s; }
+.mq-wbtn:hover { transform: translateY(-2px); border-color: #facc15; }
+.mq-wbtn.dead { opacity: .55; }
+.mq-wico { font-size: 28px; } .mq-wbtn small { color: #c4b5fd; font-size: 11px; }
+@media (max-width: 560px) { .mq-boss { font-size: 72px; } .mq-arena { grid-template-columns: 1fr; } .mq-vs { display: none; } }
+
+/* ⚠️ arcade: the stage time-limit warning shown before the start */
+.arc-warn { display: grid; gap: 2px; width: 100%; padding: 8px 12px; border-radius: 12px; background: #450a0a; border: 2px solid #ef4444; color: #fecaca; font-size: 13px; animation: arcWarn 1.2s ease-in-out infinite alternate; }
+.arc-warn b { color: #fca5a5; font-size: 15px; }
+@keyframes arcWarn { to { box-shadow: 0 0 0 2px #ef444466, 0 0 16px #ef444488; } }

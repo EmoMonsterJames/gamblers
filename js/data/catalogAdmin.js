@@ -120,7 +120,7 @@ export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).fil
 // different goods of that shop type, fixed per map (seeded by map + shop).
 // Map passes and alphabet cards are never used as filler.
 // 🔄 Survival Land (패자부활전) general shops: a fixed survival stock + the Survival Land passes
-export const SURVIVAL_STOCK = ["time_ext", "hp_10", "hp_50", "hp_full", "oxygen", "slot_plus5", "casino_plus1", "npc_block1", "npc_block5", "random_letter", "super_letter", "flu_cure", "cancer_cure"];
+export const SURVIVAL_STOCK = ["time_ext", "oxygen", "slot_plus5", "casino_plus1", "random_letter", "super_letter", "flu_cure", "cancer_cure"];
 export function shopListing(shopId, locId) {
     if (shopId === "general" && LOCATIONS.find(l => l.id === locId)?.region === "survival") {
         const base = Object.fromEntries(SHOPS.general.list.filter(it => !it.locs).map(it => [it.id, it]));
@@ -132,7 +132,8 @@ export function shopListing(shopId, locId) {
 }
 export function fillerItems(shopId, locId) {
     const noTime = LOCATIONS.find(l => l.id === locId)?.crazy;
-    const ok = it => it.price && !ITEM_BY_ID[it.id]?.loc && !ITEM_BY_ID[it.id]?.letter && !(noTime && it.id === "time_ext") && !saleOf(it.cat, it.id).off;
+    // goods tied to certain maps (locs: ⏹️ 턴 종료권 · 🧳 · 🩸 …) never become filler elsewhere
+    const ok = it => it.price && !it.locs && !saleOf(it.cat, it.id).locs && !ITEM_BY_ID[it.id]?.loc && !ITEM_BY_ID[it.id]?.letter && !(noTime && it.id === "time_ext") && !saleOf(it.cat, it.id).off;
     const seen = new Set();
     const uniq = it => { const k = `${it.cat}:${it.id}`; if (seen.has(k)) return false; seen.add(k); return true; };
     let pool = (SHOPS[shopId]?.list || []).filter(ok).filter(uniq);

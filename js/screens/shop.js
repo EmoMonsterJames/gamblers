@@ -3,7 +3,7 @@ import { h, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, modal, confetti } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { SHOPS, catalogEntry, WEAPON_BY_ID, isAttackWeapon, attackCount, PET_BY_ID, PETFX_BY_ID, SHOP_LIMIT, ITEMS, ITEM_BY_ID, REGION_ITEMS, ALPHABET, ALL_LETTERS, cardId } from "../data/catalog.js";
+import { SHOPS, LOC_BY_ID, catalogEntry, WEAPON_BY_ID, isAttackWeapon, attackCount, PET_BY_ID, PETFX_BY_ID, SHOP_LIMIT, ITEMS, ITEM_BY_ID, REGION_ITEMS, ALPHABET, ALL_LETTERS, cardId } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 import { sleep } from "../core/util.js";
 import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft } from "../game/season.js";
@@ -13,7 +13,7 @@ import { shopListing, discountItems } from "../data/catalogAdmin.js";
 import { letterCard, npcTicket } from "../ui/letterCard.js";
 import { reportsOf } from "../game/bank.js";
 import * as RV from "../game/revival.js";
-import { emoItem } from "../emomon/data.js";
+import { emoItem, itemPic } from "../emomon/data.js";
 // 🐾 EmoMon items (discount-shop extras) go into the EmoMon bag
 const entryOf = (cat, id) => cat === "emo" ? emoItem(id) : catalogEntry(cat, id);
 
@@ -23,7 +23,10 @@ export function shopView(shopId, pid, locId, onChange) {
     const wrap = h("div.shop.shop-" + shopId);
     // discount shop: a seeded handful per map per round; other shops: their list + second-shop listings
     // 🔄 패자부활전: no random map ticket (only Survival Land passes work there)
-    const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => !RV.inRevival(pid) || it.id !== "map_random");
+    // 🔄 Survival Land shops: no NPC Block tickets and no HP-raising items
+    const survival = LOC_BY_ID[locId]?.region === "survival";
+    const svBanned = it => it.cat === "item" && (ITEM_BY_ID[it.id]?.npcBlock || ITEM_BY_ID[it.id]?.hp);
+    const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => (!RV.inRevival(pid) || it.id !== "map_random") && !(survival && svBanned(it)));
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
@@ -113,7 +116,8 @@ export function art(cat, e) {
     if (e.letter) return letterCard(e.letter, 58);
     if (e.npcBlock) return npcTicket(e.npcBlock, 58);
     if (e.superLetter) return h("div.big-emoji.super-q", "❓");
-    if (cat === "emo" && e.img) return h("img.emo-shop-img", { src: e.img, alt: e.name, width: 56, height: 56 });
+    // 🐾 EmoMon items: their pictures live under emomon/ (itemPic adds the folder) — emoji if a picture is missing
+    if (cat === "emo" && itemPic(e)) return h("img.emo-shop-img", { src: itemPic(e), alt: e.name, width: 56, height: 56, onerror: ev => ev.target.replaceWith(h("div.big-emoji", e.emoji || "🎁")) });
     return h("div.big-emoji", e.emoji || "🎁");
 }
 export function desc(cat, e) {
@@ -141,7 +145,7 @@ export function weaponDesc(e) {
 }
 
 // Inventory: use items, delete weapons, switch owned frames/effects
-export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChange, onPass, onBoost, onRandomMap, onRemoteBank, onRemoteBiz, onReports } = {}) {
+export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChange, onPass, onBoost, onRandomMap, onRemoteBank, onRemoteBiz, onReports, onEndTurn } = {}) {
     const ps = S().ps[pid];
     const wrap = h("div.inventory");
     const render = () => {
@@ -151,6 +155,7 @@ export function inventoryView(pid, { onUseTime, onMission, onPlays, onHp, onChan
             h("div.inv-items",
                 itemBtn("time_ext", "⏱️ +5분 연장 사용", () => onUseTime?.()),
                 itemBtn("mission_pass", "🎫 미션완료권 사용", () => onMission?.()),
+                onEndTurn ? itemBtn("turn_end", "⏹️ 턴 종료권 사용 → 지금 턴 종료", () => onEndTurn()) : null,
                 itemBtn("casino_plus1", "🃏 카지노 +1회 사용", () => onPlays?.("casino", "casino_plus1", 1)),
                 itemBtn("slot_plus5", "🎰 슬롯 +5회 사용", () => onPlays?.("slot", "slot_plus5", 5)),
                 itemBtn("hp_10", "🧪 HP +10", () => onHp?.("hp_10", 10)),
