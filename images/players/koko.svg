@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Koko · Others (poodle, female) · Young Adult — curly black poodle, a ribbon on the ear, a "Koko" name tag -->
+  <defs>
+    <clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+    <radialGradient id="fur" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="#4a4550"/><stop offset="1" stop-color="#1a171d"/></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="1" stop-color="#d9a12b"/></linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="#ffe6f0"/>
+  <g clip-path="url(#cc)" fill="url(#fur)" stroke="#0c0a0e" stroke-width="3">
+    <!-- curly upper body -->
+    <path d="M24 262 C28 200 74 178 128 178 C182 178 228 200 232 262 Z"/>
+    <circle cx="60" cy="214" r="18"/><circle cx="92" cy="196" r="18"/><circle cx="128" cy="190" r="18"/><circle cx="164" cy="196" r="18"/><circle cx="196" cy="214" r="18"/>
+    <circle cx="44" cy="244" r="18"/><circle cx="212" cy="244" r="18"/>
+  </g>
+  <!-- pink dress top -->
+  <path d="M62 262 C66 228 92 214 128 214 C164 214 190 228 194 262 Z" fill="#ff8fb8" stroke="#a83c66" stroke-width="3.5" clip-path="url(#cc)"/>
+  <path d="M84 230 Q128 246 172 230" fill="none" stroke="#ffd1e3" stroke-width="5" stroke-linecap="round"/>
+  <!-- necklace + "Koko" tag -->
+  <path d="M86 188 Q128 214 170 188" fill="none" stroke="#f2c84b" stroke-width="5" stroke-linecap="round"/>
+  <path d="M86 188 Q128 214 170 188" fill="none" stroke="#fff3c4" stroke-width="1.6" stroke-dasharray="3 5" stroke-linecap="round"/>
+  <path d="M110 204 H146 Q152 204 152 210 V226 Q152 234 128 238 Q104 234 104 226 V210 Q104 204 110 204 Z" fill="url(#gold)" stroke="#8a5f12" stroke-width="2.6"/>
+  <text x="128" y="225" text-anchor="middle" font-family="'Lilita One','Trebuchet MS',sans-serif" font-size="15" font-weight="900" fill="#7a4a06">Koko</text>
+  <!-- long curly ears -->
+  <g fill="url(#fur)" stroke="#0c0a0e" stroke-width="3">
+    <circle cx="62" cy="96" r="20"/><circle cx="56" cy="122" r="21"/><circle cx="60" cy="148" r="19"/><circle cx="68" cy="170" r="15"/>
+    <circle cx="194" cy="96" r="20"/><circle cx="200" cy="122" r="21"/><circle cx="196" cy="148" r="19"/><circle cx="188" cy="170" r="15"/>
+  </g>
+  <!-- head + curly topknot -->
+  <ellipse cx="128" cy="122" rx="58" ry="56" fill="url(#fur)" stroke="#0c0a0e" stroke-width="3"/>
+  <g fill="url(#fur)" stroke="#0c0a0e" stroke-width="3">
+    <circle cx="96" cy="68" r="19"/><circle cx="128" cy="56" r="22"/><circle cx="160" cy="68" r="19"/><circle cx="112" cy="78" r="16"/><circle cx="144" cy="78" r="16"/>
+  </g>
+  <!-- curl texture -->
+  <g fill="none" stroke="#6a6472" stroke-width="2" stroke-linecap="round" opacity=".8">
+    <path d="M120 52 q6 -6 10 2"/><path d="M92 64 q6 -6 10 2"/><path d="M152 64 q6 -6 10 2"/>
+    <path d="M52 118 q6 -6 10 2"/><path d="M196 118 q6 -6 10 2"/><path d="M56 146 q6 -6 10 2"/><path d="M192 146 q6 -6 10 2"/>
+    <path d="M86 196 q6 -6 10 2"/><path d="M158 196 q6 -6 10 2"/>
+  </g>
+  <!-- ribbon on the left ear -->
+  <g transform="translate(64 82) rotate(-18)">
+    <path d="M0 0 L-26 -14 Q-32 0 -26 14 Z" fill="#ff5c9a" stroke="#a3204f" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M0 0 L26 -14 Q32 0 26 14 Z" fill="#ff5c9a" stroke="#a3204f" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M-4 4 L-12 24 L-4 20 L0 26 Z M4 4 L12 24 L4 20 L0 26 Z" fill="#ff5c9a" stroke="#a3204f" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="0" r="7" fill="#ff8fb8" stroke="#a3204f" stroke-width="2.6"/>
+    <path d="M-20 -6 Q-14 -2 -20 4 M20 -6 Q14 -2 20 4" stroke="#ffd1e3" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- cute eyes with lashes -->
+  <ellipse cx="106" cy="122" rx="11" ry="13" fill="#0b090c"/>
+  <ellipse cx="150" cy="122" rx="11" ry="13" fill="#0b090c"/>
+  <circle cx="102" cy="117" r="4.2" fill="#fff"/><circle cx="146" cy="117" r="4.2" fill="#fff"/>
+  <circle cx="110" cy="128" r="1.8" fill="#fff"/><circle cx="154" cy="128" r="1.8" fill="#fff"/>
+  <path d="M95 112 l-6 -5 M99 109 l-4 -6 M161 112 l6 -5 M157 109 l4 -6" stroke="#0b090c" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- muzzle, nose, smile -->
+  <ellipse cx="128" cy="150" rx="22" ry="16" fill="#38333d" stroke="#0c0a0e" stroke-width="2"/>
+  <path d="M120 142 Q128 136 136 142 Q136 150 128 151 Q120 150 120 142 Z" fill="#050406"/>
+  <ellipse cx="125" cy="141" rx="2.6" ry="1.4" fill="#8a8494"/>
+  <path d="M128 151 V156 M118 158 Q128 166 138 158" fill="none" stroke="#050406" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M124 160 Q128 168 132 160 Z" fill="#ff7aa6"/>
+  <!-- blush -->
+  <ellipse cx="88" cy="146" rx="9" ry="5" fill="#ff7aa6" opacity=".55"/>
+  <ellipse cx="168" cy="146" rx="9" ry="5" fill="#ff7aa6" opacity=".55"/>
+</svg>

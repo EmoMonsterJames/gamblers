@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Sienna Hamzzi · Rat (hamster, female) · Young Adult — a tiny, delicate hamster with a flower pin and the "(-)" mouth -->
+  <defs>
+    <clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+    <radialGradient id="fur" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#f7cf98"/><stop offset="1" stop-color="#e3a462"/></radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="#fff4e0"/>
+  <g clip-path="url(#cc)">
+    <!-- small, slim shoulders in a pretty lilac dress with a lace collar -->
+    <path d="M50 262 C54 214 88 192 128 192 C168 192 202 214 206 262 Z" fill="#c9a6f2" stroke="#6b4aa0" stroke-width="3.5"/>
+    <path d="M74 262 L92 214 M182 262 L164 214" stroke="#b28be8" stroke-width="3"/>
+    <g fill="#fff" stroke="#b9a3d8" stroke-width="1.6">
+      <path d="M92 196 Q100 214 112 204 Q120 218 128 206 Q136 218 144 204 Q156 214 164 196 Q128 184 92 196 Z"/>
+    </g>
+    <circle cx="128" cy="226" r="6" fill="#ff9ec4" stroke="#b0507a" stroke-width="2"/>
+    <circle cx="128" cy="244" r="6" fill="#ff9ec4" stroke="#b0507a" stroke-width="2"/>
+  </g>
+  <!-- round little ears -->
+  <circle cx="82" cy="72" r="18" fill="url(#fur)" stroke="#8a5a2e" stroke-width="3.5"/>
+  <circle cx="174" cy="72" r="18" fill="url(#fur)" stroke="#8a5a2e" stroke-width="3.5"/>
+  <circle cx="82" cy="72" r="10" fill="#ffc2cc"/><circle cx="174" cy="72" r="10" fill="#ffc2cc"/>
+  <!-- soft round head with chubby cheek pouches -->
+  <path d="M128 64 C178 64 196 100 196 132 C196 170 166 192 128 192 C90 192 60 170 60 132 C60 100 78 64 128 64 Z" fill="url(#fur)" stroke="#8a5a2e" stroke-width="3.5"/>
+  <!-- white face patch -->
+  <path d="M128 104 C150 104 176 126 176 150 C176 176 154 188 128 188 C102 188 80 176 80 150 C80 126 106 104 128 104 Z" fill="#fffaf2"/>
+  <path d="M128 70 V96" stroke="#d8945a" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+  <!-- flower pin on the right ear -->
+  <g transform="translate(184 64)">
+    <g fill="#ff8fb8" stroke="#c0457a" stroke-width="1.8">
+      <circle cx="0" cy="-10" r="7.5"/><circle cx="9.5" cy="-3" r="7.5"/><circle cx="6" cy="8.5" r="7.5"/><circle cx="-6" cy="8.5" r="7.5"/><circle cx="-9.5" cy="-3" r="7.5"/>
+    </g>
+    <circle cx="0" cy="0" r="5.5" fill="#ffe066" stroke="#c99a1a" stroke-width="1.8"/>
+    <path d="M-12 14 L-18 22" stroke="#7bc96f" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- shy, gentle eyes -->
+  <ellipse cx="102" cy="128" rx="9" ry="10.5" fill="#1a1012"/>
+  <ellipse cx="154" cy="128" rx="9" ry="10.5" fill="#1a1012"/>
+  <circle cx="99" cy="124" r="3.4" fill="#fff"/><circle cx="151" cy="124" r="3.4" fill="#fff"/>
+  <circle cx="105" cy="132" r="1.4" fill="#fff"/><circle cx="157" cy="132" r="1.4" fill="#fff"/>
+  <path d="M93 118 l-4 -3 M159 118 l4 -3" stroke="#1a1012" stroke-width="2" stroke-linecap="round"/>
+  <!-- tiny nose -->
+  <path d="M123 146 Q128 142 133 146 Q128 151 123 146 Z" fill="#ff8fa6" stroke="#b05468" stroke-width="1.4"/>
+  <!-- the signature "(-)" mouth: a small dash held between two curved brackets -->
+  <path d="M118 152 Q113 159 118 166" fill="none" stroke="#8a5a2e" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M138 152 Q143 159 138 166" fill="none" stroke="#8a5a2e" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M123 159 H133" stroke="#8a5a2e" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- whiskers -->
+  <path d="M84 150 L64 146 M84 158 L64 162 M172 150 L192 146 M172 158 L192 162" stroke="#c49a74" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- rosy cheek pouches -->
+  <ellipse cx="86" cy="160" rx="12" ry="7" fill="#ffaabd" opacity=".6"/>
+  <ellipse cx="170" cy="160" rx="12" ry="7" fill="#ffaabd" opacity=".6"/>
+</svg>

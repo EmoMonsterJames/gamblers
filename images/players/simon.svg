@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Simon · Others (pug, male) · Young Adult — chubby fawn pug with a black mask and big sad eyes -->
+  <defs>
+    <clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+    <radialGradient id="fawn" cx="50%" cy="38%" r="65%"><stop offset="0" stop-color="#f3d9a6"/><stop offset="1" stop-color="#d9b06e"/></radialGradient>
+    <radialGradient id="mask" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#3a3230"/><stop offset="1" stop-color="#16110f"/></radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="#e8eefc"/>
+  <g clip-path="url(#cc)">
+    <!-- chubby upper body + a cozy striped tee -->
+    <path d="M18 262 C22 196 70 172 128 172 C186 172 234 196 238 262 Z" fill="url(#fawn)" stroke="#6b4a26" stroke-width="4"/>
+    <path d="M44 262 C48 214 84 196 128 196 C172 196 208 214 212 262 Z" fill="#7aa6d8" stroke="#3a4f6e" stroke-width="4"/>
+    <path d="M52 228 H204 M47 248 H209" stroke="#cfe0f4" stroke-width="7"/>
+    <!-- belly rolls peeking at the collar -->
+    <path d="M96 198 Q128 212 160 198" fill="none" stroke="#b88a4e" stroke-width="3" stroke-linecap="round"/>
+    <!-- neck fold -->
+    <path d="M78 176 Q128 196 178 176" fill="none" stroke="#b88a4e" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <!-- black folded ears -->
+  <path d="M60 70 C40 64 30 92 46 108 C56 96 66 86 80 82 Z" fill="#1c1614" stroke="#0a0706" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M196 70 C216 64 226 92 210 108 C200 96 190 86 176 82 Z" fill="#1c1614" stroke="#0a0706" stroke-width="3" stroke-linejoin="round"/>
+  <!-- round chubby head -->
+  <ellipse cx="128" cy="116" rx="74" ry="66" fill="url(#fawn)" stroke="#6b4a26" stroke-width="4"/>
+  <!-- forehead wrinkles -->
+  <path d="M100 70 Q128 62 156 70" fill="none" stroke="#a37a44" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M106 80 Q128 74 150 80" fill="none" stroke="#a37a44" stroke-width="3" stroke-linecap="round"/>
+  <path d="M120 88 Q128 84 136 88" fill="none" stroke="#a37a44" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- black mask -->
+  <path d="M78 118 C78 96 100 92 128 98 C156 92 178 96 178 118 C182 148 160 170 128 170 C96 170 74 148 78 118 Z" fill="url(#mask)"/>
+  <!-- big sad eyes: droopy outer corners, worried brows -->
+  <ellipse cx="100" cy="114" rx="17" ry="18" fill="#fff" stroke="#0a0706" stroke-width="2.4"/>
+  <ellipse cx="156" cy="114" rx="17" ry="18" fill="#fff" stroke="#0a0706" stroke-width="2.4"/>
+  <circle cx="101" cy="118" r="12.5" fill="#3b2414"/>
+  <circle cx="155" cy="118" r="12.5" fill="#3b2414"/>
+  <circle cx="101" cy="119" r="7" fill="#0b0605"/>
+  <circle cx="155" cy="119" r="7" fill="#0b0605"/>
+  <circle cx="96" cy="112" r="4.2" fill="#fff"/><circle cx="150" cy="112" r="4.2" fill="#fff"/>
+  <circle cx="106" cy="124" r="1.8" fill="#fff"/><circle cx="160" cy="124" r="1.8" fill="#fff"/>
+  <!-- teary shine along the lower lids -->
+  <path d="M88 128 Q100 134 113 128" fill="none" stroke="#9fd3ff" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+  <path d="M143 128 Q156 134 168 128" fill="none" stroke="#9fd3ff" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+  <path d="M168 130 q3 8 0 12 q-4 -4 0 -12 Z" fill="#9fd3ff" stroke="#5aa6e0" stroke-width="1"/>
+  <!-- worried brows (inner ends up) -->
+  <path d="M86 94 Q96 92 110 86" fill="none" stroke="#f3d9a6" stroke-width="4" stroke-linecap="round"/>
+  <path d="M170 94 Q160 92 146 86" fill="none" stroke="#f3d9a6" stroke-width="4" stroke-linecap="round"/>
+  <!-- squishy nose + muzzle -->
+  <path d="M112 140 Q128 132 144 140 Q146 150 128 152 Q110 150 112 140 Z" fill="#0b0605" stroke="#000" stroke-width="1.5"/>
+  <ellipse cx="121" cy="141" rx="3" ry="1.6" fill="#5a4a48"/><ellipse cx="135" cy="141" rx="3" ry="1.6" fill="#5a4a48"/>
+  <path d="M104 132 Q128 122 152 132" fill="none" stroke="#3e3431" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- a little frown -->
+  <path d="M128 152 V158 M114 164 Q128 156 142 164" fill="none" stroke="#8a7a74" stroke-width="3" stroke-linecap="round"/>
+  <!-- chubby cheeks -->
+  <ellipse cx="70" cy="140" rx="12" ry="8" fill="#e9b97a" opacity=".55"/>
+  <ellipse cx="186" cy="140" rx="12" ry="8" fill="#e9b97a" opacity=".55"/>
+</svg>

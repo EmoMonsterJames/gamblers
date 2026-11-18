@@ -756,7 +756,7 @@ export const NPCS = [
     // 🦟 모기 숲 (Survival Land) only: tiny bites come often and quietly (an alarm under the pet, no attack screen) ·
     //    only the cancer bite gets the attack popup · the big one always starts a battle (screens/survivalMosquito.js)
     { id: "tiny_mosquito", name: "Tiny Mosquito", emoji: "🦟", art: "🩸", color: "#4d7c0f", align: "evil", survivalOnly: true,
-      moves: [{ hp: -1, bite: true, name: "물기", w: 95 }, { disease: "cancer", w: 5 }] },
+      moves: [{ hp: -5, bite: true, name: "물기", w: 95 }, { disease: "cancer", w: 5 }] },
     { id: "monster_mosquito", name: "Monster Mosquito", emoji: "🦟", art: "💉", color: "#14532d", align: "evil", survivalOnly: true, big: true,
       moves: [{ battle: "mosquito", name: "Battle" }] },
     // 🎅 arctic (빙하) region only · 🦹 terrorist kidnap room only (always there)

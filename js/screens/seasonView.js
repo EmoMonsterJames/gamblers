@@ -901,6 +901,8 @@ function locationStage(s) {
         if (npcBusy || t.arena || !t.npc?.length || t.remaining > t.npc[0]) return; // 🏟️ no NPCs during an arena battle
         if (loc.revival && activityBusy()) return; // 🔄 Survival Land: never on top of a quiz / roulette / popup
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
+        // 🎭 / 🧊 an attack that falls while Profile Copy (or Icy Breath) is still on is dropped — no second copy, no extra time
+        if ((t.possessUntil || 0) > Date.now() || (t.freezeUntil || 0) > Date.now()) { t.npc.shift(); Store.saveSeason(); return; }
         npcBusy = true;
         t.npc.shift();
         const was = t.running; t.running = false; updateHud();

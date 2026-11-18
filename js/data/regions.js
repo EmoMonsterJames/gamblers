@@ -438,7 +438,7 @@ export const NEW_MAPS = [
       casinos: [cg("coinflip", "Twin Flip", "🪞", "거울 동전 던지기! x1.9"), cg("pick", "Which Is Real?", "🎭", "가면 3개 중 진짜는?", { n: 3, closed: "🎭", prize: "💰", miss: "🃏" })] },
     //   mosquito: little mosquitoes buzz all over the play screen · 🦟 Tiny Mosquito bites often (HP −1, 5% cancer) ·
     //             a giant mosquito egg grows under the pet → at 100 it hatches the 🦟 Monster Mosquito (battle — lose = death)
-    { id: "mosquito_forest", region: "survival", name: "모기 숲", emoji: "🦟", color: "#4d7c0f", x: 50, y: 10, shops: ["general", "weapon"], npc: "always", npcList: ["tiny_mosquito", "monster_mosquito"], revival: true, noEnd: true, mosquito: true, capture: true,
+    { id: "mosquito_forest", region: "survival", name: "모기 숲", emoji: "🦟", color: "#4d7c0f", x: 50, y: 10, shops: ["general", "weapon"], npc: "always", npcList: ["tiny_mosquito"], revival: true, noEnd: true, mosquito: true, capture: true,
       slots: [sl("Bloodsucker Bayou", "IPEX", "ghost", "🦟 🩸 🌿", "🍃 🐸", "🌳", "🥚", "#14532d", "#020a04", "#84cc16")],
       casinos: [cg("dice", "Swamp Dice", "🦟", "늪지 주사위! 6-6 이면 x30"), cg("pick", "Egg Hunt", "🥚", "알 4개 중 하나… 모기알 주의!", { n: 4, closed: "🥚", prize: "💰", miss: "🦟" })] }
 ];

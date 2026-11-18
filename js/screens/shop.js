@@ -23,9 +23,9 @@ export function shopView(shopId, pid, locId, onChange) {
     const wrap = h("div.shop.shop-" + shopId);
     // discount shop: a seeded handful per map per round; other shops: their list + second-shop listings
     // 🔄 패자부활전: no random map ticket (only Survival Land passes work there)
-    // 🔄 Survival Land shops: no NPC Block tickets and no HP-raising items
+    // 🔄 Survival Land shops: no NPC Block tickets (HP items only where the map's own list has them)
     const survival = LOC_BY_ID[locId]?.region === "survival";
-    const svBanned = it => it.cat === "item" && (ITEM_BY_ID[it.id]?.npcBlock || ITEM_BY_ID[it.id]?.hp);
+    const svBanned = it => it.cat === "item" && ITEM_BY_ID[it.id]?.npcBlock;
     const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => (!RV.inRevival(pid) || it.id !== "map_random") && !(survival && svBanned(it)));
     const render = () => {
         const d = Store.getDecor(pid);

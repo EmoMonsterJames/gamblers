@@ -2,7 +2,7 @@
 // 🔄 Survival Land — the newer map rules (older ones: survivalLand.js)
 //   🎵 every Survival Land map: its own quiet background loop (¼ of the BGM volume)
 //   🧊 Icy Castle: a solid ice wall in front of every corner · 🔨 hammer (30 hits, then a
-//      10 s recharge) — every hit may break the wall (random: 1 hit … never in 30)
+//      10 s recharge) — the breaking hit is drawn (5:10% · 10:10% · 20:30% · 30:30% · 40+:20%)
 //      👸 Ice Queen: HP −20 / HP −30 / instant death / Icy Breath (the whole screen freezes for 30 s)
 //   🦋 Decalcomania Casino: the play screen split into two identical halves — every object is
 //      real on one side and fake (slightly off) on the other · a fake one pressed = HP −10
@@ -38,13 +38,21 @@ export function survivalBgm(loc) {
 }
 
 // ================================================================ 🧊 Icy Castle
-export const HAMMER_MAX = 30, HAMMER_WAIT = 10, ICE_BREAK = 0.07; // 7% a hit → 1st hit 7% · none in 30 hits ≈ 11%
+export const HAMMER_MAX = 30, HAMMER_WAIT = 10;
+// the hit that breaks a wall is drawn when the wall is first struck:
+//   within 5 hits 10% · 6~10 hits 10% · 11~20 hits 30% · 21~30 hits 30% · 31~45 hits 20%
+export const ICE_BREAK_ODDS = [[1, 5, 0.10], [6, 10, 0.10], [11, 20, 0.30], [21, 30, 0.30], [31, 45, 0.20]];
+export function drawBreakAt() {
+    let r = Math.random();
+    for (const [a, b, p] of ICE_BREAK_ODDS) { if (r < p) return a + Math.floor(Math.random() * (b - a + 1)); r -= p; }
+    return 45;
+}
 export const ICE_FREE = ["inv", "card"]; // the bag and the profile are not corners
 export const ICY_RULES = [
     "🤧 입장할 때마다 40% 확률로 독감에 걸립니다.",
     "🧊 이 맵의 모든 코너는 단단한 얼음벽으로 막혀 있습니다 (🎒 인벤토리 · 🪪 프로필 제외).",
     `🔨 입장하면 망치를 받습니다 — 얼음벽을 클릭해서 내리치세요. 망치는 ${HAMMER_MAX}번 쓸 수 있고, 다 쓰면 ${HAMMER_WAIT}초 뒤에 다시 ${HAMMER_MAX}번 충전됩니다.`,
-    "💥 내리칠 때마다 금이 가고 구멍이 뚫리며, 랜덤한 확률로 와장창 깨집니다 — 한 번에 깨질 수도, 30번을 다 써도 안 깨질 수도 있습니다.",
+    "💥 내리칠 때마다 금이 가고 구멍이 뚫리며, 랜덤하게 와장창 깨집니다 — 5번 안에 10% · 6~10번 10% · 11~20번 30% · 21~30번 30% · 31번 이상 20%.",
     "👸 Ice Queen (악)만 나타납니다: HP −20 (10%) · HP −30 (10%) · 바로 사망 (5%) · 🧊 Icy Breath (75%) — 화면 전체가 얼어붙어 30초 동안 아무것도 못 합니다 (플레이 시간은 계속 흐름).",
     "⏱️ 이 맵에서 2분이 지나야 다른 Survival Land 맵권을 쓸 수 있습니다."
 ];
@@ -129,7 +137,8 @@ export function iceWrap(loc, t, pid, tabId, content) {
         wall.classList.remove("hit"); void wall.offsetWidth; wall.classList.add("hit");
         const ns = crackSvg(st); svg.replaceWith(ns); svg = ns;
         drawHole(wall, st);
-        if (Math.random() < ICE_BREAK) shatter(); else Store.saveSeason();
+        st.breakAt ||= Math.max(st.hits, drawBreakAt());
+        if (st.hits >= st.breakAt) shatter(); else Store.saveSeason();
     });
     function shatter() {
         st.broken = true;
@@ -399,37 +408,51 @@ function buildPossess() {
     tone(110, 0.8, "sawtooth", 0.05, 0, -40); tone(70, 1, "sine", 0.12);
 }
 // 🤖 the devil finger: a random visible button — in the top popup if one is open, else on the play screen
-const AI_SKIP = ".pass-row, .loc-timer, .fr-list, .rv-noend, .tabs-admin, .x, [data-no-ai]";
+// only real, pressable controls: enabled buttons / tabs / game cards that are on screen and not covered by anything
+const AI_SKIP = ".pass-row, .loc-timer, .fr-list, .rv-noend, .tabs-admin, .x, .modal-x, [data-no-ai], [aria-disabled=true], .disabled, .locked";
+const AI_PICK = "button, .tab, .gcard, a.btn, [role=button]";
+// the spot the finger presses: the middle part of the control, and it must really land on it (nothing on top)
+function aiSpot(el) {
+    const r = el.getBoundingClientRect();
+    if (r.width < 14 || r.height < 12 || r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) return null;
+    const x = Math.min(innerWidth - 2, Math.max(2, r.left + r.width * rnd(0.4, 0.6))), y = Math.min(innerHeight - 2, Math.max(2, r.top + r.height * rnd(0.4, 0.6)));
+    const top = document.elementsFromPoint(x, y).find(e => !e.closest(".fp-layer"));
+    return top && (top === el || el.contains(top)) ? { x, y } : null;
+}
 function aiTargets() {
     const pop = [...document.querySelectorAll(".modal-back:not(.out)")].pop();
-    const scope = pop ? [pop] : [...document.querySelectorAll(".location .loc-main, .location .dc-mirror, .location .rv-tags")];
-    const vis = el => { const r = el.getBoundingClientRect(); return r.width > 4 && r.height > 4 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; };
+    const scope = pop ? [pop] : [...document.querySelectorAll(".location .loc-main, .location .dc-mirror")];
     const out = [];
-    for (const sc of scope) for (const el of sc.querySelectorAll("button, .gcard, .tab, a.btn, [role=button], .emo-ball, .donate-item")) {
+    for (const sc of scope) for (const el of sc.querySelectorAll(AI_PICK)) {
         if (el.disabled || el.closest(AI_SKIP) || el.closest(".fp-layer")) continue;
-        if (vis(el)) out.push(el);
+        if (getComputedStyle(el).pointerEvents === "none" || getComputedStyle(el).visibility === "hidden") continue;
+        const spot = aiSpot(el);
+        if (spot) out.push({ el, ...spot });
     }
     return out;
 }
+// ⏱️ a human pace: the finger glides over, rests a moment, presses — then a pause before the next one
+export const AI_MOVE_MS = 900, AI_HOVER_MS = [450, 900], AI_GAP_MS = [2000, 3800];
 async function aiMove() {
     const S = status;
     S.aiBusy = true;
     try {
         const list = aiTargets();
-        if (!list.length) { S.nextAi = Date.now() + 800; return; }
-        const el = list[Math.floor(Math.random() * list.length)];
-        const r = el.getBoundingClientRect();
-        const x = r.left + r.width * rnd(0.3, 0.7), y = r.top + r.height * rnd(0.3, 0.7);
+        if (!list.length) { S.nextAi = Date.now() + 1200; return; }
+        const { el, x, y } = list[Math.floor(Math.random() * list.length)];
         S.finger.style.left = x + "px"; S.finger.style.top = y + "px";
-        tone(300, 0.08, "square", 0.02);
-        await sleep(520);
+        await sleep(AI_MOVE_MS + rnd(...AI_HOVER_MS));
         if (status !== S || !S.possEl || S.freezeEl) return;
+        // still there and still pressable at that spot?
+        const spot = el.isConnected && !el.disabled ? aiSpot(el) : null;
+        if (!spot) return;
+        S.finger.style.left = spot.x + "px"; S.finger.style.top = spot.y + "px";
         S.finger.classList.remove("tap"); void S.finger.offsetWidth; S.finger.classList.add("tap");
         tone(140, 0.06, "square", 0.03);
-        if (el.isConnected && !el.disabled) el.click();
+        el.click();
     } finally {
         S.aiBusy = false;
-        S.nextAi = Date.now() + rnd(700, 1500);
+        S.nextAi = Date.now() + rnd(...AI_GAP_MS);
     }
 }
 
@@ -480,9 +503,12 @@ export async function specialNpcVisit(pid, npc, move) {
     if (t) {
         if (move.freeze) t.freezeUntil = Date.now() + move.freeze * 1000;
         else {
-            t.possessUntil = Date.now() + move.profileCopy * 1000;
-            // 🛡️ 40%: whatever the copy does, the player can't die before the minute is over (G.deathShield)
-            t.possessSafe = Math.random() < PROFILE_SAFE;
+            // never stretched by a second copy: the running minute stays as it is
+            if (!((t.possessUntil || 0) > Date.now())) {
+                t.possessUntil = Date.now() + move.profileCopy * 1000;
+                // 🛡️ 40%: whatever the copy does, the player can't die before the minute is over (G.deathShield)
+                t.possessSafe = Math.random() < PROFILE_SAFE;
+            }
         }
         Store.saveSeason(true);
     }

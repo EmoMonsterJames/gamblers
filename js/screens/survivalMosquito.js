@@ -1,10 +1,11 @@
 // =====================================================================
 // 🦟 모기 숲 (Mosquito Forest) — Survival Land map rules
 //   · little mosquitoes fly all over the play screen with a quiet whine
-//   · 🦟 Tiny Mosquito (악) comes often: 물기 HP −1 (95%) — no attack screen, just an alarm under the
+//   · 🦟 Tiny Mosquito (악) comes often: 물기 HP −5 (95%) — no attack screen, just the bite counter under the
 //     pet · 암 전파 (5%) — the only one with an attack popup
 //   · 🥚 a giant mosquito egg grows under the pet (like Foggy Church's devil statue) — it gets bigger and
-//     shakes near 100 · at 100 it hatches → the 🦟 Monster Mosquito comes, always
+//     shakes near 100 · at 100 it hatches → the 🦟 Monster Mosquito comes (only this way) ·
+//     the first egg is planned to hatch at a random moment of the 5 minutes, so it always hatches at least once
 //   · 🦟 Monster Mosquito (악): Battle — HP 100 · Syringe Poke · Ultrasound · Wing Slap · Draw Blood ·
 //     Tiny Mosquito swarm · the player fights with their own weapons · losing the battle = death
 // mosquitoExtras() plugs into survivalIce.survivalExtras() · mosquitoBite / mosquitoBattle into corners2.npcAttack()
@@ -24,15 +25,15 @@ const npcById = id => NPCS.find(n => n.id === id);
 
 export const MOSQ_RULES = [
     "🦟 작은 모기들이 플레이 화면 전체를 날아다닙니다 (작은 모기 소리).",
-    "🦟 Tiny Mosquito (악): 자주 나타납니다 — 물기 HP −1 (95%, 공격 화면 없이 펫 아래에 알림) · 암 전파 (5%, 공격 화면).",
-    "🥚 펫 아래의 대형 모기알이 랜덤하게 점점 자랍니다 — 100이 되면 알이 깨지면서 Monster Mosquito가 무조건 나타납니다.",
+    "🦟 Tiny Mosquito (악): 자주 나타납니다 — 물기 HP −5 (95%, 공격 화면 없이 펫 아래 모기알 상자에 표시) · 암 전파 (5%, 공격 화면).",
+    "🥚 펫 아래의 대형 모기알이 랜덤하게 점점 자랍니다 — 100이 되면 알이 깨지면서 Monster Mosquito가 나타납니다 (Monster Mosquito는 알에서만 나옵니다 · 5분 안에 최소 1번은 반드시 깨집니다).",
     "⚔️ Monster Mosquito (악): 배틀! 대왕모기 HP 100 · 내 무기로 싸웁니다 — 배틀에서 지면 바로 사망합니다.",
     "　└ 대왕모기 무기: 💉 Syringe Poke HP −5 (90%) · 📢 Ultrasound 내 공격 1회 마비 (95%) · 🪽 Wing Slap HP −10 (80%) · 🩸 Draw Blood HP −10 · 본인 +5 (80%) · 🦟 Tiny Mosquito HP −5~−10 (90%)",
     "⏱️ 이 맵에서 2분이 지나야 다른 Survival Land 맵권을 쓸 수 있습니다."
 ];
 
-// the side alarm of the running Mosquito Forest screen (set by mosquitoExtras)
-let sideMsg = null, sideFlash = null;
+// the side alarm of the running Mosquito Forest screen (set by mosquitoExtras) · biteFx: the bite counter in the egg box
+let sideMsg = null, sideFlash = null, biteFx = null;
 const alarm = (text, kind = "warn", ms = 2600) => sideMsg ? sideMsg(text, kind, ms) : toast(text, kind, ms);
 
 // ================================================================ 🦟 Tiny Mosquito
@@ -40,7 +41,8 @@ const alarm = (text, kind = "warn", ms = 2600) => sideMsg ? sideMsg(text, kind, 
 export function mosquitoBite(pid, npc, move) {
     const out = G.npcHit(pid, npc, move);
     if (out.blocked) { alarm(`🎫 Tiny Mosquito의 물기를 NPC Block 권으로 막았다 (남은 ${out.left}회)`, "ok"); return out; }
-    alarm(`🦟 'Tiny Mosquito'가 물어서 HP −${Math.abs(move.hp || 1)}`, "warn", 2600);
+    if (biteFx) biteFx(Math.abs(move.hp || 5));
+    else alarm(`🦟 'Tiny Mosquito'가 물어서 HP −${Math.abs(move.hp || 5)}`, "warn", 2600);
     sideFlash?.();
     tone(2400, 0.04, "sine", 0.02); tone(1800, 0.06, "triangle", 0.02, 0.04);
     return out;
@@ -245,42 +247,85 @@ export function mosquitoExtras(loc, t, pid, { msg, die, onChange }) {
     cleanups.push(() => flies.forEach(f => clearTimeout(f._t)));
     Sound.buzz(true);
     cleanups.push(() => Sound.buzz(false));
-    // 🥚 the egg under the pet
+    // 🥚 the egg under the pet — one tidy box: the egg · its gauge · the Tiny Mosquito bite counter
+    //    (egg growth and bites show up here as small pops, so they never pile up as messages)
     const M = (t.mosq ||= { egg: 0, bites: 0, next: rint(4, 10) });
-    const eggLv = h("small.mq-egg-lv"), egg = h("div.mq-egg", h("span", "🥚"), h("i.mq-crack"));
-    const side = h("div.mq-egg-box", { title: "대형 모기알 — 100이 되면 깨지면서 Monster Mosquito가 나타납니다" }, h("small.mq-egg-title", "🥚 대형 모기알"), egg, eggLv);
+    M.sec ||= 0;
+    // 🗓️ the first egg's plan: it hatches at a random running second that still leaves time before the turn ends
+    if (!M.plan && !M.hatched) {
+        const room = Math.max(20, (t.remaining || 300) - 35);
+        const at = rint(Math.min(45, room - 5), Math.min(240, room));
+        const n = rint(7, 10), secs = new Set();
+        while (secs.size < n - 1) secs.add(rint(3, at - 2));
+        const when = [...secs].sort((x, y) => x - y).concat(at);
+        const cuts = Array.from({ length: n - 1 }, () => rint(5, 95)).sort((x, y) => x - y);
+        const amt = [...cuts, 100].map((c, i) => c - (i ? cuts[i - 1] : 0));
+        M.plan = when.map((s2, i) => [M.sec + s2, Math.max(1, amt[i])]);
+        M.hatchAt = M.sec + at;
+        Store.saveSeason();
+    }
+    const eggLv = h("b.mq-egg-n"), eggFill = h("i"), pops = h("div.mq-pops");
+    const egg = h("div.mq-egg", h("span", "🥚"), h("i.mq-crack"));
+    const biteN = h("b.mq-bite-n"), biteHit = h("span.mq-bite-hit");
+    const biteRow = h("div.mq-bites", { title: "Tiny Mosquito에게 물린 횟수 (1번 = HP −5)" }, h("span.mq-bite-ico", "🦟"), h("span.mq-bite-txt", h("small", "Tiny Mosquito"), h("span", "물림 ", biteN)), biteHit);
+    const side = h("div.mq-egg-box", { title: "대형 모기알 — 100이 되면 깨지면서 Monster Mosquito가 나타납니다" },
+        h("div.mq-egg-head", h("small.mq-egg-title", "🥚 대형 모기알"), eggLv),
+        h("div.mq-egg-stage", egg, pops),
+        h("div.mq-egg-bar", eggFill),
+        biteRow);
+    const pop = (text, cls) => { const p = h("span.mq-pop." + cls, text); pops.append(p); setTimeout(() => p.remove(), 1500); };
     const drawEgg = () => {
         const v = Math.min(100, M.egg);
         egg.style.setProperty("--s", (0.6 + v / 100 * 0.9).toFixed(2));
         egg.classList.toggle("shake", v >= 70 && v < 90);
         egg.classList.toggle("shake2", v >= 90);
         egg.classList.toggle("cracked", v >= 85);
-        eggLv.textContent = `🦟 ${v} / 100`;
+        eggLv.textContent = `${v} / 100`;
+        eggFill.style.width = v + "%";
+        side.classList.toggle("hot", v >= 70);
     };
-    drawEgg();
+    const drawBites = () => { biteN.textContent = `${M.bites || 0}회`; };
+    drawEgg(); drawBites();
+    biteFx = dmg => {
+        M.bites = (M.bites || 0) + 1; drawBites();
+        biteHit.textContent = `HP −${dmg}`;
+        biteRow.classList.remove("hit"); void biteRow.offsetWidth; biteRow.classList.add("hit");
+        pop(`🦟 −${dmg}`, "bite");
+    };
+    cleanups.push(() => { biteFx = null; });
     sideFlash = () => { side.classList.remove("bit"); void side.offsetWidth; side.classList.add("bit"); };
+    const grow = n => {
+        M.egg = Math.min(100, M.egg + n);
+        drawEgg(); Store.saveSeason();
+        tone(70, 0.4, "sine", 0.08); egg.classList.remove("grow"); void egg.offsetWidth; egg.classList.add("grow");
+        pop(`🥚 +${n}`, "grow");
+    };
     let busy = false;
     const iv = setInterval(async () => {
         if (busy || !t.running || G.S()?.turn !== t || battling) return;
-        // 🦟 bites: often, at random
+        M.sec++;
+        // 🦟 bites: often, at random (shown in the egg box)
         if (--M.next <= 0) {
             M.next = rint(4, 12);
             if (document.querySelector(".modal-back:not(.out)")) M.next = 2;
-            else { busy = true; M.bites++; const out = await tinyAttack(pid); busy = false; onChange?.(); if (!G.S()?.turn) return die(); void out; }
+            else { busy = true; const out = await tinyAttack(pid); busy = false; onChange?.(); if (!G.S()?.turn) return die(); void out; }
         }
-        // 🥚 the egg grows
-        if (M.egg < 100 && Math.random() < 1 / 16) {
-            M.egg = Math.min(100, M.egg + rint(4, 12));
-            drawEgg(); Store.saveSeason();
-            tone(70, 0.4, "sine", 0.08); egg.classList.remove("grow"); void egg.offsetWidth; egg.classList.add("grow");
-            msg?.(`🥚 모기알이 자랐다… (${M.egg}/100)`, M.egg >= 70 ? "warn" : "info", 2600);
+        // 🥚 the egg grows: the first one by its plan (it always hatches in time) · later ones at random
+        if (M.egg < 100) {
+            if (M.plan?.length) {
+                let add = 0;
+                while (M.plan.length && M.plan[0][0] <= M.sec) add += M.plan.shift()[1];
+                if (!M.plan.length) add = 100 - M.egg; // the plan's last step: exactly to 100
+                if (add > 0) grow(add);
+            }
+            else if (Math.random() < 1 / 16) grow(rint(4, 12));
         }
         if (M.egg >= 100 && !activityBusy()) {
             busy = true;
             egg.classList.add("hatch"); Sound.boom(); noise(0.8, 0.12);
             msg?.("🥚💥 모기알이 깨졌다! Monster Mosquito 등장!", "error", 4000);
             await sleep(1300);
-            M.egg = 0; Store.saveSeason(true);
+            M.egg = 0; M.hatched = (M.hatched || 0) + 1; M.plan = null; Store.saveSeason(true);
             egg.classList.remove("hatch"); drawEgg();
             const r = await mosquitoBattle(pid);
             busy = false; onChange?.();

@@ -119,12 +119,28 @@ export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).fil
 // product moved elsewhere / turned off in the admin) is stocked with 2~8
 // different goods of that shop type, fixed per map (seeded by map + shop).
 // Map passes and alphabet cards are never used as filler.
-// 🔄 Survival Land (패자부활전) general shops: a fixed survival stock + the Survival Land passes
-export const SURVIVAL_STOCK = ["time_ext", "oxygen", "slot_plus5", "casino_plus1", "random_letter", "super_letter", "flu_cure", "cancer_cure"];
+// 🔄 Survival Land (패자부활전) general shops: a fixed list per map (Survival Land passes = "pass_<map id>", 45,000G)
+//    + whatever the admin placed on that map by name (an item whose 판매 맵 lists it, e.g. ⏹️ 턴 종료권)
+const SV_ALL_PASSES = ["disaster_casino", "arcade", "button_casino", "foggy_church", "quiz_casino", "inferno_casino", "icy_castle", "decal_casino", "mosquito_forest"].map(id => "pass_" + id);
+export const SURVIVAL_SHOP = {
+    icy_castle:      ["pass_arcade", "pass_quiz_casino", "oxygen", "casino_plus1", "cancer_cure"],
+    decal_casino:    ["pass_inferno_casino", "pass_mosquito_forest", "slot_plus5", "hp_50", "flu_cure"],
+    mosquito_forest: ["pass_disaster_casino", "pass_foggy_church", "hp_10", "casino_plus1", "space_suit"],
+    disaster_casino: ["time_ext", "flu_cure", "pass_decal_casino", "pass_icy_castle", "hp_10"],
+    button_casino:   ["hp_10", ...SV_ALL_PASSES.filter(id => id !== "pass_button_casino"), "oxygen", "space_suit", "wings", "time_ext"],
+    quiz_casino:     ["pass_disaster_casino", "pass_mosquito_forest", "hp_10", "casino_plus1"],
+    inferno_casino:  ["pass_icy_castle", "pass_button_casino", "pass_arcade", "pass_foggy_church", "hp_10"],
+    foggy_church:    ["pass_decal_casino", "hp_10", "slot_plus5", "casino_plus1"],
+    arcade:          ["pass_disaster_casino", "pass_icy_castle", "hp_10", "slot_plus5", "casino_plus1"]
+};
 export function shopListing(shopId, locId) {
     if (shopId === "general" && LOCATIONS.find(l => l.id === locId)?.region === "survival") {
-        const base = Object.fromEntries(SHOPS.general.list.filter(it => !it.locs).map(it => [it.id, it]));
-        return [...shopItems(shopId, locId), ...SURVIVAL_STOCK.filter(id => base[id]).map(id => ({ cat: "item", id, price: saleOf("item", id).price || base[id].price, gold: 0 }))];
+        const ids = SURVIVAL_SHOP[locId] || [];
+        const base = Object.fromEntries(SHOPS.general.list.map(it => [it.id, it]));
+        const fixed = ids.filter(id => ITEM_BY_ID[id]).map(id => ({ cat: "item", id, price: (saleOf("item", id).price || base[id]?.price || 0), gold: 0 }));
+        // extras the admin pinned to this very map (never another Survival Land pass)
+        const pinned = shopItems(shopId, locId).filter(it => saleOf(it.cat, it.id).locs?.includes(locId) && !ids.includes(it.id) && !ITEM_BY_ID[it.id]?.survival);
+        return [...fixed, ...pinned];
     }
     const list = [...shopItems(shopId, locId), ...altItems(shopId, locId)];
     if (list.length || !locId || shopId === "discount") return list;

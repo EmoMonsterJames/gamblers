@@ -1,7 +1,7 @@
 // =====================================================================
 // 🔄 Survival Land map rules (패자부활전 only — see game/revival.js)
 //   🌪️ Disaster Casino: earthquake · flood (3 stages, oxygen) · gale — sometimes together
-//   🔘 Button Casino:   every button pressed in the play area costs HP −5
+//   🔘 Button Casino:   every button pressed in the play area costs HP −5 (🤖 Robot EmoMon: 30% of the presses are free)
 //   ⛪ Foggy Church:    fog for 10 s · the devil statue grows → at 100 it breaks → devil wheel
 //                       🧑‍⚖️ Priest NPC: sermon (30 s of hymns) / forced donation from the player's OWN gold
 // survivalEffects() plugs into extraCorners.mapEffects(); priestVisit() into corners2.npcAttack().
@@ -29,16 +29,18 @@ async function alertBox(title, lines, cls = "") {
 }
 
 // ---------------------------------------------------------------- 🌪️ Disaster Casino rules
+// 🔘 Button Casino: a Robot-type EmoMon on hand makes this share of the button presses free
+export const BUTTON_ROBOT_GUARD = 0.3;
 export const DISASTER = {
     quake: pid => X.ownsTypes(pid, ["Earth"]) ? 5 : 10,
-    wind: pid => X.ownsTypes(pid, ["Fly", "Air", "Space"]) ? 0 : 5,
+    wind: pid => X.ownsTypes(pid, ["Fly", "Air", "Space"]) ? 0 : 10,
     flood2: pid => X.ownsTypes(pid, ["Water", "Ice"]) ? 0 : 5,
     // stage 3 without an oxygen tank: oxygen loss range + HP loss per breath
     flood3: pid => ({ oxy: X.ownsTypes(pid, ["Air"]) ? [1, 5] : X.ownsTypes(pid, ["Water"]) ? [5, 10] : [5, 20], hp: X.ownsTypes(pid, ["Water", "Ice"]) ? 5 : 10 })
 };
 export const DISASTER_RULES = [
     "🫨 지진: HP −10 (🪨 Earth 속성 몬스터 보유 시 −5) · 화면이 크게 흔들립니다",
-    "🌪️ 강풍: HP −5 + 아이템 1개를 빼앗김 (패자부활전 인벤토리 먼저 → 없으면 내 아이템) · 🪽 Fly / 💨 Air / 🪐 Space 보유 시 HP 감소 없음",
+    "🌪️ 강풍: HP −10 + 아이템 1개를 빼앗김 (패자부활전 인벤토리 먼저 → 없으면 내 아이템) · 🪽 Fly / 💨 Air / 🪐 Space 보유 시 HP 감소 없음",
     "🌊 홍수 1단계(⅓): 영향 없음 · 2단계(⅔): HP −5 (💧 Water / 🧊 Ice 보유 시 없음)",
     "🌊 홍수 3단계(가득): 🤿 산소통 필요! 없으면 산소 레벨 100에서 3초마다 5~20% 감소 + HP −10 · 산소 0 또는 HP 0 = 즉사",
     "　└ 💧 Water: 산소 5~10% · HP −5 / 💨 Air: 산소 1~5% (HP −10) / 🧊 Ice: 산소 5~20% · HP −5",
@@ -111,9 +113,17 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         const onClick = e => {
             if (dead) return;
             const b = e.target.closest?.("button, .gcard, .tab, a.btn, [role=button], .emo-ball, .donate-item");
-            if (!b || b.disabled || !b.closest(".location")) return;
+            if (!b || b.disabled || !b.closest(".location") || b.closest(".rv-tags")) return; // the rule tags are free to read
             const ps = ps_(pid);
             if (!ps) return;
+            // 🤖 a Robot-type EmoMon on hand blocks the toll 30% of the time
+            if (X.ownsTypes(pid, ["Robot"]) && Math.random() < BUTTON_ROBOT_GUARD) {
+                const r = b.getBoundingClientRect(), f = h("div.rv-btn-tax.guard", "🤖 BLOCK");
+                f.style.left = (r.left + r.width / 2) + "px"; f.style.top = (r.top + window.scrollY) + "px";
+                document.body.append(f); setTimeout(() => f.remove(), 900);
+                tone(1400, 0.05, "square", 0.02); tone(1900, 0.06, "square", 0.02, 0.05);
+                return;
+            }
             if (ps.hp <= loc.buttonTax) {
                 e.preventDefault(); e.stopPropagation();
                 Sound.boom(); toast("🔘 버튼을 누르다 HP가 바닥났다…", "error", 5000);
@@ -130,6 +140,9 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
         root.addEventListener("click", onClick, true);
         cleanups.push(() => root.removeEventListener("click", onClick, true));
         parts.push(h("span.rv-tag.red", `🔘 버튼 1번 = HP −${loc.buttonTax}`));
+        const robot = X.ownsTypes(pid, ["Robot"]);
+        parts.push(h("button.rv-tag" + (robot ? ".green" : ".gray"), { onclick: () => alertBox("🤖 Robot 몬스터 보호", [`🤖 Robot 속성 이모몬스터를 갖고 있으면 버튼을 누를 때 ${Math.round(BUTTON_ROBOT_GUARD * 100)}% 확률로 HP가 줄지 않습니다.`, robot ? "✅ 지금 Robot 몬스터를 갖고 있어 보호가 적용 중입니다." : "❌ 지금은 Robot 몬스터가 없어 보호가 적용되지 않습니다 (EmoMon Capture에서 잡아 보세요)."]) },
+            robot ? `🤖 Robot 보호 ON · ${Math.round(BUTTON_ROBOT_GUARD * 100)}% 확률로 HP 차감 막음` : `🤖 Robot 몬스터 보유 시 ${Math.round(BUTTON_ROBOT_GUARD * 100)}% 확률로 HP 차감 막음`));
     }
 
     // ====================================================== 🌪️ Disaster Casino
