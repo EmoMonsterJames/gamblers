@@ -720,7 +720,7 @@ function locationStage(s) {
     // 🕹️ Arcade: only the corners found inside the game show up
     const arcadeTabs = () => [["arcade", "🕹️ ARCADE"], ...(t.arcade?.found || []).map(k => [CORNER_KINDS[k].tab, `${CORNER_KINDS[k].emoji} ${CORNER_KINDS[k].label}`]), ["inv", "🎒 인벤토리"], ["emo:dex", "📖 EmoMon Dex"], ["card", "🪪 프로필"]];
     // 👫 내 친구: on every map · 🤝 도움주기: on this season's 20 help maps
-    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...(SO.helpHere(loc) && !loc.kidnap ? [["help", "🤝 도움주기"]] : []), ["friends", "👫 내 친구"]); return l; };
+    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : [])); return l; };
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),

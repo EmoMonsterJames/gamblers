@@ -69,13 +69,17 @@ function seeded(str) { let x = 2166136261; for (const c of str) { x ^= c.charCod
 export function helpMaps() {
     // Survival Land maps are hidden (off) outside the revival — count them anyway so the 20 stay the same all season
     const sv = l => l.revival || l.region === "survival";
-    const live = LOCATIONS.filter(l => (sv(l) ? !Store.maps?.locs?.[l.id]?.off : !l.off) && !l.kidnap).map(l => l.id).sort();
+    // maps the admin set to always / never are left out of the random draw
+    const live = LOCATIONS.filter(l => (sv(l) ? !Store.maps?.locs?.[l.id]?.off : !l.off) && !l.kidnap && l.help == null).map(l => l.id).sort();
     const rnd = seeded(`help|${S()?.number || 0}|${live.length}`);
     const a = [...live];
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     return a.slice(0, HELP_MAPS);
 }
-export const helpHere = loc => !!loc && helpMaps().includes(loc.id);
+// admin (지역·맵 관리): loc.help = true (항상) · false (안 함) · unset (시즌마다 랜덤 20곳)
+export const helpHere = loc => !!loc && !loc.kidnap && (loc.help != null ? !!loc.help : helpMaps().includes(loc.id));
+// 내 친구: every map unless the admin turned it off (loc.friends = false)
+export const friendsHere = loc => !!loc && !loc.kidnap && loc.friends !== false;
 const ps_ = pid => S()?.ps?.[pid];
 export const helpDoorState = pid => { const d = ps_(pid)?.helpDoor; return d?.round === S().round ? d.ok : null; };
 export function helpDoor(pid) {

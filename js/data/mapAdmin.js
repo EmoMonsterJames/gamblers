@@ -13,7 +13,7 @@ import { REGIONS, LOCATIONS, LOC_BY_ID } from "./catalog.js";
 
 const ORIG_REGIONS = REGIONS.map(r => structuredClone(r));
 const ORIG_LOCS = LOCATIONS.map(l => structuredClone(l));
-export const LOC_FIELDS = ["off", "name", "emoji", "region", "slots", "casino", "shops", "job", "npc", "discount", "beg", "spell", "earn", "honor", "bank", "bizhub", "capture", "hospital", "lab", "emoshop", "community", "arena", "lotto", "highlight", "dept", "gotcha", "req",
+export const LOC_FIELDS = ["off", "name", "emoji", "region", "slots", "casino", "shops", "job", "npc", "discount", "beg", "spell", "earn", "honor", "bank", "bizhub", "capture", "hospital", "lab", "emoshop", "community", "help", "friends", "arena", "lotto", "highlight", "dept", "gotcha", "req",
     // 🔄 Survival Land (패자부활전) map rules
     "noEnd", "passLate", "noPass", "deadNpc", "disaster", "buttonTax", "church", "arcade", "quiz", "inferno"];
 
