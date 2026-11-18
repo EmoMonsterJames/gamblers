@@ -133,7 +133,19 @@ export const SURVIVAL_SHOP = {
     foggy_church:    ["pass_decal_casino", "hp_10", "slot_plus5", "casino_plus1"],
     arcade:          ["pass_disaster_casino", "pass_icy_castle", "hp_10", "slot_plus5", "casino_plus1"]
 };
+// 🔄 Survival Land weapon shops: 3 weapons each, never the same weapon at two maps (prices as in the weapon shop)
+export const SURVIVAL_WEAPONS = {
+    disaster_casino: ["guard", "c_weapon_mwcda4qy", "punch"],               // 🛡️ 방어 · ⏸️ 일시 정지 · 👊 펀치
+    foggy_church:    ["c_weapon_mwcdhjcp", "magic", "coin_throw"],          // 🚫 블락 · 🪄 마법 · 🪙 동전 던지기
+    inferno_casino:  ["c_weapon_mwcdtfgc", "kick", "ghost_punch"],          // 💤 자장가 · 🦶 발차기 · 👻 고스트 더블 펀치
+    icy_castle:      ["c_weapon_mwcd8dgt", "holo_ball", "rock"],            // ⛈️ 악마의 천둥 번개 · 🔮 홀로그램 볼 · 🪨 돌 떨어뜨리기
+    mosquito_forest: ["ko_punch", "spray", "c_weapon_mwcdfsy6"]             // 🥊 K.O 펀치 · 🧴 스프레이 · ✂️ 가위 찌르기
+};
 export function shopListing(shopId, locId) {
+    if (shopId === "weapon" && LOCATIONS.find(l => l.id === locId)?.region === "survival") {
+        return (SURVIVAL_WEAPONS[locId] || []).filter(id => WEAPON_BY_ID[id] && !saleOf("weapon", id).off)
+            .map(id => ({ cat: "weapon", id, price: saleOf("weapon", id).price || 0, gold: 0 })).filter(it => it.price > 0);
+    }
     if (shopId === "general" && LOCATIONS.find(l => l.id === locId)?.region === "survival") {
         const ids = SURVIVAL_SHOP[locId] || [];
         const base = Object.fromEntries(SHOPS.general.list.map(it => [it.id, it]));
