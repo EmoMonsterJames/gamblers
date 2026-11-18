@@ -11,6 +11,7 @@ import * as G from "../game/season.js";
 import * as SO from "../game/social.js";
 import { avatar, displayName } from "../ui/profile.js";
 import { doorGate } from "../ui/doorGate.js";
+import { clawElimination } from "../ui/claw.js";
 
 const pname = pid => displayName(Store.player(pid));
 const who = pid => { const p = Store.player(pid); return p ? `${p.country || "-"} · ${p.ethnicity || "-"} · ${p.job || "-"}` : ""; };
@@ -158,7 +159,7 @@ export function voteStage(s, render) {
     const v = s.vote;
     if (!v) return h("div", "?");
     const head = h("h2.stage-title", `🗳️ 투표 탈락 라운드 · ${v.size}명`,
-        h("small", "이번 라운드는 미션 대신 투표로 탈락자를 정합니다. 플레이어끼리의 💞 친밀도로 표가 계산되고, 가장 낮은 3명이 탈락 후보가 됩니다."));
+        h("small", "이번 라운드는 미션 대신 투표로 탈락자를 정합니다. 각 플레이어는 💞 친밀도가 가장 높은 1명에게 1표를 주고, 득표가 가장 적은 3명이 탈락 후보가 됩니다 (동점자가 많으면 집게로 3명)."));
     // ---- 1) everyone votes in turn
     if (v.phase === "voting") {
         const pid = v.voters[v.idx];
@@ -175,7 +176,7 @@ export function voteStage(s, render) {
         const skipBtn = h("button.btn.ghost.big", { onclick: () => { SO.castVote(pid, true); render(); } }, "⏭ Skip");
         return h("div.vote-stage", head,
             h("div.vote-now", h("small", `투표 ${v.idx + 1} / ${v.voters.length}`), avatar(pid, 150), h("h2", pname(pid)), status, h("div.row.center", voteBtn, skipBtn),
-                h("p.muted.small", "투표하면 이 플레이어와 다른 모든 플레이어의 💞 친밀도가 표로 들어갑니다 · Skip하면 이 플레이어의 표는 없습니다")),
+                h("p.muted.small", "투표하면 이 플레이어와 💞 친밀도가 가장 높은 플레이어 1명에게 1표가 들어갑니다 (친밀도 동점이면 랜덤) · Skip하면 이 플레이어의 표는 없습니다")),
             h("div.vote-done", done.map(x => h("div.vd-chip" + (v.cast[x] === "skip" ? ".skip" : ""), avatar(x, 34, { effect: false }), h("small", v.cast[x] === "skip" ? "Skip" : "✔")))));
     }
     // ---- 2) voting over: the admin opens the results
@@ -192,11 +193,15 @@ export function voteStage(s, render) {
     }
     // ---- 3) results: middle ranks shown, top 2 and bottom 3 hidden
     if (v.phase === "results") {
-        const n = v.rank.length, mid = v.rank.slice(2, n - 3);
         const sc = pid => v.scores[pid].total;
-        const row = (pid, i) => h("div.vr-row", h("b.vr-rank", `${i + 1}위`), avatar(pid, 44, { effect: false }), h("b.vr-name", pname(pid)),
+        // bottom group (bottom 3 incl. ties) hidden · top 2 of the rest hidden · the middle shown
+        const pool = v.pool || v.rank.slice(-3);
+        const rest = v.rank.filter(p => !pool.includes(p));
+        const tops = rest.slice(0, 2), mid = rest.slice(2);
+        const rankNo = pid => 1 + v.rank.filter(p => sc(p) > sc(pid)).length; // ties share a rank
+        const row = pid => h("div.vr-row", h("b.vr-rank", `${rankNo(pid)}위`), avatar(pid, 44, { effect: false }), h("b.vr-name", pname(pid)),
             v.tie[pid] ? h("small.vr-tie", "동점") : null,
-            h("b.vr-score", `🗳️ ${sc(pid)}`), h("button.vr-info", { title: "왜 이 점수인지 보기", onclick: () => voteInfo(v, pid) }, "ⓘ"));
+            h("b.vr-score", `🗳️ ${sc(pid)}표`), h("button.vr-info", { title: "누가 투표했는지 보기", onclick: () => voteInfo(v, pid) }, "ⓘ"));
         const topCard = h("button.vr-hidden.top" + (v.topShown ? ".open" : ""), { onclick: async () => {
             if (v.topShown) return;
             Sound.drum?.(); topCard.classList.add("shake");
@@ -204,31 +209,48 @@ export function voteStage(s, render) {
             v.topShown = true; Store.saveSeason(true);
             Sound.fanfare(); confetti(70, ["👑", "🥈", "✨"]);
             render();
-        } }, v.topShown ? null : [h("span", "❓"), h("b", "2위 · 1위"), h("small", "눌러서 공개")]);
-        const top = v.topShown ? h("div.vr-top", [1, 0].map(i => h("div.vr-podium.p" + (i + 1), h("div.vr-medal", i ? "🥈" : "🥇"), avatar(v.rank[i], i ? 96 : 120), h("b", pname(v.rank[i])),
-            h("small", `🗳️ ${sc(v.rank[i])}`), v.tie[v.rank[i]] ? h("small.vr-tie", "동점") : null, h("button.vr-info", { onclick: () => voteInfo(v, v.rank[i]) }, "ⓘ")))) : topCard;
-        const bottom = h("button.vr-hidden.bottom" + (v.topShown ? "" : ".locked"), { onclick: () => {
-            if (!v.topShown) return toast("먼저 높은 순위 1, 2위를 확인하세요", "warn");
+        } }, v.topShown ? null : [h("span", "❓"), h("b", tops.length > 1 ? "2위 · 1위" : "1위"), h("small", "눌러서 공개")]);
+        const top = !tops.length ? null : v.topShown ? h("div.vr-top", [...tops].reverse().map(pid => { const r = rankNo(pid), first = r === 1;
+            return h("div.vr-podium.p" + (first ? 1 : 2), h("div.vr-medal", first ? "🥇" : "🥈"), avatar(pid, first ? 120 : 96), h("b", pname(pid)),
+                h("small", `${r}위 · 🗳️ ${sc(pid)}표`), v.tie[pid] ? h("small.vr-tie", "동점") : null, h("button.vr-info", { onclick: () => voteInfo(v, pid) }, "ⓘ")); })) : topCard;
+        const many = pool.length > 3;
+        const bottom = h("button.vr-hidden.bottom" + (v.topShown || !tops.length ? "" : ".locked"), { onclick: () => {
+            if (!v.topShown && tops.length) return toast("먼저 높은 순위 1, 2위를 확인하세요", "warn");
             v.phase = "final"; Store.saveSeason(true); render();
-        } }, h("span", v.topShown ? "⚠️" : "🔒"), h("b", "최하위 3명"), h("small", v.topShown ? "눌러서 탈락자 선정으로" : "1, 2위를 먼저 확인하세요"));
+        } }, h("span", v.topShown || !tops.length ? "⚠️" : "🔒"), h("b", many ? `최하위 3위 · 동점 포함 ${pool.length}명` : "최하위 3명"),
+            h("small", !v.topShown && tops.length ? "1, 2위를 먼저 확인하세요" : many ? "눌러서 집게로 탈락 후보 3명 뽑기" : "눌러서 탈락자 선정으로"));
         return h("div.vote-stage", head,
-            h("div.vote-results", top, h("div.vr-mid", h("h4", `3위 ~ ${n - 3}위`), mid.map((pid, i) => row(pid, i + 2))), bottom));
+            h("div.vote-results", top, mid.length ? h("div.vr-mid", h("h4", "중간 순위"), mid.map(row)) : null, bottom));
     }
     // ---- 4) the final: one of the bottom 3 is rescued, then the lowest of the last 2 is out
-    if (v.phase === "final") return voteFinalStage(s, render);
+    if (v.phase === "final") return v.pool?.length > 3 && !v.picked ? voteClawStage(s, render) : voteFinalStage(s, render);
     return h("div", "?");
+}
+
+// more than 3 in the bottom group (ties) → the claw pulls 3 of them out, then the usual final
+function voteClawStage(s, render) {
+    const v = s.vote;
+    return h("div.vote-stage.vote-final",
+        h("h2.stage-title", "🕹️ 탈락 후보 3명 뽑기", h("small", `최하위 3위 안에 동점자를 포함해 ${v.pool.length}명이 있습니다 — 집게가 이 중 3명을 탈락 후보로 뽑습니다`)),
+        clawElimination(v.pool, { onPicked: async three => {
+            v.picked = [...three]; s.candidates = [...three];
+            G.log(`🕹️ 집게로 뽑힌 탈락 후보: ${three.map(G.name).join(", ")}`);
+            Store.saveSeason(true);
+            await sleep(1200); render();
+        } }));
 }
 
 function voteInfo(v, pid) {
     const sc = v.scores[pid];
     modal(h("div.vote-info",
-        h("div.ii-pair", avatar(pid, 72), h("div", h("h3", pname(pid)), h("b.ii-score", `🗳️ 투표 점수 ${sc.total}`))),
-        h("p.muted.small", "투표 점수 = 투표한 모든 플레이어와의 💞 친밀도 합계 (Skip한 플레이어의 표는 없음)"),
+        h("div.ii-pair", avatar(pid, 72), h("div", h("h3", pname(pid)), h("b.ii-score", `🗳️ 득표 ${sc.total}표`))),
+        h("p.muted.small", "각 플레이어는 💞 친밀도가 가장 높은 1명에게 1표를 줍니다 (친밀도 동점이면 랜덤 · Skip한 플레이어의 표는 없음). 아래는 이 플레이어에게 표를 준 사람과 그 친밀도입니다."),
+        sc.from.length ? null : h("p.muted", "받은 표가 없습니다"),
         h("div.vi-list", [...sc.from].sort((a, b) => b.score - a.score).map(f => h("details.vi-voter",
-            h("summary", avatar(f.voter, 28, { effect: false }), h("span", pname(f.voter)), h("b" + (f.score < 0 ? ".neg" : ""), f.score > 0 ? `+${f.score}` : `${f.score}`)),
+            h("summary", avatar(f.voter, 28, { effect: false }), h("span", pname(f.voter) + (f.tie ? " · 동점 랜덤" : "")), h("b" + (f.score < 0 ? ".neg" : ""), `💞 ${f.score > 0 ? "+" + f.score : f.score}`)),
             f.parts.length ? h("ul.ii-parts", f.parts.map(p => h("li" + (p.pts < 0 ? ".neg" : ""), h("span", p.label), h("b", p.pts > 0 ? `+${p.pts}` : `${p.pts}`)))) : h("p.muted.small", "공통점 없음 (0)")))),
         Object.entries(v.cast).some(([, c]) => c === "skip") ? h("p.muted.small", `⏭ Skip: ${Object.entries(v.cast).filter(([, c]) => c === "skip").map(([p]) => pname(p)).join(", ")}`) : null),
-        { title: "ⓘ 투표 점수 계산", wide: true });
+        { title: "ⓘ 득표 내역", wide: true });
 }
 
 function voteFinalStage(s, render) {
@@ -237,7 +259,7 @@ function voteFinalStage(s, render) {
     const card = pid => h("div.vf-card", { "data-pid": pid }, avatar(pid, 120), h("b", pname(pid)), h("small.vf-sc", "🗳️ ?"), h("div.vf-tag"));
     const cards = three.map(card);
     const by = pid => cards.find(c => +c.dataset.pid === +pid);
-    const msg = h("div.vf-msg", "최하위 3명 — 이 중 1명이 탈락합니다…");
+    const msg = h("div.vf-msg", "탈락 후보 3명 — 이 중 1명이 탈락합니다…");
     let started = false;
     const go = h("button.btn.gold.huge", { onclick: async () => {
         if (started) return; started = true; go.remove();
@@ -249,10 +271,10 @@ function voteFinalStage(s, render) {
         }
         cards.forEach(c => c.classList.remove("hot"));
         const c1 = by(f.saved1);
-        c1.classList.add("saved"); c1.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.saved1].total}`;
+        c1.classList.add("saved"); c1.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.saved1].total}표`;
         c1.querySelector(".vf-tag").textContent = f.saved1Tie ? "😇 구제! · 동점자였으나 랜덤 구제" : "😇 구제!";
         Sound.fanfare(); confetti(40, ["😇", "✨"]);
-        msg.textContent = `😇 ${pname(f.saved1)} 구제! 남은 2명 중 투표 점수가 더 낮은 플레이어가 탈락합니다…`;
+        msg.textContent = `😇 ${pname(f.saved1)} 구제! 남은 2명 중 득표가 더 적은 플레이어가 탈락합니다…`;
         await sleep(2400);
         // 2) the last two: heartbeat, then the reveal
         const two = [f.out, f.saved2].map(by);
@@ -261,19 +283,19 @@ function voteFinalStage(s, render) {
         two.forEach(c => c.classList.remove("hot"));
         await banner("🗳️ 탈락자는…", 1300, "bonus");
         const co = by(f.out), cs = by(f.saved2);
-        co.classList.add("out"); co.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.out].total}`; co.querySelector(".vf-tag").textContent = "💀 탈락";
-        cs.classList.add("saved"); cs.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.saved2].total}`;
+        co.classList.add("out"); co.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.out].total}표`; co.querySelector(".vf-tag").textContent = "💀 탈락";
+        cs.classList.add("saved"); cs.querySelector(".vf-sc").textContent = `🗳️ ${v.scores[f.saved2].total}표`;
         cs.querySelector(".vf-tag").textContent = f.saved2Tie ? "😮‍💨 생존 · 동점자였으나 랜덤 구제" : "😮‍💨 생존";
         Sound.boom();
-        msg.textContent = `💀 ${pname(f.out)} 탈락 — 투표 점수 ${v.scores[f.out].total}${f.saved2Tie ? " (동점 → 랜덤)" : ""}`;
+        msg.textContent = `💀 ${pname(f.out)} 탈락 — 득표 ${v.scores[f.out].total}표${f.saved2Tie ? " (동점 → 랜덤)" : ""}`;
         await sleep(2200);
         wrap.append(h("div.row.center", h("button.btn.red.huge", { onclick: () => {
-            G.log(`🗳️ 투표 탈락: ${G.name(f.out)} (투표 점수 ${v.scores[f.out].total}) · 구제 ${G.name(f.saved1)}${f.saved1Tie ? " (동점 랜덤)" : ""} · 생존 ${G.name(f.saved2)}${f.saved2Tie ? " (동점 랜덤)" : ""}`);
+            G.log(`🗳️ 투표 탈락: ${G.name(f.out)} (득표 ${v.scores[f.out].total}표) · 구제 ${G.name(f.saved1)}${f.saved1Tie ? " (동점 랜덤)" : ""} · 생존 ${G.name(f.saved2)}${f.saved2Tie ? " (동점 랜덤)" : ""}`);
             G.eliminate(f.out);
             render();
         } }, "💀 탈락 확정")));
     } }, "🎬 탈락자 선정 시작");
-    const wrap = h("div.vote-stage.vote-final", h("h2.stage-title", "🗳️ 최종 탈락자 선정", h("small", "최하위 3명 중 1명은 구제되고, 남은 2명 중 투표 점수가 가장 낮은 플레이어가 탈락합니다 · 동점이면 랜덤")),
+    const wrap = h("div.vote-stage.vote-final", h("h2.stage-title", "🗳️ 최종 탈락자 선정", h("small", "탈락 후보 3명 중 득표가 가장 많은 1명은 구제되고, 남은 2명 중 득표가 더 적은 플레이어가 탈락합니다 · 동점이면 랜덤")),
         h("div.vf-cards", cards), msg, h("div.row.center", go));
     return wrap;
 }

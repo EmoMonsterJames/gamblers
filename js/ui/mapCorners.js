@@ -39,7 +39,7 @@ export function mapCorners(l, { detail = true } = {}) {
         l.lab && d("🧪 Monster Lab", lab && `LAB 상점 ${lab.items.length}종`),
         l.emoshop && d("🛒 Monster Shop", st && `속성 볼 ${st.balls.map(id => emoItem(id)?.attr).filter(Boolean).join("·")} · 무기 ${st.weapons.length} · 특성 ${st.traits.length}`),
         l.community && d("💬 커뮤니티", "500G · 시즌당 1회 · 입장 60%"),
-        helpHere(l) && d("🤝 도움주기", l.help ? "관리자 지정 · 항상" : "이번 시즌 랜덤 20곳 중 하나"),
+        helpHere(l) && d("🤝 도움주기", "라운드당 1회 · 입장 60%"),
         friendsHere(l) && "👫 내 친구",
         l.arena && d("🏟️ 아레나", "1:1 EmoMon 배틀 · 시즌당 2회"),
         l.lotto && d("🎟️ 로또", "시즌 · 비시즌 · 연금 로또 · 로또 판매점"),

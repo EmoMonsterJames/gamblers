@@ -27,7 +27,8 @@ const SLIP_RATE = 0.35; // chance the claw drops its first ball
 // safe: the mission winners (not candidates) — shown on their own next to the machine
 // pool: everyone passed → every live player's ball goes in the machine and the claw pulls out the
 // candidates (the round's 3 lowest earners), so the pick still plays out on screen
-export function clawElimination(cands, { onDone = () => { }, safe = [], pool = null } = {}) {
+// onPicked(three): stop after the claw pulls out 3 (the caller runs its own save / final — 🗳️ vote)
+export function clawElimination(cands, { onDone = () => { }, onPicked = null, safe = [], pool = null } = {}) {
     const many = pool ? pool.length > cands.length : cands.length > 3;
     const inMachine = pool || cands;
     const B = inMachine.length > 12 ? 50 : 60; // ball size
@@ -185,6 +186,7 @@ export function clawElimination(cands, { onDone = () => { }, safe = [], pool = n
             await sleep(900);
         }
         await moveClaw(machine.clientWidth * 0.55);
+        if (onPicked) return onPicked(picks);
         setupNext(picks);
     }
 

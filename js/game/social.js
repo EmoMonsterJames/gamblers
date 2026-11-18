@@ -62,22 +62,10 @@ export function react(pid, postId, kind) { // kind: "likes" | "dislikes" — pre
 }
 
 // ================================================================ 🤝 도움주기 corner
-export const HELP_OK = 0.6, HELP_MAPS = 20, HELP_GOLD = [1000, 100000];
+export const HELP_OK = 0.6, HELP_GOLD = [1000, 100000];
 export const helps = () => (C().helps ||= []);
-function seeded(str) { let x = 2166136261; for (const c of str) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 100000) / 100000; }; }
-// 20 random maps over every region (Survival Land included) — reshuffled every season
-export function helpMaps() {
-    // Survival Land maps are hidden (off) outside the revival — count them anyway so the 20 stay the same all season
-    const sv = l => l.revival || l.region === "survival";
-    // maps the admin set to always / never are left out of the random draw
-    const live = LOCATIONS.filter(l => (sv(l) ? !Store.maps?.locs?.[l.id]?.off : !l.off) && !l.kidnap && l.help == null).map(l => l.id).sort();
-    const rnd = seeded(`help|${S()?.number || 0}|${live.length}`);
-    const a = [...live];
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    return a.slice(0, HELP_MAPS);
-}
-// admin (지역·맵 관리): loc.help = true (항상) · false (안 함) · unset (시즌마다 랜덤 20곳)
-export const helpHere = loc => !!loc && !loc.kidnap && (loc.help != null ? !!loc.help : helpMaps().includes(loc.id));
+// admin (지역·맵 관리): 체크한 맵(loc.help = true)에만 도움주기 코너가 나옵니다
+export const helpHere = loc => !!loc && !loc.kidnap && loc.help === true;
 // 내 친구: every map unless the admin turned it off (loc.friends = false)
 export const friendsHere = loc => !!loc && !loc.kidnap && loc.friends !== false;
 const ps_ = pid => S()?.ps?.[pid];
@@ -269,28 +257,35 @@ export function castVote(pid, skip = false) {
     if (v.idx >= v.voters.length) { v.phase = "done"; log("🗳️ 투표 종료 — 관리자가 투표결과를 공개합니다"); }
     Store.saveSeason(true);
 }
-// score of a player = Σ intimacy with every player who voted (skipped voters give nothing)
+// every voter gives 1 vote to the player they have the highest 💞 intimacy with (ties → random, marked)
+// skipped voters give nothing · score of a player = number of votes received
 export async function tallyVote() {
     const s = S(), v = s.vote;
     const live = v.voters.filter(pid => !s.ps[pid]?.out);
     await loadTraits(live);
-    const scores = {};
-    for (const t of live) {
-        const from = [];
-        for (const voter of live) {
-            if (same(voter, t) || v.cast[voter] !== "voted") continue;
-            const it = intimacy(voter, t);
-            from.push({ voter, score: it.score, parts: it.parts });
-        }
-        scores[t] = { total: from.reduce((a, x) => a + x.score, 0), from };
+    const scores = Object.fromEntries(live.map(t => [t, { total: 0, from: [] }]));
+    for (const voter of live) {
+        if (v.cast[voter] !== "voted") continue;
+        const opts = live.filter(t => !same(t, voter)).map(t => ({ t, ...intimacy(voter, t) }));
+        if (!opts.length) continue;
+        const best = Math.max(...opts.map(o => o.score));
+        const top = opts.filter(o => o.score === best);
+        const o = top[Math.floor(Math.random() * top.length)];
+        scores[o.t].total++;
+        scores[o.t].from.push({ voter, score: o.score, parts: o.parts, tie: top.length > 1 });
     }
     // ranking: high → low, ties broken at random (marked)
     const tie = {};
     const rank = [...live].map(pid => ({ pid, total: scores[pid].total, r: Math.random() })).sort((a, b) => (b.total - a.total) || (a.r - b.r)).map(x => x.pid);
     for (let i = 0; i < rank.length; i++) for (let j = i + 1; j < rank.length; j++) if (scores[rank[i]].total === scores[rank[j]].total) { tie[rank[i]] = true; tie[rank[j]] = true; }
-    Object.assign(v, { phase: "results", scores, rank, tie, topShown: false });
-    s.candidates = rank.slice(-3);
-    log(`📊 투표 결과 공개 — 최하위 3명이 탈락 후보`);
+    // bottom 3 including ties: everyone with no more votes than the 3rd-lowest player
+    // exactly 3 → straight to the final · more than 3 → the claw picks 3 of them (screens/social.js)
+    const asc = [...rank].reverse();
+    const cut = asc.length > 3 ? scores[asc[2]].total : Infinity;
+    const pool = asc.filter(p => scores[p].total <= cut);
+    Object.assign(v, { phase: "results", scores, rank, tie, pool, picked: null, topShown: false });
+    s.candidates = pool.length <= 3 ? [...pool] : [];
+    log(pool.length > 3 ? `📊 투표 결과 공개 — 최하위 동점 포함 ${pool.length}명 중 집게로 탈락 후보 3명을 뽑습니다` : `📊 투표 결과 공개 — 최하위 3명이 탈락 후보`);
     Store.saveSeason(true);
     return v;
 }

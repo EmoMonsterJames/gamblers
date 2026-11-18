@@ -10,7 +10,6 @@ import { HONOR_KINDS, HONOR_ALL, honorKinds, honorPrizes } from "../data/honor.j
 const HONOR_TAB = "_honor";
 import { locationShops } from "../data/catalogAdmin.js";
 import { mapCorners } from "../ui/mapCorners.js";
-import { helpMaps, HELP_MAPS } from "../game/social.js";
 import { stockManager } from "./adminEmo.js";
 import { gotchaManager } from "./gotcha.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
@@ -185,11 +184,9 @@ export function adminMapsPage() {
             h("div.am-togs", toggle("job", "💼 직업 코너"), toggle("beg", "🥺 구걸"), toggle("discount", "🏷️ 할인 상점"), toggle("spell", "🐝 Spelling Bee"), toggle("bank", "🏦 Business Bank"), toggle("bizhub", "🏪 Self-Business"), toggle("capture", "🔍 EmoMon Capture"), toggle("hospital", "🏥 Monster Hospital"), toggle("lab", "🧪 Monster Lab"), toggle("emoshop", "🛒 Monster Shop"), toggle("community", "💬 커뮤니티"), toggle("arena", "🏟️ 아레나"), toggle("lotto", "🎟️ 로또"), toggle("highlight", "🎬 Highlight"), toggle("dept", "🏬 백화점"), toggle("gotcha", "🎰 Monster Gotcha"),
                 h("label.am-tog", "👹 NPC 출몰", h("select", { onchange: ev => { const v = ev.target.value; e.npc = v === "hot" ? true : v === "rand" ? false : v; dirty(); } },
                     [["rand", "랜덤 (40% · 하늘·심해·우주 25%)"], ["hot", "랜덤·자주 (60% · 하늘·심해·우주 40%)"], ["always", "항상"], ["never", "안 나옴"]].map(([v, t]) => h("option", { value: v, selected: (l.npc === "always" ? "always" : l.npc === "never" ? "never" : l.npc ? "hot" : "rand") === v }, t))))),
-            // 🤝 도움주기: 랜덤(시즌마다 20곳) · 항상 · 안 함 — 👫 내 친구: 기본은 모든 맵
+            // 🤝 도움주기: 체크한 맵에만 나옴 — 👫 내 친구: 기본은 모든 맵
             h("div.am-togs", h("small", "소셜 코너:"),
-                h("label.am-tog", "🤝 도움주기", h("select", { onchange: ev => { const v = ev.target.value; if (v === "rand") delete e.help; else e.help = v === "on"; dirty(); draw(); } },
-                    [["rand", `랜덤 (시즌마다 ${HELP_MAPS}곳${l.help == null ? helpMaps().includes(l.id) ? " · 이번 시즌 ✅" : " · 이번 시즌 ❌" : ""})`], ["on", "항상"], ["off", "안 함"]]
-                        .map(([v, t]) => h("option", { value: v, selected: (l.help == null ? "rand" : l.help ? "on" : "off") === v }, t)))),
+                h("label.am-tog", h("input", { type: "checkbox", checked: l.help === true, onchange: ev => { if (ev.target.checked) e.help = true; else delete e.help; dirty(); draw(); } }), "🤝 도움주기"),
                 h("label.am-tog", h("input", { type: "checkbox", checked: l.friends !== false, onchange: ev => { if (ev.target.checked) delete e.friends; else e.friends = false; dirty(); draw(); } }), "👫 내 친구")),
             l.region === "survival" ? h("div.am-togs.am-survival", h("small", "🔄 Survival Land 규칙:"),
                 toggle("noEnd", "🔒 턴 종료 불가"), toggle("noPass", "🚫 맵권 사용 불가"), toggle("passLate", "⏱️ 남은 5분 이하에서만 맵권"), toggle("deadNpc", "☠️ Dead Land NPC"),
