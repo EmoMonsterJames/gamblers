@@ -424,7 +424,7 @@ function buzzSet(on, vol = 0.010) {
     if (!on) {
         if (!buzz) return;
         const b = buzz; buzz = null;
-        try { b.g.gain.setTargetAtTime(0, ctx.currentTime, 0.15); setTimeout(() => { try { b.o.stop(); b.l.stop(); b.l2.stop(); } catch { } }, 900); } catch { }
+        try { b.g.gain.setTargetAtTime(0, ctx.currentTime, 0.15); setTimeout(() => { try { b.o.stop(); b.l.stop(); b.l2.stop(); b.o2.stop(); b.l3.stop(); } catch { } }, 900); } catch { }
         return;
     }
     if (buzz || muted) return;
@@ -437,9 +437,16 @@ function buzzSet(on, vol = 0.010) {
         l2.frequency.value = 0.23; lg2.gain.value = vol * 0.7; l2.connect(lg2).connect(g.gain); // closer … further
         g.gain.value = 0;
         o.connect(f).connect(g).connect(a.destination);
-        o.start(); l.start(); l2.start();
+        // 🦟 the low hum under the whine: a big mosquito droning nearby (윙윙)
+        const o2 = a.createOscillator(), f2 = a.createBiquadFilter(), g2 = a.createGain(), l3 = a.createOscillator(), lg3 = a.createGain();
+        o2.type = "sawtooth"; o2.frequency.value = 140;
+        l3.frequency.value = 6.5; lg3.gain.value = 10; l3.connect(lg3).connect(o2.frequency);   // slower, heavier wing beat
+        f2.type = "lowpass"; f2.frequency.value = 650; f2.Q.value = 3;
+        g2.gain.value = 2.6;                                                                // low tones sound quieter: lift it
+        o2.connect(f2).connect(g2).connect(g);
+        o.start(); l.start(); l2.start(); o2.start(); l3.start();
         g.gain.setTargetAtTime(muted ? 0 : vol, a.currentTime, 0.6);
-        buzz = { o, l, l2, g, vol };
+        buzz = { o, l, l2, o2, l3, g, vol };
     } catch { }
 }
 

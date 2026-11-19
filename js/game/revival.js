@@ -83,7 +83,7 @@ function freshPs(o) {
         weapons: [...(o.weapons || [])], items: { ...(o.items || {}) }, loanGold: 0, loan: null,
         use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: true, outRound: o.outRound, rank: o.rank,
         visited: [...(o.visited || [])], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 },
-        ...(emo ? { emo } : {}), ...(o.lotto ? { lotto: { ...o.lotto } } : {}), revival: true
+        ...(emo ? { emo } : {}), ...(o.lotto ? { lotto: { ...o.lotto } } : {}), ...(o.dis ? { dis: { ...o.dis } } : {}), revival: true // 🤒 diseases carry into the revival
     };
 }
 export function startRevival() {
@@ -390,6 +390,8 @@ function mergeBack(pid) {
     }
     if (iv.petLost) own.pet = null;
     if (iv.fxLost) own.petEffect = null;
+    // 🤒 diseases carry on after the revival (they came in with the player and stay unless cured there)
+    if (cur.dis && Object.values(cur.dis).some(Boolean)) own.dis = { ...cur.dis }; else delete own.dis;
     return own;
 }
 // ---------------------------------------------------------------- 🏅 revival ranks (shown in 📜 시즌 요약; the season ranks stay as they are)
