@@ -215,6 +215,15 @@ export function revivalAdvance() {
 function revivalJudge() {
     const s = S(), R = rv();
     R.winners = s.order.filter(pid => s.results[pid]?.pass && !R.dead.includes(pid));
+    R.passed = [...R.winners]; // the real mission winners (R.winners may be the fallback pool below)
+    // 🔄 nobody made it: at least one player still comes back — the claw draws from everyone who is still alive
+    // (or from everyone when all of them died)
+    if (!R.winners.length && s.order.length) {
+        const live = s.order.filter(pid => !R.dead.includes(pid));
+        R.winners = live.length ? live : [...s.order];
+        R.fallback = true;
+        G.log(`🔄 패자부활 미션 성공자 없음 — 그래도 1명은 부활합니다 (집게가 ${R.winners.length}명 중에서 뽑습니다)`);
+    }
     R.phase = "result";
     s.status = "revival";
     s.turn = null;
@@ -401,7 +410,7 @@ function mergeBack(pid) {
 export function setRevivalRanks(winner = null, second = null) {
     const R = rv();
     if (!R || R.ranks) return R?.ranks || null;
-    const order = R.order || R.pids || [], dead = (R.dead || []).filter(p => order.includes(p)), W = (R.winners || []).filter(p => !dead.includes(p));
+    const order = R.order || R.pids || [], dead = (R.dead || []).filter(p => order.includes(p)), W = (R.passed || R.winners || []).filter(p => !dead.includes(p));
     const top = [winner, second].filter((p, i, a) => p != null && order.includes(p) && a.indexOf(p) === i);
     const list = [...top, ...shuffle(W.filter(p => !top.includes(p))), ...shuffle(order.filter(p => !dead.includes(p) && !W.includes(p) && !top.includes(p))), ...[...dead].reverse()];
     R.ranks = Object.fromEntries(list.map((p, i) => [p, i + 1]));

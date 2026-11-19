@@ -57,12 +57,25 @@ function revivalTag(d, pid) {
         if (e.revivalRank && e.ranks?.[pid] != null) {
             const ok = e.revived === pid;
             return h("div.ss-rv", h("span.ss-tag" + (ok ? ".rv-ok" : ".rv-bad"), ok ? "🔄 패자부활전 참여: 성공" : `🔄 패자부활전 참여: 실패 · ${e.ranks[pid]}등`),
-                h("small.muted", ` (R${e.round} · ${e.total}명 참여${ok ? " · 1등으로 부활" : ""})`));
+                h("small.muted", ` (R${e.round} · ${e.total}명 참여${ok ? " · 1등으로 부활" : ""})`), ok ? revivalJourney(d, pid) : null);
         }
         // seasons from before the revival ranking: only who came back is known
         if (e.revival && e.revived === pid && !(d.history || []).some(x => x.revivalRank)) return h("div.ss-rv", h("span.ss-tag.rv-ok", "🔄 패자부활전 참여: 성공"));
     }
     return null;
+}
+// 🔄 a revived player: first exit rank → revival survivor → final rank (or still alive)
+function revivalJourney(d, pid) {
+    const H = d.history || [];
+    const rv = H.find(x => x.revival && x.revived === pid);
+    const first = H.find(x => x.eliminated === pid && !x.final && !x.revival);
+    const firstRank = rv?.from ?? first?.rank ?? null;
+    const ps = d.ps[pid] || {};
+    const finalTxt = ps.rank === 1 ? "👑 최종 우승" : ps.out || (d.status === "done" && ps.rank) ? `최종 ${ps.rank}위` : "🟢 생존 중";
+    return h("div.ss-journey",
+        h("span.ss-j", `① 처음 탈락 ${firstRank != null ? `${firstRank}위` : "?"}${first ? ` (R${first.round})` : ""}`), h("i", "→"),
+        h("span.ss-j.ok", `② 패자부활전 생존 (R${rv?.round ?? "?"})`), h("i", "→"),
+        h("span.ss-j" + (ps.rank === 1 ? ".win" : ""), `③ ${finalTxt}`));
 }
 function seasonView(d) {
     const live = d.status !== "done";

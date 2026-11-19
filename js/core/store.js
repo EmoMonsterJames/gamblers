@@ -420,8 +420,21 @@ export const Store = {
         const hl = (this.highlights ||= { list: [], seen: {} });
         hl.list ||= [];
         hl.list.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), kind, season: s?.number ?? null, round: s?.round ?? null, at: new Date().toISOString(), ...data });
+        this.trimKind(hl, kind);
         this.trimHighlights(hl);
         this.saveHighlights();
+    },
+    // 🎬 every category keeps at most HL_PER_KIND replays. When a new one overflows it, 5 random older ones of that
+    // category (whatever their date) are dropped at once — so the next new ones come in without another drop.
+    HL_PER_KIND: 50, HL_SWAP: 5,
+    trimKind(hl = this.highlights, kind) {
+        const L = hl.list, mine = L.filter(x => x.kind === kind);
+        if (mine.length <= this.HL_PER_KIND) return;
+        const old = mine.slice(1); // never the record just added
+        for (let i = 0; i < this.HL_SWAP && old.length; i++) {
+            const x = old.splice(Math.floor(Math.random() * old.length), 1)[0];
+            L.splice(L.indexOf(x), 1);
+        }
     },
     // keep ≤ 400 replays: drop the most-played first (ties → random); when none of the rest were played, drop a random one.
     // The record just added is never the one dropped.

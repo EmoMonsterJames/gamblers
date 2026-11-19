@@ -6,7 +6,7 @@ import { Store } from "../core/store.js";
 import { SHOPS, LOC_BY_ID, catalogEntry, WEAPON_BY_ID, isAttackWeapon, attackCount, PET_BY_ID, PETFX_BY_ID, SHOP_LIMIT, ITEMS, ITEM_BY_ID, REGION_ITEMS, ALPHABET, ALL_LETTERS, cardId } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 import { sleep } from "../core/util.js";
-import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft } from "../game/season.js";
+import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft, shopLimit } from "../game/season.js";
 import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
 import { shopListing, discountItems } from "../data/catalogAdmin.js";
@@ -14,6 +14,7 @@ import { letterCard, npcTicket } from "../ui/letterCard.js";
 import { reportsOf } from "../game/bank.js";
 import * as RV from "../game/revival.js";
 import { emoItem, itemPic } from "../emomon/data.js";
+import { weaponDiscount } from "../game/employ.js";
 // 🐾 EmoMon items (discount-shop extras) go into the EmoMon bag
 const entryOf = (cat, id) => cat === "emo" ? emoItem(id) : catalogEntry(cat, id);
 
@@ -26,12 +27,16 @@ export function shopView(shopId, pid, locId, onChange) {
     // 🔄 Survival Land shops: no NPC Block tickets (HP items only where the map's own list has them)
     const survival = LOC_BY_ID[locId]?.region === "survival";
     const svBanned = it => it.cat === "item" && ITEM_BY_ID[it.id]?.npcBlock;
+    // 🛰️ Arizal Tech employees: 1% more off in every weapon shop
+    const off = shopId === "weapon" ? weaponDiscount(pid) : 0;
+    const costOf = it => { const c = priceOf(it, shop.cur); if (off && c.gold) c.gold = Math.round(c.gold * (1 - off)); return c; };
     const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => (!RV.inRevival(pid) || it.id !== "map_random") && !(survival && svBanned(it)));
     const render = () => {
         const d = Store.getDecor(pid);
         wrap.replaceChildren(
-            h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.limit" + (buysLeft(pid, shopId) <= 0 ? ".none" : ""), `이번 라운드 구매 ${Math.max(0, buysLeft(pid, shopId))} / ${SHOP_LIMIT[shopId] ?? 1}`), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : shop.cur === "PG" ? `💎 ${fmt(ps.points)} P · 💰 ${fmt(ps.money)} G` : `💰 ${fmt(ps.money)} G`)),
+            h("div.shop-head", h("span.ico", shop.icon), h("b", shop.name), h("span.limit" + (buysLeft(pid, shopId) <= 0 ? ".none" : ""), `${survival && shopId === "general" ? "🔄 이 맵 구매" : "이번 라운드 구매"} ${Math.max(0, buysLeft(pid, shopId))} / ${shopLimit(pid, shopId)}`), h("span.wallet", shop.cur === "P" ? `💎 ${fmt(ps.points)} P` : shop.cur === "PG" ? `💎 ${fmt(ps.points)} P · 💰 ${fmt(ps.money)} G` : `💰 ${fmt(ps.money)} G`)),
             RV.inRevival(pid) ? h("p.notice.rv-shop-note", RV.SHOP_NOTE) : "",
+            off ? h("p.notice.small", `🛰️ Arizal Tech 직원 할인 ${Math.round(off * 100)}% 적용`) : "",
             shopId === "pointgold" ? h("p.muted.shop-note", "💠 포인트와 골드를 함께 내는 상점입니다. ⭐ 특수프레임 / 특수프레임효과는 이 상점에서만 팔아요 — 맵마다 상품이 하나씩 다릅니다.") : "",
             h("div.shop-grid", list().map(it => {
                 const e = entryOf(it.cat, it.id);
@@ -40,7 +45,7 @@ export function shopView(shopId, pid, locId, onChange) {
                     || (it.cat === "frame" && d.ownedFrames.includes(it.id)) || (it.cat === "peffect" && d.ownedEffects.includes(it.id));
                 const have = it.cat === "weapon" ? ps.weapons.filter(w => w === it.id).length : it.cat === "item" ? (ps.items[it.id] || 0) : 0;
                 const atkFull = it.cat === "weapon" && isAttackWeapon(it.id) && attackCount(ps.weapons) >= CONFIG.MAX_ATTACK_WEAPONS;
-                const afford = canPay(ps, priceOf(it, shop.cur)) && buysLeft(pid, shopId) > 0 && !atkFull;
+                const afford = canPay(ps, costOf(it)) && buysLeft(pid, shopId) > 0 && !atkFull;
                 return h("div.sitem" + (e.rare || e.kind === "special" || e.special ? ".rare" : "") + (owned ? ".owned" : ""),
                     h("div.sitem-art", art(it.cat, e)),
                     h("div.sitem-name", e.name),
@@ -50,12 +55,12 @@ export function shopView(shopId, pid, locId, onChange) {
                     have ?h("small.have", `보유 ${have}`) : null,
                     atkFull ? h("small.have.warn", `공격 무기 ${CONFIG.MAX_ATTACK_WEAPONS}개 꽉 참`) : null,
                     h("button.btn.small" + (afford && !owned ? ".gold" : ".ghost"), { disabled: owned || !afford, onclick: () => buy(it, e) },
-                        owned ? "보유중" : priceLabel(priceOf(it, shop.cur))));
+                        owned ? "보유중" : priceLabel(costOf(it))));
             })));
     };
     async function buy(it, e) {
-        if (buysLeft(pid, shopId) <= 0) return toast(`${shop.name}은(는) 라운드당 ${SHOP_LIMIT[shopId] ?? 1}번만 살 수 있어요`, "warn");
-        const cost = priceOf(it, shop.cur);
+        if (buysLeft(pid, shopId) <= 0) return toast(survival && shopId === "general" ? "🔄 Survival Land에서는 맵마다 일반 상점에서 1번만 살 수 있어요" : `${shop.name}은(는) 라운드당 ${SHOP_LIMIT[shopId] ?? 1}번만 살 수 있어요`, "warn");
+        const cost = costOf(it);
         if (!canPay(ps, cost)) return toast("잔액이 부족합니다", "warn");
         if (!(await checkGoods(ps, it.cat, it.id, e))) return;
         pay(ps, cost);

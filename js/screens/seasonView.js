@@ -17,7 +17,7 @@ const CASINO_CARD_RATE = 0.01; // per casino play
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
 import * as G from "../game/season.js";
-import { avatar, playerCard, miniPlayer, displayName, petView, weaponChip } from "../ui/profile.js";
+import { avatar, playerCard, miniPlayer, displayName, petView, weaponChip, diseaseChips } from "../ui/profile.js";
 import { reelMachine } from "../ui/reelpick.js";
 import { worldMap, regionMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
@@ -46,11 +46,15 @@ import { deptView, gotchaView } from "./gotcha.js";
 import * as RV from "../game/revival.js";
 import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
 import { arcadeView, CORNER_KINDS } from "./arcade.js";
-import { stopSurvivalFx, survivalSide, infernoGate, INFERNO_FREE } from "./survivalLand.js";
+import { stopSurvivalFx, survivalSide, survivalMsgs, infernoGate, INFERNO_FREE } from "./survivalLand.js";
 import { iceWrap } from "./survivalIce.js";
 import { setMapBackdrop, clearMapBackdrop } from "../ui/mapBackdrop.js";
 import { friendsView, helpView, voteStage } from "./social.js";
 import * as SO from "../game/social.js";
+import { mapNo } from "../data/mapAdmin.js";
+import * as LF from "../game/life.js";
+import * as EP from "../game/employ.js";
+import { vitals, foodCornerView, lodgeView, weatherHud, weatherLayer, employView, companyView, employAtTurn, starvePopup, starveHurtPopup, lifeInventory, companyMark, arizalBox, arizalTick } from "./lifeCorners.js";
 
 let root = null, timer = null;
 
@@ -228,7 +232,7 @@ function sidebar(s) {
             const mark = out ? "" : s.status === "turns" || s.status === "judge" ? (r ? (r.pass ? "✅" : "❌") : (s.turn?.pid === pid ? "🎮" : "")) : "";
             const cand = s.status === "judge" && s.candidates.includes(pid);
             // eliminated: the rank sits small under the heart, so the name keeps its width
-            const hp = h("span.hp" + (s.ps[pid].hp < 50 ? ".low" : ""), `❤ ${Math.round(s.ps[pid].hp * 100) / 100}`);
+            const hp = h("span.hp.hp-gauges" + (s.ps[pid].hp < 50 ? ".low" : ""), vitals(s.ps[pid], { mini: true }));
             const el = miniPlayer(pid, s.ps[pid], [h("span.rno", `#${G.rosterNo(pid)}`),
                 out ? h("span.hp-col", hp, h("small.out-rank", s.ps[pid].rank ? `💀 ${s.ps[pid].rank}위` : "💀")) : hp,
                 mark ? h("span.mark", mark) : null]);
@@ -373,7 +377,7 @@ function preTurn(s) {
         h("h2.stage-title", `${s.turnIdx + 1}번째 플레이어`),
         playerCard(pid, ps),
         h("div.row.center",
-            h("button.btn.gold.huge", { onclick: async () => { G.startTurn(); render(); await seasonLottoCheck(); render(); await promoAtTurn(pid); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
+            h("button.btn.gold.huge", { onclick: async () => { G.startTurn(); render(); await seasonLottoCheck(); render(); await promoAtTurn(pid); render(); await employAtTurn(pid); render(); } }, "🌍 턴 시작 — 지역 뽑기"),
             h("button.btn.ghost", { onclick: async () => { if (await confirmBox(`${displayName(Store.player(pid))}의 턴을 건너뛸까요? (미션 실패 처리)`)) { G.startTurn(); G.endTurn(); render(); } } }, "턴 건너뛰기")));
 }
 
@@ -390,9 +394,11 @@ function mapStage(s) {
     let done = false;
     const btn = h("button.btn.gold.huge", { onclick: async () => {
         if (done) return; done = true; btn.disabled = true;
-        let pool = acc.filter(l => !tried.has(l.id));
         // 랜덤랜드 / 리치랜드: a refused or unpaid entry goes straight to the region's fallback map
         const fb = region.fallback && LOC_BY_ID[region.fallback] && !LOC_BY_ID[region.fallback].off ? LOC_BY_ID[region.fallback] : null;
+        // 💰 Rich Land: 🥣 거지쉼터 is where a refusal may land (40%) — it is not drawn on the roulette itself while other maps are open
+        if (region.id === "richland" && fb) for (const l of acc) if (l.id === fb.id && acc.length > 1) tried.add(l.id);
+        let pool = acc.filter(l => !tried.has(l.id));
         while (pool.length) {
             const target = pick(pool);
             await map.roulette(pool, target.id);
@@ -409,6 +415,7 @@ function mapStage(s) {
                 if (ex === "dead" || !s.turn) { render(); return; }
                 ok = ex === "ok";
                 if (ok && target.deathWheel) s.turn.wheelAt = target.id;
+                if (!ok && rich) tfb = richFallback() || tfb; // 💰 the random fallback (40/30/30) — not always the shelter
             }
             if (ok) {
                 G.setLocation(target.id);
@@ -656,15 +663,18 @@ function locationStage(s) {
             ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
             h("div.stat.pts", h("small", "포인트"), h("b", ps.points + " P")),
             bankAccount(pid) ? h("div.stat.bgold", h("small", `Business Gold · ${bankAccount(pid).code}`), h("b", fmt(bankAccount(pid).bgold) + " BG")) : null,
-            h("div.stat", h("small", "HP"), h("b" + (ps.hp < 50 ? ".down" : ""), `❤ ${Math.round(ps.hp * 100) / 100}`)),
+            h("div.stat.stat-vitals", vitals(ps, { compact: true }), h("small.vit-next", `🍚 −10까지 ${fmtTime(LF.nextDrainIn(t))}`)),
             h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
             h("div.stat", h("small", "이번 턴 포인트"), h("b", String(t.stats.points))),
             h("div.stat", h("small", "보너스 / 잭팟"), h("b", `${t.stats.bonus} / ${t.stats.jackpot || "-"}`)),
             G.boostLeft("slot") ? h("div.stat.boost", h("small", "🎰 슬롯 보너스 UP"), h("b", `${G.boostLeft("slot")}초`)) : null,
-            G.boostLeft("casino") ? h("div.stat.boost", h("small", "🃏 카지노 상금 UP"), h("b", `${G.boostLeft("casino")}초`)) : null].filter(Boolean));
+            G.boostLeft("casino") ? h("div.stat.boost", h("small", "🃏 카지노 상금 UP"), h("b", `${G.boostLeft("casino")}초`)) : null,
+            t.arizal && !t.arizal.done ? h("div.stat.boost", h("small", "🧪 Arizal Tech Test"), h("b", `${Math.max(0, Math.ceil((t.arizal.until - Date.now()) / 1000))}초 · ${fmt(t.arizal.won || 0)}G`)) : null].filter(Boolean));
+        wx?.update();
     };
+    const wx = loc.kidnap ? null : weatherHud(t);
     updateHud();
 
     const pauseBtn = h("button.btn.ghost.small", { onclick: () => { t.running = !t.running; pauseBtn.textContent = t.running ? "⏸ 일시정지" : "▶ 재개"; updateHud(); Store.saveSeason(); } }, t.running ? "⏸ 일시정지" : "▶ 재개");
@@ -684,7 +694,7 @@ function locationStage(s) {
         // pet luck + the 30 s booster item (boost: true while it runs)
         get luck() { return { ...luck, boost: G.boostLeft(kind) > 0 }; },
         money: () => G.playMoney(pid),
-        canPlay: () => t.remaining <= 0 ? { ok: false, why: "⏰ 시간 종료!" } : !t.running ? { ok: false, why: "⏸ 일시정지 중입니다" }
+        canPlay: () => t.remaining <= 0 ? { ok: false, why: "⏰ 시간 종료!" } : !t.running && !(loc.arcade && cornerPaused) ? { ok: false, why: "⏸ 일시정지 중입니다" }
             : G.playsLeft(pid, kind) <= 0 ? { ok: false, why: kind === "slot" ? "이번 라운드 슬롯 스핀 횟수를 모두 썼습니다 (추가권: 일반 상점)" : "이번 라운드 카지노게임 횟수를 모두 썼습니다 (추가권: 일반 상점)" }
             : { ok: true },
         left: () => G.playsLeft(pid, kind),
@@ -725,7 +735,12 @@ function locationStage(s) {
     // 🕹️ Arcade: only the corners found inside the game show up
     const arcadeTabs = () => [["arcade", "🕹️ ARCADE"], ...(t.arcade?.found || []).map(k => [CORNER_KINDS[k].tab, `${CORNER_KINDS[k].emoji} ${CORNER_KINDS[k].label}`]), ["inv", "🎒 인벤토리"], ["emo:dex", "📖 EmoMon Dex"], ["card", "🪪 프로필"]];
     // 👫 내 친구: on every map · 🤝 도움주기: on this season's 20 help maps
-    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : [])); return l; };
+    // 🍚 food corners · 🏨 lodging · 🏢 employment (every map; the hired player sees their company instead)
+    const lifeTabs = () => loc.kidnap ? [] : [
+        ...LF.foodCornersAt(loc).map((c, i) => ["food:" + i, `${c.emoji} ${c.name}`]),
+        ...LF.lodgesAt(loc, pid).map(c => ["lodge:" + c.k, `${c.emoji} ${c.name}`]),
+        ...(rev || (loc.arcade && !(t.arcade?.found || []).length) ? [] : EP.employer(pid) ? [["company", `${EP.companyOf(pid)?.emoji || "🏢"} ${EP.companyOf(pid)?.name || "회사"}`]] : [["employ", "🏢 취업"]])];
+    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...lifeTabs(), ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : [])); return l; };
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
@@ -734,14 +749,17 @@ function locationStage(s) {
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
-    const invWrap = el => h("div", rev ? revivalInvView(pid) : null, extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), el, emoInventory(pid, emoChanged));
+    const invWrap = el => h("div", rev ? revivalInvView(pid) : null, extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), lifeInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
     const refreshTabs = () => tabBar.replaceChildren(...tabList().map(([k, label]) => h("button.tab" + (k === currentTab ? ".on" : ""), { onclick: () => tabBody(k) }, label)));
     const bizChanged = () => { updateHud(); side.replaceChildren(sideCard()); refreshTabs(); };
+    const ARC_CORNER_TABS = Object.values(CORNER_KINDS).map(k => k.tab);
     function tabBody(id) {
         currentTab = id;
+        // 🕹️ Arcade: using a corner found in the game (from the tab bar too) stops the turn clock until the arcade resumes
+        if (loc.arcade && ARC_CORNER_TABS.includes(id) && !cornerPaused) { cornerPaused = true; t.running = false; arcadeInst?.pause?.(); updateHud(); }
         refreshTabs();
         let content;
         // 🔥 Inferno Casino: every corner is behind the death roulette (once open, it stays open for this visit)
@@ -758,6 +776,10 @@ function locationStage(s) {
             onFreed: () => { if (t.remaining <= 0 && escapeWait) return escapeWait(); clearInterval(timer); fx.stop(); t.loc = null; t.region = null; t.npc = null; t.running = false; Store.saveSeason(true); render(); },
             onTried: () => escapeWait?.()
         });
+        else if (id.startsWith("food:")) { const c = LF.foodCornersAt(loc)[+id.slice(5)]; content = c ? foodCornerView(pid, c, `${loc.id}:${id.slice(5)}`, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }) : h("p.notice", "코너가 없습니다"); }
+        else if (id.startsWith("lodge:")) { const c = LF.lodgesAt(loc, pid).find(x => x.k === id.slice(6)); content = c ? lodgeView(pid, loc, c, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }) : h("p.notice", "숙소가 없습니다"); }
+        else if (id === "employ") content = employView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (EP.employer(pid)) { refreshTabs(); } } });
+        else if (id === "company") content = companyView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "friends") content = friendsView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "help") content = helpView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
@@ -822,13 +844,21 @@ function locationStage(s) {
     }
     const sideCard = () => h("div.loc-side-inner",
         avatar(pid, 120),
-        h("div.ls-name", displayName(Store.player(pid))),
+        h("div.ls-name", displayName(Store.player(pid)), companyMark(pid, 20)),
+        vitals(ps),
+        LF.sheltered(pid, loc.id) ? h("div.ls-shelter", `🏨 숙소에 머무는 중 — 날씨 · NPC 공격 보호`) : null,
+        diseaseChips(pid),
+        arizalBox(pid, t, () => { updateHud(); side.replaceChildren(sideCard()); }),
         h("div.ls-pet", ps.pet ? petView(ps.pet, ps.petEffect, 90) : h("div.muted", "펫 없음")),
         ...luckLines(luck),
         ps.petHelp ? h("div.luck.ph-sum", `🐾 펫 도움: 당첨 ${ps.petHelp.win || 0}회 · 보너스 ${ps.petHelp.bonus || 0}회`, ps.petHelp.gold ? h("small", ` (+${fmt(ps.petHelp.gold)} G)`) : null) : null,
         survivalSide(), // ⛪ Foggy Church: the devil statue
-        ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null);
+        ps.weapons.length ? h("div.wlist.small", ps.weapons.map(weaponChip)) : null,
+        survivalMsgs()); // 📋 the statue's growth / disaster messages — under the weapons
     const side = h("div.loc-side", sideCard());
+    // 🦠 a disease caught / cured anywhere (a mosquito bite, an NPC, a cure) → the profile shows it at once
+    const onSick = e => { if (+e.detail?.pid === +pid && document.body.contains(side)) { side.replaceChildren(sideCard()); updateHud(); } else if (!document.body.contains(side)) document.removeEventListener("gb:sick", onSick); };
+    document.addEventListener("gb:sick", onSick);
     // 🎟️ lotto draw show: the turn clock stops (no play time used, no NPC visits) until it is over
     const lottoHold = () => { const was = t.running; t.running = false; npcBusy = true; updateHud(); return () => { npcBusy = false; t.running = was; updateHud(); side.replaceChildren(sideCard()); Store.saveSeason(); }; };
     // map pass during the turn: move right away, the turn clock keeps running
@@ -903,6 +933,7 @@ function locationStage(s) {
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
         // 🎭 / 🧊 an attack that falls while Profile Copy (or Icy Breath) is still on is dropped — no second copy, no extra time
         if ((t.possessUntil || 0) > Date.now() || (t.freezeUntil || 0) > Date.now()) { t.npc.shift(); Store.saveSeason(); return; }
+        if (LF.sheltered(pid, loc.id)) { t.npc.shift(); Store.saveSeason(); toast("🏨 숙소에 머무는 중이라 NPC가 들어오지 못했다!", "ok", 3000); G.log(`🏨 ${displayName(Store.player(pid))} 숙소 덕분에 NPC 공격을 피함`); return; }
         npcBusy = true;
         t.npc.shift();
         const was = t.running; t.running = false; updateHud();
@@ -937,6 +968,7 @@ function locationStage(s) {
         t.remaining -= 1;
         if (t.remaining <= 10 && t.remaining > 0) Sound.tick();
         if (++saveTick % 5 === 0) Store.saveLocal();
+        lifeTick();
         updateHud();
         fx.tick();
         if (!G.S().turn) return;
@@ -944,6 +976,19 @@ function locationStage(s) {
         bunkerCheck();
         if (t.remaining <= 0) timeUp();
     }, 1000);
+    // 🍚 −10 food every 3 min of play · 🌦️ the map's weather (1:00 on the map, then every 3:00) · 🧪 Arizal test minute
+    function lifeTick() {
+        const fd = LF.foodTick(t);
+        if (fd?.drained) { toast(`🍚 배가 고파진다… 식량 −${fd.drained} (${fd.food})${fd.food <= 0 ? " — 0이면 턴이 끝날 때 HP −10!" : ""}`, fd.food <= 10 ? "warn" : "info", 3200); side.replaceChildren(sideCard()); }
+        if (!loc.kidnap) {
+            const w = LF.weatherTick(t);
+            if (w?.sheltered) toast(`${w.w.emoji} ${w.w.name}! 🏨 숙소 덕분에 무사합니다`, "ok", 2600);
+            else if (w?.dead || (w && !G.S().turn)) { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; Sound.boom(); render(); return; }
+            else if (w?.dmg) { Sound.hit?.(); toast(`${w.w.emoji} ${w.w.name}! HP −${w.dmg}${w.shield ? " (🎭 보호)" : ""}`, "warn", 3200); root.querySelector(".wx-layer")?.classList.add("hit"); setTimeout(() => root.querySelector(".wx-layer")?.classList.remove("hit"), 900); side.replaceChildren(sideCard()); }
+        }
+        const az = arizalTick(pid, t);
+        if (az?.finished) side.replaceChildren(sideCard());
+    }
 
     // ⏰ time up: anything that already started (a spin and its whole bonus, a casino hand,
     // a corner, a shop purchase, an NPC visit, a map move) is played out first —
@@ -980,8 +1025,12 @@ function locationStage(s) {
         // card missions: a holder decides now whether to spend the card
         if (s.mission.type === "card" && !t.stats.cardUsed && ps.items["card_" + s.mission.letter] > 0
             && await confirmBox(`🔤 알파벳 카드 ${s.mission.letter}를 갖고 있습니다.\n이번 라운드에 사용할까요? (사용하면 미션 통과 · 카드는 사라집니다)`, "사용하기", "아끼기")) G.useMissionCard();
-        const met = t.ticket || G.missionMet(s.mission, t.stats);
+        if (t.arizal && !t.arizal.done) EP.finishArizalTest(pid); // 🧪 the turn ended inside the test minute: it is scored now
         gameLayer?.remove(); gameLayer = null;
+        const starve = LF.starveCheck(pid);
+        if (starve?.dead) { await starvePopup(pid); render(); return; }
+        if (starve?.hp != null) await starveHurtPopup(pid, starve.hp);
+        const met = t.ticket || G.missionMet(s.mission, t.stats);
         const m = modal(h("div.turn-result" + (met ? ".ok" : ".bad"),
             avatar(pid, 120),
             h("h2", met ? "🎉 미션 성공!" : "💦 미션 실패…"),
@@ -1002,9 +1051,10 @@ function locationStage(s) {
 
     lockEnd();
     return h("div.location" + (loc.cursed ? ".cursed" : "") + (loc.kidnap ? ".kidnapped" : "") + (loc.magma ? ".magma" : ""), { style: { "--loc": loc.color } },
+        loc.kidnap ? null : weatherLayer(loc.id),
         fx.hud,
         h("div.loc-head",
-            h("div.loc-name", h("span", loc.emoji), h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc)),
+            h("div.loc-name", h("span", loc.emoji), mapNo(loc.id) ? h("small.loc-no", { title: "맵 번호" }, `#${mapNo(loc.id)}`) : null, h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc), wx?.el),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
         rev ? revivalBar(s, pid, () => { updateHud(); tabBody(currentTab); }) : null,

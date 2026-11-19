@@ -12,6 +12,7 @@ import { BIZ_LIST, BIZ_TYPES, bizPriceText } from "../data/business.js";
 import { activeBiz, stockLeft } from "../game/bank.js";
 import { captureConfig, shopStock, labStock, emoItem, cat as emoCat } from "../emomon/data.js";
 import { helpHere, friendsHere } from "../game/social.js";
+import { FOOD_CORNERS, LODGES, ENTRY_KINDS } from "../data/life.js";
 
 export const EARN_TEXT = { blood: "🩸 헌혈", labor: "⛏️ 노동", poop: "💩 똥", sell: "🛍️ 팔기", music: "🎧 음악 감상", survival: "⚔️ 서바이벌", guess: "❓ 플레이어 이름 맞추기" };
 const rankText = k => HONOR_KINDS[k].rank === 1 ? "우승" : `TOP ${HONOR_KINDS[k].rank}`;
@@ -30,7 +31,7 @@ export function mapCorners(l, { detail = true } = {}) {
         ...earnKinds(l).map(k => `💪 ${EARN_TEXT[k] || k}`),
         l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
         ...honorKinds(l).map(k => d(`${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`, `시즌 ${rankText(k)} 경력자 전용`)),
-        l.bank && d("🏦 Business Bank", "TOP 10 경력자 전용"),
+        l.bank && d("🏦 Business Bank", "TOP 15 경력자 전용"),
         hub && d("🏪 Self-Business", "TOP 10 경력자 전용"),
         ...listed.map(T => d(`🏷️ 매물: ${T.emoji} ${T.name}`, `${bizPriceText(T.price, T.pts || 0)} · 남은 ${Math.max(0, stockLeft(T.id))}/${T.max}`)),
         ...activeBiz().filter(b => b.loc === l.id).map(b => d(`${BIZ_TYPES[b.type].emoji} ${BIZ_TYPES[b.type].name}`, `Owner: ${Store.player(b.owner)?.name_ko || "?"}`)),
@@ -46,6 +47,9 @@ export function mapCorners(l, { detail = true } = {}) {
         l.highlight && d("🎬 Highlight", "하이라이트 감상 · 시즌당 1회 보상"),
         l.dept && d("🏬 백화점", "몬스터 외 모든 상품 · 시즌당 1회 · 최대 3개"),
         l.gotcha && d("🎰 Monster Gotcha", "몬스터 뽑기 · 입장 60% · 라운드당 1회"),
-        ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`)
+        ...cardsAt(l.id).map(c => `🔤 알파벳 카드 ${c.letter} 판매 (${SHOPS[c.shop].name})`),
+        ...(l.food || []).filter(c => FOOD_CORNERS[c.k]).map(c => d(`${FOOD_CORNERS[c.k].emoji} ${c.name || FOOD_CORNERS[c.k].name}`, ENTRY_KINDS[c.entry || FOOD_CORNERS[c.k].entry])),
+        ...(l.lodge || []).filter(c => LODGES[c.k]).map(c => d(`${LODGES[c.k].emoji} ${LODGES[c.k].name}`, `${ENTRY_KINDS[c.entry || LODGES[c.k].entry]}${LODGES[c.k].reserve ? " · 예약 가능" : ""}`)),
+        l.region !== "survival" && !l.kidnap && "🏢 취업"
     ].filter(Boolean);
 }

@@ -49,7 +49,7 @@ export function bizHubView(pid, loc, { turn = null, onChange = () => { } } = {})
     let tab = BIZ_LIST.some(T => T.listed.includes(loc.id)) ? "list" : loc.bizhub ? "shop" : "list";
     const render = () => {
         const head = h("div.bz-head", h("span.bz-logo", "🏪"), h("div", h("h3", "Self-Business"), h("small.muted", "TOP 10 경력자 전용 · 가게를 사서 맵에 열고, 손님이 쓴 돈의 일부를 Business Gold로 받으세요")));
-        if (!BK.bankEligible(pid)) { wrap.replaceChildren(head, h("p.notice.warn", "🚫 지난 시즌 TOP 10 경력이 있는 플레이어만 입장할 수 있습니다.")); return; }
+        if (!BK.bizEligible(pid)) { wrap.replaceChildren(head, h("p.notice.warn", "🚫 지난 시즌 TOP 10 경력이 있는 플레이어만 입장할 수 있습니다.")); return; }
         const tabs = [["list", "🏷️ 비즈니스 매물"], ...(loc.bizhub ? [["shop", "🛒 비즈니스 상점"]] : []), ["mine", "📁 내 비즈니스"]];
         wrap.replaceChildren(head,
             h("div.bk-tabs", tabs.map(([k, l]) => h("button.bk-tab" + (k === tab ? ".on" : ""), { onclick: () => { tab = k; render(); } }, l))),

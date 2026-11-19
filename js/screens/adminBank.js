@@ -8,6 +8,8 @@ import { BIZ_TYPES, BIZ_LIST } from "../data/business.js";
 import * as BK from "../game/bank.js";
 import { avatar, displayName } from "../ui/profile.js";
 import { dateOf } from "./bank.js";
+import * as EP from "../game/employ.js";
+import { COMPANY_LIST, COMPANIES, STAGE_LABEL, APPLY_MAX } from "../data/life.js";
 
 const pname = pid => displayName(Store.player(pid)) || `#${pid}`;
 const locName = id => { const l = LOC_BY_ID[id]; return l ? `${l.emoji || ""} ${l.name}` : id; };
@@ -23,8 +25,8 @@ export function adminBankPage() {
     function draw() {
         const b = BK.B();
         const nAcc = Object.keys(b.accounts).length, nBiz = BK.activeBiz().length, nTx = b.transfers.filter(t => !t.done).length;
-        tabsEl.replaceChildren(...[["acc", `💳 계좌 (${nAcc})`], ["biz", `🏪 비즈니스 (${nBiz})`], ["tx", `💸 대기 송금 (${nTx})`]].map(([k, l]) => h("button.tab" + (k === tab ? ".on" : ""), { onclick: () => { tab = k; draw(); } }, l)));
-        body.replaceChildren(...(tab === "acc" ? accounts() : tab === "biz" ? businesses() : transfers()));
+        tabsEl.replaceChildren(...[["acc", `💳 계좌 (${nAcc})`], ["biz", `🏪 비즈니스 (${nBiz})`], ["tx", `💸 대기 송금 (${nTx})`], ["emp", `🏢 취업 (${Object.keys(EP.EM().staff).length})`]].map(([k, l]) => h("button.tab" + (k === tab ? ".on" : ""), { onclick: () => { tab = k; draw(); } }, l)));
+        body.replaceChildren(...(tab === "acc" ? accounts() : tab === "biz" ? businesses() : tab === "emp" ? employment() : transfers()));
     }
 
     // ------------------------------------------------------------ accounts
@@ -131,6 +133,25 @@ export function adminBankPage() {
                                 BK.closeBusiness(z.owner, z, { admin: true }); draw();
                             } }, "폐업")));
                 })) : h("p.muted", "아직 개설된 비즈니스가 없습니다")];
+    }
+
+    // ------------------------------------------------------------ 🏢 employment: staff · applicants · force the review
+    function employment() {
+        const E = EP.EM();
+        return [
+            h("p.muted", `채용 시계 ${E.tick}라운드 · 지원자가 ${APPLY_MAX}명 모이면 심사가 시작되고 라운드마다 다음 단계 결과가 나옵니다. 시즌이 끝나면 덜 찬 지원도 심사를 시작합니다.`),
+            ...COMPANY_LIST.map(C => {
+                const staff = EP.staffOf(C.id), cohorts = (E.cohorts[C.id] || []).filter(c => c.list.length).slice(-4).reverse();
+                return h("div.ag-card",
+                    h("h3", `${C.emoji} ${C.name}`, h("small.muted", ` · 직원 ${staff.length}/${C.cap} · 급여 ${fmt(C.pay)}G`)),
+                    staff.length ? h("table.ab-table", h("tr", h("th", "직원"), h("th", "입사"), h("th", "급여"), h("th", "직급"), h("th", "계좌"), h("th", "")),
+                        staff.map(x => h("tr", h("td.ab-who", avatar(x.pid, 30, { effect: false }), pname(x.pid)), h("td", `${dateOf(x.at)}${x.season ? ` · S${x.season}` : ""}`), h("td", `${fmt(x.pay)} G`), h("td", x.manager ? "👔 매니저" : `진급 ${x.promos || 0}/3`), h("td", x.code),
+                            h("td", h("button.btn.small.red", { onclick: async () => { if (!(await confirmBox(`${pname(x.pid)}을(를) ${C.name}에서 해고할까요?`))) return; EP.fire(x.pid, "관리자 해고"); save("해고 처리"); } }, "해고"))))) : h("p.muted", "직원 없음"),
+                    cohorts.map(c => h("div.ab-cohort", h("b", `시즌 ${c.season} 지원자 ${c.list.length}/${APPLY_MAX}`), h("small.muted", c.started ? ` · ${c.done ? "심사 종료" : `${STAGE_LABEL(C, Math.min(c.stage, C.stages.length - 1))} 진행 중`}` : " · 심사 대기"),
+                        !c.started ? h("button.btn.small.gold", { onclick: () => { EP.startReview(C.id, c); save("심사 시작 — 다음 라운드에 1차 결과"); } }, "▶ 지금 심사 시작") : null,
+                        h("div.ab-faces", c.list.map(a => h("span.ab-face", { title: `${pname(a.pid)} · ${a.state}` }, avatar(a.pid, 28, { effect: false }), h("small", { hired: "✅ 입사", offer: "🎉 합격", fail: "❌", declined: "↩ 다른 곳", stage: `${a.stage + 1}차`, wait: "대기" }[a.state] || a.state)))))));
+            }),
+            E.log?.length ? h("details.ag-card", h("summary", `📜 채용 기록 (${E.log.length})`), E.log.slice(0, 80).map(x => h("div.small", h("small.muted", dateOf(x.t) + " "), x.text))) : null];
     }
 
     // ------------------------------------------------------------ transfers

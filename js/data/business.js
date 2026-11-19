@@ -13,7 +13,7 @@
 //           or market: [{ cat, id }] — goods for the bag at shop price +5%,
 //           one random pick per player per round
 // =====================================================================
-import { SHOPS } from "./catalog.js";
+import { SHOPS, ITEM_BY_ID } from "./catalog.js";
 import { REGIONS } from "./regions.js";
 import { emoItem } from "../emomon/data.js";
 import { saleOf } from "./catalogAdmin.js";
@@ -23,7 +23,8 @@ export const BANK_OPEN_CHANCE = 0.6;    // 3rd review step
 export const BANK_SHOP = [
     { id: "fast_transfer", gold: 30000 },
     { id: "extra_transfer", pts: 300 },
-    { id: "remote_bank", pts: 500 }
+    { id: "remote_bank", pts: 500 },
+    { id: "loan_erase", gold: 50000 } // 🧾 대부기록 삭제권 (data/life.js)
 ];
 export const BIZ_SHOP = [
     { id: "biz_move", gold: 100000 },
@@ -107,7 +108,9 @@ export const BIZ_TYPES = {
         listed: ["goldbar", "highroller", "downtown", "combo_town", "random_casino"],
         open: ALL_REGIONS.map(r => R(r, 20000)),
         entry: { fee: 500, chance: 1 }, cut: 0.005,
-        market: [{ cat: "item", id: "hp_50" }, { cat: "item", id: "map_random" }, { cat: "weapon", id: "punch" }, { cat: "pet", id: "poop" }] },
+        market: [{ cat: "item", id: "hp_50" }, { cat: "item", id: "map_random" }, { cat: "weapon", id: "punch" }, { cat: "pet", id: "poop" },
+            // 🍚 food for the bag (data/life.js)
+            { cat: "item", id: "food_bread" }, { cat: "item", id: "food_water" }, { cat: "item", id: "food_bagettn" }, { cat: "item", id: "food_cola" }] },
     greens: { id: "greens", name: "Puseonggui Greens Shop", ko: "푸성귀 가게", emoji: "🌿", color: "#22c55e", price: 100000, pts: 10, max: 5, rank: 10, nation: "Dung Town",
         listed: ["dungtown", "magic", "beggar_shelter", "dove"],
         open: [R("cl2", 30000, ["dung2"]), R("randomland", 30000, ["plaza"]), R("combo", 5000), R("deepsea", 20000, ["bubble"]), R("survival", 20000)],
@@ -127,7 +130,8 @@ export const BIZ_TYPES = {
         listed: ["diamond_casino", "twins", "graveyard", "sky_pond", "death_casino"],
         open: ALL_REGIONS.map(r => R(r, 20000)),
         entry: { fee: 500, chance: 1 }, cut: 0.005,
-        market: [{ cat: "item", id: "hp_full" }, { cat: "item", id: "random_letter" }, { cat: "item", id: "super_letter" }, { cat: "weapon", id: "kick" }, { cat: "frame", id: "frame_gold" }] },
+        market: [{ cat: "item", id: "hp_full" }, { cat: "item", id: "random_letter" }, { cat: "item", id: "super_letter" }, { cat: "weapon", id: "kick" }, { cat: "frame", id: "frame_gold" },
+            { cat: "item", id: "food_kkorong" }, { cat: "item", id: "food_kkomeal" }, { cat: "item", id: "food_sunshine" }, { cat: "item", id: "food_ramen" }, { cat: "item", id: "food_energydrink" }] },
     // 🐾 monster goods at the admin's Monster item price +5% (cat "emo" → EmoMon bag)
     emomart: { id: "emomart", name: "EmoMon Mini Market", ko: "이모몬 미니마켓", emoji: "🐾", color: "#34d399", price: 500000, pts: 50, max: 3, rank: 6, emoMin: 2,
         listed: ["wingers", "spacetown", "rainbow", "spooky", "shipwreck", "possibility"],
@@ -154,6 +158,7 @@ export function shopPrice(cat, id) {
     // the admin's price first (상품 관리), then the built-in gold shop price
     const s = saleOf(cat, id);
     if (s.price && s.cur === "G") return s.price;
+    if (cat === "item" && ITEM_BY_ID[id]?.foodPrice != null) return ITEM_BY_ID[id].foodPrice || null; // 🍚 food: the admin default price
     for (const s of Object.values(SHOPS)) {
         if (s.cur && s.cur !== "G") continue;
         const it = s.list.find(x => x.cat === cat && x.id === id);

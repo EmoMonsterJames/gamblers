@@ -6,6 +6,19 @@ import { lang } from "../core/i18n.js";
 import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_BY_ID, BASIC_ATTACK, attackCount } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 import { frameDeco } from "./frames.js";
+import { FOOD_START, FOOD_MAX } from "../data/life.js";
+
+// 🦠 every disease a player can have (game/extra.js DISEASES — kept here too so the picture never needs the season rules)
+export const DISEASE_ICON = { flu: { emoji: "🤧", name: "독감" }, cancer: { emoji: "🎗️", name: "암" } };
+const sickList = pid => { const ps = Store.season?.ps?.[pid]; return ps && !ps.out ? Object.keys(ps.dis || {}).filter(k => ps.dis[k]) : []; };
+// the diseases as chips (side card / player card) — every disease is shown, each with its own icon
+export function diseaseChips(pid) {
+    const list = sickList(pid);
+    if (!list.length) return null;
+    return h("div.dis-chips", list.map(k => { const d = DISEASE_ICON[k] || { emoji: "🦠", name: k }; return h("button.dis-chip", { title: `${d.name} — 눌러서 질병 정보 보기`, onclick: () => sickInfo(pid) }, h("i", d.emoji), d.name); }));
+}
+// 🏢 company mark on the picture (game/employ.js keeps the staff in Store.bank.employ)
+const COMPANY_ICON = { hyhg: ["🏙️", "#0ea5e9"], gm: ["🚗", "#2563eb"], arizal: ["🛰️", "#7c3aed"], poly: ["🔺", "#f97316"], robot: ["📞", "#64748b"], sparkle: ["🧽", "#22d3ee"], dungdung: ["💩", "#a16207"] };
 
 export function displayName(p) { return p ? ((lang() === "en" && p.player_name) || p.name_ko || p.player_name) : "?"; } // EN mode: the English name
 
@@ -27,10 +40,13 @@ export function avatar(pid, size = 64, { effect = true, frame = true, cls = "" }
         const fs = Math.max(9, Math.round(size * 0.16)) + "px";
         if (gl) el.append(h("span.av-badge.av-g.g-" + gl, { style: { fontSize: fs } }, gl));
         if (hl) el.append(h("span.av-badge.av-h", { style: { fontSize: fs } }, hl));
-        const dis = Store.season?.ps?.[pid]?.dis;
-        if (dis && Object.values(dis).some(Boolean) && !Store.season.ps[pid].out)
-            el.append(h("span.av-sick", { style: { fontSize: Math.max(10, Math.round(size * 0.2)) + "px" }, title: `질병: ${[dis.flu && "독감", dis.cancer && "암"].filter(Boolean).join(" · ")} — 눌러서 질병 정보 보기`,
-                role: "button", onclick: e => { e.preventDefault(); e.stopPropagation(); sickInfo(pid); } }, "⚠️"));
+        // 🦠 one blinking icon per disease (🤧 flu · 🎗️ cancer · …)
+        const sick = sickList(pid);
+        if (sick.length)
+            el.append(h("span.av-sick", { style: { fontSize: Math.max(10, Math.round(size * 0.2)) + "px" }, title: `질병: ${sick.map(k => DISEASE_ICON[k]?.name || k).join(" · ")} — 눌러서 질병 정보 보기`,
+                role: "button", onclick: e => { e.preventDefault(); e.stopPropagation(); sickInfo(pid); } }, "⚠️", ...sick.map(k => h("i.av-sick-k", DISEASE_ICON[k]?.emoji || "🦠"))));
+        const co = COMPANY_ICON[Store.bank?.employ?.staff?.[pid]?.co];
+        if (co && size >= 56) el.append(h("span.av-co", { style: { fontSize: Math.max(10, Math.round(size * 0.16)) + "px", "--co": co[1] }, title: "취업 회사" }, co[0]));
     }
     return el;
 }
@@ -104,7 +120,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                     badge(rec.avg ? `전적 평균 ${rec.avg.toFixed(1)}위 (${rec.seasons}시즌)` : "전적 없음", "rec"),
                     rec.wins ? badge(`👑 ${rec.wins}회 우승`, "crown") : null,
                     ps?.out ? badge(`탈락 · ${ps.rank}위`, "dead") : null),
-                ps ? h("div.hp", h("div.hp-bar", h("i", { style: { width: hpPct + "%" } })), h("span", `HP ${Math.round(ps.hp * 100) / 100}`)) : null)),
+                ps ? vitalBars(ps) : null, ps ? diseaseChips(pid) : null)),
         ps ? h("div.pcard-money",
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
             h("div.stat.pts", h("small", "포인트"), h("b", fmt(ps.points) + " P"))) : null,
@@ -120,6 +136,11 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                 ps.weapons.length ? h("div.wlist", ps.weapons.map(w => weaponChip(w))) : h("div.muted", `없음 — ${BASIC_ATTACK.name} (ATK ${BASIC_ATTACK.atk} / ACC ${BASIC_ATTACK.acc})`)),
             itemsLine(ps)) : null
     );
+}
+// ❤️ HP + 🍚 food gauges (the same look as screens/lifeCorners.js vitals())
+export function vitalBars(ps, { mini = false } = {}) {
+    const bar = (cls, icon, v, max) => { const pct = Math.max(0, Math.min(100, v / max * 100)); return h("div.vbar." + cls + (pct <= 30 ? ".low" : ""), { title: `${cls === "hp" ? "HP" : "식량"} ${Math.round(v * 100) / 100} / ${max}` }, h("i.vbar-ico", icon), h("div.vbar-track", h("u", { style: { width: pct + "%" } }), mini ? null : h("b", `${Math.round(v * 10) / 10}`))); };
+    return h("div.vitals" + (mini ? ".mini" : ""), bar("hp", "❤️", Math.max(0, ps.hp ?? CONFIG.START_HP), CONFIG.START_HP), bar("food", "🍚", ps.food ?? FOOD_START, FOOD_MAX));
 }
 export function weaponChip(id) {
     const w = WEAPON_BY_ID[id] || BASIC_ATTACK;

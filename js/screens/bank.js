@@ -1,5 +1,5 @@
 // =====================================================================
-// 🏦 Business Bank corner (game/bank.js) — TOP 10 career + 1,000G door.
+// 🏦 Business Bank corner (game/bank.js) — TOP 15 career + 1,000G door.
 //   1) 계좌 개설 (3-step review)  2) Business Gold 송금  3) 은행 상점
 // The 📲 Remote 은행 이용권 opens the same desk as a popup, without 1).
 // =====================================================================
@@ -13,6 +13,8 @@ import * as G from "../game/season.js";
 import * as BK from "../game/bank.js";
 import { displayName } from "../ui/profile.js";
 import { priceLabel, canPay, pay } from "./shop.js";
+import { ACCOUNT_PRODUCTS } from "../data/life.js";
+import * as EP from "../game/employ.js";
 
 const nameOf = pid => displayName(Store.player(pid));
 export const dateOf = iso => { const d = new Date(iso); return isNaN(d) ? "-" : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; };
@@ -24,22 +26,22 @@ export function bankView(pid, { turn = null, onChange = () => { }, remote = fals
     let tab = remote ? "tx" : "open";
     const head = () => h("div.bk-head", h("span.bk-logo", "🏦"), h("div",
         h("h3", "Business Bank", remote ? h("small.bk-remote", " 📲 REMOTE") : null),
-        h("small.muted", `TOP 10 경력자 전용 · 입장료 ${fmt(BANK_FEE)}G · 은행 상점은 라운드당 1회`)));
+        h("small.muted", `TOP ${BK.BANK_TOP} 경력자 전용 · 입장료 ${fmt(BANK_FEE)}G · 은행 상점은 라운드당 1회`)));
     const render = () => {
-        if (!BK.bankEligible(pid)) { wrap.replaceChildren(head(), h("p.notice.warn", "🚫 지난 시즌 TOP 10 경력이 있는 플레이어만 Business Bank를 이용할 수 있습니다.")); return; }
+        if (!BK.bankEligible(pid)) { wrap.replaceChildren(head(), h("p.notice.warn", `🚫 지난 시즌 TOP ${BK.BANK_TOP} 경력이 있는 플레이어만 Business Bank를 이용할 수 있습니다.`)); return; }
         // the door: paid once per visit (per turn); remote use is already paid by the ticket
         if (!remote && turn && !turn.bankPaid) {
             wrap.replaceChildren(head(), h("div.bk-door",
                 h("div.bk-door-ico", "🚪"),
                 h("p", "Business Bank에 오신 것을 환영합니다."),
-                h("p.muted", `나의 경력: ${G.honorRecordText(pid, 10) || (G.S().sandbox ? "테스트 모드" : "-")}`),
+                h("p.muted", `나의 경력: ${G.honorRecordText(pid, BK.BANK_TOP) || (G.S().sandbox ? "테스트 모드" : "-")}`),
                 h("button.btn.gold.big", { disabled: ps.money < BANK_FEE, onclick: enter }, ps.money < BANK_FEE ? "골드 부족" : `입장료 ${fmt(BANK_FEE)}G 내고 입장`)));
             return;
         }
-        const tabs = [...(remote ? [] : [["open", "① 계좌 개설"]]), ["tx", "② Business Gold 송금"], ["shop", "③ 은행 상점"]];
+        const tabs = [...(remote ? [] : [["open", "① 계좌 개설"]]), ["tx", "② Business Gold 송금"], ["shop", "③ 은행 상점"], ...(BK.account(pid) ? [["prod", "④ 계좌 전용 상품"]] : [])];
         wrap.replaceChildren(head(),
             h("div.bk-tabs", tabs.map(([k, l]) => h("button.bk-tab" + (k === tab ? ".on" : ""), { onclick: () => { tab = k; render(); } }, l))),
-            tab === "open" ? openPane() : tab === "tx" ? txPane() : shopPane());
+            tab === "open" ? openPane() : tab === "tx" ? txPane() : tab === "prod" ? prodPane() : shopPane());
     };
     function enter() {
         if (turn && turn.remaining <= 0) return toast("⏰ 플레이 시간이 끝났습니다", "warn");
@@ -57,7 +59,7 @@ export function bankView(pid, { turn = null, onChange = () => { }, remote = fals
         return h("div.bk-pane",
             h("div.bk-steps",
                 h("div.bk-step", h("b", "1"), h("span", "시즌 전적 심사"), h("small", `${20}위(꼴찌) 기록이 있으면 거절`)),
-                h("div.bk-step", h("b", "2"), h("span", "대출 이력 심사"), h("small", "미상환 대출이 있으면 거절 · 기록이 없으면 통과")),
+                h("div.bk-step", h("b", "2"), h("span", "대출 이력 심사"), h("small", EP.loanErased(pid) || ps.items.loan_erase > 0 ? "🧾 대부기록 삭제권 — 대출 심사 면제" : "미상환 대출이 있으면 거절 · 기록이 없으면 통과")),
                 h("div.bk-step", h("b", "3"), h("span", "최종 심사"), h("small", "확률 심사"))),
             h("div.row.center", h("button.btn.gold.big", { disabled: !can, onclick: apply }, can ? "🏦 계좌 개설 신청" : "이번 라운드 신청 완료 — 다음 라운드에 다시")));
     }
@@ -166,6 +168,27 @@ export function bankView(pid, { turn = null, onChange = () => { }, remote = fals
         await m.closed; done();
     }
 
+    // ---------------------------------------------------------------- ④ account-only products (one-time, interest every 3 rounds)
+    function prodPane() {
+        const a = BK.account(pid);
+        if (!a) return h("div.bk-pane", h("p.notice", "계좌가 있어야 가입할 수 있습니다."));
+        return h("div.bk-pane",
+            h("p.muted", `계좌 ${a.code} 전용 상품 · 한 번 가입하면 계속 유지되고 3라운드마다 계좌(Business Gold)에 이자가 쌓입니다.`),
+            h("div.shop-grid", ACCOUNT_PRODUCTS.map(P => {
+                const has = EP.hasProduct(pid, P.id), linked = EP.productLinked(pid, P.need), ok = !has && linked && ps.money >= P.gold;
+                const k = a.perks?.[P.id];
+                return h("div.sitem" + (has ? ".owned" : ""),
+                    h("div.sitem-art", h("div.big-emoji", P.emoji)), h("div.sitem-name", P.name), h("div.sitem-desc", P.desc),
+                    has ? h("small.have", `가입 중 · 받은 이자 ${fmt(k?.paid || 0)} BG · 다음 이자까지 ${P.every - ((k?.rounds || 0) % P.every)}라운드`) : !linked ? h("small.have.warn", P.need === "biz" ? "Self-Business와 연동된 계좌가 아닙니다" : "회사 급여와 연동된 계좌가 아닙니다") : null,
+                    h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: async () => {
+                        if (!(await confirmBox(`${P.name}에 가입할까요? (${fmt(P.gold)}G)`, "가입", "취소"))) return;
+                        const r = EP.buyProduct(pid, P.id);
+                        if (!r.ok) return toast(r.why, "warn");
+                        Sound.fanfare(); confetti(30, ["🏦", "💹"]); onChange(); render();
+                    } }, has ? "가입 완료" : `${fmt(P.gold)} G`));
+            })));
+    }
+
     // ---------------------------------------------------------------- ③ shop
     function shopPane() {
         const left = BK.bankBuyLeft(pid);
@@ -222,7 +245,7 @@ export function codeSearch(onPick) {
 export async function remoteBank(pid, onChange) {
     const ps = G.S().ps[pid];
     if (!(ps.items.remote_bank > 0)) return;
-    if (!BK.bankEligible(pid)) return toast("TOP 10 경력자만 은행을 이용할 수 있습니다", "warn");
+    if (!BK.bankEligible(pid)) return toast(`TOP ${BK.BANK_TOP} 경력자만 은행을 이용할 수 있습니다`, "warn");
     if (!(await confirmBox("📲 Remote 은행 이용권 1장을 사용해 Business Bank를 팝업으로 엽니다.\n(송금 · 은행 상점만 이용 가능)", "열기", "취소"))) return;
     ps.items.remote_bank--;
     G.log(`📲 ${G.name(pid)} Remote 은행 이용`);

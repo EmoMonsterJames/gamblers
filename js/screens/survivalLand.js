@@ -85,6 +85,8 @@ let current = null;
 export function stopSurvivalFx() { current?.stop(); current = null; }
 // what the turn screen puts in its left bar (⛪ the devil statue)
 export const survivalSide = () => current?.side || null;
+// 📋 the map messages (the devil statue's growth · disasters) — shown under the weapons in the left bar
+export const survivalMsgs = () => current?.msgs || null;
 export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     stopSurvivalFx();
     if (!loc?.revival) return null;
@@ -101,8 +103,8 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     const parts = [];
     // 📋 map messages (disasters · the devil statue) sit in the left bar under the pet / the statue — not as top-right toasts
     const msgBox = h("div.rv-side-msgs");
-    const msg = (text, kind = "info", ms = 3000) => {
-        const el = h("div.rv-side-msg." + kind, text);
+    const msg = (text, kind = "info", ms = 3000, cls = "") => {
+        const el = h("div.rv-side-msg." + kind + (cls ? "." + cls : ""), text);
         msgBox.prepend(el);
         while (msgBox.children.length > 3) msgBox.lastChild.remove();
         setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 500); }, ms);
@@ -313,13 +315,21 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     async function churchTick() {
         if (churchBusy || dead) return;
         if (!fogEl?.isConnected && Math.random() < 1 / 40) fog();
-        if (Math.random() < 1 / 22) {
-            C.level = Math.min(100, C.level + rint(5, 15));
+        // ⏱️ the statue bursts at least once within 5 minutes: C.sec counts play seconds since the last burst —
+        // the closer to 5:00, the faster it grows; at 4:50 it jumps straight to 100
+        C.sec = (C.sec || 0) + 1;
+        const due = C.sec >= STATUE_MAX - 10;
+        const chance = 1 / 22 + Math.max(0, C.sec - 150) / 150 * 0.12;
+        if (due || Math.random() < chance) {
+            const need = Math.max(0, 100 - C.level), secsLeft = Math.max(1, STATUE_MAX - 10 - C.sec);
+            // never fall behind the 5-minute pace: the step is at least what keeps 100 reachable in time
+            const pace = Math.ceil(need / Math.max(1, secsLeft / 22));
+            C.level = due ? 100 : Math.min(100, C.level + Math.max(rint(5, 15), Math.min(need, pace)));
             Store.saveSeason();
             drawStatue();
             statue.classList.remove("grow"); void statue.offsetWidth; statue.classList.add("grow");
             tone(90, 0.6, "sawtooth", 0.04, 0, -30);
-            msg(`😈 악마의 조각상이 자랐다… (${C.level}/100)`, C.level >= 70 ? "warn" : "info", 3000);
+            msg(h("span.rv-sm-in", h("i", "😈"), h("span", h("b", "악마의 조각상이 자랐다…"), h("small", h("u", { style: { width: C.level + "%" } }), `${C.level} / 100`))), C.level >= 70 ? "warn" : "info", 3600, "statue");
         }
         if (C.level >= 100) {
             if (activityBusy()) return; // after the spin / popup
@@ -329,7 +339,7 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
             Sound.boom(); noise(1.2, 0.2);
             await sleep(1100);
             const alive = await devilWheel(pid);
-            C.level = 0; Store.saveSeason(true);
+            C.level = 0; C.sec = 0; Store.saveSeason(true);
             statue.classList.remove("break"); drawStatue();
             churchBusy = false;
             onChange?.();
@@ -386,12 +396,13 @@ export function survivalEffects(loc, t, pid, { root, onDead, onChange }) {
     const extra = survivalExtras(loc, t, pid, { root, harm, msg, rulesBox: alertBox, die, onChange });
     cleanups.push(() => extra.stop());
     parts.push(...extra.parts);
-    const sideEl = h("div.rv-side", statue, extra.side, loc.disaster ? lastDis : null, msgBox);
-    current = { stop, side: sideEl };
+    const sideEl = h("div.rv-side", statue, extra.side, loc.disaster ? lastDis : null);
+    current = { stop, side: sideEl, msgs: h("div.rv-side.rv-side-below", msgBox) };
     return { hud: parts.length ? h("div.rv-tags", parts) : null, tick, stop };
 }
 
 // ---------------------------------------------------------------- 😈 devil wheel (statue at 100)
+export const STATUE_MAX = 300; // the devil statue bursts at least once in this many seconds of play
 const DEVIL = [{ id: "kill", label: "☠️ 바로 사망", w: 50, c: "#0a0a0a" }, { id: "hp50", label: "HP −50", w: 30, hp: 50, c: "#991b1b" }, { id: "hp20", label: "HP −20", w: 20, hp: 20, c: "#dc2626" }];
 export const devilWheel = pid => fateWheel(pid, { title: "😈 악마의 휠", slices: DEVIL, place: "😈 악마의 휠", intro: "조각상이 깨졌다! 악마의 휠을 강제로 돌려야 합니다…", button: "😈 악마의 휠 돌리기" }).then(r => !r.dead);
 // 🧠 quiz penalty · 🔥 inferno corner door
@@ -429,11 +440,13 @@ export async function fateWheel(pid, { title, slices, place, intro = "", button 
 
 // ---------------------------------------------------------------- 🧠 Quiz popup
 export const QUIZ_HINT_HP = 10;
+export const QUIZ_LIMIT = 30; // seconds to pick an answer
 export const QUIZ_RULES = [
     "🧠 이 맵에서는 플레이 도중 랜덤하게 퀴즈 팝업이 나옵니다 (적어도 2분에 1번).",
     "문제: 📚 영어 단어 Synonym (동의어) · 🌍 Trivia Acronym (약어 풀이) — 상급 이상 난이도, 4지선다.",
     "💡 힌트는 3개 — 볼 때마다 HP −10 (1: 뜻 / 분야, 2·3: 오답 하나씩 지우기).",
     "❌ 틀리면 Penalty 룰렛: 30% 바로 사망 · 20% HP −10 · 30% HP −20 · 20% HP −30.",
+    "⏱️ 정답은 30초 안에 골라야 합니다 — 시간이 지나면 오답으로 처리되어 Penalty 룰렛을 돌립니다.",
     "⏱️ 퀴즈를 푸는 시간도 플레이 시간에 포함됩니다 (시계는 계속 흐릅니다).",
     "🎟️ 이 맵에서 2분이 지나면 다른 Survival Land 맵권으로 이동할 수 있습니다."
 ];
@@ -447,10 +460,23 @@ export async function quizPopup(pid) {
     const status = h("div.qz-status");
     const m = modal(h("div.qz-pop",
         h("div.qz-tag", q.label), h("h3.qz-q", q.q), opts, hintBox, status,
-        h("div.row.center", hintBtn), h("small.muted", "⏱️ 푸는 동안에도 플레이 시간은 계속 흐릅니다 · 틀리면 Penalty 룰렛!")), { title: "🧠 QUIZ TIME!", closable: false, cls: "qz-modal" });
+        h("div.row.center", hintBtn), h("small.muted", `⏱️ ${QUIZ_LIMIT}초 안에 정답을 고르세요 — 시간이 지나면 오답 처리 (Penalty 룰렛!)`)), { title: "🧠 QUIZ TIME!", closable: false, cls: "qz-modal" });
+    const clock = h("div.qz-clock", h("b", String(QUIZ_LIMIT)), h("i", h("u")));
+    m.box.querySelector(".qz-pop").prepend(clock);
     Sound.bonus();
-    let buttons = [];
+    let buttons = [], timedOut = false;
     const choice = await new Promise(resolve => {
+        // ⏱️ 30 s to answer: the bar runs down, the last 10 s tick — no answer = wrong
+        let left = QUIZ_LIMIT;
+        const iv = setInterval(() => {
+            if (done) { clearInterval(iv); return; }
+            left--;
+            clock.querySelector("b").textContent = String(Math.max(0, left));
+            clock.querySelector("u").style.width = Math.max(0, left / QUIZ_LIMIT * 100) + "%";
+            clock.classList.toggle("low", left <= 10);
+            if (left <= 10 && left > 0) Sound.tick();
+            if (left <= 0) { clearInterval(iv); done = true; timedOut = true; resolve("__timeout__"); }
+        }, 1000);
         buttons = q.options.map(o => h("button.qz-opt", { onclick: () => { if (!done) { done = true; resolve(o); } } }, o));
         opts.replaceChildren(...buttons);
         hintBtn.onclick = () => {
@@ -476,11 +502,12 @@ export async function quizPopup(pid) {
         await sleep(1500); m.close();
         return { ok: false, dead: true };
     }
-    const ok = choice === q.answer;
+    const ok = !timedOut && choice === q.answer;
     for (const b of buttons) { if (b.textContent === q.answer) b.classList.add("right"); else if (b.textContent === choice) b.classList.add("wrong"); b.disabled = true; }
     hintBtn.disabled = true;
-    G.log(`🧠 ${G.name(pid)} 퀴즈 ${ok ? "정답" : "오답"} (${q.q.match(/"(.+)"/)?.[1] || ""}) · 힌트 ${hints}개`);
+    G.log(`🧠 ${G.name(pid)} 퀴즈 ${ok ? "정답" : timedOut ? "시간 초과" : "오답"} (${q.q.match(/"(.+)"/)?.[1] || ""}) · 힌트 ${hints}개`);
     if (ok) { Sound.fanfare(); confetti(40, ["🧠", "✨", "✅"]); status.replaceChildren(h("b.ok", "✅ 정답! 무사히 넘어갔다")); }
+    else if (timedOut) { Sound.lose(); status.replaceChildren(h("b.bad", `⏰ 시간 초과! (${QUIZ_LIMIT}초) 정답: ${q.answer} — Penalty 룰렛을 돌려야 합니다`)); }
     else { Sound.lose(); status.replaceChildren(h("b.bad", `❌ 오답! 정답: ${q.answer} — Penalty 룰렛을 돌려야 합니다`)); }
     await new Promise(r => m.box.querySelector(".qz-pop").append(h("div.row.center", h("button.btn.gold.big", { onclick: () => { m.close(); r(); } }, ok ? "확인" : "🎡 Penalty 룰렛으로"))));
     if (ok) return { ok: true, dead: false };
@@ -514,6 +541,7 @@ export function infernoGate(pid, t, tabId, label, { onOpen, onDead, onChange }) 
 // ---------------------------------------------------------------- 🧑‍⚖️ Priest (Foggy Church NPC)
 // sermon: 30 s of hymns — play time keeps running, no NPC can come meanwhile
 // donation: the player gives from their OWN gold (not the revival gold) — less → worse
+export const PRIEST_LIMIT = 15; // seconds to type the donation (then 0G)
 function hymn(i) {
     const chords = [[262, 330, 392], [349, 440, 523], [392, 494, 587], [262, 330, 392]];
     const c = chords[i % chords.length];
@@ -562,24 +590,41 @@ export async function priestVisit(pid, npc, move) {
     const own = RV.ownGold(pid);
     say.textContent = "🙏 \"헌금하라… 적게 내면 벌을 받으리라.\"";
     const input = h("input.rv-don-in", { type: "number", min: 0, max: own, step: 100, value: 0 });
+    const donClock = h("div.qz-clock", h("b", String(PRIEST_LIMIT)), h("i", h("u")));
     const out = await new Promise(resolve => {
+        // ⏱️ 15 s to type the amount — after that 0G is donated automatically
+        let left = PRIEST_LIMIT, settled = false;
+        const iv = setInterval(() => {
+            if (settled) { clearInterval(iv); return; }
+            left--;
+            donClock.querySelector("b").textContent = String(Math.max(0, left));
+            donClock.querySelector("u").style.width = Math.max(0, left / PRIEST_LIMIT * 100) + "%";
+            donClock.classList.toggle("low", left <= 5);
+            if (left <= 5 && left > 0) Sound.tick();
+            if (left <= 0) { clearInterval(iv); input.value = 0; give(true); }
+        }, 1000);
+        const give = (auto = false) => {
+            if (settled) return; settled = true; clearInterval(iv);
+            const want = auto ? 0 : Math.max(0, Math.min(own, Math.floor(+input.value || 0)));
+            const paid = RV.payOwnGold(pid, want);
+            let harm = null;
+            if (paid <= 1000) { const k = [60, 70, 80, 90, "kill"][rint(0, 4)]; harm = k === "kill" ? { kill: true } : { hp: k }; }
+            else if (paid <= 10000) harm = { hp: rint(30, 50) };
+            else if (paid <= 50000) harm = { hp: rint(10, 30) };
+            G.log(`🙏 ${G.name(pid)} Priest에게 ${fmt(paid)}G 기부 (원래 골드)${auto ? " — ⏰ 15초 초과로 0G 자동 처리" : ""}`);
+            const r = harm ? X.applyHarm(pid, harm, "🧑‍⚖️ Priest") : { hp: ps_(pid)?.hp };
+            resolve({ paid, harm, r, auto });
+        };
         res.replaceChildren(h("div.rv-donation",
             h("p", "기부할 금액을 입력하세요. ", h("b", "패자부활전 골드가 아니라 내가 원래 갖고 있던 골드"), "에서 빠져나갑니다."),
             h("div.rv-don-own", `💰 내 원래 골드: ${fmt(own)} G`),
             h("ul.rv-don-rules", h("li", "1,000G 이하: HP −60 ~ 바로 사망"), h("li", "10,000G 이하: HP −30 ~ −50"), h("li", "50,000G 이하: HP −10 ~ −30"), h("li", "50,000G 초과: 축복! 공격 없음")),
+            donClock, h("small.muted", `⏱️ ${PRIEST_LIMIT}초 안에 입력하세요 — 시간이 지나면 0G 기부로 자동 처리됩니다`),
             input,
-            h("button.btn.gold.big", { onclick: () => {
-                const want = Math.max(0, Math.min(own, Math.floor(+input.value || 0)));
-                const paid = RV.payOwnGold(pid, want);
-                let harm = null;
-                if (paid <= 1000) { const k = [60, 70, 80, 90, "kill"][rint(0, 4)]; harm = k === "kill" ? { kill: true } : { hp: k }; }
-                else if (paid <= 10000) harm = { hp: rint(30, 50) };
-                else if (paid <= 50000) harm = { hp: rint(10, 30) };
-                G.log(`🙏 ${G.name(pid)} Priest에게 ${fmt(paid)}G 기부 (원래 골드)`);
-                const r = harm ? X.applyHarm(pid, harm, "🧑‍⚖️ Priest") : { hp: ps_(pid)?.hp };
-                resolve({ paid, harm, r });
-            } }, "🙏 기부하기")));
+            h("button.btn.gold.big", { onclick: () => give(false) }, "🙏 기부하기")));
+        setTimeout(() => input.focus(), 50);
     });
+    if (out.auto) say.textContent = "⏰ 시간 초과 — 0G 기부로 처리되었다!";
     if (out.r.dead) { Sound.boom(); res.replaceChildren(h("b", `💸 ${fmt(out.paid)}G 기부… ☠️ Priest의 벌을 받아 사망했다!`)); }
     else if (out.harm) { Sound.hit(); res.replaceChildren(h("b", `💸 ${fmt(out.paid)}G 기부… 너무 적다! HP −${out.harm.hp} (남은 HP ❤ ${Math.round(out.r.hp)})`)); }
     else { Sound.bonus(); confetti(30, ["✨", "🕊️"]); res.replaceChildren(h("b", `💸 ${fmt(out.paid)}G 기부 — 🕊️ 축복을 받았다! 공격 없음`)); }

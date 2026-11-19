@@ -17,6 +17,7 @@ import { jackpotButton } from "../ui/jackpotList.js";
 import { showPetHelp } from "../ui/petHelp.js";
 import { isHandpay, handpay } from "../ui/handpay.js";
 import { infernoUI } from "./infernoSlots.js";
+import { IDLE_OFF } from "../slots/wonderEngine.js";
 
 const TIER_ORDER = ["VAULT", "MEGA", "GRAND", "LOTUS", "STRIKE", "MAJOR", "JOKER", "MONKEY", "MAXI", "MINOR", "MINI"];
 
@@ -421,7 +422,8 @@ export function openSlot(cfg, ctx) {
     }
     function showGrid(grid) { grid.forEach((col, c) => setReel(c, col, col.length)); }
     function initReels() {
-        for (let c = 0; c < reelsN; c++) setReel(c, Array.from({ length: rows }, randomKey));
+        const off = IDLE_OFF[cfg.id] || [];
+        for (let c = 0; c < reelsN; c++) setReel(c, Array.from({ length: rows }, (_, r) => off.some(([x, y]) => x === c && y === r) ? "_" : randomKey()));
     }
 
     async function animateReels(grid, { anticipation = [], teaseSym = null, nearMiss = null } = {}) {
@@ -1851,7 +1853,12 @@ export function fitSlotToScreen(root, cabinet, classic = false) {
         const avail = innerHeight - 16;
         const reels = cabinet.querySelector(".reels");
         if (reels) {
-            const natural = classic ? Math.min(120, innerWidth * 0.22) : Math.min(110, innerWidth * 0.15);
+            // the cell the stylesheet gives this cabinet (double reels are bigger) — measuring against the wrong one made
+            // 🗄️ Cabinet of Curiosities shrink and grow back every 0.4 s
+            const dbl = cabinet.classList.contains("dbl-reels");
+            const natural = classic ? Math.min(120, innerWidth * 0.22)
+                : dbl ? (cabinet.classList.contains("skin-r9frames") ? Math.min(132, innerWidth * (innerWidth <= 600 ? 0.14 : 0.18)) : Math.min(158, innerWidth * 0.155))
+                : Math.min(110, innerWidth * 0.15);
             const cur = +reels.dataset.fitCell || natural;
             const rh = reels.getBoundingClientRect().height, ch = cabinet.getBoundingClientRect().height;
             if (rh && ch) {

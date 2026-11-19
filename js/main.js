@@ -22,6 +22,7 @@ import { fillEmptyBizCorners } from "./data/business.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
 import { lang, setLang, startI18n } from "./core/i18n.js";
 import { REGIONS, LOCATIONS } from "./data/catalog.js";
+import "./data/life.js"; // 🍚 food items join the item list before any screen is drawn
 
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,

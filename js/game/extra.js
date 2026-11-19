@@ -80,6 +80,8 @@ export const DISEASES = {
     flu: { id: "flu", name: "독감", en: "Flu", emoji: "🤧", hp: 5, cure: "flu_cure" },
     cancer: { id: "cancer", name: "암", en: "Cancer", emoji: "🎗️", hp: 10, cure: "cancer_cure" }
 };
+// 🔔 the screens redraw the player's picture / side card when a disease comes or goes
+const sickEvent = (pid, kind) => { try { document.dispatchEvent(new CustomEvent("gb:sick", { detail: { pid, kind } })); } catch { } };
 export const diseasesOf = pid => Object.keys(ps_(pid)?.dis || {}).filter(k => ps_(pid).dis[k] && DISEASES[k]);
 export const isSick = pid => diseasesOf(pid).length > 0;
 export function infect(pid, kind, why = "") {
@@ -89,6 +91,7 @@ export function infect(pid, kind, why = "") {
     (ps.dis ||= {})[kind] = true;
     log(`${DISEASES[kind].emoji} ${name(pid)} ${DISEASES[kind].name}에 걸림${why ? ` (${why})` : ""}`);
     Store.saveSeason(true);
+    sickEvent(pid, kind);
     return true;
 }
 export function cure(pid, kind, how = "") {
@@ -97,6 +100,7 @@ export function cure(pid, kind, how = "") {
     delete ps.dis[kind];
     log(`💚 ${name(pid)} ${DISEASES[kind].name} 치료${how ? ` (${how})` : ""}`);
     Store.saveSeason(true);
+    sickEvent(pid, kind);
     return true;
 }
 // 💉 / 💊 cure items (inventory)

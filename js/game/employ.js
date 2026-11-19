@@ -1,0 +1,429 @@
+// =====================================================================
+// 🏢 Employment corner + 🏦 bank account products — rules.
+// Everything here outlives a season (Store.bank, saved with the bank):
+//   bank.employ = {
+//     tick,                                   // rounds played so far (every season) — the employment clock
+//     staff:   { <pid>: { co, at, season, pay, promos, manager, code } },
+//     cohorts: { <co>: [{ season, list: [{ pid, at, state, stage, res: [] , test? }], started, stage, stageTick, hired: [] }] },
+//     apps:    { <pid>: { <season>: [co] } },  // max 2 companies per season
+//     notes:   { <pid>: [{ id, co, text, kind, at, seen }] },   // results told at that player's next turn
+//     offers:  { <pid>: [{ co, season }] },     // final passes waiting for the player's choice (+ account link)
+//     log:     [{ t, text }]
+//   }
+//   bank.lifelog = { visits: { <pid>: [locIds] }, jobs: { <pid>: { <career>: n } }, brand: { <pid>: { <BRAND>: best single win } }, jp: { <pid>: best jackpot rank } }
+//   bank.loanErased = { <pid>: iso }
+//   account.perks = { biz_benefit: { at, rounds }, emp_benefit: { at, rounds } }
+// =====================================================================
+import { Store } from "../core/store.js";
+import { LOC_BY_ID, JACKPOT_RANK, brandKey, attackCount, ITEM_BY_ID } from "../data/catalog.js";
+import { emoItem } from "../emomon/data.js";
+import * as L from "../data/life.js";
+import { S, log, name, roundHooks, seasonEndHooks, locationHooks, jobHooks, playHooks, alive } from "./season.js";
+import { B, account, accountByCode, activeBiz } from "./bank.js";
+import { ownsTypes } from "./extra.js";
+import { monsOf as emoMons, typesOf as emoTypes, giveItem as emoGive } from "../emomon/game.js";
+
+const now = () => new Date().toISOString();
+const save = () => Store.saveBank();
+const rnd = () => Math.random();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+export const EM = () => { const b = B(); const e = (b.employ ||= {}); e.tick ||= 0; e.staff ||= {}; e.cohorts ||= {}; e.apps ||= {}; e.notes ||= {}; e.offers ||= {}; e.log ||= []; return e; };
+export const LOG = () => { const b = B(); const l = (b.lifelog ||= {}); l.visits ||= {}; l.jobs ||= {}; l.brand ||= {}; l.jp ||= {}; return l; };
+const real = () => { const s = S(); return !!s && !s.sandbox && !s.testSeason; };
+const elog = text => { const e = EM(); e.log = [{ t: now(), text }, ...e.log].slice(0, 300); };
+
+// ================================================================ 📒 play history (persistent)
+locationHooks.push((pid, locId) => {
+    if (!real()) return;
+    const v = (LOG().visits[pid] ||= []);
+    if (!v.includes(locId)) { v.push(locId); save(); }
+});
+jobHooks.push((pid, career) => {
+    if (!real()) return;
+    const j = (LOG().jobs[pid] ||= {});
+    j[career] = (j[career] || 0) + 1; save();
+});
+playHooks.push((pid, kind, bet, win, extra) => {
+    const t = S()?.turn;
+    // 🧪 Arizal Tech Test: only bets of 100~300G count, within its minute
+    const at = t?.arizal;
+    if (at && !at.done && t.pid === pid && Date.now() <= at.until && bet >= L.ARIZAL_TEST.min && bet <= L.ARIZAL_TEST.max) { at.won = (at.won || 0) + Math.max(0, win || 0); at.plays = (at.plays || 0) + 1; }
+    if (!real()) return;
+    const lg = LOG();
+    let dirty = false;
+    if (kind === "slot" && extra?.brand && win > 0) {
+        const k = brandKey(extra.brand), m = (lg.brand[pid] ||= {});
+        if (win > (m[k] || 0)) { m[k] = win; dirty = true; }
+    }
+    for (const jp of extra?.jackpots || []) { const r = JACKPOT_RANK[jp] || 0; if (r > (lg.jp[pid] || 0)) { lg.jp[pid] = r; dirty = true; } }
+    if (dirty) save();
+});
+
+// ---- player facts the companies look at
+const ps_ = pid => S()?.ps?.[pid] || null;
+export const visitedIn = (pid, regions) => {
+    const ids = new Set([...(LOG().visits[pid] || []), ...(ps_(pid)?.visited || [])]);
+    return [...ids].filter(id => regions.includes(LOC_BY_ID[id]?.region)).length;
+};
+export const visitedAny = (pid, locIds) => { const ids = new Set([...(LOG().visits[pid] || []), ...(ps_(pid)?.visited || [])]); return locIds.some(id => ids.has(id)); };
+export const bestRank = pid => Math.min(99, ...Store.results.filter(r => r.playerId === +pid && r.rank != null).map(r => r.rank));
+export const jobCount = (pid, career) => LOG().jobs[pid]?.[career] || 0;
+export const brandBest = (pid, brand) => LOG().brand[pid]?.[brandKey(brand)] || 0;
+export const jpBest = pid => Math.max(LOG().jp[pid] || 0, ...Store.jpLog.filter(r => r.playerId === +pid).map(r => JACKPOT_RANK[r.tier] || 0));
+export const monCount = pid => (S() ? emoMons(pid).length : 0) || (Store.stash?.[pid]?.emo?.mons?.length || 0);
+export const hasTypes = (pid, list) => ownsTypes(pid, list);
+const twoTypeMon = pid => !!S() && emoMons(pid).some(m => (emoTypes(m) || []).length >= 2);
+const gradeBonus = (g, aPlus, bc, df) => g === "A+" || g === "A" ? aPlus : g === "B" || g === "C" ? bc : df;
+export const gradeOf = pid => L.schoolGrade(Store.player(pid)?.school);
+
+// ================================================================ 🏢 companies
+export const employer = pid => EM().staff[pid] || null;
+export const companyOf = pid => L.COMPANIES[employer(pid)?.co] || null;
+export const staffOf = co => Object.entries(EM().staff).filter(([, x]) => x.co === co).map(([pid, x]) => ({ pid: +pid, ...x }));
+const cohortsOf = co => (EM().cohorts[co] ||= []);
+export function cohort(co, season = S()?.number, make = false) {
+    const list = cohortsOf(co);
+    let c = list.find(x => x.season === season);
+    if (!c && make) { c = { season, list: [], started: false, stage: 0, stageTick: null, hired: [] }; list.push(c); }
+    return c || null;
+}
+export const appsOf = (pid, season = S()?.number) => EM().apps[pid]?.[season] || [];
+// players still in a company's hiring process (any season) — shown on the company card
+export const inProcess = co => cohortsOf(co).flatMap(c => c.list.filter(a => ["wait", "stage", "offer"].includes(a.state)).map(a => ({ ...a, season: c.season, started: c.started, cstage: c.stage })));
+
+// requirements → { ok, why }
+export function companyReq(pid, co) {
+    const C = L.COMPANIES[co];
+    if (co === "hyhg") {
+        if (monCount(pid) < 1) return { ok: false, why: "이모몬스터 1마리 이상 필요" };
+        const v = visitedIn(pid, ["npcland", "difficult"]);
+        if (v < 3) return { ok: false, why: `NPC 랜드 / Difficult Land 맵 3곳 이상 체험 필요 (지금 ${v}곳)` };
+    }
+    if (co === "gm") { const v = visitedIn(pid, ["cl1", "cl2"]); if (v < 5) return { ok: false, why: `카지노 랜드 1 · 2 맵 5곳 이상 체험 필요 (지금 ${v}곳)` }; }
+    if (co === "arizal") { const v = visitedIn(pid, ["randomland"]); if (v < 3) return { ok: false, why: `랜덤랜드 맵 3곳 이상 체험 필요 (지금 ${v}곳)` }; }
+    return { ok: true, C };
+}
+export function applyStatus(pid, co) {
+    const s = S(), C = L.COMPANIES[co];
+    if (!s || !C) return { ok: false, why: "시즌 중에만 지원할 수 있습니다" };
+    if (s.sandbox && !s.testSeason) return { ok: false, why: "🧪 테스트 모드에서는 지원할 수 없습니다" };
+    if (employer(pid)) return { ok: false, why: "이미 취업한 회사가 있습니다 (취업은 한 곳만)" };
+    if (!account(pid)) return { ok: false, why: "🏦 은행 계좌가 있어야 지원할 수 있습니다" };
+    const mine = appsOf(pid);
+    if (mine.includes(co)) return { ok: false, why: "이번 시즌에 이미 지원했습니다" };
+    if (mine.length >= L.APPLY_PER_SEASON) return { ok: false, why: `시즌당 최대 ${L.APPLY_PER_SEASON}곳까지 지원할 수 있습니다` };
+    if ((EM().offers[pid] || []).length) return { ok: false, why: "합격 통보를 받은 회사가 있습니다 — 먼저 입사를 결정하세요" };
+    const c = cohort(co);
+    if (c && (c.started || c.list.length >= L.APPLY_MAX)) return { ok: false, why: `이번 시즌 지원 마감 (최대 ${L.APPLY_MAX}명)` };
+    const req = companyReq(pid, co);
+    if (!req.ok) return req;
+    if (C.fee && (ps_(pid)?.money || 0) < C.fee) return { ok: false, why: `지원료 ${C.fee.toLocaleString()}G가 부족합니다` };
+    return { ok: true };
+}
+export function applyTo(pid, co) {
+    const st = applyStatus(pid, co);
+    if (!st.ok) return st;
+    const s = S(), C = L.COMPANIES[co], ps = ps_(pid);
+    if (C.fee) ps.money -= C.fee;
+    const c = cohort(co, s.number, true);
+    c.list.push({ pid: +pid, at: now(), round: s.round, state: "wait", stage: 0, res: [] });
+    ((EM().apps[pid] ||= {})[s.number] ||= []).push(co);
+    log(`🏢 ${name(pid)} ${C.name} 지원${C.fee ? ` (지원료 ${C.fee.toLocaleString()}G)` : ""} — 지원자 ${c.list.length}/${L.APPLY_MAX}`);
+    elog(`${name(pid)} → ${C.name} 지원 (S${s.number} R${s.round})`);
+    if (c.list.length >= L.APPLY_MAX) startReview(co, c);
+    save(); Store.saveSeason(true);
+    return { ok: true, full: c.started, n: c.list.length };
+}
+// the 5th applicant (or the admin / the season end) starts the review: 1st results come at the next round
+export function startReview(co, c = cohort(co)) {
+    if (!c || c.started || !c.list.length) return false;
+    c.started = true; c.stage = 0; c.stageTick = EM().tick;
+    for (const a of c.list) if (a.state === "wait") a.state = "stage";
+    const C = L.COMPANIES[co];
+    if (S()) log(`🏢 ${C.name} 지원자 ${c.list.length}명 마감 — 다음 라운드에 ${L.STAGE_LABEL(C, 0)} 결과 발표`);
+    elog(`${C.name} S${c.season} 심사 시작 (${c.list.length}명)`);
+    for (const a of c.list) note(a.pid, co, `📨 ${C.name} 지원이 마감되어 ${L.STAGE_LABEL(C, 0)}가 시작되었습니다. 다음 라운드 내 턴에 결과가 통보됩니다.`, "info");
+    save();
+    return true;
+}
+function note(pid, co, text, kind = "info", extra = {}) {
+    (EM().notes[pid] ||= []).push({ id: uid(), co, text, kind, at: now(), seen: false, ...extra });
+}
+export const notesOf = pid => (EM().notes[pid] || []);
+export const unseenNotes = pid => notesOf(pid).filter(n => !n.seen);
+export function markSeen(pid) { for (const n of notesOf(pid)) n.seen = true; EM().notes[pid] = notesOf(pid).slice(-40); save(); }
+
+// ---- one stage's pass chance (percent) and why
+export function stageChance(pid, co, i) {
+    const g = gradeOf(pid), rank = bestRank(pid), jp = jpBest(pid), why = [];
+    const add = (v, text, cond = true) => { if (cond && v) { why.push(`${text} +${v}%`); return v; } return 0; };
+    let p = 0;
+    const d = Store.getDecor?.(pid) || {}, ps = ps_(pid) || {};
+    if (co === "hyhg") {
+        if (i === 1) { p = 30; p += add(10, "magic·fairy·evil·ghost·mind·angel·robot·light 이모몬스터", hasTypes(pid, ["Magic", "Fairy", "Evil", "Ghost", "Mind", "Angel", "Robot", "Light"])); const n = monCount(pid); p += add(n >= 3 ? 10 : n === 2 ? 5 : 0, `이모몬스터 ${n}마리`); p += add(10, "TOP 6 기록", rank <= 6); p += add(10, "HYHG Gaming 슬롯 30,000G+ WIN", brandBest(pid, "HYHG GAMING") >= 30000); }
+        if (i === 2) { p = 40; p += add(10, "TOP 3 기록", rank <= 3); p += add(20, "HYHG Gaming 슬롯 100,000G+ WIN", brandBest(pid, "HYHG GAMING") >= 100000); }
+    }
+    if (co === "gm") {
+        if (i === 0) { p = 50; p += add(gradeBonus(g, 15, 10, 5), `학교 ${g}등급`); p += add(10, "Robot / Steel 이모몬스터", hasTypes(pid, ["Robot", "Steel"])); p += add(5, "TOP 10 기록", rank <= 10); }
+        if (i === 1) { p = 40; p += add(10, "속성 2가지 이모몬스터", twoTypeMon(pid)); p += add(10, "이모몬스터 2마리 이상", monCount(pid) >= 2); p += add(10, "TOP 6 기록", rank <= 6); p += add(10, "MINOR 이상 잭팟 기록", jp >= JACKPOT_RANK.MINOR); }
+        if (i === 2) { p = 30; p += add(10, "TOP 6 기록", rank <= 6); p += add(10, "MAXI 이상 잭팟 기록", jp >= JACKPOT_RANK.MAXI); p += add(10, "공격 무기 2개 이상", attackCount(ps.weapons || []) >= 2); }
+    }
+    if (co === "arizal") {
+        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(5, "Dung Town 출신", Store.player(pid)?.country === "Dung Town"); p += add(20, "Mind / Light / Evil 이모몬스터", hasTypes(pid, ["Mind", "Light", "Evil"])); }
+        if (i === 2) { p = 40; p += add(10, "TOP 10 기록", rank <= 10); p += add(10, "MINOR 이상 잭팟 기록", jp >= JACKPOT_RANK.MINOR); p += add(5, "프레임 착용", !!d.frame); p += add(5, "프레임 효과 착용", !!d.effect); }
+    }
+    if (co === "poly") {
+        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(10, "Polynesia Casino 1 / 2 체험", visitedAny(pid, ["poly", "poly2"])); p += add(5, "Polynesia 출신", Store.player(pid)?.country === "Polynesia"); p += add(10, "Bug / Grass / Earth 이모몬스터", hasTypes(pid, ["Bug", "Grass", "Earth"])); }
+        if (i === 1) { p = 40; p += add(10, "TOP 10 기록", rank <= 10); p += add(10, "MINI 이상 잭팟 기록", jp >= JACKPOT_RANK.MINI); p += add(10, "펫 착용", !!ps.pet); p += add(10, "펫 효과 착용", !!ps.petEffect); }
+    }
+    if (co === "robot") {
+        if (i === 0) { p = 60; p += add(gradeBonus(g, 45, 30, 25), `학교 ${g}등급`); p += add(20, "Robot 이모몬스터", hasTypes(pid, ["Robot"])); }
+        if (i === 1) { p = 50; p += add(10, "프레임 착용", !!d.frame); }
+    }
+    if (co === "sparkle") {
+        if (i === 0) { p = 60; const n = jobCount(pid, "cleaner"); p += add(3 * n, `카지노 청소부 ${n}회`); }
+        if (i === 1) { p = 50; p += add(10, "MINOR 이상 잭팟 기록", jp >= JACKPOT_RANK.MINOR); }
+    }
+    if (co === "dungdung") {
+        if (i === 0) { p = 60; const a = jobCount(pid, "dungsweep"), b = jobCount(pid, "statue"); p += add(3 * a, `똥쓸이 ${a}회`); p += add(2 * b, `동상알바 ${b}회`); }
+        if (i === 1) { p = 50; p += add(10, "MINI 이상 잭팟 기록", jp >= JACKPOT_RANK.MINI); }
+    }
+    return { p: Math.max(0, Math.min(100, p)), why };
+}
+// 🏙️ HYHG 1st: document score (≥ 100 passes)
+export function hyhgScore(pid) {
+    const g = gradeOf(pid), rank = bestRank(pid), sec = jobCount(pid, "secretary");
+    const school = { "A+": 80, A: 70, B: 50, C: 30, D: 20, F: 10 }[g] || 10;
+    const rec = rank <= 3 ? 30 : rank <= 6 ? 20 : rank <= 10 ? 10 : 0;
+    const total = school + sec * 10 + rec;
+    return { total, why: [`학교 ${g}등급 ${school}점`, `형용형근 비서 ${sec}회 ${sec * 10}점`, `최고 기록 ${rank < 99 ? rank + "위" : "없음"} ${rec}점`] };
+}
+
+// ---- a stage for the whole cohort (round start)
+function runStage(co, c) {
+    const C = L.COMPANIES[co], i = c.stage, kind = C.stages[i], last = i === C.stages.length - 1;
+    const active = c.list.filter(a => a.state === "stage");
+    if (!active.length) { c.done = true; return; }
+    const res = active.map(a => {
+        let ok = false, detail = "";
+        if (kind === "score") { const sc = hyhgScore(a.pid); ok = sc.total >= 100; detail = `서류 점수 ${sc.total}점 (100점 이상 통과) · ${sc.why.join(" · ")}`; }
+        else if (kind === "test") { ok = !!a.test?.ok; detail = a.test?.done ? `테스트 결과 ${(a.test.won || 0).toLocaleString()}G WIN (목표 ${L.ARIZAL_TEST.goal.toLocaleString()}G)` : "테스트를 치르지 않았습니다"; }
+        else { const ch = stageChance(a.pid, co, i); ok = rnd() * 100 < ch.p; detail = `통과 확률 ${ch.p}%${ch.why.length ? ` (${ch.why.join(" · ")})` : ""}`; }
+        return { a, ok, detail };
+    });
+    // at least one gets through
+    const guard = C.guarantee === "all" ? kind !== "test" : C.guarantee === "final2" ? last && res.length >= 2 : false;
+    if (guard && !res.some(r => r.ok)) { const lucky = res[Math.floor(rnd() * res.length)]; lucky.ok = true; lucky.detail += " · ✨ 최소 1명 선발 규정으로 통과"; }
+    // the last stage: no more than the season's openings
+    let finals = last ? res.filter(r => r.ok) : [];
+    if (last && finals.length > C.perSeason) {
+        const keep = new Set([...finals].sort(() => rnd() - 0.5).slice(0, C.perSeason));
+        for (const r of finals) if (!keep.has(r)) { r.ok = false; r.detail += " · 모집 인원 초과로 최종 탈락"; }
+        finals = finals.filter(r => keep.has(r));
+    }
+    const label = L.STAGE_LABEL(C, i);
+    for (const r of res) {
+        r.a.res.push({ stage: i, ok: r.ok, detail: r.detail, tick: EM().tick });
+        if (!r.ok) { r.a.state = "fail"; note(r.a.pid, co, `❌ ${C.name} ${label} 결과: 불합격 — ${r.detail}`, "fail"); continue; }
+        if (last) {
+            r.a.state = "offer";
+            (EM().offers[r.a.pid] ||= []).push({ co, season: c.season });
+            note(r.a.pid, co, `🎉 ${C.name} ${label} 결과: 최종 합격! 입사하려면 계좌 코드 4자리를 연동하세요 — ${r.detail}`, "offer");
+        } else {
+            r.a.stage = i + 1;
+            const next = C.stages[i + 1];
+            note(r.a.pid, co, `✅ ${C.name} ${label} 결과: 합격 — ${r.detail}. ${next === "test" ? "🧪 이번 라운드 내 턴에 Arizal Tech Test를 꼭 치르세요! (1분 · 100~300G 베팅으로 10,000G 이상 WIN)" : `자동으로 ${L.STAGE_LABEL(C, i + 1)}가 진행되고 다음 라운드에 결과가 통보됩니다.`}`, next === "test" ? "test" : "pass", next === "test" ? { test: true } : {});
+            if (next === "test") r.a.test = { due: EM().tick, done: false, ok: false };
+        }
+    }
+    elog(`${C.name} S${c.season} ${label}: ${res.filter(r => r.ok).map(r => name(r.a.pid)).join(", ") || "통과자 없음"}`);
+    if (S()) log(`🏢 ${C.name} ${label} 결과 발표 — 통과 ${res.filter(r => r.ok).length}명 / ${res.length}명`);
+    c.stage = i + 1; c.stageTick = EM().tick;
+    if (last || !res.some(r => r.ok)) c.done = true;
+}
+function employTick(s) {
+    if (s.sandbox && !s.testSeason) return;
+    const e = EM();
+    e.tick++;
+    for (const [co, list] of Object.entries(e.cohorts)) for (const c of list) if (c.started && !c.done && c.stageTick != null && e.tick > c.stageTick) runStage(co, c);
+    paySalaries(s);
+    accountInterest();
+    save();
+}
+roundHooks.push(s => { try { employTick(s); } catch (e) { console.error(e); } });
+// a season that ends: unfinished applications start their review (results come in the next season's rounds) + promotions / firings
+seasonEndHooks.push(s => {
+    if (s.sandbox || s.testSeason) return;
+    try {
+        for (const co of Object.keys(L.COMPANIES)) { const c = cohort(co, s.number); if (c && !c.started) startReview(co, c); }
+        seasonReview(s);
+        save();
+    } catch (e) { console.error(e); }
+});
+
+// ================================================================ 💼 hire · salary · promotion · firing
+export const offersOf = pid => EM().offers[pid] || [];
+export function acceptOffer(pid, co, code) {
+    const offer = offersOf(pid).find(o => o.co === co), C = L.COMPANIES[co];
+    if (!offer || !C) return { ok: false, why: "합격 통보가 없습니다" };
+    if (employer(pid)) return { ok: false, why: "이미 취업했습니다" };
+    const a = accountByCode(code);
+    if (!a || a.pid !== +pid) return { ok: false, why: "본인 계좌 코드 4자리가 아닙니다" };
+    const e = EM(), s = S();
+    e.staff[pid] = { co, at: now(), season: s?.number ?? null, pay: C.pay, promos: 0, manager: false, code: a.code };
+    for (const o of offersOf(pid)) { const c = cohort(o.co, o.season); const ap = c?.list.find(x => x.pid === +pid); if (ap) ap.state = o.co === co ? "hired" : "declined"; if (o.co === co) (c.hired ||= []).push(+pid); }
+    e.offers[pid] = [];
+    const gift = giveGift(pid, C);
+    elog(`${name(pid)} ${C.name} 입사 (계좌 ${a.code})`);
+    if (s) log(`🎉 ${name(pid)} ${C.name} 입사! 급여 계좌 ${a.code} 연동${gift ? ` · 입사선물 ${gift}` : ""}`);
+    payOne(+pid, e.staff[pid], "입사 첫 급여");
+    fireIfFull(co, +pid);
+    save(); Store.saveSeason(true);
+    return { ok: true, gift };
+}
+export function declineOffer(pid, co) {
+    const e = EM();
+    e.offers[pid] = offersOf(pid).filter(o => o.co !== co);
+    save();
+}
+function giveGift(pid, C) {
+    const ps = ps_(pid);
+    if (!C.gifts?.length || !ps) return C.gifts?.length && !ps ? "(시즌 밖 — 선물 없음)" : "";
+    const list = C.giftOne ? [weighted(C.gifts)] : C.gifts;
+    const got = [];
+    for (const g of list) {
+        if (g.gold) { ps.money += g.gold; got.push(`상여금 ${g.gold.toLocaleString()}G`); }
+        else if (g.item) { ps.items[g.item] = (ps.items[g.item] || 0) + 1; got.push(itemName(g.item)); }
+        else if (g.emo) { emoGive(pid, g.emo, 1); got.push(emoName(g.emo)); }
+    }
+    return got.join(" + ");
+}
+const weighted = list => { let x = rnd() * list.reduce((a, g) => a + (g.w ?? 1), 0); for (const g of list) { if ((x -= g.w ?? 1) < 0) return g; } return list[0]; };
+const itemName = id => `${ITEM_BY_ID[id]?.emoji || "🎁"} ${ITEM_BY_ID[id]?.name || id}`;
+const emoName = id => `${emoItem(id)?.emoji || "🐾"} ${emoItem(id)?.name || id}`;
+function fireIfFull(co, keep) {
+    const C = L.COMPANIES[co], staff = staffOf(co);
+    if (staff.length < C.cap) return;
+    const pool = staff.filter(x => x.pid !== keep).sort(() => rnd() - 0.5).slice(0, C.fullFire);
+    for (const x of pool) fire(x.pid, `${C.name} 정원(${C.cap}명)이 가득 차 랜덤 해고`);
+}
+export function fire(pid, why) {
+    const e = EM(), x = e.staff[pid];
+    if (!x) return;
+    const C = L.COMPANIES[x.co];
+    delete e.staff[pid];
+    note(pid, x.co, `📭 ${C?.name || x.co}에서 해고되었습니다 — ${why}`, "fail");
+    elog(`${name(pid)} ${C?.name} 해고 — ${why}`);
+    if (S()) log(`📭 ${name(pid)} ${C?.name} 해고 — ${why}`);
+    save();
+}
+// salary (every round, from the hire on) → the linked account · points → the season purse
+function payOne(pid, x, why = "급여") {
+    const C = L.COMPANIES[x.co];
+    if (!C) return;
+    const a = accountByCode(x.code) || account(pid);
+    if (a) { a.bgold = (a.bgold || 0) + x.pay; a.history = [{ t: now(), kind: "in", amount: x.pay, note: `${C.emoji} ${C.name} ${why}${x.manager ? " (매니저)" : ""}` }, ...(a.history || [])].slice(0, 200); }
+    const ps = ps_(pid);
+    if (C.pts && ps && !ps.out) ps.points += C.pts;
+}
+function paySalaries(s) {
+    for (const [pid, x] of Object.entries(EM().staff)) payOne(+pid, x);
+    if (Object.keys(EM().staff).length) log(`💼 급여일 — 직원 ${Object.keys(EM().staff).length}명에게 이번 라운드 급여 지급 (계좌 입금)`);
+}
+// a finished season: rank → fired / promoted / manager
+function seasonReview(s) {
+    for (const [pidS, x] of Object.entries({ ...EM().staff })) {
+        const pid = +pidS;
+        if (!s.roster.includes(pid)) continue;
+        const C = L.COMPANIES[x.co], rank = s.ps[pid]?.rank;
+        if (!C || rank == null) continue;
+        if (rank > C.fireOver) { fire(pid, `시즌 ${s.number} ${rank}위 (TOP ${C.fireOver} 밖)`); continue; }
+        if (rank <= C.mgrTop && !x.manager) {
+            x.manager = true; x.pay = C.mgrPay;
+            note(pid, x.co, `👔 ${C.name} 매니저 승진! 시즌 ${s.number} ${rank}위 — 급여 ${C.mgrPay.toLocaleString()}G 고정`, "pass");
+            elog(`${name(pid)} ${C.name} 매니저 승진 (S${s.number} ${rank}위)`);
+            continue;
+        }
+        if (!x.manager && rank <= C.promoTop && (x.promos || 0) < 3) {
+            x.promos = (x.promos || 0) + 1; x.pay += C.promoAdd;
+            note(pid, x.co, `📈 ${C.name} 진급 ${x.promos}/3! 시즌 ${s.number} ${rank}위 — 급여 +${C.promoAdd.toLocaleString()}G → ${x.pay.toLocaleString()}G`, "pass");
+            elog(`${name(pid)} ${C.name} 진급 ${x.promos} (S${s.number} ${rank}위)`);
+        }
+    }
+}
+
+// ================================================================ 🧪 Arizal Tech Test
+export const arizalPending = pid => cohortsOf("arizal").flatMap(c => c.list).find(a => a.pid === +pid && a.state === "stage" && a.test && !a.test.done) || null;
+export function startArizalTest(pid) {
+    const a = arizalPending(pid), t = S()?.turn;
+    if (!a || !t || t.pid !== +pid) return null;
+    t.arizal = { until: Date.now() + L.ARIZAL_TEST.sec * 1000, won: 0, plays: 0 };
+    log(`🧪 ${name(pid)} Arizal Tech Test 시작 (1분 · 100~300G 베팅 · 10,000G 이상 WIN)`);
+    Store.saveSeason(true);
+    return t.arizal;
+}
+export function finishArizalTest(pid) {
+    const a = arizalPending(pid), t = S()?.turn;
+    if (!a || !t?.arizal || t.arizal.done) return null;
+    t.arizal.done = true;
+    const won = t.arizal.won || 0, ok = won >= L.ARIZAL_TEST.goal;
+    a.test = { ...a.test, done: true, ok, won };
+    note(pid, "arizal", `🧪 Arizal Tech Test ${ok ? "통과" : "실패"} — 1분 동안 ${won.toLocaleString()}G WIN (목표 ${L.ARIZAL_TEST.goal.toLocaleString()}G). 결과는 다음 라운드에 확정됩니다.`, ok ? "pass" : "fail");
+    log(`🧪 ${name(pid)} Arizal Tech Test ${ok ? "통과" : "실패"} (${won.toLocaleString()}G)`);
+    save(); Store.saveSeason(true);
+    return { ok, won };
+}
+
+// ================================================================ 🏦 bank: TOP 15 · loan record eraser · account-only products
+export const loanErased = pid => !!B().loanErased?.[pid];
+export function eraseLoanRecord(pid) {
+    const ps = ps_(pid);
+    if (!(ps?.items.loan_erase > 0)) return { ok: false, why: "대부기록 삭제권이 없습니다" };
+    ps.items.loan_erase--;
+    (B().loanErased ||= {})[pid] = now();
+    ps.loansTaken = 0;
+    log(`🧾 ${name(pid)} 대부기록 삭제권 사용 — 대출 이용 기록 삭제`);
+    save(); Store.saveSeason(true);
+    return { ok: true };
+}
+export const productLinked = (pid, need) => {
+    const a = account(pid);
+    if (!a) return false;
+    if (need === "biz") return activeBiz().some(b => b.owner === +pid && b.code === a.code);
+    if (need === "emp") return employer(pid)?.code === a.code;
+    return false;
+};
+export const hasProduct = (pid, id) => !!account(pid)?.perks?.[id];
+export function buyProduct(pid, id) {
+    const P = L.ACCOUNT_PRODUCTS.find(x => x.id === id), a = account(pid), ps = ps_(pid);
+    if (!P || !a) return { ok: false, why: "계좌가 필요합니다" };
+    if (a.perks?.[id]) return { ok: false, why: "이미 가입한 상품입니다" };
+    if (!productLinked(pid, P.need)) return { ok: false, why: P.need === "biz" ? "계좌를 Self-Business와 연동한 플레이어만 가입할 수 있습니다" : "계좌를 취업 회사 급여와 연동한 플레이어만 가입할 수 있습니다" };
+    if (!ps || ps.money < P.gold) return { ok: false, why: `${P.gold.toLocaleString()}G가 필요합니다` };
+    ps.money -= P.gold;
+    (a.perks ||= {})[id] = { at: now(), rounds: 0, paid: 0 };
+    a.history = [{ t: now(), kind: "open", amount: 0, note: `${P.emoji} ${P.name} 가입` }, ...(a.history || [])].slice(0, 200);
+    log(`🏦 ${name(pid)} ${P.name} 가입 (${P.gold.toLocaleString()}G)`);
+    save(); Store.saveSeason(true);
+    return { ok: true };
+}
+// every 3 rounds: the account grows by the product's rate
+function accountInterest() {
+    for (const a of Object.values(B().accounts)) {
+        for (const P of L.ACCOUNT_PRODUCTS) {
+            const k = a.perks?.[P.id];
+            if (!k) continue;
+            k.rounds = (k.rounds || 0) + 1;
+            if (k.rounds % P.every) continue;
+            const add = Math.floor((a.bgold || 0) * P.rate);
+            if (add <= 0) continue;
+            a.bgold += add; k.paid = (k.paid || 0) + add;
+            a.history = [{ t: now(), kind: "in", amount: add, note: `${P.emoji} ${P.name} 이자 ${Math.round(P.rate * 100)}%` }, ...(a.history || [])].slice(0, 200);
+        }
+    }
+}
+// 🏙️ hotel discount · 🛰️ weapon shop discount
+export const hotelDiscount = pid => companyOf(pid)?.hotelOff || 0;
+export const weaponDiscount = pid => companyOf(pid)?.weaponOff || 0;
+export const hasPantry = pid => !!companyOf(pid)?.pantry;
+export { alive };

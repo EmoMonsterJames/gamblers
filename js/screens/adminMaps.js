@@ -14,7 +14,8 @@ import { stockManager } from "./adminEmo.js";
 import { gotchaManager } from "./gotcha.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
-import { applyMaps, locDefault, regionDefault } from "../data/mapAdmin.js";
+import { applyMaps, locDefault, regionDefault, mapNo } from "../data/mapAdmin.js";
+import { FOOD_CORNERS, FOOD_CORNER_LIST, FOOD_BY_ID, FOODS, ENTRY_KINDS, WEATHERS, WEATHER_DEFAULT_BY_REGION, LODGES, LODGE_LIST } from "../data/life.js";
 
 const NEEDS = [["", "없음"], ["wings", "🪽 날개"], ["space_suit", "🧑‍🚀 우주복"], ["oxygen", "🤿 산소통"]];
 const REQS = [["", "누구나"], ["points", "포인트 보유"], ["country", "국적 전용"], ["fee", "입장료 (G)"], ["feePts", "입장료 (P)"], ["random", "랜덤 입장"]];
@@ -160,10 +161,11 @@ export function adminMapsPage() {
             l.needMon && "🐾 이모몬 보유자만", l.battleGate && "⚔️ 배틀러를 이겨야 입장", l.typeGate && "🔷 랜덤 속성 보유자만", l.req?.who && `🚧 ${l.req.who} 전용`,
             l.noEnd && "🔒 턴 종료 불가", l.passLate && "⏱️ 5분 이하에서만 맵권", l.disaster && "🌪️ 재난", l.buttonTax && `🔘 버튼마다 HP −${l.buttonTax}`, l.church && "⛪ 안개 · 악마 조각상 · Priest",
             l.arcade && "🕹️ 아케이드", l.quiz && "🧠 퀴즈 팝업", l.inferno && "🔥 코너마다 죽음의 룰렛",
+            l.weather && l.weather !== "sun" && `${l.weather === "random" ? "🎲 날씨 랜덤" : `${WEATHERS[l.weather]?.emoji} ${WEATHERS[l.weather]?.name}`}`,
         ].filter(Boolean);
         return h("div.ag-card.am-loc" + (l.off ? ".off" : ""),
             h("div.row.between",
-                h("h3", `${l.emoji} ${l.name}`, h("small.muted", ` · ${l.id}`)),
+                h("h3", mapNo(l.id) ? h("span.am-no", `#${mapNo(l.id)}`) : null, `${l.emoji} ${l.name}`, h("small.muted", ` · ${l.id}`)),
                 h("div.row",
                     Object.keys(work.locs[l.id] || {}).length ? h("button.btn.small.ghost", { onclick: async () => { if (await confirmBox(`${l.name}의 변경 사항을 기본값으로 되돌릴까요?`)) { delete work.locs[l.id]; dirty(); draw(); } } }, "↺ 기본값") : null,
                     h("button.btn.small" + (l.off ? ".gold" : ".red"), { onclick: () => { e.off = !l.off; dirty(); draw(); } }, l.off ? "↩ 맵 켜기" : "🚫 맵 끄기"))),
@@ -202,7 +204,61 @@ export function adminMapsPage() {
                 ev.target.checked ? next.add(k) : next.delete(k);
                 e.earn = next.size ? EARN_ALL.filter(x => next.has(x)) : false; dirty(); draw();
             } }), EARN_LABEL[k]))),
+            lifeEditor(l, e),
             !(l.slots?.length) ? h("p.notice", "⚠️ 슬롯이 하나도 없습니다.") : null);
+    }
+
+    // ---- 🍚 food corners · 🌦️ weather · 🏨 lodging of one map
+    function lifeEditor(l, e) {
+        const foods = structuredClone(l.food || []), lodges = structuredClone(l.lodge || []);
+        const setFood = list => { e.food = list; dirty(); draw(); };
+        const setLodge = list => { e.lodge = list; dirty(); draw(); };
+        const entrySel = (cur, onPick) => h("select", { onchange: ev => onPick(ev.target.value) }, Object.entries(ENTRY_KINDS).map(([v, t]) => h("option", { value: v, selected: cur === v }, t)));
+        const feeIn = (cur, onSet) => h("input.num", { type: "number", min: 0, step: 100, value: cur || 0, title: "입장료 (G)", onchange: ev => onSet(Math.max(0, Math.round(+ev.target.value || 0))) });
+        const foodCard = (c, i) => {
+            const T = FOOD_CORNERS[c.k];
+            if (!T) return null;
+            const items = c.items || T.items.map(id => ({ id }));
+            const upd = patch => { const next = structuredClone(foods); next[i] = { ...next[i], items: structuredClone(items), ...patch }; setFood(next); };
+            const entry = c.entry || T.entry, fee = c.fee ?? T.fee;
+            const used = new Set(items.map(x => x.id));
+            return h("div.am-life-card", { style: { "--c": T.color } },
+                h("div.row.between", h("b", `${T.emoji} ${c.name || T.name}`), h("button.btn.small.ghost", { title: "이 코너 빼기", onclick: () => setFood(foods.filter((_, k) => k !== i)) }, "✕ 빼기")),
+                h("div.am-life-row", h("small", "입장"), entrySel(entry, v => upd({ entry: v })), entry === "paid" ? feeIn(fee, v => upd({ fee: v })) : null, T.free ? h("small.muted", "· 모두 무료") : null),
+                h("div.am-food-items", items.map((it, k) => {
+                    const f = FOOD_BY_ID[it.id];
+                    return f ? h("span.am-food", h("span", `${f.emoji} ${f.name}`), h("small", `🍚${f.food >= 0 ? "+" : ""}${f.food}`),
+                        T.free ? h("small.muted", "무료") : h("input.num", { type: "number", min: 0, step: 100, value: it.price ?? f.price, title: `기본가 ${f.price}G`, onchange: ev => { const next = structuredClone(items); next[k].price = Math.max(0, Math.round(+ev.target.value || 0)); if (next[k].price === f.price) delete next[k].price; upd({ items: next }); } }),
+                        h("button", { title: "빼기", onclick: () => upd({ items: items.filter((_, x) => x !== k) }) }, "×")) : null;
+                }),
+                    h("select", { onchange: ev => { if (ev.target.value) upd({ items: [...items, { id: ev.target.value }] }); } }, h("option", { value: "" }, "+ 품목 추가…"), FOODS.filter(f => !used.has(f.id)).map(f => h("option", { value: f.id }, `${f.emoji} ${f.name} (${f.price}G · 🍚${f.food})`)))),
+                c.items ? h("button.btn.small.ghost", { onclick: () => upd({ items: undefined }) }, "↺ 품목 기본값") : null);
+        };
+        const lodgeCard = (c, i) => {
+            const T = LODGES[c.k];
+            if (!T) return null;
+            const upd = patch => { const next = structuredClone(lodges); next[i] = { ...next[i], ...patch }; setLodge(next); };
+            const entry = c.entry || T.entry, fee = c.fee ?? T.fee;
+            return h("div.am-life-card", { style: { "--c": T.color } },
+                h("div.row.between", h("b", `${T.emoji} ${T.name}`), h("button.btn.small.ghost", { onclick: () => setLodge(lodges.filter((_, k) => k !== i)) }, "✕ 빼기")),
+                h("div.am-life-row", h("small", "입장"), entrySel(entry, v => upd({ entry: v })), entry === "paid" ? feeIn(fee, v => upd({ fee: v })) : null),
+                h("small.muted", `${T.reserve ? "📅 예약 1~3라운드" : "예약 불가"} · ` + T.rooms.map(r => `${r.label} ${r.n}자리 ${r.price ? r.price.toLocaleString() + "G" : "무료"} (${r.pick === "random" ? "랜덤" : "바로 선택"})`).join(" · ")
+                    + (T.needTypes ? ` · 🐾 ${T.needTypes.join("/")} 필요` : "") + (T.freeTypes ? ` · 🐾 ${T.freeTypes.join("/")} 무료` : "") + (T.shop ? ` · 🔐 ${FOOD_CORNERS[T.shop].name}` : "") + (T.foods ? ` · 🔐 ${T.foods.map(k => FOOD_CORNERS[k].name).join(" · ")}` : "")));
+        };
+        const wDefault = WEATHER_DEFAULT_BY_REGION[l.region] || "sun";
+        return h("div.am-life",
+            h("div.am-togs", h("small", "🌦️ 날씨:"),
+                h("select", { onchange: ev => { const v = ev.target.value; if (v === "") delete e.weather; else e.weather = v; dirty(); draw(); } },
+                    h("option", { value: "", selected: l.weather == null || l.weather === "" }, `지역 기본 (${wDefault === "random" ? "🎲 랜덤" : WEATHERS[wDefault].emoji + " " + WEATHERS[wDefault].name})`),
+                    ...Object.values(WEATHERS).map(w => h("option", { value: w.id, selected: l.weather === w.id }, `${w.emoji} ${w.name}${w.hp ? ` (HP −${w.hp})` : " (영향 없음)"}`)),
+                    h("option", { value: "random", selected: l.weather === "random" }, "🎲 랜덤 (라운드마다)")),
+                h("small.muted", "맵에서 1분이 지나면, 그 뒤로 3분마다 HP 피해 · 숙소에 머물면 무사")),
+            h("div.am-togs", h("small", `🍚 푸드 코너 (${foods.length}):`),
+                h("select", { onchange: ev => { if (ev.target.value) setFood([...foods, { k: ev.target.value }]); } }, h("option", { value: "" }, "+ 푸드 코너 추가…"), FOOD_CORNER_LIST.map(T => h("option", { value: T.id }, `${T.emoji} ${T.name}`)))),
+            foods.length ? h("div.am-life-list", foods.map(foodCard)) : null,
+            h("div.am-togs", h("small", `🏨 숙소 코너 (${lodges.length}):`),
+                h("select", { onchange: ev => { if (ev.target.value) setLodge([...lodges, { k: ev.target.value }]); } }, h("option", { value: "" }, "+ 숙소 코너 추가…"), LODGE_LIST.filter(T => !lodges.some(c => c.k === T.id)).map(T => h("option", { value: T.id }, `${T.emoji} ${T.name}`)))),
+            lodges.length ? h("div.am-life-list", lodges.map(lodgeCard)) : null);
     }
 
     function draw() {

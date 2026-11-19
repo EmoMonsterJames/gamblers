@@ -14,6 +14,7 @@ import {
     PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET, EXTRA_LETTERS, letterSale, cardId
 } from "./catalog.js";
 import { EMO_ITEMS } from "../emomon/data.js";
+import "./life.js"; // 🍚 food + 🧾 bank items join ITEMS before the originals below are kept (applyCatalog restores from them)
 // EmoMon items the discount shop may carry (gold-priced, not LAB-only)
 const EMO_SALE = EMO_ITEMS.filter(e => e.gold > 0 && !e.noSale && !e.pts);
 

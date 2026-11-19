@@ -36,7 +36,8 @@ export const HL_KINDS = {
     promo: { sec: 20, emoji: "🗳️", label: "홍보 프로필 당첨" },
     poop: { sec: 15, emoji: "💩", label: "돈벌기 똥 맞기" },
     bunker: { sec: 15, emoji: "🔐", label: "Bunker Key 금고" },
-    kidnap: { sec: 15, emoji: "⛓️", label: "납치 공간 탈출" }
+    kidnap: { sec: 15, emoji: "⛓️", label: "납치 공간 탈출" },
+    starve: { sec: 15, emoji: "🍽️", label: "굶주림으로 사망" }
 };
 const nm = pid => displayName(Store.player(pid));
 const list = () => (Store.highlights?.list || []).filter(x => HL_KINDS[x.kind] && (x.pid == null || Store.player(x.pid)) && (x.a == null || Store.player(x.a)));
@@ -215,6 +216,20 @@ const SCENES = {
         await T.at(8.5); st.classList.add("gh-flash"); Sound.boom(); me.classList.add("dead");
         st.append(h("div.gh-banner.b-dead", "☠️ 바로 사망"));
         T.cap(`☠️ ${x.why || "사망"}${x.rank ? ` · 최종 ${x.rank}위` : ""}`);
+        await T.at(12); st.append(h("div.gh-grave", "🪦"));
+    },
+    // 🍽️ 15 s: the food gauge runs dry, the stomach growls, the HP drains → starved
+    async starve(st, x, T) {
+        const me = pic(x.pid, 120);
+        const gauge = h("div.gh-food", h("i", { style: { width: "30%" } }), h("span", "🍚 FOOD"));
+        st.append(h("div.gh-place", placeName(x.loc) || ""), me, gauge);
+        T.cap(`${nm(x.pid)}… 배가 너무 고프다…`);
+        for (let k = 0; k < 5; k++) { await T.at(0.6 + k * 0.8); gauge.querySelector("i").style.width = Math.max(0, 30 - k * 7.5) + "%"; Sound.tick(); }
+        await T.at(4.6); st.append(h("div.gh-growl", "꼬르륵… 🌀")); Sound.heartbeat(); T.cap("🍽️ 식량 게이지 0 — 먹을 것이 없다!");
+        for (let k = 0; k < 4; k++) { await T.at(5.6 + k * 0.8); Sound.heartbeat(); }
+        await T.at(9); st.classList.add("gh-flash"); Sound.boom(); me.classList.add("dead");
+        st.append(h("div.gh-banner.b-dead", "🍽️ 굶주림으로 바로 사망"));
+        T.cap(`☠️ ${nm(x.pid)} 굶주림으로 바로 사망했습니다${x.rank ? ` · 최종 ${x.rank}위` : ""}`);
         await T.at(12); st.append(h("div.gh-grave", "🪦"));
     },
     // 🤲 20 s: a hand keeps bringing cash bundles

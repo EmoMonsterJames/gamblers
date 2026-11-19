@@ -30,7 +30,9 @@ const now = () => new Date().toISOString();
 // ---------------------------------------------------------------- eligibility
 export const topRank = pid => Math.min(Infinity, ...honorRecords(pid, 999).map(r => r.rank));
 export const hasTop = (pid, n) => S()?.testSeason ? false : !!S()?.sandbox || honorRecords(pid, n).length > 0; // test season: no past records
-export const bankEligible = pid => hasTop(pid, 10);
+export const BANK_TOP = 15; // 🏦 accounts: a TOP 15 finish in any season
+export const bankEligible = pid => hasTop(pid, BANK_TOP);
+export const bizEligible = pid => hasTop(pid, 10); // 🏪 Self-Business stays TOP 10
 
 // ---------------------------------------------------------------- accounts
 export const account = pid => B().accounts[pid] || null;
@@ -52,6 +54,20 @@ export async function reviewAccount(pid) {
     Store.saveSeason();
     const last = Store.results.filter(r => r.playerId === +pid && r.rank >= CONFIG.SEASON_SIZE);
     if (last.length) return { ok: false, step: 1, why: `${last.map(r => `${r.season}시즌`).join(", ")} ${CONFIG.SEASON_SIZE}위(꼴찌) 기록이 있어 계좌를 만들 수 없습니다.` };
+    // 🧾 대부기록 삭제권: the loan review is skipped (a ticket in the bag is used up now)
+    const cur0 = S().ps[pid];
+    if (!B().loanErased?.[pid] && cur0?.items?.loan_erase > 0) {
+        cur0.items.loan_erase--; (B().loanErased ||= {})[pid] = now(); cur0.loansTaken = 0;
+        log(`🧾 ${name(pid)} 대부기록 삭제권 사용 — 대출 이용 기록 삭제`);
+    }
+    if (B().loanErased?.[pid]) {
+        if (Math.random() >= BANK_OPEN_CHANCE) { log(`🏦 ${name(pid)} 계좌 개설 최종 심사 탈락`); Store.saveSeason(); return { ok: false, step: 3, why: "최종 심사에서 거절되었습니다. 다음 라운드에 다시 신청하세요.", loanNote: "🧾 대부기록 삭제됨 — 대출 심사 면제" }; }
+        const a = { pid: +pid, code: newCode(), openedAt: now(), season: S().number, bgold: 0, history: [{ t: now(), kind: "open", amount: 0, note: "계좌 개설" }] };
+        B().accounts[pid] = a;
+        log(`🏦 ${name(pid)} Business Bank 계좌 개설 (${a.code})`);
+        save(); Store.saveSeason(true);
+        return { ok: true, account: a, loanNote: "🧾 대부기록 삭제됨 — 대출 심사 면제" };
+    }
     // loans: a loan death in any season, or a loan still unpaid now → refused
     let deaths = [];
     try { deaths = (await Store.seasonDigests()).filter(d => (d.history || []).some(x => x.loanDeath && x.eliminated === +pid)).map(d => d.number); } catch { }

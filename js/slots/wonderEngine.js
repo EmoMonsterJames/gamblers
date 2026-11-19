@@ -354,6 +354,8 @@ function festival(cfg, ctx) {
 // 🛰️ Mission Control — 19-hex radar dish (3-4-5-4-3 columns), clusters of 4+
 // =====================================================================
 const RADAR_OFF = [[0, 0], [0, 4], [1, 4], [3, 4], [4, 0], [4, 4]];
+// the board's missing cells before the first spin too (screens/slot.js initReels) — the dish never shows 25 cells
+export const IDLE_OFF = { mission_control: RADAR_OFF };
 function hexClusters(cfg, g, bet, { min = 4, scale = 1, mult = null } = {}) {
     const C = g.length, Rn = g[0].length, lines = [];
     let total = 0;

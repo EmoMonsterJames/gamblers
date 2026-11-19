@@ -2,6 +2,7 @@
 import { h, sleep, shuffle } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { LOCATIONS, REGIONS } from "../data/catalog.js";
+import { mapNo } from "../data/mapAdmin.js";
 
 const ISLANDS = `
 <defs>
@@ -69,7 +70,7 @@ export function worldMap({ onPick = null, locked = new Set(), small = false, reg
     const pins = LOCATIONS.filter(l => (l.region || "cl1") === region && !l.off).map(l => h("button.pin" + (locked.has(l.id) ? ".locked" : ""), {
         style: { left: l.x + "%", top: l.y + "%", "--c": l.color }, "data-id": l.id,
         onclick: onPick ? () => onPick(l) : null, title: l.name
-    }, h("span.pin-ico", l.emoji), h("span.pin-name", l.name), reqLabel(l.req) ? h("span.pin-req", reqLabel(l.req)) : null));
+    }, h("span.pin-ico", l.emoji), h("span.pin-name", mapNo(l.id) ? h("small.pin-no", `#${mapNo(l.id)} `) : null, l.name), reqLabel(l.req) ? h("span.pin-req", reqLabel(l.req)) : null));
     const deco = R ? h("div.region-deco", R.deco.map((d, i) => h("i", { style: { left: 6 + i * 16 + "%", top: (i % 2 ? 70 : 12) + "%", "--d": i * 0.7 + "s" } }, d))) : null;
     const el = h("div.world" + (small ? ".small" : "") + (R ? ".region-world.rw-" + region : ""), R ? { style: { background: R.bg } } : { html: svg }, deco, ...pins);
     return {

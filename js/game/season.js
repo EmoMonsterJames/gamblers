@@ -13,6 +13,10 @@ import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons
 import * as RV from "./revival.js";
 import { isSurvivalPass } from "../data/catalog.js";
 import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
+import { FOOD_START } from "../data/life.js";
+// other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
+export const locationHooks = [], jobHooks = [], playHooks = [];
+const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
 
 export const S = () => Store.season;
 
@@ -119,7 +123,7 @@ export function addToRoster(pid) {
     const s = S();
     if (s.roster.includes(pid) || s.roster.length >= CONFIG.SEASON_SIZE) return;
     s.roster.push(pid);
-    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
+    s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, food: FOOD_START, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
     log(`🎰 ${name(pid)} 참가 확정!`);
     // gold won outside a season (survival corner) comes along
     const w = Store.wallets?.[pid] || 0;
@@ -237,15 +241,22 @@ export function spendBet(pid, kind, bet) {
 export const playMoney = pid => { const ps = S().ps[pid]; return ps.money + (ps.loanGold || 0); };
 
 // ---------------------------------------------------------------- shop limits (per round)
+// 🔄 Survival Land: every map's general shop sells only 1 thing (per map, per round)
+const svShopKey = (pid, shopId) => { const l = LOC_BY_ID[S().turn?.pid === pid ? S().turn.loc : null]; return shopId === "general" && l?.region === "survival" ? "sv:" + l.id : null; };
+export const shopLimit = (pid, shopId) => svShopKey(pid, shopId) ? 1 : (SHOP_LIMIT[shopId] ?? 1);
 export function buysLeft(pid, shopId) {
     const s = S(), ps = s.ps[pid];
     const b = ps.buys?.round === s.round ? ps.buys : {};
+    const sv = svShopKey(pid, shopId);
+    if (sv) return Math.min(1 - (b[sv] || 0), (SHOP_LIMIT[shopId] ?? 1) - (b[shopId] || 0));
     return (SHOP_LIMIT[shopId] ?? 1) - (b[shopId] || 0);
 }
 export function noteBuy(pid, shopId) {
     const s = S(), ps = s.ps[pid];
     if (ps.buys?.round !== s.round) ps.buys = { round: s.round };
     ps.buys[shopId] = (ps.buys[shopId] || 0) + 1;
+    const sv = svShopKey(pid, shopId);
+    if (sv) ps.buys[sv] = (ps.buys[sv] || 0) + 1;
 }
 
 // ---------------------------------------------------------------- loans
@@ -485,6 +496,7 @@ export function payJob(pid, career, gold, card = null) {
     if (t) { t.worked = true; t.remaining = Math.max(0, t.remaining - career.cut); t.stats.job = (t.stats.job || 0) + gold; t.stats.jobs = (t.stats.jobs || 0) + 1; }
     ps.money += gold;
     if (card) ps.items[cardId(card)] = (ps.items[cardId(card)] || 0) + 1;
+    runHooks(jobHooks, pid, career.id);
     log(`💼 ${name(pid)} ${career.name} 알바 ${card ? `→ 알파벳 카드 ${card}` : `+${gold.toLocaleString()}G`} (-${Math.round(career.cut / 60)}분)`);
     Store.saveSeason(true);
 }
@@ -732,7 +744,7 @@ export function deathShield(pid) {
 }
 // death outside the judge (reaper): out at once, the turn is over
 // → false when the 🎭 death shield kept the player alive (HP 1)
-export function killPlayer(pid, why, { npc = null, quiet = false } = {}) {
+export function killPlayer(pid, why, { npc = null, quiet = false, hl = null } = {}) {
     const s = S();
     if (deathShield(pid)) {
         const ps = s.ps[pid];
@@ -751,7 +763,7 @@ export function killPlayer(pid, why, { npc = null, quiet = false } = {}) {
     const rank = alive().length;
     Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
     s.history.push({ round: s.round, npcDeath: true, eliminated: pid, rank, why });
-    Store.recordHighlight(npc ? "npc_kill" : "death", { pid, why, rank, loc: s.turn?.pid === pid ? s.turn.loc : null, npc: npc ? { id: npc.id, name: npc.name, emoji: npc.emoji, art: npc.art || null } : null });
+    Store.recordHighlight(npc ? "npc_kill" : hl || "death", { pid, why, rank, loc: s.turn?.pid === pid ? s.turn.loc : null, npc: npc ? { id: npc.id, name: npc.name, emoji: npc.emoji, art: npc.art || null } : null });
     log(`☠️ ${name(pid)} ${why} (${rank}위)`);
     // ☠️ an instant death that leaves only 2 alive: everyone else's turns stop — straight to the final
     if (!(s.sandbox && !s.testSeason) && alive().length <= CONFIG.FINALISTS && ["turns", "battle", "mission", "judge"].includes(s.status)) {
@@ -956,6 +968,7 @@ export function setLocation(locId, { teleport = false } = {}) {
         if (ce.ok && !ce.short) payEntry(t.pid, { gear: ce.gear, fee: ce.fee, feePts: ce.feePts });
     }
     if (!(ps.visited ||= []).includes(locId)) ps.visited.push(locId);
+    runHooks(locationHooks, t.pid, locId);
     if (!(t.stats.locs ||= []).includes(locId)) t.stats.locs.push(locId);
     if (needsGear(loc)) t.stats.gearVisits = (t.stats.gearVisits || 0) + 1;
     log(`🗺️ ${name(t.pid)} → ${loc.name}`);
@@ -1097,6 +1110,7 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     for (const jp of extra.jackpots || []) if (!t.stats.jackpot || JACKPOT_RANK[jp] > JACKPOT_RANK[t.stats.jackpot]) t.stats.jackpot = jp;
     // 🤲 handpay (1000× the bet or a GRAND jackpot) — handpay missions
     if ((bet > 0 && win >= bet * 1000) || (extra.jackpots || []).includes("GRAND")) { t.stats.handpay = (t.stats.handpay || 0) + 1; ps.handpays = (ps.handpays || 0) + 1; }
+    runHooks(playHooks, t.pid, kind, bet, win, extra);
     Store.saveSeason();
 }
 
