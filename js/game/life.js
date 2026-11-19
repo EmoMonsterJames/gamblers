@@ -12,7 +12,7 @@ import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { LOC_BY_ID } from "../data/catalog.js";
 import * as L from "../data/life.js";
-import { S, log, name, roundHooks, killPlayer, hpToll } from "./season.js";
+import { S, log, name, roundHooks, killPlayer, hpToll, bump, noteRefuse } from "./season.js";
 import { ownsTypes } from "./extra.js";
 import { activeBiz } from "./bank.js";
 
@@ -62,6 +62,7 @@ export function eat(pid, foodId, how = "") {
     if (!f) return { ok: false, why: "없는 음식입니다" };
     if (!L.canEatRace(f, p?.ethnicity)) return { ok: false, why: `${f.name}은(는) ${f.races.join(" · ")} 종족만 먹을 수 있습니다` };
     const got = addFood(pid, f.food);
+    bump(pid, "eats"); // 🍚 food missions count every food eaten
     log(`${f.emoji} ${name(pid)} ${f.name} 먹음${how ? ` (${how})` : ""} → 식량 ${got >= 0 ? "+" : ""}${got} (${foodOf(pid)})`);
     Store.saveSeason(true);
     return { ok: true, got, food: foodOf(pid) };
@@ -101,6 +102,7 @@ export function foodDoor(pid, key, corner) {
     }
     const ok = corner.entry === "random" ? rnd() < L.RANDOM_ENTRY : true;
     u.door[key] = { in: ok, paid: corner.entry === "paid" ? corner.fee : 0, rolled: corner.entry === "random" };
+    if (!ok) noteRefuse(pid);
     log(`${corner.emoji} ${name(pid)} ${corner.name} ${ok ? "입장" : "입장 거절"}`);
     Store.saveSeason(true);
     return u.door[key];
@@ -171,6 +173,7 @@ export function weatherTick(t) {
     if (s < L.WEATHER_FIRST || (s - L.WEATHER_FIRST) % L.WEATHER_EVERY) return null;
     if (sheltered(t.pid, t.loc)) { log(`${w.emoji} ${name(t.pid)} ${w.name} — 🏨 숙소 덕분에 무사`); return { w, sheltered: true }; }
     life.wxHits = (life.wxHits || 0) + 1;
+    bump(t.pid, "wxDmg", w.hp); // 🌦️ weather missions
     const r = hpToll(t.pid, w.hp, `${w.emoji} ${w.name}`);
     return { w, dmg: w.hp, ...r };
 }
@@ -225,6 +228,7 @@ export function lodgeDoor(pid, t, locId, lodge) {
     if (fee) pay(ps, fee);
     const ok = lodge.entry === "random" ? rnd() < L.RANDOM_ENTRY : true;
     d[key] = { in: ok, fee, rolled: lodge.entry === "random" };
+    if (ok) bump(pid, "lodgeIn"); else noteRefuse(pid); // 🏨 lodging missions · 🚪 refusals
     log(`${lodge.emoji} ${name(pid)} ${lodge.name} ${ok ? "입장" : "입장 거절"}${fee ? ` (입장료 ${fee.toLocaleString()}G)` : ""}`);
     Store.saveSeason(true);
     return d[key];

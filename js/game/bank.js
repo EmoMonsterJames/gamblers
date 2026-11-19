@@ -14,7 +14,7 @@ import { CONFIG } from "../config.js";
 import { Store } from "../core/store.js";
 import { LOC_BY_ID, LOCATIONS, REGION_BY_ID } from "../data/catalog.js";
 import { BIZ_TYPES, TX_TIERS, TX_FREE_PER_SEASON, TX_EXTRA_MAX, TX_MIN_ALIVE, TX_DELAY_ROUNDS, BANK_OPEN_CHANCE } from "../data/business.js";
-import { S, alive, log, name, honorRecords, roundHooks, seasonEndHooks } from "./season.js";
+import { S, alive, log, name, honorRecords, roundHooks, seasonEndHooks, noteRefuse } from "./season.js";
 import { cure as cureDisease, DISEASES } from "./extra.js";
 
 export const B = () => {
@@ -225,6 +225,7 @@ export function enterBiz(pid, biz) {
     if (ps.money < T.entry.fee) return { ok: false, why: "입장료가 부족합니다" };
     ps.money -= T.entry.fee;
     u.paid = true; u.in = Math.random() < T.entry.chance;
+    if (!u.in) noteRefuse(pid);
     sale(biz, pid, u.in ? "entry" : "entry_try", u.in ? "입장료" : "입장 시도 수익", T.entry.fee, T.entry.fee);
     log(`${T.emoji} ${name(pid)} ${T.name} 입장료 ${T.entry.fee}G → ${u.in ? "입장" : "입장 거절"}`);
     save(); Store.saveSeason(true);

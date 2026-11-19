@@ -384,6 +384,7 @@ export function countBuy(pid, kind) {
     if (kind === "lab") { e.labBuys = (e.labBuys || 0) + 1; return; }
     if (e.shopRound !== S()?.round) { e.shopRound = S()?.round; e.shopBuys = 0; }
     e.shopBuys = (e.shopBuys || 0) + 1;
+    e.shopTotal = (e.shopTotal || 0) + 1; // the season's Monster Shop purchases (missions)
 }
 
 // ---------------------------------------------------------------- 🧪 lab: evolution + mixing
@@ -473,6 +474,10 @@ export function emoHas(pid, m) {
         case "multitype": return list.some(x => typesOf(x).length >= (m.v || 2));
         case "mono": return list.some(x => typesOf(x).length === 1);
         case "final": return list.some(x => isFinalStage(x.sid));
+        case "has_mon": return list.length >= (m.v || 1);
+        case "weapons1": return list.some(x => (x.weapons?.length || 0) >= 1);
+        case "r2_or_noevo": return list.some(x => (sp(x)?.rarity || 1) >= 2 || !hasEvolution(x.sid));
+        case "orb": return Object.entries(emo(pid).bag || {}).some(([id, n]) => n > 0 && (/orb/i.test(id) || emoItem(id)?.orb || /\borb\b/i.test(emoItem(id)?.name || "")));
     }
     return false;
 }

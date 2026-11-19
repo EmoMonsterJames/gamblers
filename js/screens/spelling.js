@@ -133,6 +133,7 @@ export function spellingView(pid, loc, onChange) {
         ps.spell = null;
         ps.spellLast = { w: word, pos: sp.pos, ok, prize: ok ? prize : 0, tried: sp.placed.join("") };
         if (ok && s.turn?.pid === pid) s.turn.stats.spellOk = true; // "Spelling Bee 성공" missions
+        if (ok && s.ps[pid]) s.ps[pid].spellWins = (s.ps[pid].spellWins || 0) + 1; // "이전에 Spelling Bee 성공" missions
         if (ok) {
             ps.money += prize;
             G.log(`🐝 ${G.name(pid)} Spelling Bee 정답! ${word} (+${prize.toLocaleString()}G · 힌트 ${sp.hints}개)`);

@@ -325,6 +325,7 @@ function payOne(pid, x, why = "급여") {
     if (a) { a.bgold = (a.bgold || 0) + x.pay; a.history = [{ t: now(), kind: "in", amount: x.pay, note: `${C.emoji} ${C.name} ${why}${x.manager ? " (매니저)" : ""}` }, ...(a.history || [])].slice(0, 200); }
     const ps = ps_(pid);
     if (C.pts && ps && !ps.out) ps.points += C.pts;
+    if (ps && !ps.out) ps.jobGold = (ps.jobGold || 0) + x.pay; // "직업과 취업으로 번 돈" missions
 }
 function paySalaries(s) {
     for (const [pid, x] of Object.entries(EM().staff)) payOne(+pid, x);

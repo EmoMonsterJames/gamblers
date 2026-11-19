@@ -15,7 +15,7 @@
 import { Store } from "../core/store.js";
 import { CATS, saleOf } from "../data/catalogAdmin.js";
 import { SHOPS, LOC_BY_ID } from "../data/catalog.js";
-import { S, log, name } from "./season.js";
+import { S, log, name, noteRefuse } from "./season.js";
 import { cat, species, emoItem, EMO_ITEMS, LAB_ONLY, EMO, weaponPrice, traitPrice, monOn, weaponOn, traitOn } from "../emomon/data.js";
 import * as M from "../emomon/game.js";
 import { emoSlots } from "./extra.js";
@@ -139,7 +139,7 @@ export function gotchaOdds(kind, locId) {
 export const gotchaDoorState = pid => { const d = ps_(pid)?.gotchaDoor; return d?.round === S().round ? d.ok : null; };
 export function gotchaDoor(pid) {
     const ps = ps_(pid), s = S();
-    if (ps.gotchaDoor?.round !== s.round) { ps.gotchaDoor = { round: s.round, ok: Math.random() < GOTCHA_OK }; Store.saveSeason(); }
+    if (ps.gotchaDoor?.round !== s.round) { ps.gotchaDoor = { round: s.round, ok: Math.random() < GOTCHA_OK }; if (!ps.gotchaDoor.ok) noteRefuse(pid); Store.saveSeason(); }
     return ps.gotchaDoor.ok;
 }
 export const gotchaBought = pid => ps_(pid)?.gotchaBuy === S().round;

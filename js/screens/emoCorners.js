@@ -84,7 +84,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                     cfg.door === "fee" ? [h("p", `희귀한 몬스터가 많은 곳! 입장료 ${fmt(EMO.CAPTURE_FEE)}G (이번 턴 동안 유효)`),
                         h("button.btn.gold.big", { disabled: ps.money < EMO.CAPTURE_FEE, onclick: () => { ps.money -= EMO.CAPTURE_FEE; turn.emoDoor[loc.id] = "in"; Sound.coin(); Store.saveSeason(); onChange(); draw(); } }, `🎟️ ${fmt(EMO.CAPTURE_FEE)}G 내고 입장`)]
                         : [h("p", "문지기가 기분에 따라 들여보내 줍니다 (60%). 거절되면 이번 턴에는 못 들어갑니다."),
-                        h("button.btn.gold.big", { onclick: async e => { e.target.disabled = true; Sound.tease(); await sleep(900); const ok = Math.random() < EMO.CAPTURE_RANDOM_OK; turn.emoDoor[loc.id] = ok ? "in" : "no"; ok ? Sound.win() : Sound.lose(); toast(ok ? "🚪 문이 열렸습니다!" : "🚫 입장 거절! 이번 턴에는 들어갈 수 없습니다", ok ? "ok" : "warn"); Store.saveSeason(); draw(); } }, "🚪 문 두드리기")]);
+                        h("button.btn.gold.big", { onclick: async e => { e.target.disabled = true; Sound.tease(); await sleep(900); const ok = Math.random() < EMO.CAPTURE_RANDOM_OK; turn.emoDoor[loc.id] = ok ? "in" : "no"; if (!ok) G.noteRefuse(pid); ok ? Sound.win() : Sound.lose(); toast(ok ? "🚪 문이 열렸습니다!" : "🚫 입장 거절! 이번 턴에는 들어갈 수 없습니다", ok ? "ok" : "warn"); Store.saveSeason(); draw(); } }, "🚪 문 두드리기")]);
             else if (st === "no") gate = h("div.emo-gate.no", h("div.emo-gate-door", "🚫"), h("p", "입장이 거절되었습니다. 다음 턴에 다시 와 보세요."));
             if (gate) { put(wrap, head(), poolRow(), gate); return; }
             const left = M.findsLeft(pid);

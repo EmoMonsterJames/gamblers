@@ -1280,6 +1280,23 @@ function battleMissionStage(s) {
     }
     // old saves (no draw state) go straight to the arena
     if (s.battleDrawn === false) return battleDrawStage(s);
+    // ⚔️ + 🐾 a weapon battle AND an EmoMon battle: one player wins both → the other is out · 1 : 1 → a random one is out
+    if (s.mission.both) {
+        const D = (s.dual ||= {});
+        if (!D.weapon) return battleView(a, b, w => { D.weapon = w; Store.saveSeason(true); render(); },
+            { title: `⚔️ ROUND ${s.round} 더블 배틀 1/2 · 무기 배틀`, sub: `${s.mission.text} · 무기 배틀 다음에 이모몬스터 배틀이 이어집니다`, logLabel: "더블 배틀 (무기)" });
+        if (!D.emo) return emoBattleStage(a, b, w => { D.emo = w; Store.saveSeason(true); render(); },
+            { title: `🐾 ROUND ${s.round} 더블 배틀 2/2 · 이모몬스터 배틀`, sub: `무기 배틀 승자: ${displayName(Store.player(D.weapon))} · 이모몬스터가 없으면 Battlebot` });
+        const tie = D.weapon !== D.emo;
+        if (D.final == null) { D.final = tie ? pick([a, b]) : D.weapon; Store.saveSeason(true); }
+        const winner = D.final, loser = winner === a ? b : a;
+        return h("div.center-card",
+            h("h2", tie ? "🤝 1 : 1 무승부 — 랜덤 탈락!" : "🏆 두 배틀 모두 승리!"),
+            h("div.row.center", avatar(a, 90, { effect: false }), h("b", " VS "), avatar(b, 90, { effect: false })),
+            h("p", `⚔️ 무기 배틀: ${displayName(Store.player(D.weapon))} 승 · 🐾 이모몬스터 배틀: ${displayName(Store.player(D.emo))} 승`),
+            h("p", tie ? `랜덤 추첨으로 ${displayName(Store.player(loser))} 탈락` : `${displayName(Store.player(loser))} 탈락`),
+            h("button.btn.gold.huge", { onclick: () => { G.finishBattle(winner, loser); render(); } }, "▶ 결과 확정"));
+    }
     if (s.mission.emo) return emoBattleStage(a, b, (winner, loser) => { G.finishBattle(winner, loser); render(); },
         { title: `🐾 ROUND ${s.round} EmoMon 배틀 미션`, sub: `${s.mission.text} · 각자의 ⚔ 배틀 몬스터가 싸웁니다 (몬스터가 없으면 Battlebot) · 지면 탈락!` });
     return battleView(a, b, (winner, loser) => {

@@ -12,7 +12,7 @@ import { Store } from "../core/store.js";
 import { LOC_BY_ID, ITEM_BY_ID } from "../data/catalog.js";
 import { KIDNAP_ROOM } from "../data/regions.js";
 import { CM_BY_ID, COMMENT_FEE, COMMUNITY_OK } from "../data/community.js";
-import { S, log, name, alive, killPlayer, setLocation } from "./season.js";
+import { S, log, name, alive, killPlayer, setLocation, noteRefuse } from "./season.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const ps_ = pid => S()?.ps?.[pid];
@@ -352,7 +352,7 @@ export const postedThisSeason = pid => (ps_(pid)?.cmPosted === S()?.number) || p
 export const communityDoorState = pid => { const d = ps_(pid)?.cmDoor; return d?.round === S().round ? d.ok : null; };
 export function communityDoor(pid) {
     const ps = ps_(pid), s = S();
-    if (ps.cmDoor?.round !== s.round) { ps.cmDoor = { round: s.round, ok: Math.random() < COMMUNITY_OK }; Store.saveSeason(); }
+    if (ps.cmDoor?.round !== s.round) { ps.cmDoor = { round: s.round, ok: Math.random() < COMMUNITY_OK }; if (!ps.cmDoor.ok) noteRefuse(pid); Store.saveSeason(); }
     return ps.cmDoor.ok;
 }
 export const cmOwned = pid => Object.entries(ps_(pid)?.items || {}).filter(([k, n]) => n > 0 && CM_BY_ID[k]).map(([k, n]) => ({ ...CM_BY_ID[k], n }));

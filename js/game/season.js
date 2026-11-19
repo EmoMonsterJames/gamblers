@@ -14,9 +14,20 @@ import * as RV from "./revival.js";
 import { isSurvivalPass } from "../data/catalog.js";
 import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
 import { FOOD_START } from "../data/life.js";
+import { mapNo } from "../data/mapAdmin.js";
 // other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
 export const locationHooks = [], jobHooks = [], playHooks = [];
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
+// 📊 season counters the missions read (ps.<key> for the season · turn.stats.<key> for this turn)
+//   refused (입장 거절) · eats (식량 소비) · wxDmg (날씨 HP 피해) · lodgeIn (숙소 입장) · begs (구걸 횟수)
+//   jobGold (직업 + 회사 급여) · earnGold (돈벌기) · spellWins · shopCount { general, discount, … }
+export function bump(pid, key, n = 1) {
+    const s = S(), ps = s?.ps?.[pid];
+    if (!ps) return;
+    ps[key] = (ps[key] || 0) + n;
+    if (s.turn?.pid === +pid) s.turn.stats[key] = (s.turn.stats[key] || 0) + n;
+}
+export const noteRefuse = pid => { bump(pid, "refused"); Store.saveSeason(); };
 
 export const S = () => Store.season;
 
@@ -255,6 +266,7 @@ export function noteBuy(pid, shopId) {
     const s = S(), ps = s.ps[pid];
     if (ps.buys?.round !== s.round) ps.buys = { round: s.round };
     ps.buys[shopId] = (ps.buys[shopId] || 0) + 1;
+    (ps.shopCount ||= {})[shopId] = (ps.shopCount[shopId] || 0) + 1; // the season's purchases per shop (missions)
     const sv = svShopKey(pid, shopId);
     if (sv) ps.buys[sv] = (ps.buys[sv] || 0) + 1;
 }
@@ -348,17 +360,17 @@ export function pickMission(deck) {
 export function setMission(m) {
     const s = S();
     s.mission = { ...m };
-    // random alphabet card mission: the letter is drawn now
-    if (m.type === "card" && m.letter === "*") {
-        const L = pick(EXTRA_LETTERS);
+    // random alphabet letters are drawn now: "?" = 알파벳 카드 (G·A·M·B·L·E·R·S) · "*" = 알파벳 권 (the other letters)
+    if (m.letter === "*" || m.letter === "?") {
+        const L = pick(m.letter === "*" ? EXTRA_LETTERS : ALPHABET);
         s.mission.letter = L;
-        s.mission.text = `알파벳 카드 ${L} 없는 플레이어 탈락 (랜덤 추첨: ${L} · GAMBLERS 제외)`;
+        s.mission.text = `${m.text} → 이번 라운드: ${m.letter === "*" ? "알파벳 권" : "알파벳 카드"} ${L}`;
     }
-    if (m.type === "card" && m.letter === "?") {
-        const L = pick(ALPHABET);
-        s.mission.letter = L;
-        s.mission.text = `알파벳 카드 ${L} 없는 플레이어 탈락 (랜덤 추첨: ${L})`;
+    if (m.type === "card2") {
+        s.mission.letters = [pick(ALPHABET), pick(EXTRA_LETTERS)];
+        s.mission.text = `${m.text} → 이번 라운드: 카드 ${s.mission.letters[0]} · 권 ${s.mission.letters[1]}`;
     }
+    s.dual = null; // ⚔️+🐾 double battle results
     // 🐾 random nature mission: the nature is drawn now
     if (m.type === "emo_has" && m.nature === "?") {
         const n = randomNatureSafe();
@@ -395,7 +407,17 @@ const METRIC = {
     roundGear: pid => S().results[pid]?.stats?.gearVisits || 0
 ,
     // 🐾 EmoMon
-    emoMons: pid => emoMons(pid).length, emoWeapons: pid => emoWeapons(pid), emoTraits: pid => emoTraits(pid)
+    emoMons: pid => emoMons(pid).length, emoWeapons: pid => emoWeapons(pid), emoTraits: pid => emoTraits(pid),
+    // season counters (see bump())
+    refused: pid => S().ps[pid].refused || 0, eats: pid => S().ps[pid].eats || 0, lodgeIn: pid => S().ps[pid].lodgeIn || 0,
+    begs: pid => S().ps[pid].begs || 0, wxDmg: pid => S().ps[pid].wxDmg || 0,
+    labBuys: pid => S().ps[pid].emo?.labBuys || 0, hospital: pid => S().ps[pid].emo?.hospUses || 0,
+    shopBuys: pid => { const ps = S().ps[pid], c = ps.shopCount || {}; return (c.general || 0) + (c.discount || 0) + (ps.emo?.labBuys || 0) + (ps.emo?.shopTotal || 0); },
+    emoItems: pid => Object.values(S().ps[pid].emo?.bag || {}).reduce((a, n) => a + Math.max(0, n || 0), 0),
+    // lowest / highest map number visited this season (no visit → last / first)
+    mapLo: pid => Math.min(9999, ...(S().ps[pid].visited || []).map(id => mapNo(id) ?? 9999)),
+    mapHi: pid => Math.max(0, ...(S().ps[pid].visited || []).map(id => mapNo(id) ?? 0)),
+    gear: pid => { const ps = S().ps[pid], d = Store.getDecor?.(pid) || {}; return [ps.pet, ps.petEffect, d.frame, d.effect].filter(Boolean).length; }
 };
 // players at the extreme of a metric (ties included), widened until there are `min` of them
 function extremeGroup(list, metric, dir = 1, min = 2) {
@@ -429,8 +451,23 @@ function battlePair(rule) {
         fewweapons: () => extremeGroup(live, "weapons", 1), lowhp: () => extremeGroup(live, "hp", 1), highhp: () => extremeGroup(live, "hp", -1),
         fewmaps: () => extremeGroup(live, "maps", 1), fewitems: () => extremeGroup(live, "items", 1),
         // 🐾 EmoMon
-        fewmons: () => extremeGroup(live, "emoMons", 1), fewemoweapons: () => extremeGroup(live, "emoWeapons", 1), fewemotraits: () => extremeGroup(live, "emoTraits", 1)
+        fewmons: () => extremeGroup(live, "emoMons", 1), fewemoweapons: () => extremeGroup(live, "emoWeapons", 1), fewemotraits: () => extremeGroup(live, "emoTraits", 1),
+        // 🌦️ weather · 🍚 food · 🏨 lodging · shops · map numbers · letters (season records)
+        wxhit: () => live.filter(p => (s.ps[p].wxDmg || 0) > 0), wxnone: () => live.filter(p => !(s.ps[p].wxDmg > 0)), wx20: () => live.filter(p => (s.ps[p].wxDmg || 0) >= 20),
+        not88: () => live.filter(p => Math.floor(s.ps[p].money) % 100 !== 88),
+        foodlt5: () => live.filter(p => (s.ps[p].eats || 0) < 5), fewfood: () => extremeGroup(live, "eats", 1),
+        lowmapno: () => extremeGroup(live, "mapLo", 1), highmapno: () => extremeGroup(live, "mapHi", -1),
+        fewlab: () => extremeGroup(live, "labBuys", 1), fewshops: () => extremeGroup(live, "shopBuys", 1),
+        fewbeg: () => extremeGroup(live, "begs", 1), fewhospital: () => extremeGroup(live, "hospital", 1),
+        gear3: () => live.filter(p => METRIC.gear(p) < 3),
+        nocard: () => live.filter(p => !(s.ps[p].items[cardId(s.mission?.letter)] > 0))
     };
+    // 🏨 the fewest lodging visits vs the most: one from each end
+    if (rule === "lodgeminmax" && live.length >= 2) {
+        const lo = shuffle(extremeGroup(live, "lodgeIn", 1, 1))[0], hiG = extremeGroup(live.filter(p => p !== lo), "lodgeIn", -1, 1);
+        const pair = [lo, shuffle(hiG)[0]].sort((a, b) => (s.ps[b].money - s.ps[a].money) || (s.ps[b].points - s.ps[a].points));
+        return { pair, pool: [...new Set([lo, ...hiG])] };
+    }
     let pool = rules[rule]?.() || live;
     if (pool.length < 2) pool = live;
     const pair = shuffle(pool).slice(0, 2);
@@ -474,6 +511,7 @@ export function payEarn(pid, kind, gold, extra = {}) {
     const ps = S().ps[pid];
     ps.earnUsed = (ps.earnUsed || 0) + 1;
     ps.money += gold;
+    ps.earnGold = (ps.earnGold || 0) + gold;
     const t = S().turn; if (t?.pid === pid) t.stats.earn = (t.stats.earn || 0) + gold;
     if (extra.hp) ps.hp = Math.max(1, ps.hp - extra.hp);
     log(`💪 ${name(pid)} 돈벌기(${kind}) +${gold.toLocaleString()}G${extra.hp ? ` · HP -${extra.hp}` : ""}`);
@@ -484,6 +522,7 @@ export function payBeg(pid, gold) {
     const s = S(), ps = s.ps[pid];
     ps.begRound = s.round;
     ps.money += gold;
+    ps.begs = (ps.begs || 0) + 1;
     if (s.turn?.pid === pid) s.turn.stats.beg = (s.turn.stats.beg || 0) + gold;
     log(`🥺 ${name(pid)} 구걸 +${gold.toLocaleString()}G`);
     if (gold > 0) Store.recordHighlight("beg", { pid, amount: gold, loc: s.turn?.loc || null });
@@ -495,6 +534,7 @@ export function payJob(pid, career, gold, card = null) {
     const s = S(), ps = s.ps[pid], t = s.turn;
     if (t) { t.worked = true; t.remaining = Math.max(0, t.remaining - career.cut); t.stats.job = (t.stats.job || 0) + gold; t.stats.jobs = (t.stats.jobs || 0) + 1; }
     ps.money += gold;
+    ps.jobGold = (ps.jobGold || 0) + gold;
     if (card) ps.items[cardId(card)] = (ps.items[cardId(card)] || 0) + 1;
     runHooks(jobHooks, pid, career.id);
     log(`💼 ${name(pid)} ${career.name} 알바 ${card ? `→ 알파벳 카드 ${card}` : `+${gold.toLocaleString()}G`} (-${Math.round(career.cut / 60)}분)`);
@@ -793,7 +833,7 @@ export const currentPid = () => S().order[S().turnIdx];
 export function startTurn() {
     const s = S();
     const pid = currentPid();
-    s.turn = { pid, loc: null, region: null, remaining: RV.revivalTurns() ? RV.SURVIVAL_SECONDS : CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
+    s.turn = { startPts: s.ps[pid]?.points || 0, pid, loc: null, region: null, remaining: RV.revivalTurns() ? RV.SURVIVAL_SECONDS : CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
     // ⛓️ kidnapped: no roulette — straight back into the terrorists' room (10 minutes as usual)
     if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; s.turn.kidnapIn = s.turn.remaining; }
     Store.saveSeason();
@@ -939,7 +979,9 @@ export function accessibleLocations(pid, regionId = null) { return LOCATIONS.fil
 export function rollEntry(pid, loc) {
     const ce = canEnter(pid, loc);
     if (!ce.random) return { allowed: true };
-    return { allowed: Math.random() < 0.5 };
+    const allowed = Math.random() < 0.5;
+    if (!allowed) noteRefuse(pid);
+    return { allowed };
 }
 export const cardsOf = pid => Object.entries(S().ps[pid].items).filter(([k, n]) => k.startsWith("card_") && n > 0).map(([k]) => k.slice(5));
 export function useCardForEntry(pid, letter) {
@@ -1095,7 +1137,7 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
         if (win > 0) t.stats.slotWins = (t.stats.slotWins || 0) + 1; // a whole bonus round is one win
         t.stats.five = (t.stats.five || 0) + (extra.five ? 1 : 0);
         if (extra.freeSpin) t.stats.freeSpins = (t.stats.freeSpins || 0) + 1;
-        if (extra.bonus) t.stats.slotBonus = (t.stats.slotBonus || 0) + 1; // slot bonuses only (🔄 revival mission)
+        if (extra.bonus) { t.stats.slotBonus = (t.stats.slotBonus || 0) + 1; (t.stats.bonusSpins ||= []).push(t.stats.spins); } // slot bonuses only (🔄 revival mission) · on which spins
         const r100 = s.mission?.type === "rv_slot100" ? s.mission : { v: 100000, spins: 100 }; // 🔄 revival: 50,000G within the first 100 spins
         if (t.stats.spins <= r100.spins && t.stats.slotNet >= r100.v) t.stats.r100 = true;
         // first bonus of the turn: on which spin (bonus_in missions)
@@ -1107,7 +1149,10 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     else { t.stats.casinoNet += net; t.stats.plays++; ps.totals.casinoNet += net; ps.totals.plays++; }
     t.stats.points += points; ps.totals.points += points;
     if (extra.bonus) t.stats.bonus++;
-    for (const jp of extra.jackpots || []) if (!t.stats.jackpot || JACKPOT_RANK[jp] > JACKPOT_RANK[t.stats.jackpot]) t.stats.jackpot = jp;
+    for (const jp of extra.jackpots || []) {
+        if (!t.stats.jackpot || JACKPOT_RANK[jp] > JACKPOT_RANK[t.stats.jackpot]) t.stats.jackpot = jp;
+        if ((JACKPOT_RANK[jp] || 0) >= 1) (t.stats.jps ||= []).push(jp); // every MINI+ jackpot of the turn (jackpot count missions)
+    }
     // 🤲 handpay (1000× the bet or a GRAND jackpot) — handpay missions
     if ((bet > 0 && win >= bet * 1000) || (extra.jackpots || []).includes("GRAND")) { t.stats.handpay = (t.stats.handpay || 0) + 1; ps.handpays = (ps.handpays || 0) + 1; }
     runHooks(playHooks, t.pid, kind, bet, win, extra);
@@ -1116,6 +1161,7 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
 
 function hasThing(pid, what) {
     if (what === "pet") return !!S().ps[pid].pet;
+    if (what === "petgear") return hasPetGear(pid);
     if (what === "gear") return hasPetGear(pid) || hasFrameGear(pid);
     if (what === "special") { const d = Store.getDecor?.(pid) || {}; return !!(isSpecialFrame(d.frame) || isSpecialEffect(d.effect)); }
     if (what === "biz") return (Store.bank?.biz || []).some(b => !b.closed && b.owner === +pid);
@@ -1125,6 +1171,7 @@ function hasThing(pid, what) {
 }
 const HAS_MISS = {
     pet: "펫 없음 (상점에서 구매 가능)",
+    petgear: "펫 · 펫 효과 모두 없음 (펫 상점)",
     gear: "펫·펫효과·프레임·효과 모두 없음",
     special: "⭐ 특수프레임 · 특수프레임 효과 없음",
     biz: "🏪 본인 소유 Self-Business 없음",
@@ -1137,26 +1184,26 @@ export function missionMet(m, st) {
     if (!m || !st) return false;
     if (m.revival) { const r = RV.revivalMet(m, st); if (r !== null) return r; }
     switch (m.type) {
-        case "bonus": return st.bonus > 0;
+        case "bonus": return m.v ? (st.slotBonus || 0) >= m.v : st.bonus > 0;
         case "slot_net": return st.slotNet >= m.v;
         case "casino_net": return st.casinoNet >= m.v;
         case "points": return st.points >= m.v;
-        case "jackpot": return !!st.jackpot && JACKPOT_RANK[st.jackpot] >= JACKPOT_RANK[m.min];
-        case "combo": return st.casinoNet >= m.c && st.slotNet >= m.s;
+        case "jackpot": return m.n ? jpCount(st, m.min) >= m.n : !!st.jackpot && JACKPOT_RANK[st.jackpot] >= JACKPOT_RANK[m.min];
+        case "combo": return st.casinoNet >= (m.c || 0) && st.slotNet >= (m.s || 0) && (st.points || 0) >= (m.p || 0);
         case "five": return (st.five || 0) >= m.v;
         case "freespin": return (st.freeSpins || 0) >= m.v;
-        case "slot_wins": return (st.slotWins || 0) >= m.v;
+        case "slot_wins": return slotWinsOf(m, st) >= m.v;
         case "beg_max": return (st.beg || 0) > m.v;
         case "job_min": return (st.job || 0) >= m.v;
         case "earn_min": return (st.earn || 0) >= m.v;
         case "spell": return !!st.spellOk;
         case "card": return !!st.cardUsed;
         case "has": return st.pid != null && hasThing(st.pid, m.what);
-        case "emo_has": return st.pid != null && emoHas(st.pid, m);
+        case "emo_has": return st.pid != null && (m.invert ? !emoHas(st.pid, m) : emoHas(st.pid, m));
         case "rank": return true;
-        case "bonus_in": return !!st.bonusAt && st.bonusAt <= m.v;
+        case "bonus_in": return bonusesIn(st, m.v) >= (m.n || 1);
         case "brand_win": return (st.brandWin?.[brandKey(m.brand)] || 0) >= m.v;
-        case "bet_win": return m.bets.some(b => (st.betWin?.[b] || 0) >= m.v);
+        case "bet_win": return betBest(m, st) >= m.v;
         case "job_done": return (st.jobs || 0) >= (m.v || 1);
         case "home_map": { const c = Store.player(st.pid)?.country; return !!c && (st.locs || []).some(id => LOC_BY_ID[id]?.req?.country === c); }
         case "region_map": return (st.locs || []).some(id => m.regions.includes(LOC_BY_ID[id]?.region));
@@ -1167,40 +1214,70 @@ export function missionMet(m, st) {
         case "handpay": return (st.handpay || 0) > 0;
         case "kidnap_freed": return !!st.kidnapFreed;
         case "promo_vote": return st.pid != null && !!S()?.ps?.[st.pid]?.promoVoted;
+        // ---- 2026-11 missions
+        case "pts_spent": return ptsSpent(st) >= m.v;
+        case "pts_have": return (psOf(st)?.points || 0) >= m.v;
+        case "money_end": return Math.floor(psOf(st)?.money || 0) % 100 === m.d;
+        case "food_eats": return (psOf(st)?.eats || 0) >= m.v;
+        case "wx_hit": return m.v ? (st.wxDmg || 0) >= m.v : !((st.wxDmg || 0) > 0); // "v 이상 차감되지 않은" → candidate · plain: the hit ones are candidates
+        case "lodge_in": return m.mode === "some" ? !((psOf(st)?.lodgeIn || 0) > 0) : (psOf(st)?.lodgeIn || 0) > 0;
+        case "npc_harm": return npcHits(st) >= m.v;
+        case "job_total": return (psOf(st)?.jobGold || 0) >= m.v;
+        case "earn_total": return (psOf(st)?.earnGold || 0) >= m.v;
+        case "spell_ever": return !!st.spellOk || (psOf(st)?.spellWins || 0) > 0;
+        case "cm_react": return st.pid != null && S()?.ps?.[st.pid]?.cmPosted === S()?.number && reactedNow(st.pid);
+        case "arena_any": return (psOf(st)?.arenaUsed || 0) > 0;
+        case "card2": { const n = lettersOwned(st.pid, m.letters); return m.mode === "any" ? n >= 2 : n >= 1; }
     }
     return false;
 }
+// ---- helpers for the checks above
+const psOf = st => st?.pid != null ? S()?.ps?.[st.pid] : null;
+const jpCount = (st, min) => (st.jps || []).filter(j => (JACKPOT_RANK[j] || 0) >= (JACKPOT_RANK[min] || 1)).length;
+// a bonus round counts as `bw` wins (the bonus spin already counted 1)
+const slotWinsOf = (m, st) => (st.slotWins || 0) + (m.bw ? (m.bw - 1) * (st.slotBonus || 0) : 0);
+const bonusesIn = (st, v) => (st.bonusSpins || (st.bonusAt ? [st.bonusAt] : [])).filter(n => n <= v).length;
+const betBest = (m, st) => m.minBet ? Math.max(0, ...Object.entries(st.betWin || {}).filter(([b]) => +b >= m.minBet).map(([, w]) => w)) : bestOf(st.betWin, m.bets);
+const ptsSpent = st => { const t = S()?.turn, ps = psOf(st); if (!ps || t?.pid !== st.pid) return st.ptsSpent || 0; return Math.max(0, (t.startPts || 0) + (st.points || 0) - (ps.points || 0)); };
+const npcHits = st => (st.npc || []).filter(x => x.harm).length;
+const lettersOwned = (pid, letters = []) => letters.filter(L => (S()?.ps?.[pid]?.items?.[cardId(L)] || 0) > 0).length;
+// 💖/👎 pressed on someone else's comment this season
+const reactedNow = pid => (Store.community?.posts || []).some(p => [...(p.likes || []), ...(p.dislikes || [])].some(r => +r.pid === +pid && r.season === S()?.number));
 const bestOf = (obj, keys) => Math.max(0, ...keys.map(k => obj?.[k] || 0));
 export function missionProgress(m, st) {
     if (!m || !st) return { cur: 0, goal: 1, label: "" };
     if (m.revival) { const r = RV.revivalProgress(m, st); if (r) return r; }
     const met = missionMet(m, st);
     switch (m.type) {
-        case "bonus": return { cur: Math.min(1, st.bonus), goal: 1, label: st.bonus ? "보너스 달성!" : "보너스 0회" };
+        case "bonus": return m.v ? { cur: Math.min(st.slotBonus || 0, m.v), goal: m.v, label: `슬롯 보너스 ${st.slotBonus || 0} / ${m.v}회` } : { cur: Math.min(1, st.bonus), goal: 1, label: st.bonus ? "보너스 달성!" : "보너스 0회" };
         case "slot_net": return { cur: st.slotNet, goal: m.v, label: `${Math.round(st.slotNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "casino_net": return { cur: st.casinoNet, goal: m.v, label: `${Math.round(st.casinoNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "points": return { cur: st.points, goal: m.v, label: `${st.points} / ${m.v} P` };
-        case "jackpot": return { cur: met ? 1 : 0, goal: 1, label: st.jackpot ? `최고 잭팟: ${st.jackpot}` : "잭팟 없음" };
-        case "combo": return { cur: (Math.min(1, Math.max(0, st.casinoNet) / m.c) + Math.min(1, Math.max(0, st.slotNet) / m.s)) / 2, goal: 1, label: `🃏 ${Math.round(st.casinoNet).toLocaleString()}/${m.c.toLocaleString()} · 🎰 ${Math.round(st.slotNet).toLocaleString()}/${m.s.toLocaleString()} G` };
+        case "jackpot": return m.n ? { cur: Math.min(jpCount(st, m.min), m.n), goal: m.n, label: `${m.min} 이상 잭팟 ${jpCount(st, m.min)} / ${m.n}회` } : { cur: met ? 1 : 0, goal: 1, label: st.jackpot ? `최고 잭팟: ${st.jackpot}` : "잭팟 없음" };
+        case "combo": { const parts = [[st.casinoNet, m.c], [st.slotNet, m.s], [st.points, m.p]].filter(([, g]) => g); return { cur: parts.reduce((a, [v, g]) => a + Math.min(1, Math.max(0, v) / g), 0) / parts.length, goal: 1, label: `🃏 ${Math.round(st.casinoNet).toLocaleString()}/${(m.c || 0).toLocaleString()} · 🎰 ${Math.round(st.slotNet).toLocaleString()}/${(m.s || 0).toLocaleString()} G${m.p ? ` · 💎 ${st.points}/${m.p} P` : ""}` }; }
         case "five": return { cur: st.five || 0, goal: m.v, label: `5 of a kind ${st.five || 0} / ${m.v}` };
         case "freespin": return { cur: st.freeSpins || 0, goal: m.v, label: `무료스핀 ${st.freeSpins || 0} / ${m.v}` };
-        case "slot_wins": return { cur: st.slotWins || 0, goal: m.v, label: `WIN ${st.slotWins || 0} / ${m.v}` };
+        case "slot_wins": return { cur: slotWinsOf(m, st), goal: m.v, label: `WIN ${slotWinsOf(m, st)} / ${m.v}${m.bw ? ` (보너스 1회 = ${m.bw} WIN)` : ""}` };
         case "beg_max": return { cur: st.beg || 0, goal: m.v + 1, label: `구걸 ${(st.beg || 0).toLocaleString()}G (${m.v.toLocaleString()}G 넘으면 안전)` };
         case "job_min": return { cur: st.job || 0, goal: m.v, label: `직업 ${(st.job || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "earn_min": return { cur: st.earn || 0, goal: m.v, label: `돈벌기 ${(st.earn || 0).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "spell": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐝 Spelling Bee 성공!" : "🐝 Spelling Bee 코너가 있는 맵에서 단어를 맞히세요" };
         case "card": return { cur: met ? 1 : 0, goal: 1, label: met ? `카드 ${m.letter} 사용!` : `카드 ${m.letter}: 턴 종료 때 사용 여부를 묻습니다` };
         case "has": return { cur: met ? 1 : 0, goal: 1, label: met ? (m.what === "battler" ? "⚔ Battler 승리 — 안전" : "보유 중 — 안전") : HAS_MISS[m.what] || "보유하지 않음" };
-        case "emo_has": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐾 해당 몬스터 보유 중 — 안전" : "🐾 해당 몬스터가 없습니다 — EmoMon Capture · Lab에서 준비하세요" };
+        case "emo_has": {
+            if (m.invert) return { cur: met ? 1 : 0, goal: 1, label: met ? "🐾 이모몬스터 없음 — 안전" : "🐾 이모몬스터를 갖고 있어 탈락 후보입니다" };
+            if (m.what === "orb") return { cur: met ? 1 : 0, goal: 1, label: met ? "🔮 orb 보유 중 — 안전" : "🔮 이모몬스터 orb가 없습니다 — LAB 상점에서 준비하세요" };
+            return { cur: met ? 1 : 0, goal: 1, label: met ? "🐾 해당 몬스터 보유 중 — 안전" : "🐾 해당 몬스터가 없습니다 — EmoMon Capture · Lab에서 준비하세요" };
+        }
         case "rank": return { cur: 0, goal: 1, label: "라운드 끝에 판정" };
-        case "bonus_in": {
+        case "bonus_in": if (m.n > 1) { const k = bonusesIn(st, m.v), sp = st.spins || 0; return { cur: Math.min(k, m.n), goal: m.n, label: `${m.v}번 스핀 안의 보너스 ${k} / ${m.n}회${sp >= m.v && k < m.n ? " — 실패" : ` · 스핀 ${Math.min(sp, m.v)} / ${m.v}`}` }; } {
             const sp = st.spins || 0;
             if (met) return { cur: 1, goal: 1, label: `${st.bonusAt}번째 스핀에 보너스! 달성` };
             if (st.bonusAt) return { cur: 0, goal: 1, label: `${st.bonusAt}번째 스핀에 보너스 — ${m.v}번 안에는 실패` };
             return { cur: Math.min(sp, m.v), goal: m.v, label: sp >= m.v ? `${m.v}번 안에 보너스 없음 — 실패` : `스핀 ${sp} / ${m.v} · 보너스 대기` };
         }
         case "brand_win": { const b = st.brandWin?.[brandKey(m.brand)] || 0; return { cur: b, goal: m.v, label: `${m.brand} 1회 최고 ${b.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
-        case "bet_win": { const b = bestOf(st.betWin, m.bets); return { cur: b, goal: m.v, label: `${m.bets.join("/")}G 베팅 1회 최고 ${b.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
+        case "bet_win": { const b = betBest(m, st); return { cur: b, goal: m.v, label: `${m.minBet ? `${m.minBet.toLocaleString()}G 이상` : `${m.bets.join("/")}G`} 베팅 1회 최고 ${b.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
         case "job_done": return { cur: Math.min(st.jobs || 0, m.v || 1), goal: m.v || 1, label: `직업 ${st.jobs || 0} / ${m.v || 1}회` };
         case "home_map": { const c = Store.player(st.pid)?.country; return { cur: met ? 1 : 0, goal: 1, label: met ? "본인 국적 맵 방문 완료!" : `${c || "?"} 국적 맵을 방문하세요` }; }
         case "region_map": return { cur: met ? 1 : 0, goal: 1, label: met ? "방문 완료!" : `${m.regions.map(r => REGIONS.find(x => x.id === r)?.name || r).join(" · ")}의 맵을 방문하세요` };
@@ -1211,6 +1288,19 @@ export function missionProgress(m, st) {
         case "kidnap_freed": return { cur: met ? 1 : 0, goal: 1, label: met ? "🕊️ 납치에서 풀려남 — 안전" : "⛓️ Terror Casino에서 납치된 뒤 풀려나야 합니다" };
         case "promo_vote": return { cur: met ? 1 : 0, goal: 1, label: met ? "🗳️ 인기 투표 완료 — 안전" : "🗳️ 커뮤니티 📣 홍보하기에서 후보에게 투표하세요 (무료 · +500G)" };
         case "npc_hit": return { cur: met ? 1 : 0, goal: 1, label: met ? "👼 엔젤 도움 받음!" : `👼 엔젤에게 ${m.what === "hp" ? "HP 회복" : "돈"} 공격을 받아야 합니다` };
+        case "pts_spent": { const v = ptsSpent(st); return { cur: Math.min(v, m.v), goal: m.v, label: `이번 턴 사용한 포인트 ${v} / ${m.v} P` }; }
+        case "pts_have": { const v = psOf(st)?.points || 0; return { cur: Math.min(v, m.v), goal: m.v, label: `보유 포인트 ${v} / ${m.v} P` }; }
+        case "money_end": return { cur: met ? 1 : 0, goal: 1, label: `보유 골드 ${Math.floor(psOf(st)?.money || 0).toLocaleString()}G — 끝자리 ${String(Math.floor(psOf(st)?.money || 0) % 100).padStart(2, "0")} (목표 ${m.d})` };
+        case "food_eats": { const v = psOf(st)?.eats || 0; return { cur: Math.min(v, m.v), goal: m.v, label: `🍚 시즌 식량 소비 ${v} / ${m.v}회` }; }
+        case "wx_hit": return m.v ? { cur: Math.min(st.wxDmg || 0, m.v), goal: m.v, label: `🌦️ 이번 턴 날씨 HP 피해 ${st.wxDmg || 0} / ${m.v}` } : { cur: met ? 1 : 0, goal: 1, label: met ? "🌦️ 날씨 피해 없음 — 안전" : `🌦️ 날씨로 HP −${st.wxDmg} — 탈락 후보` };
+        case "lodge_in": { const v = psOf(st)?.lodgeIn || 0; return { cur: met ? 1 : 0, goal: 1, label: m.mode === "some" ? (v ? `🏨 숙소 입장 기록 ${v}회 — 탈락 후보` : "🏨 숙소 입장 기록 없음 — 안전") : (v ? `🏨 숙소 입장 기록 ${v}회 — 안전` : "🏨 숙소에 입장해야 합니다") }; }
+        case "npc_harm": { const v = npcHits(st); return { cur: Math.min(v, m.v), goal: m.v, label: `👹 이번 턴 NPC 공격 ${v} / ${m.v}회` }; }
+        case "job_total": { const v = psOf(st)?.jobGold || 0; return { cur: Math.min(v, m.v), goal: m.v, label: `💼 시즌 직업 + 급여 ${v.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
+        case "earn_total": { const v = psOf(st)?.earnGold || 0; return { cur: Math.min(v, m.v), goal: m.v, label: `💪 시즌 돈벌기 ${v.toLocaleString()} / ${m.v.toLocaleString()} G` }; }
+        case "spell_ever": return { cur: met ? 1 : 0, goal: 1, label: met ? "🐝 Spelling Bee 성공 기록 있음 — 안전" : "🐝 Spelling Bee 코너에서 단어를 맞히세요" };
+        case "cm_react": return { cur: met ? 1 : 0, goal: 1, label: met ? "💬 코멘트 + 💖/👎 완료 — 안전" : "💬 커뮤니티에 코멘트를 쓰고 다른 코멘트에 💖 또는 👎를 누르세요" };
+        case "arena_any": return { cur: met ? 1 : 0, goal: 1, label: met ? "🏟️ 아레나 참여 — 안전" : "🏟️ 아레나 1:1 배틀에 참여하세요" };
+        case "card2": { const n = lettersOwned(st.pid, m.letters); return { cur: Math.min(n, m.mode === "any" ? 2 : 1), goal: m.mode === "any" ? 2 : 1, label: `🔤 카드 ${m.letters?.[0]} · 권 ${m.letters?.[1]} 보유 ${n}/2 (${m.mode === "any" ? "둘 다 있어야 안전" : "하나라도 있으면 안전"})` }; }
     }
     return { cur: 0, goal: 1, label: "" };
 }
@@ -1248,6 +1338,8 @@ export function skipTurnOf(pid) { // player who can't play (e.g. admin skip) cou
 }
 
 // ---------------------------------------------------------------- judging
+// rank missions: [metric, direction] → that end of the list are the candidates
+const RANK_RULES = { refused_most: ["refused", -1], refused_least: ["refused", 1], emoitems_few: ["emoItems", 1], shops_few: ["shopBuys", 1] };
 function judge() {
     const s = S();
     if (alive().length <= CONFIG.FINALISTS) { s.status = "final"; return; }
@@ -1259,6 +1351,7 @@ function judge() {
         // fewest season slot plays (ties) — "…and the least gold" narrows that group to its 2 poorest
         // fewmaps_round / fewgear: fewest distinct maps / fewest gear-map visits this round (ties)
         if (m.rule === "fewmaps_round") cands = extremeGroup(live, "roundMaps", 1, 1);
+        else if (RANK_RULES[m.rule]) cands = extremeGroup(live, ...RANK_RULES[m.rule], 1);
         else if (m.rule === "fewgear") cands = extremeGroup(live, "roundGear", 1, 1);
         else {
             const g = extremeGroup(live, "spins", 1, m.rule === "fewspins_poor" ? 2 : 1);

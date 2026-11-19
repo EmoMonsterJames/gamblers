@@ -7,7 +7,7 @@
 //   • 🗳️ 투표 탈락 (16 / 8 left)  season.vote = { size, voters, idx, cast, phase, … }
 // =====================================================================
 import { Store } from "../core/store.js";
-import { S, log, name, alive } from "./season.js";
+import { S, log, name, alive, noteRefuse } from "./season.js";
 import { LOCATIONS, ITEM_BY_ID, SHOPS } from "../data/catalog.js";
 import { saleOf } from "../data/catalogAdmin.js";
 import { parseGen } from "../ui/avatarGen.js";
@@ -90,7 +90,7 @@ const ps_ = pid => S()?.ps?.[pid];
 export const helpDoorState = pid => { const d = ps_(pid)?.helpDoor; return d?.round === S().round ? d.ok : null; };
 export function helpDoor(pid) {
     const ps = ps_(pid), s = S();
-    if (ps.helpDoor?.round !== s.round) { ps.helpDoor = { round: s.round, ok: Math.random() < HELP_OK }; Store.saveSeason(); }
+    if (ps.helpDoor?.round !== s.round) { ps.helpDoor = { round: s.round, ok: Math.random() < HELP_OK }; if (!ps.helpDoor.ok) noteRefuse(pid); Store.saveSeason(); }
     return ps.helpDoor.ok;
 }
 export const helpedThisRound = pid => ps_(pid)?.helpRound === S()?.round;
