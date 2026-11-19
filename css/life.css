@@ -213,3 +213,9 @@
 }
 .ab-cohort { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px dashed var(--line); }
 .ab-faces { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; } .ab-face { display: grid; justify-items: center; font-size: 10px; }
+
+/* 🌦️ the weather badge in the map title: the same size as the NPC badge next to it (special.css .loc-name .npc-warn) */
+.loc-name .wx-badge { font-family: "Binggrae", "Jua", "Noto Sans KR", sans-serif; font-weight: 700; font-size: 13px; padding: 4px 10px; line-height: 1.2; letter-spacing: 0; gap: .35em; margin-left: 0; }
+.loc-name .wx-badge > span { font-size: 1em; line-height: 1; }
+.loc-name .wx-badge b { font: inherit; font-size: 1em; letter-spacing: 0; }
+.loc-name .wx-badge small { font-size: .9em; }
