@@ -3,6 +3,18 @@ let ctx = null, muted = false;
 try { muted = localStorage.getItem("gamblers.muted") === "1"; } catch { }
 function ac() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; }
 
+// ---------------------------------------------------------------- volume buses
+// loudest → quietest: 🎰 game SFX (a slot / casino screen with its palette) → 🔔 other SFX → 🌦️ weather / map ambience
+// (BGM loops keep their own gain and are not on these buses)
+const BUS_VOL = { game: 1, sfx: 0.6, env: 0.32 };
+const buses = {};
+let palette = null;
+function bus(a, cat = palette ? "game" : "sfx") {
+    let b = buses[cat];
+    if (!b) { b = buses[cat] = a.createGain(); b.gain.value = BUS_VOL[cat]; b.connect(a.destination); }
+    return b;
+}
+
 function tone(freq, dur = 0.1, type = "square", vol = 0.06, when = 0, slide = 0) {
     if (muted) return;
     try {
@@ -11,7 +23,7 @@ function tone(freq, dur = 0.1, type = "square", vol = 0.06, when = 0, slide = 0)
         o.type = type; o.frequency.setValueAtTime(freq, t);
         if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
         g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-        o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+        o.connect(g).connect(bus(a)); o.start(t); o.stop(t + dur + 0.02);
     } catch { }
 }
 function noise(dur = 0.2, vol = 0.08, when = 0) {
@@ -21,7 +33,7 @@ function noise(dur = 0.2, vol = 0.08, when = 0) {
         const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0);
         for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
         const s = a.createBufferSource(), g = a.createGain(); s.buffer = b; g.gain.value = vol;
-        s.connect(g).connect(a.destination); s.start(t);
+        s.connect(g).connect(bus(a)); s.start(t);
     } catch { }
 }
 
@@ -450,14 +462,64 @@ function buzzSet(on, vol = 0.010) {
     } catch { }
 }
 
+// 🌦️ weather on the map: a quiet looping noise bed on the env bus (the quietest one)
+//   rain / storm (+ thunder) · snow / blizzard (wind) · hail (+ ice ticks) · heat (cicada shimmer) · sun = silence
+const WX_SND = {
+    rain: { type: "bandpass", f: 2600, q: 0.6, vol: 0.22 },
+    storm: { type: "bandpass", f: 1800, q: 0.5, vol: 0.34, thunder: true },
+    snow: { type: "lowpass", f: 420, q: 1, vol: 0.18, lfo: 0.12 },
+    blizzard: { type: "bandpass", f: 700, q: 1.4, vol: 0.32, lfo: 0.25 },
+    hail: { type: "bandpass", f: 3200, q: 0.7, vol: 0.16, ticks: true },
+    heat: { type: "bandpass", f: 5200, q: 6, vol: 0.06, lfo: 7 }
+};
+let wx = null;
+function weatherSet(id) {
+    if (wx?.id === id && !muted) return;
+    if (wx) { const w = wx; wx = null; clearInterval(w.timer); try { w.g.gain.setTargetAtTime(0, ctx.currentTime, 0.3); setTimeout(() => { try { w.s.stop(); w.l?.stop(); } catch { } }, 1500); } catch { } }
+    const d = WX_SND[id];
+    if (!d || muted) return;
+    try {
+        const a = ac(), len = a.sampleRate * 2, buf = a.createBuffer(1, len, a.sampleRate), ch = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+        const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+        s.buffer = buf; s.loop = true;
+        f.type = d.type; f.frequency.value = d.f; f.Q.value = d.q;
+        g.gain.value = 0; g.gain.setTargetAtTime(d.vol, a.currentTime, 0.8);
+        s.connect(f).connect(g).connect(bus(a, "env"));
+        let l = null;
+        if (d.lfo) { l = a.createOscillator(); const lg = a.createGain(); l.frequency.value = d.lfo; lg.gain.value = d.vol * 0.6; l.connect(lg).connect(g.gain); l.start(); }
+        s.start();
+        const w = wx = { id, s, g, l };
+        if (d.thunder || d.ticks) w.timer = setInterval(() => {
+            if (wx !== w || muted) return;
+            const e = bus(a, "env"), t = a.currentTime;
+            if (d.thunder && Math.random() < 0.08) { // a distant rumble now and then
+                const o = a.createBufferSource(), lp = a.createBiquadFilter(), tg = a.createGain();
+                o.buffer = buf; lp.type = "lowpass"; lp.frequency.value = 180;
+                tg.gain.setValueAtTime(0.0001, t); tg.gain.exponentialRampToValueAtTime(0.9, t + 0.08); tg.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+                o.connect(lp).connect(tg).connect(e); o.start(t); o.stop(t + 2.5);
+            }
+            if (d.ticks) for (let i = 0; i < 3; i++) if (Math.random() < 0.5) {
+                const o = a.createOscillator(), tg = a.createGain(), at = t + Math.random() * 0.5;
+                o.type = "square"; o.frequency.value = 2400 + Math.random() * 1800;
+                tg.gain.setValueAtTime(0.05, at); tg.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
+                o.connect(tg).connect(e); o.start(at); o.stop(at + 0.05);
+            }
+        }, 500);
+    } catch { }
+}
+
 export const Sound = {
     buzz: buzzSet,
+    weather: weatherSet,
+    get weatherPlaying() { return wx?.id || null; },
     get muted() { return muted; },
     toggle() {
         muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { }
         if (bgm) try { bgm.gain.gain.setTargetAtTime(muted ? 0 : bgm.vol, ctx.currentTime, 0.05); } catch { }
         if (amb) try { amb.gain.gain.setTargetAtTime(muted ? 0 : amb.vol, ctx.currentTime, 0.05); } catch { }
         if (buzz && muted) buzzSet(false); // (the Mosquito Forest screen starts it again when sound comes back)
+        if (wx) { const id = wx.id; weatherSet(null); if (!muted) weatherSet(id); }
         return muted;
     },
     bgm: bgmStart, bgmStop,
@@ -488,13 +550,19 @@ export const Sound = {
     poop() { noise(0.18, 0.14); tone(140 + Math.random() * 40, 0.16, "sawtooth", 0.07, 0, -90); tone(90, 0.12, "square", 0.05, 0.12, -40); noise(0.1, 0.1, 0.14); },
     splash() { noise(0.5, 0.12); tone(220, 0.35, "sine", 0.05, 0, -160); },
     buzz() { tone(190 + Math.random() * 30, 0.5, "sawtooth", 0.012, 0, 25); },
-    cash() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.09, "square", 0.05, i * 0.06)); }
+    cash() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.09, "square", 0.05, i * 0.06)); },
+    // 🔔 alerts (toasts / map banners): a short two-note ping by kind
+    notify(kind = "info") {
+        const n = { ok: [880, 1320], warn: [660, 440], error: [330, 220], info: [988, 1319] }[kind] || [988, 1319];
+        n.forEach((f, i) => tone(f, 0.12, "sine", 0.07, i * 0.08));
+    },
+    enter() { [523, 784, 1047].forEach((f, i) => tone(f, 0.16, "triangle", 0.07, i * 0.09)); noise(0.2, 0.03); }
 };
 
 // ---------------------------------------------------------------- per-game palettes
 // A game screen installs its own SFX palette (see core/gameAudio.js); the
 // methods below then play that game's themed version. null = default sounds.
-let palette = null;
+// (palette is declared at the top: bus() reads it)
 const THEMED = ["tick", "click", "stop", "tease", "heartbeat", "win", "bigWin", "jackpot", "coin", "cash", "lose", "bonus", "fanfare", "whoosh", "hit", "miss", "boom"];
 for (const k of THEMED) {
     const base = Sound[k];

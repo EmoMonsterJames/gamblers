@@ -113,7 +113,9 @@ export function stockOf(pid, key, corner) {
     const ids = corner.items.map(x => x.id);
     const cur = u.stock[key];
     if (cur && cur.every(id => ids.includes(id))) return corner.items.filter(x => cur.includes(x.id));
-    const n = ids.length <= 3 ? ids.length : Math.max(3, Math.ceil(ids.length * (0.5 + rnd() * 0.3)));
+    // every corner (small ones too) sells a random part of its menu each round: half ~ all of it
+    const lo = Math.max(1, Math.ceil(ids.length / 2));
+    const n = lo + Math.floor(rnd() * (ids.length - lo + 1));
     const pick = [...ids].sort(() => rnd() - 0.5).slice(0, n);
     u.stock[key] = pick;
     Store.saveSeason();

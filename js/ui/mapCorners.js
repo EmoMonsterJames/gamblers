@@ -31,7 +31,7 @@ export function mapCorners(l, { detail = true } = {}) {
         ...earnKinds(l).map(k => `💪 ${EARN_TEXT[k] || k}`),
         l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
         ...honorKinds(l).map(k => d(`${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`, `시즌 ${rankText(k)} 경력자 전용`)),
-        l.bank && d("🏦 Business Bank", "TOP 15 경력자 전용"),
+        l.bank && d("🏦 Business Bank", "모든 플레이어 · 랜덤 입장 60%"),
         hub && d("🏪 Self-Business", "TOP 10 경력자 전용"),
         ...listed.map(T => d(`🏷️ 매물: ${T.emoji} ${T.name}`, `${bizPriceText(T.price, T.pts || 0)} · 남은 ${Math.max(0, stockLeft(T.id))}/${T.max}`)),
         ...activeBiz().filter(b => b.loc === l.id).map(b => d(`${BIZ_TYPES[b.type].emoji} ${BIZ_TYPES[b.type].name}`, `Owner: ${Store.player(b.owner)?.name_ko || "?"}`)),

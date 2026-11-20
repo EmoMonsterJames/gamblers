@@ -1,6 +1,6 @@
 // =====================================================================
 // 🔄 Survival Land — the newer map rules (older ones: survivalLand.js)
-//   🎵 every Survival Land map: its own quiet background loop (¼ of the BGM volume)
+//   🎵 every map (not only Survival Land): ☀️ sun → its own quiet background loop (¼ of the BGM volume) · other weather → that weather sound (mapAudio)
 //   🧊 Icy Castle: a solid ice wall in front of every corner · 🔨 hammer (30 hits, then a
 //      10 s recharge) — the breaking hit is drawn (5:10% · 10:10% · 20:30% · 30:30% · 40+:20%)
 //      👸 Ice Queen: HP −20 / HP −30 / instant death / Icy Breath (the whole screen freezes for 30 s)
@@ -17,6 +17,7 @@ import { Store } from "../core/store.js";
 import * as G from "../game/season.js";
 import { avatar } from "../ui/profile.js";
 import { gameAudio } from "../core/gameAudio.js";
+import * as LF from "../game/life.js";
 import { mosquitoExtras, MOSQ_RULES } from "./survivalMosquito.js";
 
 const turnOf = pid => { const t = G.S()?.turn; return t && +t.pid === +pid ? t : null; };
@@ -31,8 +32,18 @@ const BGM_NAME = {
 };
 export const SURVIVAL_BGM_VOL = 0.125; // ¼ of the normal BGM level (0.5)
 const songs = {};
+// 🌦️ every map: ☀️ sun → its own quiet background loop · any other weather → only that weather's sound
+let mapWatch = null;
+export function mapAudio(loc) {
+    if (!loc) { Sound.ambStop(); Sound.weather(null); return; }
+    const w = LF.weatherAt(loc.id).id;
+    Sound.weather(w === "sun" ? null : w);
+    survivalBgm(loc);
+    clearInterval(mapWatch); // the play screen gone (another page / turn over): both stop
+    mapWatch = setInterval(() => { if (!document.querySelector(".location")) { Sound.ambStop(); Sound.weather(null); clearInterval(mapWatch); } }, 1000);
+}
 export function survivalBgm(loc) {
-    if (loc?.region !== "survival") { Sound.ambStop(); return; }
+    if (!loc || LF.weatherAt(loc.id).id !== "sun") { Sound.ambStop(); return; }
     if (!(loc.id in songs)) { const s = gameAudio({ id: "sv_" + loc.id, name: BGM_NAME[loc.id] || loc.name, icon: loc.emoji }).song; songs[loc.id] = typeof s === "object" ? s : null; }
     if (songs[loc.id]) Sound.amb("sv_" + loc.id, songs[loc.id], SURVIVAL_BGM_VOL);
 }

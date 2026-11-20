@@ -47,7 +47,7 @@ import * as RV from "../game/revival.js";
 import { revivalIntroStage, revivalStage, revivalBar, revivalInvView } from "./revivalView.js";
 import { arcadeView, CORNER_KINDS } from "./arcade.js";
 import { stopSurvivalFx, survivalSide, survivalMsgs, infernoGate, INFERNO_FREE } from "./survivalLand.js";
-import { iceWrap } from "./survivalIce.js";
+import { iceWrap, mapAudio } from "./survivalIce.js";
 import { setMapBackdrop, clearMapBackdrop } from "../ui/mapBackdrop.js";
 import { friendsView, helpView, voteStage } from "./social.js";
 import * as SO from "../game/social.js";
@@ -114,7 +114,7 @@ function render() {
     // 🔄 패자부활전: Survival Land opens only while it runs · the 10th player out stops the season before the next round
     RV.syncSurvivalLand();
     stopSurvivalFx(); // flood / fog / statue overlays of the previous screen
-    if (!(s.turn?.loc && LOC_BY_ID[s.turn.loc]?.region === "survival")) Sound.ambStop(); // 🎵 Survival Land map loop only on those maps
+    mapAudio(s.turn?.loc ? LOC_BY_ID[s.turn.loc] : null); // 🎵 ☀️ map loop on sunny maps · 🌦️ weather sound otherwise
     // 🖼️ the page around the play screen: a scene that fits the map being played
     if (s.turn?.loc && LOC_BY_ID[s.turn.loc]) setMapBackdrop(LOC_BY_ID[s.turn.loc]); else clearMapBackdrop();
     if (RV.revivalDue()) RV.openRevival();
@@ -508,6 +508,7 @@ async function tryPass(pid, it) {
 async function arrive(s, loc) {
     const pid = s.turn?.pid;
     if (!pid) return false;
+    Sound.enter(); // 🔔 every map arrival chimes (draw, pass, ticket, fallback)
     // 🎡 Death Door reached by a map pass / random map ticket: the wheel still spins
     if (loc.deathWheel && s.turn.wheelAt !== loc.id) {
         s.turn.wheelAt = loc.id;
@@ -757,8 +758,9 @@ function locationStage(s) {
     // 👫 내 친구: on every map · 🤝 도움주기: on this season's 20 help maps
     // 🍚 food corners · 🏨 lodging · 🏢 employment (every map; the hired player sees their company instead)
     const lifeTabs = () => loc.kidnap ? [] : [
-        ...LF.foodCornersAt(loc).map((c, i) => ["food:" + i, `${c.emoji} ${c.name}`]),
-        ...LF.lodgesAt(loc, pid).map(c => ["lodge:" + c.k, `${c.emoji} ${c.name}`]),
+        // every food corner sits under one 🍚 푸드 corner (a tab per corner) · every lodging under one 🏨 숙소
+        ...(LF.foodCornersAt(loc).length ? [["food", `🍚 푸드${LF.foodCornersAt(loc).length > 1 ? ` (${LF.foodCornersAt(loc).length})` : ""}`]] : []),
+        ...(LF.lodgesAt(loc, pid).length ? [["lodge", `🏨 숙소${LF.lodgesAt(loc, pid).length > 1 ? ` (${LF.lodgesAt(loc, pid).length})` : ""}`]] : []),
         ...(rev || (loc.arcade && !(t.arcade?.found || []).length) ? [] : EP.employer(pid) ? [["company", `${EP.companyOf(pid)?.emoji || "🏢"} ${EP.companyOf(pid)?.name || "회사"}`]] : [["employ", "🏢 취업"]])];
     const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...lifeTabs(), ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : [])); return l; };
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
@@ -776,6 +778,20 @@ function locationStage(s) {
     const refreshTabs = () => tabBar.replaceChildren(...tabList().map(([k, label]) => h("button.tab" + (k === currentTab ? ".on" : ""), { onclick: () => tabBody(k) }, label)));
     const bizChanged = () => { updateHud(); side.replaceChildren(sideCard()); refreshTabs(); };
     const ARC_CORNER_TABS = Object.values(CORNER_KINDS).map(k => k.tab);
+    // one corner, several places inside it (🍚 푸드 · 🏨 숙소): a row of sub-tabs, the last one picked is kept for this turn
+    const subPick = {};
+    function subTabs(key, entries) {
+        const wrap = h("div.sub-corner"), bar = h("div.sub-tabs"), pane = h("div.sub-pane");
+        const show = i => {
+            subPick[key] = i = Math.min(i, entries.length - 1);
+            bar.replaceChildren(...entries.map(([label], j) => h("button.sub-tab" + (j === i ? ".on" : ""), { onclick: () => { Sound.click(); show(j); } }, label)));
+            pane.replaceChildren(entries[i][1]());
+        };
+        if (entries.length > 1) wrap.append(bar);
+        wrap.append(pane);
+        show(subPick[key] || 0);
+        return wrap;
+    }
     function tabBody(id) {
         currentTab = id;
         // 🕹️ Arcade: using a corner found in the game (from the tab bar too) stops the turn clock until the arcade resumes
@@ -796,8 +812,14 @@ function locationStage(s) {
             onFreed: () => { if (t.remaining <= 0 && escapeWait) return escapeWait(); clearInterval(timer); fx.stop(); t.loc = null; t.region = null; t.npc = null; t.running = false; Store.saveSeason(true); render(); },
             onTried: () => escapeWait?.()
         });
-        else if (id.startsWith("food:")) { const c = LF.foodCornersAt(loc)[+id.slice(5)]; content = c ? foodCornerView(pid, c, `${loc.id}:${id.slice(5)}`, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }) : h("p.notice", "코너가 없습니다"); }
-        else if (id.startsWith("lodge:")) { const c = LF.lodgesAt(loc, pid).find(x => x.k === id.slice(6)); content = c ? lodgeView(pid, loc, c, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }) : h("p.notice", "숙소가 없습니다"); }
+        else if (id === "food") {
+            const list = LF.foodCornersAt(loc);
+            content = list.length ? subTabs("food", list.map((c, i) => [`${c.emoji} ${c.name}`, () => foodCornerView(pid, c, `${loc.id}:${i}`, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } })])) : h("p.notice", "코너가 없습니다");
+        }
+        else if (id === "lodge") {
+            const list = LF.lodgesAt(loc, pid);
+            content = list.length ? subTabs("lodge", list.map(c => [`${c.emoji} ${c.name}`, () => lodgeView(pid, loc, c, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } })])) : h("p.notice", "숙소가 없습니다");
+        }
         else if (id === "employ") content = employView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (EP.employer(pid)) { refreshTabs(); } } });
         else if (id === "company") content = companyView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });

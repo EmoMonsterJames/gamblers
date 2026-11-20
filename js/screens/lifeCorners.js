@@ -215,7 +215,7 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
         const s = G.S(), mine = EP.appsOf(pid), acc = account(pid), offers = EP.offersOf(pid);
         wrap.replaceChildren(
             h("div.ep-head", h("span.ep-big", "🏢"), h("div", h("h3", "취업 코너"), h("small.muted", `은행 계좌가 있어야 지원할 수 있습니다 · 시즌당 최대 ${L.APPLY_PER_SEASON}곳 (동시 지원 가능) · 지원 취소 불가 · 지원자가 다 차면 심사 시작 → 라운드마다 결과 통보`))),
-            !acc ? h("p.notice.warn", "🏦 Business Bank 계좌가 없습니다 — 은행에서 계좌를 먼저 만드세요 (TOP 15 경력자)") : h("p.notice", `🏦 내 계좌 ${acc.code} · 이번 시즌 지원 ${mine.length}/${L.APPLY_PER_SEASON}`),
+            !acc ? h("p.notice.warn", "🏦 Business Bank 계좌가 없습니다 — 은행에서 계좌를 먼저 만드세요") : h("p.notice", `🏦 내 계좌 ${acc.code} · 이번 시즌 지원 ${mine.length}/${L.APPLY_PER_SEASON}`),
             offers.length ? h("div.ep-offer", h("b", "🎉 최종 합격 통보가 있습니다!"), h("button.btn.gold", { onclick: async () => { await offerFlow(pid); onChange(); render(); } }, "입사 결정하기")) : null,
             arizalBox(pid, turn, () => { onChange(); render(); }),
             h("div.ep-list", L.COMPANY_LIST.map(C => {

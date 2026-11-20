@@ -156,8 +156,19 @@ export function shopListing(shopId, locId) {
         return [...fixed, ...pinned];
     }
     const list = [...shopItems(shopId, locId), ...altItems(shopId, locId)];
-    if (list.length || !locId || shopId === "discount") return list;
+    if (!locId || shopId === "discount") return list;
+    if (shopId === "decor" && list.length < 2) return [...list, ...decorTopUp(locId, list)]; // 🖼️ never an empty / one-item frame shop
+    if (list.length) return list;
     return fillerItems(shopId, locId);
+}
+// 🖼️ frame/effect shop with fewer than 2 goods: random frames · frame effects up to 2~5 (fixed per map).
+// Goods placed on a single other map (that map's new frame) are never borrowed.
+function decorTopUp(locId, have) {
+    const rnd = seeded(`decor-top|${locId}`);
+    const want = 2 + Math.floor(rnd() * 4);
+    const pool = shopItems("decor").filter(it => !have.some(h => h.cat === it.cat && h.id === it.id) && (saleOf(it.cat, it.id).locs || []).length !== 1);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, Math.max(0, want - have.length)).map(it => ({ ...it, filler: true }));
 }
 export function fillerItems(shopId, locId) {
     const noTime = LOCATIONS.find(l => l.id === locId)?.crazy;
@@ -179,10 +190,15 @@ function seeded(str) { let h = 2166136261; for (const c of str) { h ^= c.charCod
 export function discountItems(locId, seed = "") {
     const rnd = seeded(`${locId}|${seed}`);
     const pool = ["general", "weapon", "pet", "decor"].flatMap(sid => shopItems(sid).map(it => ({ ...it, from: sid })))
-        .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)) && !saleOf(it.cat, it.id).locs); // one-map goods (new frames/effects) stay at their map
+        // map-placed goods are fine here (the admin lists a 판매 맵 for nearly everything); only one-map frames/effects stay at their map
+        .filter(it => !(it.cat === "item" && /^pass_|^card_/.test(it.id)) && !ITEM_BY_ID[it.id]?.letter && !ITEM_BY_ID[it.id]?.survival && !ITEM_BY_ID[it.id]?.loc
+            && !(["frame", "peffect"].includes(it.cat) && (saleOf(it.cat, it.id).locs || []).length === 1));
     const pickN = (list, n) => { const a = [...list]; const out = []; while (a.length && out.length < n) out.push(a.splice(Math.floor(rnd() * a.length), 1)[0]); return out; };
     const byCat = c => pool.filter(it => it.cat === c);
-    const chosen = [...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)];
+    // 2~5 random goods (mixed kinds: item · weapon · pet/effect · frame/frame effect)
+    const want = 2 + Math.floor(rnd() * 4);
+    const mix = pickN([...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)], want);
+    const chosen = mix.length >= want ? mix : [...mix, ...pickN(pool.filter(it => !mix.some(c => c.cat === it.cat && c.id === it.id)), want - mix.length)];
     // + the 알파벳권 whose discount home is this map
     const letters = cardsAt(locId).filter(c => c.shop === "discount").map(c => ({ cat: "item", id: cardId(c.letter), price: letterSale(c.letter).price }));
     // + goods whose home is this discount shop (☔ 1회용 weather gear …)

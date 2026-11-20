@@ -1,5 +1,5 @@
 // =====================================================================
-// 🏦 Business Bank corner (game/bank.js) — TOP 15 career + 1,000G door.
+// 🏦 Business Bank corner (game/bank.js) — open to every player · random door (60% in / 40% refused, once per turn).
 //   1) 계좌 개설 (3-step review)  2) Business Gold 송금  3) 은행 상점
 // The 📲 Remote 은행 이용권 opens the same desk as a popup, without 1).
 // =====================================================================
@@ -26,16 +26,16 @@ export function bankView(pid, { turn = null, onChange = () => { }, remote = fals
     let tab = remote ? "tx" : "open";
     const head = () => h("div.bk-head", h("span.bk-logo", "🏦"), h("div",
         h("h3", "Business Bank", remote ? h("small.bk-remote", " 📲 REMOTE") : null),
-        h("small.muted", `TOP ${BK.BANK_TOP} 경력자 전용 · 입장료 ${fmt(BANK_FEE)}G · 은행 상점은 라운드당 1회`)));
+        h("small.muted", `모든 플레이어 · 랜덤 입장 ${BK.BANK_ENTRY_PCT}% · 은행 상점은 라운드당 1회`)));
     const render = () => {
-        if (!BK.bankEligible(pid)) { wrap.replaceChildren(head(), h("p.notice.warn", `🚫 지난 시즌 TOP ${BK.BANK_TOP} 경력이 있는 플레이어만 Business Bank를 이용할 수 있습니다.`)); return; }
-        // the door: paid once per visit (per turn); remote use is already paid by the ticket
-        if (!remote && turn && !turn.bankPaid) {
+        // the door: open to everyone, a random roll once per turn (60% in · 40% refused); remote use skips it
+        if (!remote && turn && turn.bankDoor !== "in") {
+            const out = turn.bankDoor === "out";
             wrap.replaceChildren(head(), h("div.bk-door",
-                h("div.bk-door-ico", "🚪"),
-                h("p", "Business Bank에 오신 것을 환영합니다."),
-                h("p.muted", `나의 경력: ${G.honorRecordText(pid, BK.BANK_TOP) || (G.S().sandbox ? "테스트 모드" : "-")}`),
-                h("button.btn.gold.big", { disabled: ps.money < BANK_FEE, onclick: enter }, ps.money < BANK_FEE ? "골드 부족" : `입장료 ${fmt(BANK_FEE)}G 내고 입장`)));
+                h("div.bk-door-ico", out ? "🙅" : "🚪"),
+                h("p", out ? "입장이 거절되었습니다. 다음 턴에 다시 와 보세요." : "Business Bank에 오신 것을 환영합니다."),
+                out ? null : h("p.muted", `랜덤 입장 — 허용 ${BK.BANK_ENTRY_PCT}% · 거절 ${100 - BK.BANK_ENTRY_PCT}% (턴당 1회)`),
+                out ? null : h("button.btn.gold.big", { onclick: enter }, "🚪 입장 시도")));
             return;
         }
         const tabs = [...(remote ? [] : [["open", "① 계좌 개설"]]), ["tx", "② Business Gold 송금"], ["shop", "③ 은행 상점"], ...(BK.account(pid) ? [["prod", "④ 계좌 전용 상품"]] : [])];
@@ -45,10 +45,12 @@ export function bankView(pid, { turn = null, onChange = () => { }, remote = fals
     };
     function enter() {
         if (turn && turn.remaining <= 0) return toast("⏰ 플레이 시간이 끝났습니다", "warn");
-        if (ps.money < BANK_FEE) return toast("입장료가 부족합니다", "warn");
-        ps.money -= BANK_FEE; turn.bankPaid = true;
-        G.log(`🏦 ${G.name(pid)} Business Bank 입장 (${fmt(BANK_FEE)}G)`);
-        Store.saveSeason(); Sound.coin(); onChange(); render();
+        if (turn.bankDoor) return;
+        const ok = Math.random() * 100 < BK.BANK_ENTRY_PCT;
+        turn.bankDoor = ok ? "in" : "out";
+        G.log(`🏦 ${G.name(pid)} Business Bank ${ok ? "입장" : "입장 거절"}`);
+        if (ok) { Sound.chime(); toast("🙆 입장 허가!", "ok"); } else { Sound.lose(); toast("🙅 입장 거절!", "warn"); }
+        Store.saveSeason(); onChange(); render();
     }
 
     // ---------------------------------------------------------------- ① account
@@ -245,7 +247,7 @@ export function codeSearch(onPick) {
 export async function remoteBank(pid, onChange) {
     const ps = G.S().ps[pid];
     if (!(ps.items.remote_bank > 0)) return;
-    if (!BK.bankEligible(pid)) return toast(`TOP ${BK.BANK_TOP} 경력자만 은행을 이용할 수 있습니다`, "warn");
+    if (!BK.bankEligible(pid)) return;
     if (!(await confirmBox("📲 Remote 은행 이용권 1장을 사용해 Business Bank를 팝업으로 엽니다.\n(송금 · 은행 상점만 이용 가능)", "열기", "취소"))) return;
     ps.items.remote_bank--;
     G.log(`📲 ${G.name(pid)} Remote 은행 이용`);

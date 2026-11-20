@@ -30,8 +30,9 @@ const now = () => new Date().toISOString();
 // ---------------------------------------------------------------- eligibility
 export const topRank = pid => Math.min(Infinity, ...honorRecords(pid, 999).map(r => r.rank));
 export const hasTop = (pid, n) => S()?.testSeason ? false : !!S()?.sandbox || honorRecords(pid, n).length > 0; // test season: no past records
-export const BANK_TOP = 15; // 🏦 accounts: a TOP 15 finish in any season
-export const bankEligible = pid => hasTop(pid, BANK_TOP);
+export const BANK_TOP = 15; // (old rule) 🏦 accounts needed a TOP 15 finish — now the bank is open to everyone
+export const BANK_ENTRY_PCT = 60; // 🚪 random door: 60% let in · 40% refused (once per turn)
+export const bankEligible = () => true;
 export const bizEligible = pid => hasTop(pid, 10); // 🏪 Self-Business stays TOP 10
 
 // ---------------------------------------------------------------- accounts

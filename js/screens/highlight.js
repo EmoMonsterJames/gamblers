@@ -7,7 +7,7 @@
 // happens, and this file re-plays it as an animated scene. 400 records
 // ≈ 100 KB, so no cloud file storage is needed (settings key "highlights").
 //   scene scripts: jackpot 30s · npc_kill 20s · battle 30s · death 20s · handpay 20s
-//   beg 10s · champion 10s · lotto 20s · promo 20s · poop 15s · bunker 15s · kidnap 15s — all played back in ≤ 15 s (HL_MAX_SEC)
+//   beg 10s · champion 10s · lotto 20s · promo 20s · poop 15s · bunker 15s · kidnap 15s · arena 15s — all played back in ≤ 15 s (HL_MAX_SEC)
 // =====================================================================
 import * as RV from "../game/revival.js";
 import { h, sleep, fmt } from "../core/util.js";
@@ -37,7 +37,8 @@ export const HL_KINDS = {
     poop: { sec: 15, emoji: "💩", label: "돈벌기 똥 맞기" },
     bunker: { sec: 15, emoji: "🔐", label: "Bunker Key 금고" },
     kidnap: { sec: 15, emoji: "⛓️", label: "납치 공간 탈출" },
-    starve: { sec: 15, emoji: "🍽️", label: "굶주림으로 사망" }
+    starve: { sec: 15, emoji: "🍽️", label: "굶주림으로 사망" },
+    arena: { sec: 15, emoji: "🏟️", label: "아레나 배틀" }
 };
 const nm = pid => displayName(Store.player(pid));
 const list = () => (Store.highlights?.list || []).filter(x => HL_KINDS[x.kind] && (x.pid == null || Store.player(x.pid)) && (x.a == null || Store.player(x.a)));
@@ -206,6 +207,37 @@ const SCENES = {
         A.el.classList.add("win");
         T.cap(`🏆 ${nm(x.winner ?? x.a)} 승리!`);
         Sound.fanfare(); confetti(50, ["⚔️", "🏆", "✨"]);
+    },
+    // 🏟️ 15 s: an arena EmoMon battle — my monster vs a random player's (or an NPC Battler's) monster
+    async arena(st, x, T) {
+        const side = (pid, label, mon, flip) => {
+            const hp = h("i", { style: { width: "100%" } });
+            const face = pid != null && Store.player(pid) ? avatar(pid, 88, { effect: false }) : h("div.gh-npc", "🤖");
+            const el = h("div.gh-fighter" + (flip ? ".r" : ""), h("div.gh-hp", hp), face, h("b", label), mon ? h("small", `🐾 ${mon}`) : null);
+            return { el, hp, v: 100 };
+        };
+        const A = side(x.pid, nm(x.pid), x.mon, false), B = side(x.foe, x.foe != null && Store.player(x.foe) ? nm(x.foe) : (x.foeLabel || "NPC Battler"), x.foeMon, true);
+        const fx = h("div.gh-hit");
+        st.append(h("div.gh-place", "🏟️ ARENA"), h("div.gh-arena", A.el, h("div.gh-vs", "🐾 VS"), B.el), fx);
+        T.cap(`🏟️ 아레나: ${nm(x.pid)} vs ${x.foeLabel || "NPC Battler"}`);
+        await T.at(2);
+        const win = x.won ? A : B, lose = x.won ? B : A;
+        for (let k = 0; k < 8; k++) {
+            await T.at(2.5 + k * 1.2);
+            const toB = k % 2 === 0, tgt = toB ? B : A;
+            tgt.v = tgt === lose ? Math.max(0, Math.round(100 - (k + 2) * 12)) : Math.max(25, tgt.v - 9);
+            tgt.hp.style.width = tgt.v + "%";
+            fx.textContent = ["💥", "⚡", "🔥", "💫"][k % 4];
+            fx.className = "gh-hit " + (toB ? "to-r" : "to-l");
+            tgt.el.classList.remove("hurt"); void tgt.el.offsetWidth; tgt.el.classList.add("hurt");
+            Sound.hit();
+        }
+        lose.v = 0; lose.hp.style.width = "0%"; lose.el.classList.add("dead"); Sound.boom();
+        await T.at(12);
+        st.append(h("div.gh-banner", x.won ? "WIN!" : "K.O."));
+        win.el.classList.add("win");
+        T.cap(x.won ? `🏆 ${nm(x.pid)} 아레나 승리!${x.gold ? ` +${fmt(x.gold)}G` : x.pts ? ` +${x.pts}P` : ""}` : `💥 ${nm(x.pid)} 아레나 패배…`);
+        if (x.won) { Sound.fanfare(); confetti(40, ["🏟️", "🏆", "✨"]); } else Sound.lose();
     },
     // ☠️ 20 s
     async death(st, x, T) {

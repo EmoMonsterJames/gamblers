@@ -219,3 +219,19 @@
 .loc-name .wx-badge > span { font-size: 1em; line-height: 1; }
 .loc-name .wx-badge b { font: inherit; font-size: 1em; letter-spacing: 0; }
 .loc-name .wx-badge small { font-size: .9em; }
+/* ---- 💎 Prism Palace (r8hex): the spinning strips stay inside their own hex column and the board never overflows the cabinet */
+.cabinet.skin-r8hex .reels { overflow: hidden; max-width: 100%; padding-bottom: 14%; }
+.cabinet.skin-r8hex .reel { overflow: hidden; }
+/* ---- 🍚 푸드 / 🏨 숙소: one corner, a sub-tab per place inside it */
+.sub-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 6px; border-radius: 12px; background: #0005; border: 1px solid var(--line); }
+.sub-tab { border: 1px solid var(--line); background: #ffffff0d; color: inherit; border-radius: 9px; padding: 6px 12px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.sub-tab.on { background: var(--gold); color: #3a1d00; border-color: var(--gold); }
+/* ---- 🎬 arena highlight */
+.gh-npc { width: 88px; height: 88px; display: grid; place-items: center; font-size: 56px; border-radius: 50%; background: #ffffff14; }
+.gh-fighter small { opacity: .85; font-size: 12px; }
+
+/* 🌐 English mode: English runs longer than Korean — tighten tabs / chips / small buttons a little so
+   the layout keeps its Korean size (no wider buttons, no extra rows) */
+html[lang="en"] .tabs button, html[lang="en"] .tab, html[lang="en"] .sub-tab, html[lang="en"] .chip,
+html[lang="en"] .btn.small { letter-spacing: -0.02em; font-size: 0.94em; }
+html[lang="en"] .sub-tab, html[lang="en"] .chip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }

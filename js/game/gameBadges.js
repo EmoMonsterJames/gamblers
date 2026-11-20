@@ -1,8 +1,7 @@
 // =====================================================================
 // 🏷️ Game badges on the slot / casino game cards
-//   🆕 NEW        — created within the 2 weeks before the last NEW update. The NEW list is updated every
-//                   2 weeks (NEW_ANCHOR, then every 14 days): a game added after an update gets its badge
-//                   at the next update and keeps it for those 2 weeks.
+//   🆕 NEW        — created in the 2 weeks up to the newest game: the most recently added slot / casino
+//                   game sets the date, and every game created within 14 days before it (inclusive) gets NEW.
 //   🔥 HOT        — top 30 most played of its kind (slots and casino games are ranked apart)
 //   🔥 SUPER HOT  — top 10 most played of its kind
 //                   Updated once a month: the ranking counts every play made BEFORE this month
@@ -12,10 +11,11 @@
 // =====================================================================
 import { Store } from "../core/store.js";
 import { GAME_DATES, MAP_DATES, GAME_DATE_DEFAULT } from "../data/gameDates.js";
+import { SLOT_BY_ID } from "../slots/configs.js";
+import { CASINO_BY_ID } from "../data/casino.js";
 
 export const HOT_TOP = 30, SUPER_HOT_TOP = 10;
 export const NEW_DAYS = 14;
-export const NEW_ANCHOR = "2026-11-09"; // the first NEW update (a Monday) — then every 14 days
 const DAY = 86400000;
 const day0 = s => new Date(s + "T00:00:00");
 
@@ -26,17 +26,20 @@ export function createdOf(id) {
     if (m) return MAP_DATES[m[1]] || MAP_DATES[m[1].replace(/_\d+$/, "")] || GAME_DATE_DEFAULT;
     return GAME_DATE_DEFAULT;
 }
-// the last NEW update day (every 14 days from NEW_ANCHOR) at or before now
-export function newUpdateDay(now = new Date()) {
-    const a = day0(NEW_ANCHOR), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const n = Math.max(0, Math.floor(Math.round((today - a) / DAY) / NEW_DAYS));
-    return new Date(a.getTime() + n * NEW_DAYS * DAY);
+// the creation date of the most recently added slot / casino game (hidden games skipped)
+let latestCache = null;
+export function latestGameDay() {
+    if (latestCache) return latestCache;
+    let max = "";
+    for (const by of [SLOT_BY_ID, CASINO_BY_ID])
+        for (const [id, g] of Object.entries(by)) { if (g?.off) continue; const c = createdOf(id); if (c > max) max = c; }
+    return (latestCache = day0(max || GAME_DATE_DEFAULT));
 }
-// NEW = created in the 2 weeks up to the last update day: (update − 14 days, update]
-export function isNew(id, now = new Date()) {
+// NEW = created within the 14 days up to the newest game: (latest − 14 days, latest]
+export function isNew(id) {
     const d = day0(createdOf(id));
     if (isNaN(d)) return false;
-    const up = newUpdateDay(now);
+    const up = latestGameDay();
     return d > new Date(up.getTime() - NEW_DAYS * DAY) && d <= up;
 }
 const monthKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

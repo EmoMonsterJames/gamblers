@@ -34,10 +34,12 @@ export function particles(def, scale = 1) {
 }
 
 // ---------------------------------------------------------- toasts
+let lastPing = 0;
 export function toast(msg, kind = "info", ms = 2600) {
     let box = document.getElementById("toasts");
     if (!box) { box = h("div#toasts"); document.body.append(box); }
     const t = h("div.toast." + kind, msg);
+    if (Date.now() - lastPing > 250) { lastPing = Date.now(); Sound.notify(kind); } // 🔔 every alert pings (not a burst of them)
     box.append(t);
     setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 400); }, ms);
 }

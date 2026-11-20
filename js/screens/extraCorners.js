@@ -380,10 +380,10 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
         const was = turn?.running; if (turn) { turn.running = false; turn.arena = true; }
         try {
             const pool = X.arenaPlayerPool(pid);
-            let foeMon, foeLabel;
+            let foeMon, foeLabel, foePid = null;
             if (pool.length && Math.random() >= X.ARENA_NPC) {
                 // any registered player — season participant or not; no known monster → a generated one under their name
-                const foePid = pool[Math.floor(Math.random() * pool.length)];
+                foePid = pool[Math.floor(Math.random() * pool.length)];
                 foeMon = X.arenaFoeMon(foePid);
                 if (!foeMon) { foeMon = M.makeBattler(); foeMon.trainer = pname(foePid); }
                 foeLabel = `${pname(foePid)}${X.arenaInSeason(foePid) ? "" : " (비시즌)"}의 몬스터`;
@@ -391,9 +391,12 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
             if (!foeMon) { foeMon = M.makeBattler(); foeLabel = foeMon.trainer; }
             X.useArena(pid);
             Sound.fanfare();
+            const myMon = M.fighterOf(pid), monName = mon => { try { return M.sp(mon)?.name || null; } catch { return null; } };
             const r = await emoFight(pid, { mon: foeMon }, { title: `🏟️ 아레나 vs ${foeLabel}`, foeLabel });
-            if (r.won) { const p = X.arenaWin(pid, foeLabel); Sound.cash(); confetti(60, p.gold ? ["🏆", "🪙"] : ["🏆", "💎"]); await alertBox("🏟️ 아레나 승리!", [h("div.emo-reward-amt", p.gold ? `💰 골드 상금 +${fmt(p.gold)} G` : `💎 포인트 상금 +${p.pts} P`), `${foeLabel}을(를) 이겼습니다!`]); }
-            else { X.arenaLose(pid, foeLabel); Sound.lose(); toast(`💥 아레나 패배… (vs ${foeLabel})`, "warn", 3500); }
+            // 🎬 every arena battle becomes a Highlight replay (max 50 kept — Store.HL_PER_KIND)
+            const hl = { pid, foe: foePid, foeLabel, mon: myMon ? monName(myMon) : "Battlebot", foeMon: monName(foeMon), won: !!r.won };
+            if (r.won) { const p = X.arenaWin(pid, foeLabel); Store.recordHighlight("arena", { ...hl, gold: p.gold, pts: p.pts }); Sound.cash(); confetti(60, p.gold ? ["🏆", "🪙"] : ["🏆", "💎"]); await alertBox("🏟️ 아레나 승리!", [h("div.emo-reward-amt", p.gold ? `💰 골드 상금 +${fmt(p.gold)} G` : `💎 포인트 상금 +${p.pts} P`), `${foeLabel}을(를) 이겼습니다!`]); }
+            else { X.arenaLose(pid, foeLabel); Store.recordHighlight("arena", hl); Sound.lose(); toast(`💥 아레나 패배… (vs ${foeLabel})`, "warn", 3500); }
         } finally { if (turn) { turn.running = was; turn.arena = false; } Store.saveSeason(true); }
         onChange(); draw();
     }
