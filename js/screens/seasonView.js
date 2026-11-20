@@ -821,7 +821,7 @@ function locationStage(s) {
             content = list.length ? subTabs("lodge", list.map(c => [`${c.emoji} ${c.name}`, () => lodgeView(pid, loc, c, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } })])) : h("p.notice", "숙소가 없습니다");
         }
         else if (id === "employ") content = employView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (EP.employer(pid)) { refreshTabs(); } } });
-        else if (id === "company") content = companyView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "company") content = companyView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (!EP.employer(pid)) { refreshTabs(); tabBody("employ"); } } }); // 🚪 quit → the employment corner is back
         else if (id === "community") content = communityView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "friends") content = friendsView(pid, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "help") content = helpView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });

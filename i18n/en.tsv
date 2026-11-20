@@ -6384,3 +6384,48 @@ x3~x5 확정	x3~x5 sure
 코너가 없습니다	No corners here
 🏦 Business Bank 계좌가 없습니다 — 은행에서 계좌를 먼저 만드세요	🏦 No Business Bank account — open one at the bank first
 🏦 내 계좌 {0} · 이번 시즌 지원 {1}/{2}	🏦 My account {0} · applied this season {1}/{2}
+🎲 랜덤 메뉴 고르기	🎲 Pick a Random Dish
+살 수 있는 메뉴가 없습니다	No dish you can buy
+🎲 오늘의 메뉴 (라운드마다 랜덤) · 메뉴는 직접 고를 수 없어요 — 버튼을 누르면 랜덤으로 골라 바로 먹고 식량 게이지가 올라갑니다	🎲 Today's menu (random each round) · You can't choose — press the button to get a random dish, eaten on the spot to fill the food gauge
+👔 직원 기록	👔 Staff Record
+📋 전체	📋 All
+기록이 없습니다	No records
+🧾 인사기록 ({0})	🧾 HR Record ({0})
+🚪 자진 퇴사하기	🚪 Quit the Job
+퇴사하기	Quit
+소속 회사가 없습니다	No company
+입사	Joined
+입사 포기	Declined the offer
+입사 포기 (다른 회사 입사)	Declined (joined another company)
+입사 · 입사 선물 {0}	Joined · welcome gift {0}
+입사 선물 지급 — {0}	Welcome gift given — {0}
+지원	Applied
+지원 (지원료 {0}G)	Applied (fee {0}G)
+{0} 합격	{0} passed
+{0} 최종 합격	{0} final pass
+{0} 불합격	{0} failed
+해고 — {0}	Fired — {0}
+자진 퇴사	Quit
+자진 퇴사 (매니저)	Quit (manager)
+자진 퇴사 (진급 {0}/3)	Quit (promotion {0}/3)
+최종 합격 → 자동 입사 (탈락 중)	Final pass → auto-hired (eliminated)
+최종 합격 → 자동 입사 (탈락 중) · 입사 선물은 다음 시즌 선발 때 지급	Final pass → auto-hired (eliminated) · welcome gift when picked next season
+👔 매니저 승진 — 시즌 {0} {1}위 · 급여 {2}G	👔 Promoted to manager — season {0} #{1} · pay {2}G
+📈 진급 {0}/3 — 시즌 {1} {2}위 · 급여 {3}G	📈 Promotion {0}/3 — season {1} #{2} · pay {3}G
+최종 {0}명 이하 — 이번 시즌 취업 지원 마감 (진행 중인 심사는 다음 시즌에 이어집니다)	{0} or fewer left — applications closed this season (running reviews continue next season)
+🚫 최종 {0}명 이하 — 이번 시즌 취업 지원 마감 (진행 중인 심사는 다음 시즌에 이어집니다)	🚫 {0} or fewer left — applications closed this season (running reviews continue next season)
+🧊 최종 {0}명 이하 — 이번 시즌 취업 지원이 마감되었습니다. 진행 중인 심사는 다음 시즌에 이어집니다.	🧊 {0} or fewer left — job applications are closed this season. Running reviews continue next season.
+🧊 최종 {0}명 이하 — 취업 지원 마감	🧊 {0} or fewer left — job applications closed
+🧊 최종 {0}명 이하 — 취업 지원 마감 · 진행 중인 심사 {1}건은 다음 시즌에 이어집니다	🧊 {0} or fewer left — applications closed · {1} running reviews continue next season
+🚪 {0} 퇴사 — 취업 코너가 다시 열렸습니다	🚪 Left {0} — the employment corner is back
+🚪 {0}에서 자진 퇴사했습니다.	🚪 You quit {0}.
+🚪 {0} {1} 자진 퇴사	🚪 {0} quit {1}
+🎁 {0} 입사 선물 도착! (탈락 중에 입사해 이번 시즌에 지급) — {1}	🎁 {0} welcome gift! (hired while eliminated, given this season) — {1}
+🎁 {0} {1} 입사 선물 {2}	🎁 {0} {1} welcome gift {2}
+🎉 {0} 최종 합격 — 탈락 중이라 바로 입사 처리되었습니다.	🎉 {0} final pass — you were out, so you were hired right away.
+🎉 {0} 최종 합격 — 탈락 중이라 바로 입사 처리되었습니다 (급여 계좌 {1} 자동 연동).	🎉 {0} final pass — you were out, so you were hired right away (pay account {1} linked).
+🎉 {0} 최종 합격 — 탈락 중이라 바로 입사 처리되었습니다 (급여 계좌 {1} 자동 연동). 🎁 입사 선물은 다음 시즌에 뽑히면 지급됩니다.	🎉 {0} final pass — you were out, so you were hired right away (pay account {1} linked). 🎁 Welcome gift comes when you are picked next season.
+🎉 {0} {1} 자동 입사! 급여 계좌 {2} 연동	🎉 {0} auto-hired at {1}! Pay account {2} linked
+{0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• The company corner goes and the employment corner comes back
+{0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 매니저 직급도 사라집니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• The manager rank is lost too\n• The company corner goes and the employment corner comes back
+{0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 진급 {1}/3 기록도 사라집니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• Promotion {1}/3 is lost too\n• The company corner goes and the employment corner comes back

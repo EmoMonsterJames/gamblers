@@ -57,18 +57,24 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
         }
         if (!door.in) { wrap.replaceChildren(head, h("div.fc-door.no", h("div.fc-door-ico", "🙅"), h("p", "입장 거절… 이번 라운드에는 이 코너에 들어갈 수 없습니다."))); return; }
         const stock = LF.stockOf(pid, key, corner);
+        // 🎲 the player does not choose: one button draws a random dish from the menu (one they may eat and can pay for)
+        const pool = stock.filter(it => L.canEatRace(L.FOOD_BY_ID[it.id], p?.ethnicity) && G.playMoney(pid) >= LF.foodPrice(corner, it));
+        const cards = new Map();
         wrap.replaceChildren(head, note ? h("p.notice", note) : null,
-            h("p.muted.small", "🎲 오늘의 판매 상품 (라운드마다 랜덤) · 사면 바로 먹고 식량 게이지가 올라갑니다"),
+            h("p.muted.small", "🎲 오늘의 메뉴 (라운드마다 랜덤) · 메뉴는 직접 고를 수 없어요 — 버튼을 누르면 랜덤으로 골라 바로 먹고 식량 게이지가 올라갑니다"),
             h("div.fc-grid", stock.map(it => {
                 const f = L.FOOD_BY_ID[it.id], price = LF.foodPrice(corner, it), raceOk = L.canEatRace(f, p?.ethnicity);
-                const ok = left > 0 && raceOk && G.playMoney(pid) >= price;
-                return h("div.fc-item" + (f.food < 0 ? ".bad" : "") + (raceOk ? "" : ".locked"),
+                const card = h("div.fc-item" + (f.food < 0 ? ".bad" : "") + (raceOk ? "" : ".locked"),
                     foodArt(f.id, 64),
                     h("b.fc-name", f.name),
                     h("span.fc-food" + (f.food < 0 ? ".neg" : ""), `🍚 ${f.food >= 0 ? "+" : ""}${f.food}`),
                     f.races ? h("small.fc-race", `🧬 ${f.races.join(" · ")} 전용`) : f.desc ? h("small.fc-race", f.desc) : null,
-                    h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: () => buy(it) }, !raceOk ? "먹을 수 없음" : left <= 0 ? "이용 끝" : price ? `${fmt(price)} G` : "무료"));
-            })));
+                    h("small.fc-price", !raceOk ? "먹을 수 없음" : price ? `${fmt(price)} G` : "무료"));
+                cards.set(it.id, card);
+                return card;
+            })),
+            h("div.fc-roll", h("button.btn.big" + (left > 0 && pool.length ? ".gold" : ".ghost"), { disabled: !(left > 0 && pool.length), onclick: e => roll(e.currentTarget, pool, cards) },
+                left <= 0 ? "이용 끝" : pool.length ? "🎲 랜덤 메뉴 고르기" : "살 수 있는 메뉴가 없습니다")));
     };
     function enter() {
         if (!timeOk(turn)) return;
@@ -77,10 +83,27 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
         d.in ? (Sound.coin(), d.rolled && toast("🙆 입장 허가!", "ok")) : (Sound.lose(), toast("🙅 입장 거절!", "warn"));
         onChange(); render();
     }
+    let rolling = false;
+    async function roll(btn, pool, cards) {
+        if (rolling || !pool.length || !timeOk(turn)) return;
+        rolling = true; btn.disabled = true;
+        const it = pool[Math.floor(Math.random() * pool.length)];
+        // a short roulette over the dishes it can land on, slowing down onto the pick
+        const steps = 14 + Math.floor(Math.random() * pool.length);
+        let i = Math.floor(Math.random() * pool.length);
+        for (let k = 0; k < steps; k++) {
+            cards.forEach(c => c.classList.remove("hot"));
+            const cur = k === steps - 1 ? it : pool[i++ % pool.length];
+            cards.get(cur.id)?.classList.add("hot");
+            Sound.tick();
+            await sleep(60 + k * k * 1.6);
+        }
+        rolling = false;
+        buy(it);
+    }
     async function buy(it) {
-        if (!timeOk(turn)) return;
+        if (!timeOk(turn)) return render();
         const f = L.FOOD_BY_ID[it.id];
-        if (f.food < 0 && !(await confirmBox(`${f.name}을(를) 먹으면 식량 게이지가 ${f.food} 줄어듭니다. 그래도 먹을까요?`, "먹기", "취소"))) return;
         const r = LF.buyFood(pid, key, corner, it);
         if (!r.ok) return toast(r.why, "warn");
         f.food >= 0 ? (Sound.coin(), confetti(16, [f.emoji, "✨"])) : Sound.lose();
@@ -215,6 +238,7 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
         const s = G.S(), mine = EP.appsOf(pid), acc = account(pid), offers = EP.offersOf(pid);
         wrap.replaceChildren(
             h("div.ep-head", h("span.ep-big", "🏢"), h("div", h("h3", "취업 코너"), h("small.muted", `은행 계좌가 있어야 지원할 수 있습니다 · 시즌당 최대 ${L.APPLY_PER_SEASON}곳 (동시 지원 가능) · 지원 취소 불가 · 지원자가 다 차면 심사 시작 → 라운드마다 결과 통보`))),
+            EP.employFrozen() ? h("p.notice.warn", `🧊 최종 ${EP.EMPLOY_FREEZE_AT}명 이하 — 이번 시즌 취업 지원이 마감되었습니다. 진행 중인 심사는 다음 시즌에 이어집니다.`) : null,
             !acc ? h("p.notice.warn", "🏦 Business Bank 계좌가 없습니다 — 은행에서 계좌를 먼저 만드세요") : h("p.notice", `🏦 내 계좌 ${acc.code} · 이번 시즌 지원 ${mine.length}/${L.APPLY_PER_SEASON}`),
             offers.length ? h("div.ep-offer", h("b", "🎉 최종 합격 통보가 있습니다!"), h("button.btn.gold", { onclick: async () => { await offerFlow(pid); onChange(); render(); } }, "입사 결정하기")) : null,
             arizalBox(pid, turn, () => { onChange(); render(); }),
@@ -228,6 +252,7 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
                     h("div.ep-people", h("small", `🧑‍💼 진행 중인 지원자 ${prog.length}명${c ? ` (이번 시즌 ${c.list.length}/${L.APPLY_MAX}${c.started ? " · 심사 중" : ""})` : ""}`),
                         h("div.ep-faces", prog.length ? prog.map(a => h("span.ep-face" + (a.pid === +pid ? ".me" : ""), { title: `${nm(a.pid)} · S${a.season} · ${a.state === "offer" ? "최종 합격" : a.started ? L.STAGE_LABEL(C, Math.min(a.stage, C.stages.length - 1)) + " 진행 중" : "심사 대기"}` }, avatar(a.pid, 34, { effect: false }), h("small", a.state === "offer" ? "🎉" : a.started ? `${a.stage + 1}차` : "대기"))) : h("span.muted", "없음"))),
                     h("div.ep-people", h("small", `👔 직원 ${staff.length}/${C.cap}`), h("div.ep-faces", staff.slice(0, 12).map(x => h("span.ep-face", { title: `${nm(x.pid)}${x.manager ? " · 매니저" : ""}` }, avatar(x.pid, 28, { effect: false }), x.manager ? h("small", "👔") : null)), staff.length > 12 ? h("small", `+${staff.length - 12}`) : null)),
+                    hrBox(C.id),
                     h("div.row.end", mine.includes(C.id) ? h("span.ep-applied", "✅ 지원 완료") : h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, title: st.why || "", onclick: () => apply(C) }, st.ok ? `지원하기${C.fee ? ` (${fmt(C.fee)}G)` : " (무료)"}` : `🚫 ${st.why}`))));
             })),
             notesBox(pid));
@@ -242,6 +267,26 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
     }
     render();
     return wrap;
+}
+// 🧾 a company's HR record: who joined / was promoted / quit / was fired (and applied / passed), and when
+const HR_ICON = { apply: "📨", pass: "✅", fail: "❌", hire: "🎉", decline: "🙅", promo: "📈", quit: "🚪", fire: "📭", gift: "🎁" };
+const HR_FILTERS = [["staff", "👔 직원 기록"], ["all", "📋 전체"]];
+const HR_STAFF = new Set(["hire", "promo", "quit", "fire", "gift"]);
+export function hrBox(co, { open = false } = {}) {
+    let mode = "staff";
+    const body = h("div.ep-hr-body");
+    const draw = () => {
+        const list = EP.hrOf(co).filter(r => mode === "all" || HR_STAFF.has(r.kind));
+        body.replaceChildren(
+            h("div.ep-hr-tabs", HR_FILTERS.map(([k, label]) => h("button.sub-tab" + (mode === k ? ".on" : ""), { onclick: e => { e.preventDefault(); mode = k; draw(); } }, label))),
+            list.length ? h("div.ep-hr-list", list.slice(0, 60).map(r => h("div.ep-hr-row.k-" + r.kind,
+                h("span.ep-hr-ico", HR_ICON[r.kind] || "•"), avatar(r.pid, 24, { effect: false }),
+                h("b", nm(r.pid)), h("span.ep-hr-text", r.text),
+                h("small.muted", `${new Date(r.t).toLocaleDateString()}${r.season ? ` · S${r.season}${r.round ? ` R${r.round}` : ""}` : ""}`))))
+                : h("p.muted.small", "기록이 없습니다"));
+    };
+    draw();
+    return h("details.ep-hr", open ? { open: true } : {}, h("summary", `🧾 인사기록 (${EP.hrOf(co).filter(r => HR_STAFF.has(r.kind)).length})`), body);
 }
 function notesBox(pid) {
     const list = EP.notesOf(pid).slice(-12).reverse();
@@ -283,9 +328,20 @@ export function companyView(pid, { turn = null, onChange = () => { } } = {}) {
                 h("ul.ep-perks", C.perks.map(p => h("li", p)), h("li.muted", C.promoText)),
                 C.pantry ? h("div.row", h("button.btn" + (pantryOpen ? ".gold" : ".ghost"), { onclick: () => { pantryOpen = !pantryOpen; render(); } }, `🥤 HYHG Pantry (라운드당 1회 무료 · 남은 ${LF.pantryLeft(pid)})`)) : null,
                 C.pantry && pantryOpen ? foodCornerView(pid, LF.innerCorner("hyhg_pantry"), "pantry", { turn, onChange }) : null,
-                h("div.ep-people", h("small", `👥 동료 ${staff.length}/${C.cap}`), h("div.ep-faces", staff.map(s => h("span.ep-face" + (s.pid === +pid ? ".me" : ""), { title: `${nm(s.pid)}${s.manager ? " · 매니저" : ""}` }, avatar(s.pid, 30, { effect: false }), s.manager ? h("small", "👔") : null)))))),
+                h("div.ep-people", h("small", `👥 동료 ${staff.length}/${C.cap}`), h("div.ep-faces", staff.map(s => h("span.ep-face" + (s.pid === +pid ? ".me" : ""), { title: `${nm(s.pid)}${s.manager ? " · 매니저" : ""}` }, avatar(s.pid, 30, { effect: false }), s.manager ? h("small", "👔") : null)))),
+                hrBox(C.id, { open: true }),
+                h("div.row.end", h("button.btn.ghost.ep-quit", { onclick: quit }, "🚪 자진 퇴사하기")))),
             notesBox(pid));
     };
+    async function quit() {
+        const x = EP.employer(pid), C = EP.companyOf(pid);
+        if (!x || !C) return;
+        if (!(await confirmBox(`${C.emoji} ${C.name}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다${x.manager ? "\n• 매니저 직급도 사라집니다" : x.promos ? `\n• 진급 ${x.promos}/3 기록도 사라집니다` : ""}\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다`, "퇴사하기", "취소"))) return;
+        const r = EP.quitJob(pid);
+        if (!r.ok) return toast(r.why, "warn");
+        Sound.lose(); toast(`🚪 ${C.name} 퇴사 — 취업 코너가 다시 열렸습니다`, "info", 3500);
+        onChange();
+    }
     render();
     return wrap;
 }

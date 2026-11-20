@@ -8,7 +8,9 @@
 //     apps:    { <pid>: { <season>: [co] } },  // max 2 companies per season
 //     notes:   { <pid>: [{ id, co, text, kind, at, seen }] },   // results told at that player's next turn
 //     offers:  { <pid>: [{ co, season }] },     // final passes waiting for the player's choice (+ account link)
-//     log:     [{ t, text }]
+//     log:     [{ t, text }],
+//     hr:      { <co>: [{ t, pid, kind, text, season, round }] },   // 🧾 HR record per company (apply / pass / hire / promo / quit / fire …)
+//     frozenAt                                // season in which 3 or fewer were left (no applications · reviews wait)
 //   }
 //   bank.lifelog = { visits: { <pid>: [locIds] }, jobs: { <pid>: { <career>: n } }, brand: { <pid>: { <BRAND>: best single win } }, jp: { <pid>: best jackpot rank } }
 //   bank.loanErased = { <pid>: iso }
@@ -91,6 +93,25 @@ export const appsOf = (pid, season = S()?.number) => EM().apps[pid]?.[season] ||
 // players still in a company's hiring process (any season) — shown on the company card
 export const inProcess = co => cohortsOf(co).flatMap(c => c.list.filter(a => ["wait", "stage", "offer"].includes(a.state)).map(a => ({ ...a, season: c.season, started: c.started, cstage: c.stage })));
 
+// ================================================================ 🧾 HR record per company (who applied / passed / joined / was promoted / quit / was fired, and when)
+// bank.employ.hr = { <co>: [{ t, pid, kind, text, season, round }] } — newest first, 200 per company
+const HR_MAX = 200;
+export function hrOf(co) {
+    const e = EM(), hr = (e.hr ||= {});
+    if (!hr[co]) hr[co] = staffOf(co).map(x => ({ t: x.at, pid: x.pid, kind: "hire", text: "입사", season: x.season ?? null, round: null })).sort((a, b) => (a.t < b.t ? 1 : -1)); // older staff: their hire date
+    return hr[co];
+}
+function hr(co, pid, kind, text) {
+    const s = S();
+    hrOf(co).unshift({ t: now(), pid: +pid, kind, text, season: s?.number ?? null, round: s?.round ?? null });
+    EM().hr[co] = EM().hr[co].slice(0, HR_MAX);
+}
+// 🧊 3 players or fewer left: no new applications · reviews already running wait for the next season
+export const EMPLOY_FREEZE_AT = 3;
+export const employFrozen = () => { const s = S(); return !!s && !(s.sandbox && !s.testSeason) && alive().length <= EMPLOY_FREEZE_AT; };
+// a player who is not playing right now (eliminated / not in this season)
+const away = pid => { const p = ps_(pid); return !p || !!p.out; };
+
 // requirements → { ok, why }
 export function companyReq(pid, co) {
     const C = L.COMPANIES[co];
@@ -107,6 +128,7 @@ export function applyStatus(pid, co) {
     const s = S(), C = L.COMPANIES[co];
     if (!s || !C) return { ok: false, why: "시즌 중에만 지원할 수 있습니다" };
     if (s.sandbox && !s.testSeason) return { ok: false, why: "🧪 테스트 모드에서는 지원할 수 없습니다" };
+    if (employFrozen()) return { ok: false, why: `최종 ${EMPLOY_FREEZE_AT}명 이하 — 이번 시즌 취업 지원 마감 (진행 중인 심사는 다음 시즌에 이어집니다)` };
     if (employer(pid)) return { ok: false, why: "이미 취업한 회사가 있습니다 (취업은 한 곳만)" };
     if (!account(pid)) return { ok: false, why: "🏦 은행 계좌가 있어야 지원할 수 있습니다" };
     const mine = appsOf(pid);
@@ -130,6 +152,7 @@ export function applyTo(pid, co) {
     ((EM().apps[pid] ||= {})[s.number] ||= []).push(co);
     log(`🏢 ${name(pid)} ${C.name} 지원${C.fee ? ` (지원료 ${C.fee.toLocaleString()}G)` : ""} — 지원자 ${c.list.length}/${L.APPLY_MAX}`);
     elog(`${name(pid)} → ${C.name} 지원 (S${s.number} R${s.round})`);
+    hr(co, pid, "apply", `지원${C.fee ? ` (지원료 ${C.fee.toLocaleString()}G)` : ""}`);
     if (c.list.length >= L.APPLY_MAX) startReview(co, c);
     save(); Store.saveSeason(true);
     return { ok: true, full: c.started, n: c.list.length };
@@ -224,7 +247,15 @@ function runStage(co, c) {
     const label = L.STAGE_LABEL(C, i);
     for (const r of res) {
         r.a.res.push({ stage: i, ok: r.ok, detail: r.detail, tick: EM().tick });
+        hr(co, r.a.pid, r.ok ? "pass" : "fail", `${label} ${r.ok ? (last ? "최종 합격" : "합격") : "불합격"}`);
         if (!r.ok) { r.a.state = "fail"; note(r.a.pid, co, `❌ ${C.name} ${label} 결과: 불합격 — ${r.detail}`, "fail"); continue; }
+        if (last && away(r.a.pid) && !employer(r.a.pid)) {
+            // 💤 passed while eliminated / not playing: hired right away — the welcome gift waits for the next season they are picked for
+            r.a.state = "offer";
+            (EM().offers[r.a.pid] ||= []).push({ co, season: c.season });
+            hire(r.a.pid, co, null, { auto: true });
+            continue;
+        }
         if (last) {
             r.a.state = "offer";
             (EM().offers[r.a.pid] ||= []).push({ co, season: c.season });
@@ -244,8 +275,26 @@ function runStage(co, c) {
 function employTick(s) {
     if (s.sandbox && !s.testSeason) return;
     const e = EM();
-    e.tick++;
-    for (const [co, list] of Object.entries(e.cohorts)) for (const c of list) if (c.started && !c.done && c.stageTick != null && e.tick > c.stageTick) runStage(co, c);
+    const frozen = employFrozen();
+    // 🧊 3 or fewer left: the review clock stops — running reviews go on in the next season's rounds
+    if (!frozen) e.tick++;
+    else if (e.frozenAt !== s.number) {
+        e.frozenAt = s.number;
+        const n = Object.values(e.cohorts).flat().filter(c => c.started && !c.done).length;
+        log(`🧊 최종 ${EMPLOY_FREEZE_AT}명 이하 — 취업 지원 마감${n ? ` · 진행 중인 심사 ${n}건은 다음 시즌에 이어집니다` : ""}`);
+        elog(`S${s.number} 최종 ${EMPLOY_FREEZE_AT}명 이하 — 취업 지원 마감, 심사 ${n}건 다음 시즌으로`);
+    }
+    if (!frozen) for (const [co, list] of Object.entries(e.cohorts)) for (const c of list) if (c.started && !c.done && c.stageTick != null && e.tick > c.stageTick) runStage(co, c);
+    // final passes of players who are out / not playing: hired without waiting for their turn
+    for (const [pid, list] of Object.entries(e.offers)) if (list.length && !employer(pid) && away(pid)) hire(+pid, list[0].co, null, { auto: true });
+    // 🎁 welcome gifts kept for hires made while out: given once they play in a season again
+    for (const [pid, x] of Object.entries(e.staff)) if (x.giftDue && !away(pid)) {
+        const C = L.COMPANIES[x.co];
+        delete x.giftDue;
+        const gift = giveGift(+pid, C);
+        if (gift) { note(+pid, x.co, `🎁 ${C.name} 입사 선물 도착! (탈락 중에 입사해 이번 시즌에 지급) — ${gift}`, "pass"); log(`🎁 ${name(pid)} ${C.name} 입사 선물 ${gift}`); hr(x.co, pid, "gift", `입사 선물 지급 — ${gift}`); }
+        Store.saveSeason(true);
+    }
     paySalaries(s);
     accountInterest();
     save();
@@ -269,14 +318,24 @@ export function acceptOffer(pid, co, code) {
     if (employer(pid)) return { ok: false, why: "이미 취업했습니다" };
     const a = accountByCode(code);
     if (!a || a.pid !== +pid) return { ok: false, why: "본인 계좌 코드 4자리가 아닙니다" };
-    const e = EM(), s = S();
-    e.staff[pid] = { co, at: now(), season: s?.number ?? null, pay: C.pay, promos: 0, manager: false, code: a.code };
-    for (const o of offersOf(pid)) { const c = cohort(o.co, o.season); const ap = c?.list.find(x => x.pid === +pid); if (ap) ap.state = o.co === co ? "hired" : "declined"; if (o.co === co) (c.hired ||= []).push(+pid); }
+    return hire(pid, co, a.code);
+}
+// joins the company · auto: a final pass while the player is out — the bank account is linked for them,
+// the welcome gift waits for the next season they play in (giftDue)
+function hire(pid, co, code, { auto = false } = {}) {
+    const C = L.COMPANIES[co], e = EM(), s = S();
+    code ||= account(pid)?.code || null;
+    const x = e.staff[pid] = { co, at: now(), season: s?.number ?? null, pay: C.pay, promos: 0, manager: false, code };
+    for (const o of offersOf(pid)) { const c = cohort(o.co, o.season); const ap = c?.list.find(y => y.pid === +pid); if (ap) ap.state = o.co === co ? "hired" : "declined"; if (o.co === co) (c.hired ||= []).push(+pid); if (o.co !== co) hr(o.co, pid, "decline", "입사 포기 (다른 회사 입사)"); }
     e.offers[pid] = [];
-    const gift = giveGift(pid, C);
-    elog(`${name(pid)} ${C.name} 입사 (계좌 ${a.code})`);
-    if (s) log(`🎉 ${name(pid)} ${C.name} 입사! 급여 계좌 ${a.code} 연동${gift ? ` · 입사선물 ${gift}` : ""}`);
-    payOne(+pid, e.staff[pid], "입사 첫 급여");
+    let gift = "";
+    if (auto && away(pid)) { if (C.gifts?.length) x.giftDue = true; }
+    else gift = giveGift(pid, C);
+    elog(`${name(pid)} ${C.name} ${auto ? "자동 " : ""}입사${code ? ` (계좌 ${code})` : ""}`);
+    hr(co, pid, "hire", auto ? `최종 합격 → 자동 입사 (탈락 중)${x.giftDue ? " · 입사 선물은 다음 시즌 선발 때 지급" : ""}` : `입사${gift ? ` · 입사 선물 ${gift}` : ""}`);
+    if (auto) note(pid, co, `🎉 ${C.name} 최종 합격 — 탈락 중이라 바로 입사 처리되었습니다${code ? ` (급여 계좌 ${code} 자동 연동)` : ""}.${x.giftDue ? " 🎁 입사 선물은 다음 시즌에 뽑히면 지급됩니다." : ""}`, "offer");
+    if (s) log(`🎉 ${name(pid)} ${C.name} ${auto ? "자동 " : ""}입사!${code ? ` 급여 계좌 ${code} 연동` : ""}${gift ? ` · 입사선물 ${gift}` : ""}`);
+    payOne(+pid, x, "입사 첫 급여");
     fireIfFull(co, +pid);
     save(); Store.saveSeason(true);
     return { ok: true, gift };
@@ -284,7 +343,21 @@ export function acceptOffer(pid, co, code) {
 export function declineOffer(pid, co) {
     const e = EM();
     e.offers[pid] = offersOf(pid).filter(o => o.co !== co);
+    hr(co, pid, "decline", "입사 포기");
     save();
+}
+// 🚪 leaving on one's own: the company corner goes, the employment corner comes back
+export function quitJob(pid) {
+    const e = EM(), x = e.staff[pid];
+    if (!x) return { ok: false, why: "소속 회사가 없습니다" };
+    const C = L.COMPANIES[x.co];
+    delete e.staff[pid];
+    hr(x.co, pid, "quit", `자진 퇴사${x.manager ? " (매니저)" : x.promos ? ` (진급 ${x.promos}/3)` : ""}`);
+    note(pid, x.co, `🚪 ${C?.name || x.co}에서 자진 퇴사했습니다.`, "info");
+    elog(`${name(pid)} ${C?.name} 자진 퇴사`);
+    if (S()) log(`🚪 ${name(pid)} ${C?.name} 자진 퇴사`);
+    save(); Store.saveSeason(true);
+    return { ok: true, C };
 }
 function giveGift(pid, C) {
     const ps = ps_(pid);
@@ -313,6 +386,7 @@ export function fire(pid, why) {
     const C = L.COMPANIES[x.co];
     delete e.staff[pid];
     note(pid, x.co, `📭 ${C?.name || x.co}에서 해고되었습니다 — ${why}`, "fail");
+    hr(x.co, pid, "fire", `해고 — ${why}`);
     elog(`${name(pid)} ${C?.name} 해고 — ${why}`);
     if (S()) log(`📭 ${name(pid)} ${C?.name} 해고 — ${why}`);
     save();
@@ -343,12 +417,14 @@ function seasonReview(s) {
             x.manager = true; x.pay = C.mgrPay;
             note(pid, x.co, `👔 ${C.name} 매니저 승진! 시즌 ${s.number} ${rank}위 — 급여 ${C.mgrPay.toLocaleString()}G 고정`, "pass");
             elog(`${name(pid)} ${C.name} 매니저 승진 (S${s.number} ${rank}위)`);
+            hr(x.co, pid, "promo", `👔 매니저 승진 — 시즌 ${s.number} ${rank}위 · 급여 ${C.mgrPay.toLocaleString()}G`);
             continue;
         }
         if (!x.manager && rank <= C.promoTop && (x.promos || 0) < 3) {
             x.promos = (x.promos || 0) + 1; x.pay += C.promoAdd;
             note(pid, x.co, `📈 ${C.name} 진급 ${x.promos}/3! 시즌 ${s.number} ${rank}위 — 급여 +${C.promoAdd.toLocaleString()}G → ${x.pay.toLocaleString()}G`, "pass");
             elog(`${name(pid)} ${C.name} 진급 ${x.promos} (S${s.number} ${rank}위)`);
+            hr(x.co, pid, "promo", `📈 진급 ${x.promos}/3 — 시즌 ${s.number} ${rank}위 · 급여 ${x.pay.toLocaleString()}G`);
         }
     }
 }
