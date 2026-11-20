@@ -1147,6 +1147,8 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
         if (bet) { const bw = (t.stats.betWin ||= {}); bw[bet] = Math.max(bw[bet] || 0, win); }
     }
     else { t.stats.casinoNet += net; t.stats.plays++; ps.totals.casinoNet += net; ps.totals.plays++; }
+    // 🔥 per-game play counts by month (Hot / Super Hot badges: game/gameBadges.js) — a slot spin or a casino play = 1
+    if (extra.game && !s.sandbox && !Store.sandbox) { const gp = (s.gamePlays ||= {}), d = new Date(), k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}|${kind}:${extra.game}`; gp[k] = (gp[k] || 0) + 1; } // "<YYYY-MM>|slot:<id>"
     t.stats.points += points; ps.totals.points += points;
     if (extra.bonus) t.stats.bonus++;
     for (const jp of extra.jackpots || []) {

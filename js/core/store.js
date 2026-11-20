@@ -36,6 +36,7 @@ export const Store = {
     stash: {},       // 🎒 every player's belongings carried between seasons: { <pid>: { season, items, pet, petEffect, weapons, emo, lotto } } (game/season.js)
     highlights: { list: [], seen: {} }, // 🎬 Gamblers Highlight replays (screens/highlight.js) + who watched in which season
     lotto: {},       // 🎟️ lotto corner (persistent across seasons): see game/lotto.js
+    gameplays: { counts: {}, seasons: [] }, // 🔥 all-time plays per game of finished seasons ("slot:<id>" / "casino:<id>": n) — Hot badges (game/gameBadges.js)
     emokeep: {},     // 🏟️ every player's last battle monster (persistent) — arena opponents outside the season
     emomon: null,    // 🐾 EmoMonster catalog snapshot (settings "emomon", loaded on demand: emomon/data.js)
     season: null,    // current season object (see game/season.js)
@@ -60,6 +61,7 @@ export const Store = {
         this.maps = L.maps || {};
         this.wallets = L.wallets || {};
         this.bank = L.bank || {};
+        this.gameplays = L.gameplays || { counts: {}, seasons: [] };
         this.emodex = L.emodex || {};
         this.community = L.community || { posts: [] };
         this.emokeep = L.emokeep || {};
@@ -131,6 +133,7 @@ export const Store = {
         this.emodex = settings.find(r => r.key === "emodex")?.value || {};
         this.community = settings.find(r => r.key === "community")?.value || { posts: [] };
         this.emokeep = settings.find(r => r.key === "emokeep")?.value || {};
+        this.gameplays = settings.find(r => r.key === "gameplays")?.value || { counts: {}, seasons: [] };
         this.lotto = settings.find(r => r.key === "lotto")?.value || {};
         this.stash = settings.find(r => r.key === "stash")?.value || {};
         this.highlights = settings.find(r => r.key === "highlights")?.value || { list: [], seen: {} };
@@ -144,7 +147,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, lotto: this.lotto, stash: this.stash, highlights: this.highlights, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, lotto: this.lotto, stash: this.stash, highlights: this.highlights, gameplays: this.gameplays, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -345,9 +348,18 @@ export const Store = {
         for (const [pid, rank] of Object.entries(ranks)) this.results.push({ season: season.number, playerId: +pid, rank });
         this.hall.unshift({ season: season.number, playerId: season.winnerId, snapshot: champSnapshot, at: new Date().toISOString() });
         this.archive = [...(this.archive || []).filter(d => d.number !== season.number), this.seasonDigest(season)];
+        this.addGameplays(season);
         this.saveSeason(true);
         await this.write(sb => sb.from("season_results").insert(Object.entries(ranks).map(([pid, rank]) => ({ season_number: season.number, player_id: +pid, rank }))));
         await this.write(sb => sb.from("hall_of_fame").insert({ season_number: season.number, player_id: season.winnerId, snapshot: champSnapshot }));
+    },
+    // 🔥 a finished season's per-game plays join the all-time counts (once per season number)
+    addGameplays(season) {
+        const g = (this.gameplays ||= { counts: {}, seasons: [] });
+        if (!season?.gamePlays || g.seasons.includes(season.number)) return;
+        for (const [k, n] of Object.entries(season.gamePlays)) g.counts[k] = (g.counts[k] || 0) + n;
+        g.seasons.push(season.number);
+        this.write(sb => sb.from("settings").upsert({ key: "gameplays", value: g, updated_at: new Date().toISOString() }));
     },
     endSeasonLocal() { this.season = null; this.saveLocal(); },
 

@@ -55,6 +55,7 @@ import { mapNo } from "../data/mapAdmin.js";
 import * as LF from "../game/life.js";
 import * as EP from "../game/employ.js";
 import { vitals, foodCornerView, lodgeView, weatherHud, weatherLayer, employView, companyView, employAtTurn, starvePopup, starveHurtPopup, lifeInventory, companyMark, arizalBox, arizalTick } from "./lifeCorners.js";
+import * as GB from "../game/gameBadges.js";
 
 let root = null, timer = null;
 
@@ -689,7 +690,26 @@ function locationStage(s) {
         endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)`;
     };
 
-    const ctx = kind => ({
+    // 🎰 / 🃏 game cards with 🆕 NEW · 🔥 HOT · 🔥 SUPER HOT badges (game/gameBadges.js)
+    const gameBadges = (kind, gid, ranks) => {
+        const hot = GB.heat(ranks[gid]), nw = GB.isNew(gid);
+        if (!hot && !nw) return null;
+        return h("div.gc-badges", nw ? h("span.gc-badge.new", "NEW") : null,
+            hot ? h("span.gc-badge." + hot, { title: `가장 많이 플레이한 ${kind === "slot" ? "슬롯" : "카지노게임"} ${ranks[gid]}위` }, hot === "superhot" ? "🔥 Super Hot" : "🔥 Hot") : null);
+    };
+    function slotCards(kindLabel = null) {
+        const ranks = GB.hotRanks("slot");
+        return loc.slots.filter(sid => SLOT_BY_ID[sid] && !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
+            gameBadges("slot", sid, ranks),
+            h("div.gc-kind", kindLabel || (c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE")), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); });
+    }
+    function casinoCards(brand = "GAMBLERS CASINO") {
+        const ranks = GB.hotRanks("casino");
+        return loc.casino.filter(cid => CASINO_BY_ID[cid] && !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
+            gameBadges("casino", cid, ranks),
+            h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", brand), h("div.gc-desc", shortDesc(g.desc))); });
+    }
+    const ctx = (kind, gameId = null) => ({
         pid,
         // pet luck + the 30 s booster item (boost: true while it runs)
         get luck() { return { ...luck, boost: G.boostLeft(kind) > 0 }; },
@@ -701,7 +721,7 @@ function locationStage(s) {
         record(bet, win, points, extra = {}) {
             if (extra.pending) { G.spendBet(pid, kind, bet); updateHud(); return; }
             if (extra.settle) {
-                ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, extra); updateHud();
+                ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, { ...extra, game: gameId }); updateHud();
                 // casino games can drop an alphabet card too (slots show theirs on the reels)
                 if (kind === "casino" && Math.random() < CASINO_CARD_RATE) { const L = pick(ALPHABET); G.gainCard(pid, L); toast(`🔤 알파벳 카드 ${L} 획득!`, "ok"); }
             }
@@ -724,7 +744,7 @@ function locationStage(s) {
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
         gameLayer?.remove();
         // 🥶 Cursed Casino: the same game with 10% less RTP
-        const el = kind === "slot" ? openSlot(cursedConfig("slot", SLOT_BY_ID[id], loc), ctx("slot")) : openCasino(cursedConfig("casino", CASINO_BY_ID[id], loc), ctx("casino"));
+        const el = kind === "slot" ? openSlot(cursedConfig("slot", SLOT_BY_ID[id], loc), ctx("slot", id)) : openCasino(cursedConfig("casino", CASINO_BY_ID[id], loc), ctx("casino", id));
         gameLayer = h("div.game-layer", el);
         root.querySelector(".loc-main").append(gameLayer);
     }
@@ -786,15 +806,13 @@ function locationStage(s) {
         else if (id === "arena") content = arenaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); } });
         else if (id === "arcade") content = arcadeFor(pid, t).el;
         else if (id === "arc:slot" || id === "arc:casino") content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")),
-            h("div.game-list", ...(id === "arc:slot" ? loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
-                h("div.gc-kind", "SLOT · ARCADE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); })
-                : loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
-                h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", "GAMBLERS ARCADE"), h("div.gc-desc", shortDesc(g.desc))); }))));
-        else if (id === "games") content = h("div.game-list",
-            ...loc.slots.filter(sid => !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
-                h("div.gc-kind", c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE"), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); }),
-            ...loc.casino.filter(cid => !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
-                h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", "GAMBLERS CASINO"), h("div.gc-desc", shortDesc(g.desc))); }));
+            h("div.game-list", ...(id === "arc:slot" ? slotCards("SLOT · ARCADE") : casinoCards("GAMBLERS ARCADE"))));
+        else if (id === "games") {
+            // 🎰 slots and 🃏 casino games in their own sections
+            const sl = slotCards(), cs = casinoCards();
+            const sec = (cls, title, cards) => cards.length ? h("section.game-sec." + cls, h("h3.game-sec-h", title, h("small", ` ${cards.length}개`)), h("div.game-list", ...cards)) : null;
+            content = h("div.game-secs", sec("slots", "🎰 슬롯", sl), sec("casinos", "🃏 카지노게임", cs));
+        }
         else if (id.startsWith("shop:")) content = shopView(id.slice(5), pid, loc.id, () => { updateHud(); side.replaceChildren(sideCard()); });
         else if (id === "inv") content = invWrap(inventoryView(pid, {
             onUseTime: () => { ps.items.time_ext--; t.remaining += CONFIG.EXTEND_SECONDS; G.log(`⏱️ ${displayName(Store.player(pid))} 5분 연장!`); Store.saveSeason(); updateHud(); toast("+5분!", "ok"); },
@@ -983,6 +1001,8 @@ function locationStage(s) {
         if (!loc.kidnap) {
             const w = LF.weatherTick(t);
             if (w?.sheltered) toast(`${w.w.emoji} ${w.w.name}! 🏨 숙소 덕분에 무사합니다`, "ok", 2600);
+            else if (w?.guard) { toast(`${w.w.emoji} ${w.w.name}! ${w.guard.item?.emoji || "☂️"} ${w.guard.item?.name || ""}${w.guard.used ? " 사용 — 이번 라운드 끝까지 막아 줍니다" : " 덕분에 무사합니다"}`, "ok", 3000); if (w.guard.used) side.replaceChildren(sideCard()); }
+            else if (w?.sunFood) { Sound.coin(); toast(`☀️ 햇살을 듬뿍 받았다! Smile 종족 식량 +${w.sunFood} (${w.food})`, "ok", 3200); side.replaceChildren(sideCard()); }
             else if (w?.dead || (w && !G.S().turn)) { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; Sound.boom(); render(); return; }
             else if (w?.dmg) { Sound.hit?.(); toast(`${w.w.emoji} ${w.w.name}! HP −${w.dmg}${w.shield ? " (🎭 보호)" : ""}`, "warn", 3200); root.querySelector(".wx-layer")?.classList.add("hit"); setTimeout(() => root.querySelector(".wx-layer")?.classList.remove("hit"), 900); side.replaceChildren(sideCard()); }
         }

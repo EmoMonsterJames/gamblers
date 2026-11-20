@@ -11,7 +11,7 @@
 import { Store } from "../core/store.js";
 import {
     PETS, PET_EFFECTS, WEAPONS, FRAMES, PROFILE_EFFECTS, ITEMS, SHOPS, LOCATIONS,
-    PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET, EXTRA_LETTERS, letterSale, cardId
+    PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, FRAME_BY_ID, PEFFECT_BY_ID, ITEM_BY_ID, ALPHABET, EXTRA_LETTERS, letterSale, cardId, WX_GEAR_MAPS
 } from "./catalog.js";
 import { EMO_ITEMS } from "../emomon/data.js";
 import "./life.js"; // 🍚 food + 🧾 bank items join ITEMS before the originals below are kept (applyCatalog restores from them)
@@ -185,7 +185,9 @@ export function discountItems(locId, seed = "") {
     const chosen = [...pickN(byCat("item"), 3), ...pickN(byCat("weapon"), 2), ...pickN([...byCat("pet"), ...byCat("effect")], 2), ...pickN([...byCat("frame"), ...byCat("peffect")], 2)];
     // + the 알파벳권 whose discount home is this map
     const letters = cardsAt(locId).filter(c => c.shop === "discount").map(c => ({ cat: "item", id: cardId(c.letter), price: letterSale(c.letter).price }));
-    const fixed = discountExtras(locId).filter(x => !chosen.some(c => c.cat === x.cat && c.id === x.id));
+    // + goods whose home is this discount shop (☔ 1회용 weather gear …)
+    const own = (wxGearDiscountMaps().includes(locId) ? shopItems("discount", locId) : []).filter(it => !chosen.some(c => c.cat === it.cat && c.id === it.id));
+    const fixed = [...own, ...discountExtras(locId).filter(x => !chosen.some(c => c.cat === x.cat && c.id === x.id) && !own.some(o => o.cat === x.cat && o.id === x.id))];
     return [...chosen, ...letters, ...fixed].map(it => { const off = 10 + Math.floor(rnd() * 11); return { cat: it.cat, id: it.id, price: Math.max(100, Math.round(it.price * (100 - off) / 100 / 100) * 100), was: it.price, off, ...(it.extra ? { extra: true } : {}) }; });
 }
 
@@ -279,3 +281,17 @@ export function cardHomes() {
 export const cardSoldHere = (shopId, letter, locId) => !locId || (cardHomes()[`${shopId}:${letter}`] || []).includes(locId);
 // cards sold at a map: [{ shop, letter }]
 export const cardsAt = locId => Object.entries(cardHomes()).filter(([, ids]) => ids.includes(locId)).map(([k]) => { const [shop, letter] = k.split(":"); return { shop, letter }; });
+
+// ☔ 1회용 weather gear: sold at 20 of the discount maps (all of them if there are fewer) — picked from the
+// maps that have a discount shop right now (seeded, so the same maps keep them while the list stays the same)
+let wxGearCache = null;
+export function wxGearDiscountMaps() {
+    const maps = LOCATIONS.filter(l => l.discount && !l.off && !l.kidnap && l.region !== "survival").map(l => l.id).sort();
+    const key = maps.join(",");
+    if (wxGearCache?.key !== key) {
+        const rnd = seeded("gamblers-weather-gear-discount"), a = [...maps];
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+        wxGearCache = { key, list: a.slice(0, WX_GEAR_MAPS) };
+    }
+    return wxGearCache.list;
+}

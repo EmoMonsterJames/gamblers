@@ -105,9 +105,25 @@ function tr(s) {
     }
     // Korean particles left dangling after a swap (을/를/이/가/은/는/의/에/으로/로) — drop the common ones glued to Latin text
     out = out.replace(/([A-Za-z0-9)%])(을|를|이|가|은|는|의|에서|에|으로|로)(?=[\s.,!?)]|$)/g, "$1");
+    // last resort: no Hangul may stay on screen in EN mode — anything left is romanized (덩이 → Deongi)
+    if (HANGUL.test(out)) out = out.replace(/[가-힣]+/g, romanize);
     if (cache.size > 5000) cache.clear();
     cache.set(s, out);
     return out;
+}
+// Revised Romanization of a Hangul word (syllable by syllable, simple liaison) — "Capitalized"
+const RR_I = ["g", "kk", "n", "d", "tt", "r", "m", "b", "pp", "s", "ss", "", "j", "jj", "ch", "k", "t", "p", "h"];
+const RR_V = ["a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe", "yo", "u", "wo", "we", "wi", "yu", "eu", "ui", "i"];
+const RR_F = ["", "k", "k", "k", "n", "n", "n", "t", "l", "k", "m", "l", "l", "l", "p", "l", "m", "p", "p", "t", "t", "ng", "t", "t", "k", "t", "p", "t"];
+const RR_FV = ["", "g", "kk", "ks", "n", "nj", "nh", "d", "r", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "ps", "s", "ss", "ng", "j", "ch", "k", "t", "p", "h"]; // before a vowel
+function romanize(word) {
+    let out = "";
+    const cs = [...word].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return { i: Math.floor(c / 588), v: Math.floor(c % 588 / 28), f: c % 28 }; });
+    cs.forEach((x, k) => {
+        const next = cs[k + 1];
+        out += RR_I[x.i] + RR_V[x.v] + (next && next.i === 11 ? RR_FV[x.f] : RR_F[x.f]);
+    });
+    return out.charAt(0).toUpperCase() + out.slice(1);
 }
 const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "CODE", "PRE"]);
 const written = new WeakMap();

@@ -10,7 +10,7 @@ import { toast, confetti, modal, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import * as G from "../game/season.js";
 import * as X from "../game/extra.js";
-import { ITEM_BY_ID } from "../data/catalog.js";
+import { ITEM_BY_ID, ITEMS } from "../data/catalog.js";
 import { CM_GOODS, CM_BY_ID, cmColor, cmEffect, cmFont } from "../data/community.js";
 import { avatar, displayName } from "../ui/profile.js";
 import { canPay, pay, priceLabel } from "./shop.js";
@@ -421,8 +421,12 @@ export function extraInventory(pid, onChange = () => { }) {
         Sound.bonus(); toast(`🧳 EmoMon 슬롯 ${r.slots}칸!`, "ok"); onChange();
     } }, `🧳 이모몬스터 슬롯 확장권 ×${ps.items.emo_slot} 사용 (지금 ${X.emoSlots(pid)}칸)`));
     const sick = X.diseasesOf(pid);
-    if (!rows.length && !sick.length) return null;
-    return h("div.extra-inv", sick.length ? h("p.notice.warn.small", `🤒 현재 질병: ${sick.map(k => `${X.DISEASES[k].emoji} ${X.DISEASES[k].name} (라운드마다 HP −${X.DISEASES[k].hp})`).join(" · ")}`) : null, rows.length ? h("div.row", rows) : null);
+    // ☔ weather gear: permanent ones just protect · 1회용 ones are used automatically when the weather hits
+    const gear = ITEMS.filter(i => i.wx && ps.items[i.id] > 0).map(i => `${i.emoji} ${i.name}${i.once ? ` ×${ps.items[i.id]}` : ""}`);
+    const wxOn = ps.wxOnce?.round === G.S().round ? ITEM_BY_ID[ps.wxOnce.id] : null;
+    const gearNote = gear.length || wxOn ? h("p.notice.small", `☔ 날씨 대비: ${[...gear, wxOn ? `${wxOn.emoji} ${wxOn.name} 사용 중 (이번 라운드 끝까지)` : null].filter(Boolean).join(" · ")} — 날씨가 닥치면 자동으로 막아 줍니다`) : null;
+    if (!rows.length && !sick.length && !gearNote) return null;
+    return h("div.extra-inv", gearNote, sick.length ? h("p.notice.warn.small", `🤒 현재 질병: ${sick.map(k => `${X.DISEASES[k].emoji} ${X.DISEASES[k].name} (라운드마다 HP −${X.DISEASES[k].hp})`).join(" · ")}`) : null, rows.length ? h("div.row", rows) : null);
 }
 
 // ================================================================ round start: disease damage report

@@ -387,6 +387,13 @@ export const ITEMS = [
     { id: "biz_remote", name: "Remote Business 관리권", emoji: "🛰️", biz: true, desc: "비즈니스가 있는 맵에 가지 않아도 Owner Admin을 팝업으로 1회 엽니다." },
     { id: "biz_close",  name: "폐업권",               emoji: "🪧", biz: true, desc: "Owner Admin에서 비즈니스를 폐업합니다. 남은 Business Gold는 소멸되니 먼저 은행에서 송금하세요." },
     // 🤒 player diseases (game/extra.js)
+    // ☔ weather gear (game/life.js weatherGuard): wx = weathers it keeps off · once = 1회용 (auto-used when the weather hits, lasts until the round ends)
+    { id: "umbrella",   name: "우산",       emoji: "☂️", wx: ["rain", "snow"], desc: "비 · 눈을 피하는 영구 아이템입니다 (갖고만 있으면 자동으로 막아 줍니다)." },
+    { id: "umbrella_1", name: "1회용우산",  emoji: "🌂", wx: ["rain", "snow"], once: true, desc: "비 · 눈을 피하는 1회용 아이템입니다. 날씨가 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
+    { id: "raincoat",   name: "우비",       emoji: "🧥", wx: ["rain", "snow", "storm", "blizzard", "hail"], desc: "비 · 눈 · 폭우 · 폭설 · 우박을 피하는 영구 아이템입니다 (갖고만 있으면 자동으로 막아 줍니다)." },
+    { id: "raincoat_1", name: "1회용우비",  emoji: "🥼", wx: ["rain", "snow", "storm", "blizzard", "hail"], once: true, desc: "비 · 눈 · 폭우 · 폭설 · 우박을 피하는 1회용 아이템입니다. 날씨가 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
+    { id: "parasol",    name: "양산",       emoji: "⛱️", wx: ["heat"], desc: "폭염을 피하는 영구 아이템입니다 (갖고만 있으면 자동으로 막아 줍니다)." },
+    { id: "parasol_1",  name: "1회용양산",  emoji: "🏖️", wx: ["heat"], once: true, desc: "폭염을 피하는 1회용 아이템입니다. 폭염이 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
     { id: "flu_cure",    name: "독감치료제", emoji: "💉", cure: "flu",    desc: "플레이어가 걸린 독감을 바로 치료합니다." },
     { id: "cancer_cure", name: "암치료제",   emoji: "💊", cure: "cancer", desc: "플레이어가 걸린 암을 바로 치료합니다." },
     // 🐾 EmoMon slots: 3 free, +1 per ticket up to 10
@@ -680,6 +687,18 @@ for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) 
     if (l && !l.shops.includes(shopId)) l.shops = [...l.shops, shopId];
 }
 
+
+// ☔ weather gear: 20 point shops sell 우산 300P · 우비 500P · 양산 150P,
+// 20 discount shops (every one there is, if fewer) sell 1회용우산 4,000G · 1회용우비 8,000G · 1회용양산 2,000G (fixed, seeded)
+export const WX_GEAR_MAPS = 20;
+{
+    const rnd = (() => { let h = 2166136261; for (const c of "gamblers-weather-gear") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
+    const pick = list => { const a = [...list]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, WX_GEAR_MAPS).map(l => l.id); };
+    const ok = l => !l.kidnap && l.region !== "survival";
+    const pts = pick(LOCATIONS.filter(l => ok(l) && l.shops.includes("point")));
+    for (const [id, price] of [["umbrella", 300], ["raincoat", 500], ["parasol", 150]]) SHOPS.point.list.push({ cat: "item", id, price, locs: pts });
+    for (const [id, price] of [["umbrella_1", 4000], ["raincoat_1", 8000], ["parasol_1", 2000]]) SHOPS.discount.list.push({ cat: "item", id, price }); // which 20 discount maps: wxGearDiscountMaps() in catalogAdmin.js (the admin can move discount shops)
+}
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions
 // 🏬 백화점 corner (screens/dept.js) — admin can move it in 🌍 지역·맵 관리
 export const DEPT_MAPS = ["riches", "goldbar", "diamond_casino", "lgbt_nation", "combo_town", "terror_casino", "magma_town", "death_door", "hurry_town", "radioactive"];

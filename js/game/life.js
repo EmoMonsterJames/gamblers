@@ -10,7 +10,7 @@
 // =====================================================================
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { LOC_BY_ID } from "../data/catalog.js";
+import { LOC_BY_ID, ITEMS, ITEM_BY_ID } from "../data/catalog.js";
 import * as L from "../data/life.js";
 import { S, log, name, roundHooks, killPlayer, hpToll, bump, noteRefuse } from "./season.js";
 import { ownsTypes } from "./extra.js";
@@ -162,16 +162,53 @@ export function weatherNextIn(t) {
     const k = (sec - L.WEATHER_FIRST) % L.WEATHER_EVERY;
     return k === 0 ? L.WEATHER_EVERY : L.WEATHER_EVERY - k;
 }
-// one second on the map → null | { w, sheltered } | { w, dmg, hp } | { w, dead }
+// ☔ weather gear: a permanent item (우산 · 우비 · 양산) just has to be owned · a 1회용 one is used up the first time
+// its weather hits and then keeps it off until the round ends (ps.wxOnce = { round, wx: [weather ids] })
+const GEAR = () => ITEMS.filter(i => i.wx);
+export function weatherGuard(pid, w) {
+    const ps = ps_(pid);
+    if (!ps || !w?.hp) return null;
+    const perm = GEAR().find(i => !i.once && i.wx.includes(w.id) && ps.items?.[i.id] > 0);
+    if (perm) return { item: perm };
+    if (ps.wxOnce?.round === round() && ps.wxOnce.wx.includes(w.id)) return { item: ITEM_BY_ID[ps.wxOnce.id], active: true };
+    // the cheapest 1회용 that covers it (1회용우산 before 1회용우비)
+    const once = GEAR().filter(i => i.once && i.wx.includes(w.id) && ps.items?.[i.id] > 0).sort((a, b) => a.wx.length - b.wx.length)[0];
+    if (!once) return null;
+    ps.items[once.id]--;
+    // a second 1회용 in the same round adds its weathers to the one already open
+    const keep = ps.wxOnce?.round === round() ? ps.wxOnce.wx : [];
+    ps.wxOnce = { round: round(), id: once.id, wx: [...new Set([...keep, ...once.wx])] };
+    log(`${once.emoji} ${name(pid)} ${once.name} 사용 — 이번 라운드 끝까지 ${once.wx.map(k => L.WEATHERS[k]?.name).join(" · ")}을(를) 피합니다`);
+    return { item: once, used: true };
+}
+// ☀️ Smile 종족: on a sunny map, 4:00 of play there without a lodging room → 식량 +5 (only once per turn — never +10 for 8:00)
+export const SMILE_SUN_SEC = 240, SMILE_SUN_FOOD = 5;
+const isSmile = pid => String(Store.player(pid)?.ethnicity || "").trim().toLowerCase() === "smile";
+// one second on the map → null | { w, sheltered } | { w, guard } | { w, dmg, hp } | { w, dead } | { w, sunFood }
 export function weatherTick(t) {
     const life = (t.life ||= { sec: 0 });
     if (life.map !== t.loc) { life.map = t.loc; life.mapSec = 0; }
     life.mapSec = (life.mapSec || 0) + 1;
     const w = weatherAt(t.loc);
-    if (!w.hp) return null;
     const s = life.mapSec;
+    if (w.id === "sun") {
+        if (life.sunFed || s < SMILE_SUN_SEC || !isSmile(t.pid) || sheltered(t.pid, t.loc)) return null;
+        life.sunFed = true; // only once per turn: 8 minutes there is still just +5
+        const got = addFood(t.pid, SMILE_SUN_FOOD);
+        if (!got) return null;
+        log(`☀️ ${name(t.pid)} 햇살을 듬뿍 받아 식량 게이지 +${got} (Smile 종족 · 해 맵 4분) → ${foodOf(t.pid)}`);
+        Store.saveSeason();
+        return { w, sunFood: got, food: foodOf(t.pid) };
+    }
+    if (!w.hp) return null;
     if (s < L.WEATHER_FIRST || (s - L.WEATHER_FIRST) % L.WEATHER_EVERY) return null;
     if (sheltered(t.pid, t.loc)) { log(`${w.emoji} ${name(t.pid)} ${w.name} — 🏨 숙소 덕분에 무사`); return { w, sheltered: true }; }
+    const guard = weatherGuard(t.pid, w);
+    if (guard) {
+        if (!guard.used) log(`${w.emoji} ${name(t.pid)} ${w.name} — ${guard.item?.emoji || "☂️"} ${guard.item?.name || "우산"} 덕분에 무사`);
+        Store.saveSeason(true);
+        return { w, guard };
+    }
     life.wxHits = (life.wxHits || 0) + 1;
     bump(t.pid, "wxDmg", w.hp); // 🌦️ weather missions
     const r = hpToll(t.pid, w.hp, `${w.emoji} ${w.name}`);

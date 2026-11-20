@@ -662,3 +662,19 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .loc-main .gc-name .gc-ico { font-size: 22px; }
 .loc-main .gc-desc { margin-top: auto; }
 .ss-rv { margin-top: 4px; } .ss-tag.rv-ok { background: #14b8a62a; color: #5eead4; } .ss-tag.rv-bad { background: #64748b33; color: #cbd5e1; }
+
+/* 🎰 / 🃏 games tab: slots and casino games in their own sections */
+.game-secs { display: flex; flex-direction: column; gap: 18px; }
+.game-sec-h { margin: 0 0 8px; font-size: 16px; font-weight: 900; display: flex; align-items: baseline; gap: 6px; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.game-sec-h small { font-size: 12px; font-weight: 700; opacity: .65; }
+.game-sec.casinos .game-sec-h { border-color: #a855f766; }
+.game-sec.slots .game-sec-h { border-color: #facc1566; }
+/* 🆕 NEW · 🔥 HOT · 🔥 SUPER HOT badges (game/gameBadges.js) */
+.gcard { position: relative; }
+.gc-badges { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; z-index: 2; pointer-events: none; }
+.gc-badge { font-size: 10px; font-weight: 900; letter-spacing: .5px; line-height: 1; padding: 4px 7px; border-radius: 999px; color: #fff; box-shadow: 0 2px 6px #0007; white-space: nowrap; }
+.gc-badge.new { background: linear-gradient(135deg, #22c55e, #059669); }
+.gc-badge.hot { background: linear-gradient(135deg, #fb923c, #ea580c); }
+.gc-badge.superhot { background: linear-gradient(135deg, #f43f5e, #dc2626 55%, #f59e0b); animation: gcHot 1.2s ease-in-out infinite; }
+@keyframes gcHot { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.08); filter: brightness(1.25); } }
+@media (prefers-reduced-motion: reduce) { .gc-badge.superhot { animation: none; } }
