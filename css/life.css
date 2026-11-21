@@ -109,6 +109,7 @@
 .lg-room.drawn.bad { border-color: #ef4444; box-shadow: 0 0 16px #ef4444; }
 .lg-drawn { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; padding: 8px; border-radius: 12px; background: #052e16; }
 .lg-drawn.bad { background: #450a0a; }
+.lg-drawn.rolling { background: #1e1b4b; animation: vitPulse .9s ease-in-out infinite; }
 .lg-inner { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 12px; background: #1e1b4b; border: 1px solid #6366f1; }
 
 /* ---- 🌦️ weather */
@@ -285,9 +286,8 @@ html[lang="en"] .sub-tab, html[lang="en"] .chip { white-space: nowrap; overflow:
 
 /* ⓘ food gauge info (a small icon sitting above the 🍚 bar) */
 .vbar.food { position: relative; }
-.vit-info { position: absolute; top: -11px; right: 2px; z-index: 2; width: 15px; height: 15px; padding: 0; border-radius: 50%; border: 1px solid #fde68a99; background: #1c1206; color: #fde68a; font: 900 10px/13px sans-serif; cursor: pointer; }
+.vit-info { display: inline-block; vertical-align: top; margin: 1px 0 0 3px; width: 12px; height: 12px; padding: 0; border-radius: 50%; border: 1px solid #fde68a99; background: #1c1206; color: #fde68a; font: 900 9px/10px sans-serif; cursor: pointer; }
 .vit-info:hover { background: #f59e0b; color: #1c1206; }
-.vitals.compact .vit-info { top: -10px; }
 .vbar.food.starving .vbar-track { border-color: #ef4444; box-shadow: 0 0 8px #ef4444aa, inset 0 2px 4px #0009; animation: vitPulse 1s ease-in-out infinite; }
 .vit-next.starve { color: #fca5a5; font-weight: 900; }
 .fg-info p { margin: 6px 0; line-height: 1.5; }

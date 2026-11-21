@@ -1340,3 +1340,7 @@
 .cabinet.std > .cab-ctrl { flex-wrap: nowrap; }
 /* boards that sized themselves from the window height now get a fixed size — the fit does the rest */
 .cabinet.std.theme-chaos_cube .reels.sp-reels { --cell: 84px; }
+
+/* 🎰 FREE SPIN counter: bottom-right corner of the reel board (at the top it was clipped by the board edge) */
+.reel-frame .fs-hud:not(.static), .reel-frame .sp-hud { top: auto; left: auto; bottom: 6px; right: 8px; transform: none; z-index: 7; gap: 10px; padding: 4px 12px; font-size: 14px; }
+.reel-frame .fs-hud:not(.static) small { font-size: 10px; }

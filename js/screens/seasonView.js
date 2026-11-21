@@ -39,7 +39,7 @@ import { emoInventory } from "../emomon/ui.js";
 import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
 import { promoAtTurn } from "./promo.js";
 import { bunkerFallback, bunkerArm, bunkerKeyDue, bunkerKeyFound, askAccessCard, richFallback, RICH_FALLBACK_TEXT } from "./bunker.js";
-import { endLocked, endLockText, END_LOCK_LEFT, kidnapLockLeft, escapeTried } from "../game/extra.js";
+import { endLocked, endLockText, END_LOCK_LEFT, kidnapLockLeft, escapeTried, stayLockLeft } from "../game/extra.js";
 import { lottoView, seasonLottoCheck } from "./lotto.js";
 import { highlightView } from "./highlight.js";
 import { deptView, gotchaView } from "./gotcha.js";
@@ -49,7 +49,7 @@ import { arcadeView, CORNER_KINDS } from "./arcade.js";
 import { stopSurvivalFx, survivalSide, survivalMsgs, infernoGate, INFERNO_FREE } from "./survivalLand.js";
 import { iceWrap, mapAudio } from "./survivalIce.js";
 import { setMapBackdrop, clearMapBackdrop } from "../ui/mapBackdrop.js";
-import { friendsView, helpView, voteStage } from "./social.js";
+import { friendsView, helpView, voteStage, voteBoard } from "./social.js";
 import * as SO from "../game/social.js";
 import { mapNo } from "../data/mapAdmin.js";
 import * as LF from "../game/life.js";
@@ -681,6 +681,7 @@ function locationStage(s) {
 
     const pauseBtn = h("button.btn.ghost.small", { onclick: () => { t.running = !t.running; pauseBtn.textContent = t.running ? "⏸ 일시정지" : "▶ 재개"; updateHud(); Store.saveSeason(); } }, t.running ? "⏸ 일시정지" : "▶ 재개");
     // 🔒 Hell · Sugar · Terror · Jail · Cursed · Radioactive: the turn can only end with ≤ 5 min left
+    // ⏳ Hell · Magma Town · Death Door · Dark Space · Death Casino: at least 2 min on the map first (game/extra.js MIN_STAY)
     const endBtn = loc.noEnd ? h("span.rv-noend", { title: "Survival Land의 모든 맵은 턴 종료가 불가능합니다 — 시간이 끝날 때까지 플레이" }, "🔒 턴 종료 불가") : h("button.btn.red.small", { onclick: async () => {
         if (endLocked(loc, t)) return toast(endLockText(loc, t), "warn", 3500);
         if (await confirmBox("턴을 종료할까요?")) finishTurn();
@@ -688,7 +689,7 @@ function locationStage(s) {
     const lockEnd = () => {
         if (loc.noEnd) return;
         const l = endLocked(loc, t); endBtn.classList.toggle("locked", l);
-        endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(t.remaining - END_LOCK_LEFT)} 후)`;
+        endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(Math.ceil(Math.max(loc.endLock ? t.remaining - END_LOCK_LEFT : 0, stayLockLeft(loc, t))))} 후)`;
     };
 
     // 🎰 / 🃏 game cards with 🆕 NEW · 🔥 HOT · 🔥 SUPER HOT badges (game/gameBadges.js)
@@ -1157,7 +1158,8 @@ function locationStage(s) {
 // ------------------------------------------------------------------ judge
 function judgeStage(s) {
     const passed = s.order.filter(pid => s.results[pid]?.pass);
-    const failed = s.order.filter(pid => !s.results[pid]?.pass);
+    const failed = s.order.filter(pid => !s.results[pid]?.pass && !s.results[pid]?.shielded);
+    const shielded = s.order.filter(pid => !s.results[pid]?.pass && s.results[pid]?.shielded); // 🛡️ 최종후보선택제외권 — their own column
     // 🕹️ claw machine: > 3 candidates → the claw pulls 3 balls → 1 saved → 1 of the last 2 is out
     let done = false;
     // everyone passed → all live balls go in and the claw pulls out the 3 lowest earners
@@ -1172,9 +1174,11 @@ function judgeStage(s) {
         h("h2.stage-title", `ROUND ${s.round} 결과`),
         s.allPassed ? h("div.notice", "모두 미션 성공! 집게가 이번 라운드 손익 하위 3명을 탈락 후보로 뽑습니다.") : null,
         ...(s.exempt || []).map(x => h("div.notice.exempt", avatar(x.pid, 40, { effect: false }), h("span", `⭐ ${displayName(Store.player(x.pid))}은(는) ${x.why}으로 인해 탈락후보에서 면제되었다!`))),
+        ...(s.shielded || []).map(pid => h("div.notice.exempt.shield", avatar(pid, 40, { effect: false }), h("span", `🛡️ ${displayName(Store.player(pid))}은(는) 최종후보선택제외권이 발동해 탈락후보에서 제외되었다!`))),
         h("div.judge-cols",
             h("div.jcol.ok", h("h3", `✅ 성공 ${passed.length}`), h("div.jlist", passed.map(pid => miniPlayer(pid, s.ps[pid], s.results[pid]?.exempt ? h("span.exempt-tag", { title: `${s.results[pid].exempt}으로 인해 면제` }, "⭐ 면제") : null)))),
-            h("div.jcol.bad", h("h3", `❌ 실패 ${failed.length}`), h("div.jlist", failed.map(pid => miniPlayer(pid, s.ps[pid]))))),
+            h("div.jcol.bad", h("h3", `❌ 실패 ${failed.length}`), h("div.jlist", failed.map(pid => miniPlayer(pid, s.ps[pid])))),
+            shielded.length ? h("div.jcol.shield", h("h3", `🛡️ 제외 ${shielded.length}`), h("div.jlist", shielded.map(pid => miniPlayer(pid, s.ps[pid], h("span.exempt-tag.shield", { title: "미션 실패 · 최종후보선택제외권 발동 (70%)" }, "🛡️ 제외권"))))) : null),
         h("h3.center", `⚖️ 탈락 후보 ${s.candidates.length}명`),
         s.candidates.length > 3 ? h("div.cand-row", s.candidates.map(pid => h("div.cand-card", avatar(pid, 64, { effect: false }), h("small", displayName(Store.player(pid)))))) : null,
         claw);
@@ -1184,6 +1188,8 @@ function eliminatedStage(s) {
     const pid = s.lastEliminated;
     return h("div.elim-stage",
         h("div.elim-card", h("div.elim-x", "✕"), avatar(pid, 200), h("h2", displayName(Store.player(pid))), h("p", `ROUND ${s.round} 탈락 · 최종 ${s.ps[pid].rank}위`)),
+        // 🗳️ voted out this round → who voted for whom
+        s.vote?.round === s.round && +s.vote.final?.out === +pid ? voteBoard(s.vote) : null,
         h("div.row.center", h("button.btn.gold.huge", { onclick: () => { G.startRound(); render(); } }, `▶ ROUND ${s.round + 1} 시작`)));
 }
 

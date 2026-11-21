@@ -385,9 +385,12 @@ export const COMMENT = { FEE: COMMENT_FEE, OK: COMMUNITY_OK };
 export const locOfTurn = () => LOC_BY_ID[S()?.turn?.loc] || null;
 export const noPassHere = () => !!locOfTurn()?.noPass;
 export const END_LOCK_LEFT = 300;
+// ⏳ Dead Land Hell · Magma Town · Death Door · Dark Space + NPC Land Death Casino: at least 2 minutes on the map before the turn can end
+export const MIN_STAY = { hell: 120, magma_town: 120, death_door: 120, dark_space: 120, death_casino: 120 };
+export const stayLockLeft = (loc, t) => { const m = MIN_STAY[loc?.id]; if (!m || !((t?.remaining ?? 0) > 0)) return 0; return Math.max(0, m - ((t.locIn ?? t.remaining) - t.remaining)); };
 // ⛓️ kidnap room: locked for its first 3 minutes and until the escape was tried
-export const endLocked = (loc, t) => loc?.kidnap ? (kidnapLockLeft(t) > 0 && (t?.remaining ?? 0) > 0) || !t?.escapeTried : !!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT;
-export const endLockText = (loc, t) => !loc?.kidnap ? `🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`
+export const endLocked = (loc, t) => loc?.kidnap ? (kidnapLockLeft(t) > 0 && (t?.remaining ?? 0) > 0) || !t?.escapeTried : (!!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) || stayLockLeft(loc, t) > 0;
+export const endLockText = (loc, t) => !loc?.kidnap ? (stayLockLeft(loc, t) > 0 && !(loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) ? `⏳ 이 맵에서는 들어온 뒤 최소 ${MIN_STAY[loc.id] / 60}분이 지나야 턴을 끝낼 수 있습니다 (${Math.ceil(stayLockLeft(loc, t))}초 남음)` : `🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`)
     : !t?.escapeTried ? "⛓️ 탈출을 반드시 시도해야 턴을 끝낼 수 있습니다" : `⛓️ 납치 공간에서는 3분 동안 턴을 끝낼 수 없습니다 (${Math.ceil(kidnapLockLeft(t))}초 남음)`;
 
 // ---------------------------------------------------------------- 📣 홍보하기 · 인기 투표 (persistent, Store.community.promo)

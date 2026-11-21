@@ -276,23 +276,39 @@ export function castVote(pid, skip = false) {
     if (v.idx >= v.voters.length) { v.phase = "done"; log("🗳️ 투표 종료 — 관리자가 투표결과를 공개합니다"); }
     Store.saveSeason(true);
 }
-// every voter gives 1 vote to the player they have the highest 💞 intimacy with (ties → random, marked)
-// skipped voters give nothing · score of a player = number of votes received
+// every voter gives 1 vote:
+//   💞 75% — to the player they have the highest intimacy with (ties → random, marked)
+//   🎲 25% — NOT that player: half the time the next-highest intimacy, otherwise any other player at random
+// skipped voters give nothing · score of a player = number of votes received · v.ballots keeps who voted for whom
+export const VOTE_AFFINITY = 0.75;
+export const VOTE_MODES = { affinity: "💞 친밀도 1위", next: "🎲 친밀도 다음 순위", random: "🎲 랜덤" };
 export async function tallyVote() {
     const s = S(), v = s.vote;
     const live = v.voters.filter(pid => !s.ps[pid]?.out);
     await loadTraits(live);
     const scores = Object.fromEntries(live.map(t => [t, { total: 0, from: [] }]));
-    for (const voter of live) {
-        if (v.cast[voter] !== "voted") continue;
+    const ballots = [];
+    const pickOf = list => list[Math.floor(Math.random() * list.length)];
+    for (const voter of v.voters) {
+        if (v.cast[voter] !== "voted" || !live.includes(voter)) { ballots.push({ voter, to: null, skip: v.cast[voter] === "skip" }); continue; }
         const opts = live.filter(t => !same(t, voter)).map(t => ({ t, ...intimacy(voter, t) }));
         if (!opts.length) continue;
         const best = Math.max(...opts.map(o => o.score));
         const top = opts.filter(o => o.score === best);
-        const o = top[Math.floor(Math.random() * top.length)];
+        const first = pickOf(top); // the intimacy favourite (ties → random)
+        let o = first, mode = "affinity", tie = top.length > 1;
+        const others = opts.filter(x => x.t !== first.t);
+        if (Math.random() >= VOTE_AFFINITY && others.length) {
+            if (Math.random() < 0.5) {
+                const nb = Math.max(...others.map(x => x.score)), nt = others.filter(x => x.score === nb);
+                o = pickOf(nt); mode = "next"; tie = nt.length > 1;
+            } else { o = pickOf(others); mode = "random"; tie = false; }
+        }
         scores[o.t].total++;
-        scores[o.t].from.push({ voter, score: o.score, parts: o.parts, tie: top.length > 1 });
+        scores[o.t].from.push({ voter, score: o.score, parts: o.parts, tie, mode });
+        ballots.push({ voter, to: o.t, score: o.score, mode, tie });
     }
+    v.ballots = ballots;
     // ranking: high → low, ties broken at random (marked)
     const tie = {};
     const rank = [...live].map(pid => ({ pid, total: scores[pid].total, r: Math.random() })).sort((a, b) => (b.total - a.total) || (a.r - b.r)).map(x => x.pid);

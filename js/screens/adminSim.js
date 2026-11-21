@@ -68,6 +68,16 @@ function testSeasonCard() {
         sync();
     };
     const grid = h("div.ts-grid", list.map(p => h("button.ts-pick", { "data-id": p.id, onclick: () => toggle(p.id) }, avatar(p.id, 44, { effect: false }), h("small", displayName(p)))));
+    // 🔍 search: name (KO / EN) · id · country · race — picks stay selected while filtering
+    const hay = p => [displayName(p), p.name_ko, p.player_name, p.name, p.id, p.country, p.ethnicity].filter(Boolean).join(" ").toLowerCase();
+    const found = h("small.muted");
+    const filter = () => {
+        const q = search.value.trim().toLowerCase(), only = mine.checked; let n = 0;
+        grid.querySelectorAll(".ts-pick").forEach(el => { const p = list.find(x => x.id === +el.dataset.id); const show = (!q || hay(p).includes(q)) && (!only || picked.has(p.id)); el.hidden = !show; if (show) n++; });
+        found.textContent = q || only ? `${n}명 표시` : "";
+    };
+    const search = h("input.ts-search", { type: "search", placeholder: "🔍 플레이어 검색 (이름 · ID · 국가 · 종족)", oninput: filter });
+    const mine = h("input", { type: "checkbox", onchange: filter });
     const random = () => { picked.clear(); [...list].sort(() => Math.random() - 0.5).slice(0, TEST_SEASON_MAX).forEach(p => picked.add(p.id)); sync(); };
     const go = () => {
         const r = startTestSeason([...picked]);
@@ -79,6 +89,7 @@ function testSeasonCard() {
         h("h3", "🏁 테스트 시즌"),
         h("p.muted", `최대 ${TEST_SEASON_MAX}명을 골라 실제 시즌과 똑같이 진행합니다 (미션 룰렛 → 턴 → 판정 → 탈락 → 결승). 모든 플레이어는 지난 시즌 기록·지갑·은행·EmoMon 도감과 상관없이 완전히 초기화된 상태로 시작합니다.`),
         h("p.notice", "⚠️ 테스트 시즌은 종료하거나 끝까지 진행해도 아무것도 저장되지 않으며 실제 시즌 데이터에 영향을 주지 않습니다. '테스트 종료'를 누르면 원래대로 돌아옵니다."),
+        h("div.row.ts-find", search, h("label.am-tog", mine, "선택한 플레이어만"), found),
         h("div.row", h("span", "선택: ", count), h("button.btn.small.ghost", { onclick: random }, `🎲 랜덤 ${TEST_SEASON_MAX}명`), h("button.btn.small.ghost", { onclick: () => { picked.clear(); sync(); } }, "선택 해제")),
         grid,
         h("div.row", h("button.btn.gold.big", { onclick: go }, "🏁 테스트 시즌 시작")));

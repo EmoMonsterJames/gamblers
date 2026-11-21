@@ -163,7 +163,7 @@ export function revivalProgress(m, st) {
             const sp = st.spins || 0;
             if (met) return { cur: 1, goal: 1, label: `🎰 100번 안에 ${m.v.toLocaleString()}G 달성!` };
             if (sp >= m.spins) return { cur: 0, goal: 1, label: `스핀 ${sp}회 — 100번 안에 달성하지 못했습니다 (실패)` };
-            return { cur: Math.max(0, st.slotNet || 0), goal: m.v, label: `슬롯 손익 ${Math.round(st.slotNet || 0).toLocaleString()} / ${m.v.toLocaleString()} G · 스핀 ${sp} / ${m.spins}` };
+            return { cur: st.slotWon || 0, goal: m.v, label: `슬롯으로 번 돈 ${Math.round(st.slotWon || 0).toLocaleString()} / ${m.v.toLocaleString()} G · 스핀 ${sp} / ${m.spins}` };
         }
         case "rv_arcade": return { cur: met ? 1 : 0, goal: 1, label: met ? "🏰 보스 격파! 미션 성공" : "🕹️ Arcade 맵에서 보스성 → 보스를 무찌르세요" };
         case "rv_capture": return { cur: met ? 1 : 0, goal: 1, label: met ? `🔍 ${m.mtype} 몬스터 포획 성공!` : `🔍 ${m.mtype} 속성 몬스터를 새로 잡으세요 (EmoMon Capture)` };

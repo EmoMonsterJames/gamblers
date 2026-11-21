@@ -30,14 +30,14 @@ const timeOk = t => !t || t.remaining > 0 || (toast("⏰ 플레이 시간이 끝
 // ================================================================ ❤️ / 🍚 gauges
 export function vitals(ps, { compact = false, mini = false } = {}) {
     const hp = Math.max(0, ps?.hp ?? CONFIG.START_HP), food = ps?.food ?? L.FOOD_START;
-    const bar = (cls, icon, v, max, title) => {
+    const bar = (cls, icon, v, max, title, extra = null) => {
         const pct = Math.max(0, Math.min(100, v / max * 100));
         return h("div.vbar." + cls + (pct <= 30 ? ".low" : "") + (pct <= 0 ? ".empty" : ""), { title: `${title} ${Math.round(v * 100) / 100} / ${max}` },
-            h("i.vbar-ico", icon), h("div.vbar-track", h("u", { style: { width: pct + "%" } }), mini ? null : h("b", `${Math.round(v * 10) / 10}`)));
+            h("i.vbar-ico", icon), h("div.vbar-track", h("u", { style: { width: pct + "%" } }), mini ? null : h("b", `${Math.round(v * 10) / 10}`, extra)));
     };
-    const fb = bar("food", "🍚", food, L.FOOD_MAX, "식량");
-    // ⓘ a small info icon above the food gauge: how the gauge drains and what starving costs
-    if (!mini) fb.prepend(h("button.vit-info", { title: "식량 게이지 정보", onclick: e => { e.stopPropagation(); foodGaugeInfo(); } }, "ⓘ"));
+    // ⓘ right next to the food number: how the gauge drains and what starving costs
+    const info = mini ? null : h("button.vit-info", { title: "식량 게이지 정보", onclick: e => { e.stopPropagation(); foodGaugeInfo(); } }, "ⓘ");
+    const fb = bar("food", "🍚", food, L.FOOD_MAX, "식량", info);
     if (ps?.starve) fb.classList.add("starving");
     return h("div.vitals" + (compact ? ".compact" : "") + (mini ? ".mini" : ""), bar("hp", "❤️", hp, CONFIG.START_HP, "HP"), fb);
 }
@@ -197,7 +197,7 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
 // ================================================================ 🏨 lodging
 export function lodgeView(pid, loc, lodge, { turn, onChange = () => { } } = {}) {
     const wrap = h("div.lg-view", { style: { "--lg": lodge.color || "#eab308" } });
-    let rounds = 1, inner = null;
+    let rounds = 1, inner = null, rolling = null; // rolling: the room type whose doors are being shuffled right now
     const discount = lodge.id === "hotel" || lodge.k === "hotel" ? EP.hotelDiscount(pid) : 0;
     // 🙈 a random (or free) door is rolled only when the player pays for a room — the result is not shown before that
     const hiddenDoor = lodge.entry !== "paid";
@@ -244,13 +244,14 @@ export function lodgeView(pid, loc, lodge, { turn, onChange = () => { } } = {}) 
             const free = rooms.filter(r => !r.who).length;
             const rows = h("div.lg-rooms", rooms.map(r => {
                 const pick = active && rt.pick === "direct" && !r.who;
-                const drawn = d?.room === r.key;
+                const drawn = d?.room === r.key && rolling !== rt.label; // not revealed while the doors are still shuffling
                 return h("button.lg-room" + (r.who ? ".taken" : "") + (pick ? ".pick" : "") + (drawn ? (d.result === "taken" ? ".drawn.bad" : ".drawn") : ""), { disabled: !pick, title: r.who ? `${nm(r.who.pid)} · ROUND ${r.who.until >= 9999 ? "시즌 끝" : r.who.until}까지` : "빈 자리", onclick: () => pick && payFor(rt, r.key, true) },
                     h("small.lg-no", `${r.i + 1}`), r.who ? avatar(r.who.pid, 34, { effect: false }) : h("span.lg-bed", rt.pick === "random" && !r.who ? "🚪" : "🛏️"), r.who ? h("small.lg-who", nm(r.who.pid)) : null);
             }));
             let drawBtn = null;
             if (active && rt.pick === "random") {
-                if (!d) drawBtn = h("button.btn.gold", { onclick: () => draw(rt) }, "🎲 객실 입장 시도 (랜덤 객실 뽑기)");
+                if (rolling === rt.label) drawBtn = h("div.lg-drawn.rolling", h("b", "🎲 객실을 고르는 중…"));
+                else if (!d) drawBtn = h("button.btn.gold", { onclick: () => draw(rt) }, "🎲 객실 입장 시도 (랜덤 객실 뽑기)");
                 else if (!d.result) drawBtn = h("div.lg-drawn", h("b", `🚪 ${d.i + 1}번 객실을 골랐습니다! ${total ? `숙박비 ${fmt(total)}G를 지불하세요` : "체크인하세요"}`),
                     h("button.btn.gold", { onclick: () => payFor(rt, d.room, false) }, total ? `💰 ${fmt(total)}G 지불하기` : "무료로 체크인"));
                 else if (d.result === "taken") {
@@ -277,13 +278,18 @@ export function lodgeView(pid, loc, lodge, { turn, onChange = () => { } } = {}) 
         let r;
         try {
             r = LF.drawRoom(pid, turn, loc.id, lodge, rt);
-            // a little roulette over the doors (no hint whether the room is free)
-            render();
+            // 🎲 1) the doors shuffle first (the pick stays hidden: "객실을 고르는 중…"),
+            //    2) the light stops on the drawn room, 3) only then "N번 객실을 골랐습니다 → 지불하세요"
+            rolling = rt.label; render();
             const btns = [...wrap.querySelectorAll(".lg-type")].find(el => el.querySelector(".lg-type-head b")?.textContent === rt.label)?.querySelectorAll(".lg-room") || [];
-            for (let k = 0; k < 14 && btns.length; k++) { btns.forEach(b => b.classList.remove("hot")); btns[(r.i + k + 1) % btns.length]?.classList.add("hot"); Sound.tick(); await sleep(70 + k * 12); }
-            btns.forEach(b => b.classList.remove("hot"));
-            Sound.coin();
-        } finally { done(); }
+            const n = btns.length, steps = Math.max(18, n * 2 + 4);
+            for (let k = 0; k < steps && n; k++) {
+                btns.forEach(b => b.classList.remove("hot"));
+                btns[((r.i - (steps - 1 - k)) % n + n * steps) % n]?.classList.add("hot"); // the last step lands on the drawn room
+                Sound.tick(); await sleep(60 + Math.round(k * k * 0.5)); // slows down as it lands
+            }
+            Sound.coin(); await sleep(450);
+        } finally { rolling = null; done(); }
         render();
         toast(`🚪 ${r.i + 1}번 객실을 골랐습니다 — 숙박비를 지불하세요`, "info", 3000);
     }

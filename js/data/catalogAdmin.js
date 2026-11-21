@@ -46,7 +46,8 @@ const ORIGINAL = Object.fromEntries(Object.entries(CATS).map(([k, c]) => [k, c.l
 const BASE_SALE = {};
 // (alt entries = a second shop selling the same thing, e.g. alphabet cards in the point shop)
 // gold: second price of 포인트+골드 상점 goods · locs: goods sold at one fixed map only
-for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) if (!it.alt) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price, gold: it.gold || 0, locs: it.locs || null };
+// (locs is read through a getter so goods whose maps are worked out live — 🛡️ 최종후보선택제외권 — stay current)
+for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) if (!it.alt) BASE_SALE[`${it.cat}:${it.id}`] = { shop: shopId, price: it.price, gold: it.gold || 0, get locs() { return it.locs || null; } };
 
 const conf = () => Store.catalog || {};
 

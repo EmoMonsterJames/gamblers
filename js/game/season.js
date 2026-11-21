@@ -1021,6 +1021,7 @@ export function needsGear(loc) {
 export function setLocation(locId, { teleport = false } = {}) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     t.loc = locId;
+    t.locIn = t.remaining; // ⏳ turn clock when this map was entered (MIN_STAY maps: game/extra.js)
     const loc = LOC_BY_ID[locId];
     t.region ||= loc.region;
     if (!teleport) {
@@ -1153,19 +1154,20 @@ export function recordPlay(kind, bet, win, points, extra = {}) {
     const net = win - (extra.free ? 0 : bet);
     if (kind === "slot") {
         t.stats.slotNet += net; t.stats.spins++; ps.totals.slotNet += net; ps.totals.spins++;
+        t.stats.slotWon = (t.stats.slotWon || 0) + Math.max(0, win); // 💰 gold won, bets not subtracted ("~G 이상 벌기" missions)
         if (win > 0) t.stats.slotWins = (t.stats.slotWins || 0) + 1; // a whole bonus round is one win
         t.stats.five = (t.stats.five || 0) + (extra.five ? 1 : 0);
         if (extra.freeSpin) t.stats.freeSpins = (t.stats.freeSpins || 0) + 1;
         if (extra.bonus) { t.stats.slotBonus = (t.stats.slotBonus || 0) + 1; (t.stats.bonusSpins ||= []).push(t.stats.spins); } // slot bonuses only (🔄 revival mission) · on which spins
         const r100 = s.mission?.type === "rv_slot100" ? s.mission : { v: 100000, spins: 100 }; // 🔄 revival: 50,000G within the first 100 spins
-        if (t.stats.spins <= r100.spins && t.stats.slotNet >= r100.v) t.stats.r100 = true;
+        if (t.stats.spins <= r100.spins && (t.stats.slotWon || 0) >= r100.v) t.stats.r100 = true;
         // first bonus of the turn: on which spin (bonus_in missions)
         if (extra.bonus && !t.stats.bonusAt) t.stats.bonusAt = t.stats.spins;
         // best single-spin win per brand and per bet (brand_win / bet_win missions)
         if (extra.brand) { const k = brandKey(extra.brand), bw = (t.stats.brandWin ||= {}); bw[k] = Math.max(bw[k] || 0, win); }
         if (bet) { const bw = (t.stats.betWin ||= {}); bw[bet] = Math.max(bw[bet] || 0, win); }
     }
-    else { t.stats.casinoNet += net; t.stats.plays++; ps.totals.casinoNet += net; ps.totals.plays++; }
+    else { t.stats.casinoNet += net; t.stats.plays++; ps.totals.casinoNet += net; ps.totals.plays++; t.stats.casinoWon = (t.stats.casinoWon || 0) + Math.max(0, win); }
     // 🔥 per-game play counts by month (Hot / Super Hot badges: game/gameBadges.js) — a slot spin or a casino play = 1
     if (extra.game && !s.sandbox && !Store.sandbox) { const gp = (s.gamePlays ||= {}), d = new Date(), k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}|${kind}:${extra.game}`; gp[k] = (gp[k] || 0) + 1; } // "<YYYY-MM>|slot:<id>"
     t.stats.points += points; ps.totals.points += points;
@@ -1206,11 +1208,12 @@ export function missionMet(m, st) {
     if (m.revival) { const r = RV.revivalMet(m, st); if (r !== null) return r; }
     switch (m.type) {
         case "bonus": return m.v ? (st.slotBonus || 0) >= m.v : st.bonus > 0;
-        case "slot_net": return st.slotNet >= m.v;
-        case "casino_net": return st.casinoNet >= m.v;
+        // 💰 "~G 이상 벌기": the gold won counts — bets/losses are not subtracted
+        case "slot_net": return won(st, "slot") >= m.v;
+        case "casino_net": return won(st, "casino") >= m.v;
         case "points": return st.points >= m.v;
         case "jackpot": return m.n ? jpCount(st, m.min) >= m.n : !!st.jackpot && JACKPOT_RANK[st.jackpot] >= JACKPOT_RANK[m.min];
-        case "combo": return st.casinoNet >= (m.c || 0) && st.slotNet >= (m.s || 0) && (st.points || 0) >= (m.p || 0);
+        case "combo": return won(st, "casino") >= (m.c || 0) && won(st, "slot") >= (m.s || 0) && (st.points || 0) >= (m.p || 0);
         case "five": return (st.five || 0) >= m.v;
         case "freespin": return (st.freeSpins || 0) >= m.v;
         case "slot_wins": return slotWinsOf(m, st) >= m.v;
@@ -1254,6 +1257,7 @@ export function missionMet(m, st) {
 }
 // ---- helpers for the checks above
 const psOf = st => st?.pid != null ? S()?.ps?.[st.pid] : null;
+const won = (st, k) => st?.[k + "Won"] || 0; // gold won at slots / casino this turn (no bets subtracted)
 const jpCount = (st, min) => (st.jps || []).filter(j => (JACKPOT_RANK[j] || 0) >= (JACKPOT_RANK[min] || 1)).length;
 // a bonus round counts as `bw` wins (the bonus spin already counted 1)
 const slotWinsOf = (m, st) => (st.slotWins || 0) + (m.bw ? (m.bw - 1) * (st.slotBonus || 0) : 0);
@@ -1271,11 +1275,11 @@ export function missionProgress(m, st) {
     const met = missionMet(m, st);
     switch (m.type) {
         case "bonus": return m.v ? { cur: Math.min(st.slotBonus || 0, m.v), goal: m.v, label: `슬롯 보너스 ${st.slotBonus || 0} / ${m.v}회` } : { cur: Math.min(1, st.bonus), goal: 1, label: st.bonus ? "보너스 달성!" : "보너스 0회" };
-        case "slot_net": return { cur: st.slotNet, goal: m.v, label: `${Math.round(st.slotNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
-        case "casino_net": return { cur: st.casinoNet, goal: m.v, label: `${Math.round(st.casinoNet).toLocaleString()} / ${m.v.toLocaleString()} G` };
+        case "slot_net": return { cur: won(st, "slot"), goal: m.v, label: `🎰 번 돈 ${Math.round(won(st, "slot")).toLocaleString()} / ${m.v.toLocaleString()} G` };
+        case "casino_net": return { cur: won(st, "casino"), goal: m.v, label: `🃏 번 돈 ${Math.round(won(st, "casino")).toLocaleString()} / ${m.v.toLocaleString()} G` };
         case "points": return { cur: st.points, goal: m.v, label: `${st.points} / ${m.v} P` };
         case "jackpot": return m.n ? { cur: Math.min(jpCount(st, m.min), m.n), goal: m.n, label: `${m.min} 이상 잭팟 ${jpCount(st, m.min)} / ${m.n}회` } : { cur: met ? 1 : 0, goal: 1, label: st.jackpot ? `최고 잭팟: ${st.jackpot}` : "잭팟 없음" };
-        case "combo": { const parts = [[st.casinoNet, m.c], [st.slotNet, m.s], [st.points, m.p]].filter(([, g]) => g); return { cur: parts.reduce((a, [v, g]) => a + Math.min(1, Math.max(0, v) / g), 0) / parts.length, goal: 1, label: `🃏 ${Math.round(st.casinoNet).toLocaleString()}/${(m.c || 0).toLocaleString()} · 🎰 ${Math.round(st.slotNet).toLocaleString()}/${(m.s || 0).toLocaleString()} G${m.p ? ` · 💎 ${st.points}/${m.p} P` : ""}` }; }
+        case "combo": { const parts = [[won(st, "casino"), m.c], [won(st, "slot"), m.s], [st.points, m.p]].filter(([, g]) => g); return { cur: parts.reduce((a, [v, g]) => a + Math.min(1, Math.max(0, v) / g), 0) / parts.length, goal: 1, label: `🃏 ${Math.round(won(st, "casino")).toLocaleString()}/${(m.c || 0).toLocaleString()} · 🎰 ${Math.round(won(st, "slot")).toLocaleString()}/${(m.s || 0).toLocaleString()} G${m.p ? ` · 💎 ${st.points}/${m.p} P` : ""}` }; }
         case "five": return { cur: st.five || 0, goal: m.v, label: `5 of a kind ${st.five || 0} / ${m.v}` };
         case "freespin": return { cur: st.freeSpins || 0, goal: m.v, label: `무료스핀 ${st.freeSpins || 0} / ${m.v}` };
         case "slot_wins": return { cur: slotWinsOf(m, st), goal: m.v, label: `WIN ${slotWinsOf(m, st)} / ${m.v}${m.bw ? ` (보너스 1회 = ${m.bw} WIN)` : ""}` };
@@ -1361,6 +1365,7 @@ export function skipTurnOf(pid) { // player who can't play (e.g. admin skip) cou
 
 // ---------------------------------------------------------------- judging
 // rank missions: [metric, direction] → that end of the list are the candidates
+export const FINAL_SHIELD_ODDS = 0.7, FINAL_SHIELD_MIN_LEFT = 6; // 🛡️ 최종후보선택제외권
 const RANK_RULES = { refused_most: ["refused", -1], refused_least: ["refused", 1], emoitems_few: ["emoItems", 1], shops_few: ["shopBuys", 1] };
 function judge() {
     const s = S();
@@ -1396,6 +1401,21 @@ function judge() {
         s.exempt.push({ pid, why });
         log(`⭐ ${name(pid)}은(는) ${why}으로 인해 탈락후보에서 면제되었다!`);
     }
+    // 🛡️ 최종후보선택제외권: 70% to be taken off the candidate list (one is used up when it works).
+    // Never with 6 or fewer players left (self included), and at least one candidate always stays.
+    // Shielded players are listed on their own ("🛡️ 제외"), apart from the mission successes.
+    s.shielded = [];
+    if (live.length > FINAL_SHIELD_MIN_LEFT) for (const pid of shuffle(cands)) {
+        if (cands.length <= 1) break;
+        const ps = s.ps[pid];
+        if (!(ps.items?.final_shield > 0)) continue;
+        if (Math.random() >= FINAL_SHIELD_ODDS) { log(`🛡️ ${name(pid)}의 최종후보선택제외권이 발동하지 않았다…`); continue; }
+        ps.items.final_shield--;
+        cands = cands.filter(x => x !== pid);
+        s.results[pid] = { ...(s.results[pid] || { stats: {} }), shielded: true };
+        s.shielded.push(pid);
+        log(`🛡️ ${name(pid)}은(는) 최종후보선택제외권으로 탈락후보에서 제외되었다!`);
+    }
     if (!cands.length) {
         // everybody passed: the 3 lowest earners of the round become candidates
         const net = pid => { const st = s.results[pid]?.stats || {}; return (st.slotNet || 0) + (st.casinoNet || 0); };
@@ -1408,7 +1428,7 @@ export function eliminate(pid) {
     const s = S();
     const rank = alive().length;
     Object.assign(s.ps[pid], { out: true, outRound: s.round, rank, hp: 0 });
-    s.history.push({ round: s.round, mission: s.mission, candidates: [...s.candidates], eliminated: pid, rank, exempt: (s.exempt || []).map(e => e.pid) });
+    s.history.push({ round: s.round, mission: s.mission, candidates: [...s.candidates], eliminated: pid, rank, exempt: (s.exempt || []).map(e => e.pid), shielded: [...(s.shielded || [])] });
     log(`💀 ${name(pid)} 탈락 (${rank}위)`);
     s.lastEliminated = pid;
     s.status = alive().length <= CONFIG.FINALISTS ? "final" : "eliminated";

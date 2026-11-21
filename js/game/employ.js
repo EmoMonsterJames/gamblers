@@ -555,7 +555,7 @@ playHooks.push((pid, kind, bet, win, extra = {}) => {
     if (!m) return;
     const t = S().turn;
     if (m.id === "maxi" && kind === "slot" && (extra.jackpots || []).some(j => (JACKPOT_RANK[j] || 0) >= JACKPOT_RANK.MAXI)) return missionDone(pid, m);
-    if (m.id === "casino8k" && kind === "casino") { m.prog.net = (m.prog.net || 0) + (win || 0) - (extra.free ? 0 : bet || 0); if (m.prog.net >= 8000) missionDone(pid, m); return; }
+    if (m.id === "casino8k" && kind === "casino") { m.prog.net = (m.prog.net || 0) + Math.max(0, win || 0); /* gold won, bets not subtracted */ if (m.prog.net >= 8000) missionDone(pid, m); return; }
     if (m.id === "bonus5" && kind === "slot" && t) {
         // spins counted from the moment a slot machine is opened (free spins are not spins)
         const c = (t.coSpin ||= {});

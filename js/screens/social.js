@@ -163,7 +163,7 @@ export function voteStage(s, render) {
     const v = s.vote;
     if (!v) return h("div", "?");
     const head = h("h2.stage-title", `🗳️ 투표 탈락 라운드 · ${v.size}명`,
-        h("small", "이번 라운드는 미션 대신 투표로 탈락자를 정합니다. 각 플레이어는 💞 친밀도가 가장 높은 1명에게 1표를 주고, 득표가 가장 적은 3명이 탈락 후보가 됩니다 (동점자가 많으면 집게로 3명)."));
+        h("small", "이번 라운드는 미션 대신 투표로 탈락자를 정합니다. 각 플레이어는 1표를 줍니다 — 💞 75% 확률로 친밀도가 가장 높은 1명, 🎲 25% 확률로 그 사람이 아닌 다음 친밀도 순위나 다른 플레이어. 득표가 가장 적은 3명이 탈락 후보가 됩니다 (동점자가 많으면 집게로 3명)."));
     // ---- 1) everyone votes in turn
     if (v.phase === "voting") {
         const pid = v.voters[v.idx];
@@ -180,7 +180,7 @@ export function voteStage(s, render) {
         const skipBtn = h("button.btn.ghost.big", { onclick: () => { SO.castVote(pid, true); render(); } }, "⏭ Skip");
         return h("div.vote-stage", head,
             h("div.vote-now", h("small", `투표 ${v.idx + 1} / ${v.voters.length}`), avatar(pid, 150), h("h2", pname(pid)), status, h("div.row.center", voteBtn, skipBtn),
-                h("p.muted.small", "투표하면 이 플레이어와 💞 친밀도가 가장 높은 플레이어 1명에게 1표가 들어갑니다 (친밀도 동점이면 랜덤) · Skip하면 이 플레이어의 표는 없습니다")),
+                h("p.muted.small", "투표하면 1표가 들어갑니다: 💞 75% 확률로 이 플레이어와 친밀도가 가장 높은 1명 (동점이면 랜덤) · 🎲 25% 확률로 그 1명이 아닌 다음 친밀도 순위나 다른 플레이어 · Skip하면 이 플레이어의 표는 없습니다")),
             h("div.vote-done", done.map(x => h("div.vd-chip" + (v.cast[x] === "skip" ? ".skip" : ""), avatar(x, 34, { effect: false }), h("small", v.cast[x] === "skip" ? "Skip" : "✔")))));
     }
     // ---- 2) voting over: the admin opens the results
@@ -248,13 +248,29 @@ function voteInfo(v, pid) {
     const sc = v.scores[pid];
     modal(h("div.vote-info",
         h("div.ii-pair", avatar(pid, 72), h("div", h("h3", pname(pid)), h("b.ii-score", `🗳️ 득표 ${sc.total}표`))),
-        h("p.muted.small", "각 플레이어는 💞 친밀도가 가장 높은 1명에게 1표를 줍니다 (친밀도 동점이면 랜덤 · Skip한 플레이어의 표는 없음). 아래는 이 플레이어에게 표를 준 사람과 그 친밀도입니다."),
+        h("p.muted.small", "각 플레이어는 1표를 줍니다: 💞 75% 친밀도 1위 · 🎲 25% 친밀도 다음 순위 또는 랜덤 (Skip한 플레이어의 표는 없음). 아래는 이 플레이어에게 표를 준 사람, 투표 방식과 그 친밀도입니다."),
         sc.from.length ? null : h("p.muted", "받은 표가 없습니다"),
         h("div.vi-list", [...sc.from].sort((a, b) => b.score - a.score).map(f => h("details.vi-voter",
-            h("summary", avatar(f.voter, 28, { effect: false }), h("span", pname(f.voter) + (f.tie ? " · 동점 랜덤" : "")), h("b" + (f.score < 0 ? ".neg" : ""), `💞 ${f.score > 0 ? "+" + f.score : f.score}`)),
+            h("summary", avatar(f.voter, 28, { effect: false }), h("span", pname(f.voter) + (f.mode && f.mode !== "affinity" ? ` · ${SO.VOTE_MODES[f.mode]}` : "") + (f.tie ? " · 동점 랜덤" : "")), h("b" + (f.score < 0 ? ".neg" : ""), `💞 ${f.score > 0 ? "+" + f.score : f.score}`)),
             f.parts.length ? h("ul.ii-parts", f.parts.map(p => h("li" + (p.pts < 0 ? ".neg" : ""), h("span", p.label), h("b", p.pts > 0 ? `+${p.pts}` : `${p.pts}`)))) : h("p.muted.small", "공통점 없음 (0)")))),
         Object.entries(v.cast).some(([, c]) => c === "skip") ? h("p.muted.small", `⏭ Skip: ${Object.entries(v.cast).filter(([, c]) => c === "skip").map(([p]) => pname(p)).join(", ")}`) : null),
         { title: "ⓘ 득표 내역", wide: true });
+}
+
+// 🗳️ who voted for whom (shown once the voted-out player is revealed) — voter → target, how the vote was decided
+export function voteBoard(v) {
+    const list = v?.ballots || [];
+    if (!list.length) return null;
+    const out = v.final?.out;
+    const n = list.filter(b => b.to != null).length, aff = list.filter(b => b.mode === "affinity").length;
+    return h("div.vote-board",
+        h("h3", "🗳️ 투표 결과 — 누가 누구에게 투표했나"),
+        h("small.muted", `${n}표 · 💞 친밀도 1위 ${aff}표 · 🎲 다음 순위 / 랜덤 ${n - aff}표${list.some(b => b.skip) ? ` · ⏭ Skip ${list.filter(b => b.skip).length}명` : ""}`),
+        h("div.vb-list", list.map(b => h("div.vb-row" + (b.to == null ? ".skip" : "") + (b.to != null && +b.to === +out ? ".out" : ""),
+            avatar(b.voter, 30, { effect: false }), h("span.vb-name", pname(b.voter)),
+            h("span.vb-arrow", "→"),
+            b.to == null ? h("span.vb-name.muted", b.skip ? "⏭ Skip" : "—") : [avatar(b.to, 30, { effect: false }), h("span.vb-name", pname(b.to) + (+b.to === +out ? " 💀" : ""))],
+            b.to == null ? null : h("small.vb-mode." + b.mode, `${SO.VOTE_MODES[b.mode] || ""}${b.tie ? " · 동점" : ""} · 💞 ${b.score > 0 ? "+" + b.score : b.score}`)))));
 }
 
 function voteFinalStage(s, render) {
@@ -293,6 +309,7 @@ function voteFinalStage(s, render) {
         Sound.boom();
         msg.textContent = `💀 ${pname(f.out)} 탈락 — 득표 ${v.scores[f.out].total}표${f.saved2Tie ? " (동점 → 랜덤)" : ""}`;
         await sleep(2200);
+        wrap.append(voteBoard(v) || "");
         wrap.append(h("div.row.center", h("button.btn.red.huge", { onclick: () => {
             G.log(`🗳️ 투표 탈락: ${G.name(f.out)} (득표 ${v.scores[f.out].total}표) · 구제 ${G.name(f.saved1)}${f.saved1Tie ? " (동점 랜덤)" : ""} · 생존 ${G.name(f.saved2)}${f.saved2Tie ? " (동점 랜덤)" : ""}`);
             G.eliminate(f.out);

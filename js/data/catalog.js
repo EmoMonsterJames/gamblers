@@ -396,6 +396,7 @@ export const ITEMS = [
     { id: "parasol_1",  name: "1회용양산",  emoji: "🏖️", wx: ["heat"], once: true, desc: "폭염을 피하는 1회용 아이템입니다. 폭염이 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
     // 🔑 투숙객교체권 (10P · 20 point shops): a random room comes up already taken → take it over (the guest there is moved out)
     { id: "guest_swap", name: "투숙객교체권", emoji: "🔑", desc: "숙소에서 랜덤으로 뽑힌 객실에 이미 다른 플레이어가 있을 때, 이 권을 써서 그 자리를 빼앗습니다 (원래 손님은 퇴실)." },
+    { id: "final_shield", name: "최종후보선택제외권", emoji: "🛡️", desc: "미션에 실패해 최종 탈락후보가 되었을 때 70% 확률로 탈락후보(집게 프로필공)에서 빠집니다 (100%는 아님). 발동하면 1개가 사용되고, 미션 성공자와 따로 \"🛡️ 제외\"로 분류됩니다. 본인 포함 남은 플레이어가 6명 이하이면 발동하지 않습니다." },
     { id: "flu_cure",    name: "독감치료제", emoji: "💉", cure: "flu",    desc: "플레이어가 걸린 독감을 바로 치료합니다." },
     { id: "cancer_cure", name: "암치료제",   emoji: "💊", cure: "cancer", desc: "플레이어가 걸린 암을 바로 치료합니다." },
     // 🐾 EmoMon slots: 3 free, +1 per ticket up to 10
@@ -703,6 +704,13 @@ export const WX_GEAR_MAPS = 20;
     { const r2 = (() => { let h = 2166136261; for (const c of "gamblers-guest-swap") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
       const a = LOCATIONS.filter(l => ok(l) && l.shops.includes("point")); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r2() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
       SHOPS.point.list.push({ cat: "item", id: "guest_swap", price: 10, locs: a.slice(0, 20).map(l => l.id) }); }
+    // 🛡️ 최종후보선택제외권 100,000G: 20 random maps that have a 일반 상점 *now* (admin map edits can add / remove shops,
+    // so the list is worked out live — same seeded order every time, cached until the set of general-shop maps changes)
+    { let cache = null; const shieldLocs = () => { const pool = LOCATIONS.filter(l => ok(l) && !l.off && l.shops.includes("general")), key = pool.map(l => l.id).join(","); if (cache?.key === key) return cache.locs;
+      const r3 = (() => { let h = 2166136261; for (const c of "gamblers-final-shield") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
+      const a = [...pool].sort((x, y) => x.id < y.id ? -1 : 1); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r3() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+      cache = { key, locs: a.slice(0, 20).map(l => l.id) }; return cache.locs; };
+      SHOPS.general.list.push({ cat: "item", id: "final_shield", price: 100000, get locs() { return shieldLocs(); } }); }
     for (const [id, price] of [["umbrella_1", 4000], ["raincoat_1", 8000], ["parasol_1", 2000]]) SHOPS.discount.list.push({ cat: "item", id, price }); // which 20 discount maps: wxGearDiscountMaps() in catalogAdmin.js (the admin can move discount shops)
 }
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions

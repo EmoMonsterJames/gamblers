@@ -298,6 +298,8 @@
 /* ---------------------------------------------------------- judge / hud */
 .notice.exempt { display: flex; align-items: center; gap: 10px; background: linear-gradient(90deg, #a16207aa, #facc1533); border-color: #facc15; }
 .exempt-tag { font-size: 11px; font-weight: 900; color: #fde047; margin-left: auto; white-space: nowrap; }
+.notice.exempt.shield { background: linear-gradient(90deg, #0369a1aa, #38bdf833); border-color: #38bdf8; }
+.exempt-tag.shield { color: #7dd3fc; }
 .turn-hud .stat.boost { background: linear-gradient(135deg, #7c3aed, #db2777); animation: boostPulse 1s ease-in-out infinite alternate; }
 @keyframes boostPulse { to { box-shadow: 0 0 14px #f0abfc; } }
 

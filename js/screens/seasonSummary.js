@@ -47,7 +47,8 @@ function detail(d, r) {
     return h("div.ss-how", round, mission,
         h("div.ss-res", `탈락 후보 ${(e.candidates || []).length}명 중 최종 탈락`, others.length ? h("span.muted", " · 함께 남은 후보:") : null),
         others.length ? h("div.ss-cands", others.map(chip)) : null,
-        e.exempt?.length ? h("div.ss-res.muted", "⭐ 면제: ", e.exempt.map(chip)) : null);
+        e.exempt?.length ? h("div.ss-res.muted", "⭐ 면제: ", e.exempt.map(chip)) : null,
+        e.shielded?.length ? h("div.ss-res.muted", "🛡️ 제외권: ", e.shielded.map(chip)) : null);
 }
 
 
