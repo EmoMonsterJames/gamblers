@@ -21,10 +21,15 @@
 <g transform="translate(160 62) rotate(18)"><path d="M0 0 C-20 -18 -26 8 -4 6 Z M0 0 C20 -18 26 8 4 6 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="2" r="5" fill="#ffd34d" stroke="#3a2a24" stroke-width="2.5"/></g>
 <!-- glam eyes -->
 <ellipse cx="94" cy="136" rx="12" ry="7" fill="#ff4f8b" opacity=".45"/><ellipse cx="162" cy="136" rx="12" ry="7" fill="#ff4f8b" opacity=".45"/>
-<ellipse cx="104" cy="114" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="2"/><ellipse cx="104" cy="115" rx="8" ry="9" fill="#5a2a8a"/><circle cx="106" cy="111" r="3" fill="#fff"/>
-<ellipse cx="152" cy="114" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="2"/><ellipse cx="152" cy="115" rx="8" ry="9" fill="#5a2a8a"/><circle cx="154" cy="111" r="3" fill="#fff"/>
-<path d="M93 106 l-7 -6 M98 102 l-3 -8 M104 101 l0 -8 M163 106 l7 -6 M158 102 l3 -8 M152 101 l0 -8" stroke="#1a1a22" stroke-width="2.8" stroke-linecap="round"/>
-<path d="M96 125 l1.5 -4 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 Z" fill="#fff"/>
+<!-- slanted (찢어진) eyes: narrow almonds with the outer corners flicked up -->
+<path d="M90 120 Q102 116 116 116 Q108 106 92 108 Z" fill="#fff" stroke="#1a1a22" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M166 120 Q154 116 140 116 Q148 106 164 108 Z" fill="#fff" stroke="#1a1a22" stroke-width="2.2" stroke-linejoin="round"/>
+<circle cx="104" cy="113" r="4.6" fill="#5a2a8a"/><circle cx="105.5" cy="111.5" r="1.4" fill="#fff"/>
+<circle cx="152" cy="113" r="4.6" fill="#5a2a8a"/><circle cx="153.5" cy="111.5" r="1.4" fill="#fff"/>
+<path d="M116 116 Q104 103 90 107 L82 100 M140 116 Q152 103 166 107 L174 100" fill="none" stroke="#1a1a22" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M90 104 l-4 -6 M96 102 l-2 -6 M166 104 l4 -6 M160 102 l2 -6" stroke="#1a1a22" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M90 98 Q102 90 116 98 M166 98 Q154 90 140 98" fill="none" stroke="#3a2a24" stroke-width="3.4" stroke-linecap="round"/>
+<path d="M96 127 l1.5 -4 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 Z" fill="#fff"/>
 <!-- nose · smile · 몽이주름 -->
 <path d="M124 132 h8 l-4 5 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.2"/>
 <path d="M115 145 Q128 157 141 145" fill="#d81b60" stroke="#4a1a1a" stroke-width="3" stroke-linecap="round"/>

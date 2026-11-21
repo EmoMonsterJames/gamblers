@@ -12,12 +12,12 @@
 <!-- gown (off the shoulder, gold trim) -->
 <path d="M30 262 C34 222 66 198 98 192 L158 192 C190 198 222 222 226 262 Z" fill="url(#gown)" stroke="#3a2a24" stroke-width="4"/>
 <path d="M64 210 Q128 232 192 210" fill="none" stroke="url(#gold)" stroke-width="5"/>
-<path d="M98 192 Q128 206 158 192" fill="#7a4a2a" stroke="#3a2a24" stroke-width="3"/>
+<path d="M98 192 Q128 206 158 192" fill="#ff9e9e" stroke="#3a2a24" stroke-width="3"/>
 <!-- ears -->
-<ellipse cx="100" cy="30" rx="15" ry="40" transform="rotate(-12 100 70)" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/><ellipse cx="156" cy="30" rx="15" ry="40" transform="rotate(12 156 70)" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/>
-<ellipse cx="100" cy="34" rx="7" ry="30" transform="rotate(-12 100 70)" fill="#ffb8cf"/><ellipse cx="156" cy="34" rx="7" ry="30" transform="rotate(12 156 70)" fill="#ffb8cf"/>
+<ellipse cx="100" cy="30" rx="15" ry="40" transform="rotate(-12 100 70)" fill="#ff9e9e" stroke="#3a2a24" stroke-width="4"/><ellipse cx="156" cy="30" rx="15" ry="40" transform="rotate(12 156 70)" fill="#ff9e9e" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="100" cy="34" rx="7" ry="30" transform="rotate(-12 100 70)" fill="#ffd6e0"/><ellipse cx="156" cy="34" rx="7" ry="30" transform="rotate(12 156 70)" fill="#ffd6e0"/>
 <!-- head -->
-<ellipse cx="128" cy="122" rx="64" ry="58" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="128" cy="122" rx="64" ry="58" fill="#ff9e9e" stroke="#3a2a24" stroke-width="4"/>
 <!-- wide hat with a gold band, a bow and a big feather -->
 <path d="M150 74 C178 34 214 30 226 44 C204 44 186 56 168 76 Z" fill="#fff6e0" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/>
 <path d="M176 60 l10 -6 M186 52 l10 -4 M196 46 l10 -2" stroke="#d9c7a0" stroke-width="2" stroke-linecap="round"/>

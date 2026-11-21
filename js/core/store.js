@@ -48,6 +48,7 @@ export const PLAYER_ART = {
 };
 // 🎨 extras added on top of a generated picture (generator options — see extrasBack / extrasFront in ui/avatarGen.js)
 export const PLAYER_EXTRAS = {
+    274: { eyeColor: "#8fd3ff" },                                                         // 파란눈동자세모 — light blue eyes
     280: { tail: "#ff9ec4", cheekFluff: true },  // 다람쥐토끼 — white cheek fluff + a big pink squirrel tail
     283: { logo: "LUX" },                         // 깜지 — LUX logo on the clothes
     286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings

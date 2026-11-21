@@ -178,7 +178,7 @@ export const DEFAULTS = {
     wig: -1, wigColor: "#7a4a2a", hat: -1, glasses: -1, sun: -1, makeup: -1, mouthLines: false, eyeWrinkle: false, leprosy: false,
     acc: -1, season: "spring", outfit: 0, seed: 1,
     // extras (screen-space, humanoid pictures): logo text on the clothes · 🐿️ squirrel tail colour + 🤍 cheek fluff · 🦋 butterfly wing colour
-    logo: "", tail: "", cheekFluff: false, wings: "", antennae: "", ribbon: ""
+    logo: "", tail: "", cheekFluff: false, wings: "", antennae: "", ribbon: "", eyeColor: ""
 };
 
 // ------------------------------------------------------------ hair / wigs (head-local)
@@ -566,8 +566,8 @@ export function buildAvatar(opts = {}) {
     const fo = inv ? ' opacity=".6"' : "";
     const mk = o.makeup >= 0 && MAKEUP_SPECS[o.makeup] ? MAKEUP_SPECS[o.makeup][1] : null;
     const ey = -2;
-    let eyeStyle = dark && vary.eye < 2 ? 2 : vary.eye;
-    if (race.id === "smile" && eyeStyle === 2) eyeStyle = 1;
+    let eyeStyle = isHex(o.eyeColor) ? 2 : dark && vary.eye < 2 ? 2 : vary.eye; // a set eye colour always uses the iris eye
+    if (race.id === "smile" && eyeStyle === 2 && !isHex(o.eyeColor)) eyeStyle = 1;
     const feat = [];
     // makeup under the eyes
     if (mk?.shadow) feat.push([-1, 1].map(s => `<ellipse cx="${s * 15}" cy="${ey - 5}" rx="9.5" ry="6" fill="${mk.shadow[0]}" opacity="${mk.shadow[1]}"/>`).join(""));
@@ -581,7 +581,7 @@ export function buildAvatar(opts = {}) {
         const x = s * 15;
         if (eyeStyle === 0) feat.push(`<circle cx="${x}" cy="${ey}" r="4.8" fill="${ink}"/><circle cx="${x + 1.6}" cy="${ey - 1.8}" r="1.5" fill="${dark ? "#2a1a1e" : "#fff"}"/>`);
         if (eyeStyle === 1) feat.push(`<ellipse cx="${x}" cy="${ey}" rx="6" ry="7.6" fill="${dark ? "#fff" : "#1a1a22"}" stroke="${ink}" stroke-width="1"/>` + (dark ? `<circle cx="${x}" cy="${ey + 1}" r="4" fill="#1a1a22"/>` : "") + `<circle cx="${x + 2}" cy="${ey - 2.6}" r="2.2" fill="#fff"/><circle cx="${x - 2}" cy="${ey + 2.6}" r="1.2" fill="#fff"/>`);
-        if (eyeStyle === 2) feat.push(`<ellipse cx="${x}" cy="${ey}" rx="7" ry="5.6" fill="#fff" stroke="#2a1a1e" stroke-width="1.6"/><circle cx="${x}" cy="${ey}" r="3.9" fill="${human && o.human === "western" ? "#3f7df0" : vary.eyeCol}"/><circle cx="${x}" cy="${ey}" r="1.9" fill="#1a1a22"/><circle cx="${x + 1.5}" cy="${ey - 1.5}" r="1.1" fill="#fff"/>`);
+        if (eyeStyle === 2) feat.push(`<ellipse cx="${x}" cy="${ey}" rx="7" ry="5.6" fill="#fff" stroke="#2a1a1e" stroke-width="1.6"/><circle cx="${x}" cy="${ey}" r="3.9" fill="${isHex(o.eyeColor) ? o.eyeColor : human && o.human === "western" ? "#3f7df0" : vary.eyeCol}"/><circle cx="${x}" cy="${ey}" r="1.9" fill="#1a1a22"/><circle cx="${x + 1.5}" cy="${ey - 1.5}" r="1.1" fill="#fff"/>`);
         if (eyeStyle === 3) feat.push(`<path d="M${x - 6} ${ey + 1}Q${x} ${ey - 7} ${x + 6} ${ey + 1}" fill="none" stroke="${ink}" stroke-width="2.8" stroke-linecap="round"/>`);
         const top = eyeStyle === 1 ? ey - 7 : eyeStyle === 3 ? ey - 3 : ey - 5;
         if (mk?.liner) feat.push(`<path d="M${x - 7} ${top + 2}Q${x} ${top - 2.5} ${x + 7} ${top + 2}${mk.liner === 2 ? `L${x + s * 12} ${top - 3}` : ""}" fill="none" stroke="#1a1a22" stroke-width="${mk.liner === 3 ? 3 : 1.8}" stroke-linecap="round"/>`);
