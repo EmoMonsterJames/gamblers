@@ -3,6 +3,11 @@
   <circle cx="128" cy="128" r="124" fill="#f2fbf7"/>
   <path d="M104 214 L98 250 M152 214 L158 250" stroke="#2a7a64" stroke-width="7" stroke-linecap="round"/>
   <path d="M90 52 L166 52 L208 214 L48 214 Z" fill="#9fe8d0" stroke="#2a7a64" stroke-width="5" stroke-linejoin="round"/>
+  <!-- pink pleated skirt -->
+  <clipPath id="mb"><path d="M90 52 L166 52 L208 214 L48 214 Z"/></clipPath>
+  <path d="M30 172 Q128 186 226 172 V230 H30 Z" fill="#ff8ab0" stroke="#a82a58" stroke-width="4" clip-path="url(#mb)"/>
+  <path d="M56 192 Q128 202 200 192 L214 230 Q128 242 42 230 Z" fill="#ff8ab0" stroke="#a82a58" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M84 198 L76 232 M106 200 L102 236 M128 201 V238 M150 200 L154 236 M172 198 L180 232" stroke="#e06a94" stroke-width="2"/>
   <path d="M128 52 L104 36 L106 66 Z M128 52 L152 36 L150 66 Z" fill="#ff8ab0" stroke="#a82a58" stroke-width="3" stroke-linejoin="round"/>
   <circle cx="128" cy="52" r="6" fill="#ffaac8" stroke="#a82a58" stroke-width="3"/>
   <!-- prim closed eyes, lashes, small smile -->

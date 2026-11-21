@@ -137,6 +137,7 @@ export function spellingView(pid, loc, onChange) {
         if (ok) {
             ps.money += prize;
             G.log(`🐝 ${G.name(pid)} Spelling Bee 정답! ${word} (+${prize.toLocaleString()}G · 힌트 ${sp.hints}개)`);
+            G.emitEvent("spell", pid, { word });
             Store.saveSeason(true);
             confetti(80, ["🐝", "🍯", "✨", "🪙"]);
             await bigWin(prize, SPELL_MIN / 10, { title: `🐝 ${word}!` });

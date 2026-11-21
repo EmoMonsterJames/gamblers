@@ -35,10 +35,10 @@ export const RACES = [
     ["smile", "스마일", "s", "#ffd83b"], ["cloud", "구름", "h", "#eaf6ff"], ["kalisto", "칼리스토", "h", "#5cc469"], ["devil", "데빌", "h", "#e2463f"],
     ["angel", "엔젤", "h", "#fff3d6"], ["ghost", "고스트", "s", "#f4f4ff"], ["invisible", "투명인간", "h", "#cfe9ff"], ["jiangshi", "강시", "h", "#b7d9c2"],
     ["donglee", "동글이", "s", "#a8e070"], ["triangle", "삼각형", "s", "#ff9f43"], ["square", "사각형 (정사각형)", "s", "#5fa8ff"], ["rectangle", "직사각형", "s", "#b388ff"],
-    ["trapezoid", "사다리꼴", "s", "#4dd0b1"], ["other", "기타 (직접 입력)", "h", "#f6d3b0"]
+    ["trapezoid", "사다리꼴", "s", "#4dd0b1"], ["rhombus", "마름모", "s", "#ffd84a"], ["other", "기타 (직접 입력)", "h", "#f6d3b0"]
 ];
 const RACE = Object.fromEntries(RACES.map(r => [r[0], { id: r[0], ko: r[1], kind: r[2], skin: r[3] }]));
-const ETH = { rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid" };
+const ETH = { rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid", trepezoid: "trapezoid", rhombus: "rhombus", diamond: "rhombus" };
 export const raceFromEthnicity = e => ETH[String(e || "").trim().toLowerCase()] || "other";
 
 export const HUMAN_TYPES = [["asian", "동양인"], ["western", "서양인"], ["black", "흑인 (피부색 자동)"]];
@@ -327,19 +327,24 @@ function eyewear(spec, sun) {
 
 // ------------------------------------------------------------ bodies
 const ARM_H = { L: "M101 125Q80 140 82 170", R: "M155 125Q176 140 174 170", RW: "M155 125Q184 122 190 94" };
+// skY / hip: where a skirt starts on the body and the body's half width there · waist: share of the body height the bottoms cover
+// legX: where the two legs leave the body (default 108 / 148)
 function shapeBody(id) {
-    const circle = { d: "M52 124a76 76 0 1 0 152 0a76 76 0 1 0-152 0Z", ax: [54, 202], ay: 130, legY: 196, top: 48, bot: 200, ff: [128, 124, 2], hf: [128, 124, 2] };
+    const circle = { d: "M52 124a76 76 0 1 0 152 0a76 76 0 1 0-152 0Z", ax: [54, 202], ay: 130, legY: 196, top: 48, bot: 200, ff: [128, 124, 2], hf: [128, 124, 2], skY: 178, hip: 53 };
     return {
         smile: circle, donglee: circle,
-        ant: { d: "M68 126a60 72 0 1 0 120 0a60 72 0 1 0-120 0Z", ax: [70, 186], ay: 134, legY: 194, top: 54, bot: 198, ff: [128, 120, 1.58], hf: [128, 112, 1.6] },
-        square: { d: "M56 64q0-12 12-12h120q12 0 12 12v120q0 12-12 12H68q-12 0-12-12Z", ax: [57, 199], ay: 134, legY: 196, top: 52, bot: 196, ff: [128, 120, 1.9], hf: [128, 120, 1.9] },
-        rectangle: { d: "M34 90q0-12 12-12h164q12 0 12 12v84q0 12-12 12H46q-12 0-12-12Z", ax: [35, 221], ay: 136, legY: 186, top: 78, bot: 186, ff: [128, 132, 1.45], hf: [128, 132, 1.45] },
-        triangle: { d: "M128 38Q134 38 138 46L214 184Q220 196 206 196H50Q36 196 42 184L118 46Q122 38 128 38Z", ax: [68, 188], ay: 150, legY: 196, top: 38, bot: 196, ff: [128, 148, 1.12], hf: [128, 78, 0.9] },
-        trapezoid: { d: "M92 54H164Q174 54 178 64L216 182Q220 196 206 196H50Q36 196 40 182L78 64Q82 54 92 54Z", ax: [58, 198], ay: 140, legY: 196, top: 54, bot: 196, ff: [128, 130, 1.35], hf: [128, 100, 1.25] },
+        ant: { d: "M68 126a60 72 0 1 0 120 0a60 72 0 1 0-120 0Z", ax: [70, 186], ay: 134, legY: 194, top: 54, bot: 198, ff: [128, 120, 1.58], hf: [128, 112, 1.6], skY: 176, hip: 43 },
+        square: { d: "M56 64q0-12 12-12h120q12 0 12 12v120q0 12-12 12H68q-12 0-12-12Z", ax: [57, 199], ay: 134, legY: 196, top: 52, bot: 196, ff: [128, 120, 1.9], hf: [128, 120, 1.9], skY: 174, hip: 72 },
+        rectangle: { d: "M34 90q0-12 12-12h164q12 0 12 12v84q0 12-12 12H46q-12 0-12-12Z", ax: [35, 221], ay: 136, legY: 186, top: 78, bot: 186, ff: [128, 132, 1.45], hf: [128, 132, 1.45], skY: 166, hip: 94, waist: 0.34 },
+        triangle: { d: "M128 38Q134 38 138 46L214 184Q220 196 206 196H50Q36 196 42 184L118 46Q122 38 128 38Z", ax: [68, 188], ay: 150, legY: 196, top: 38, bot: 196, ff: [128, 148, 1.12], hf: [128, 78, 0.9], skY: 174, hip: 74 },
+        trapezoid: { d: "M92 54H164Q174 54 178 64L216 182Q220 196 206 196H50Q36 196 40 182L78 64Q82 54 92 54Z", ax: [58, 198], ay: 140, legY: 196, top: 54, bot: 196, ff: [128, 130, 1.35], hf: [128, 100, 1.25], skY: 174, hip: 80 },
+        rhombus: { d: "M128 36Q134 36 139 41L211 117Q218 124 211 131L139 205Q134 210 128 210Q122 210 117 205L45 131Q38 124 45 117L117 41Q122 36 128 36Z", ax: [52, 204], ay: 128, legY: 204, legX: [116, 140], top: 36, bot: 210, ff: [128, 114, 1.35], hf: [128, 96, 1.2], skY: 150, hip: 58, waist: 0.4 },
         ghost: { d: "M70 150C70 54 186 54 186 150V212Q171 198 157 212Q142 226 128 212Q114 226 99 212Q85 198 70 212Z", ax: [72, 184], ay: 150, legY: 0, top: 78, bot: 214, ff: [128, 126, 1.45], hf: [128, 130, 1.45] }
     }[id];
 }
 
+// humanoid zoom: scale k around the point (128, cy) → about y 12..189 of the full figure is shown (head + torso)
+const UPPER = { k: 1.4, cy: 100 };
 // ------------------------------------------------------------ build
 export function buildAvatar(opts = {}) {
     const o = { ...DEFAULTS, ...opts };
@@ -365,6 +370,8 @@ export function buildAvatar(opts = {}) {
         `<linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1a1e"/><stop offset="1" stop-color="#c88a5a"/></linearGradient><linearGradient id="smb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ad7ff"/><stop offset="1" stop-color="#3f4df0"/></linearGradient><linearGradient id="smf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd83b"/><stop offset="1" stop-color="#e2463f"/></linearGradient>` +
         `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
     out.push(`<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
+    // 🧑 humanoid races: a profile picture — the face and the upper body only (zoomed in on the head and torso)
+    if (humanoid) out.push(`<g transform="translate(128 128) scale(${UPPER.k}) translate(-128 -${UPPER.cy})">`);
 
     const body = humanoid ? null : shapeBody(race.id);
     const ff = humanoid ? [128, 74, 1] : body.ff, hf = humanoid ? [128, 74, 1] : body.hf;
@@ -470,13 +477,34 @@ export function buildAvatar(opts = {}) {
         const hR = vary.pose === 1 ? [xR + 16, ay - 46] : [xR + 18, ay + 42];
         const T = fit.top;
         const arm = d => `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
-        if (body.legY) out.push(`<path d="M108 ${body.legY - 6}L103 238M148 ${body.legY - 6}L153 238" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/><ellipse cx="99" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/><ellipse cx="157" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/>`);
+        // bottoms (like Melon Donglee): the lower part of the body is the pants / skirt, and
+        // 👖 pants come out under the body as two trouser legs · 👗 a skirt / dress flares out past the bottom.
+        // (👻 Ghost has no legs: just the band, as before)
+        const B = fit.bot, bandC = B.ko ? fit.bc : fit.tc, bd = shade(bandC, lum(bandC) < 0.25 ? 0.3 : -0.3);
+        const skirt = !B.leg, edge = S(5, rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? 0.35 : -0.45));
+        const [lx1, lx2] = body.legX || [108, 148], lt = body.legY - 6;
+        const legAt = (x0, s, y) => f1(x0 + s * 5 * (y - lt) / (238 - lt)); // the legs lean out 5px down to the feet
+        if (body.legY) {
+            out.push(`<path d="M${lx1} ${lt}L${lx1 - 5} 238M${lx2} ${lt}L${lx2 + 5} 238" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/><ellipse cx="${lx1 - 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/><ellipse cx="${lx2 + 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/>`);
+            if (!skirt) {
+                const end = B.leg <= 200 ? body.legY + 18 : 233, w = (B.w || 16) / 2 + 5, fl = (B.w || 16) > 19 ? 4 : 0, top = body.bot - 16;
+                const tube = (x0, s) => { const a = legAt(x0, s, top), b = legAt(x0, s, end); return `<path d="M${f1(a - w)} ${top}L${f1(b - w - fl)} ${end}H${f1(b + w + fl)}L${f1(a + w)} ${top}Z" fill="${bandC}" ${S(3.5)}/>` +
+                    `<path d="M${f1(b - w - fl + 2)} ${end - 4}H${f1(b + w + fl - 2)}" stroke="${bd}" stroke-width="${B.cuff ? 5 : 1.8}" stroke-linecap="round"/>` + (B.crease ? `<path d="M${a} ${top + 8}L${b} ${end - 6}" stroke="${bd}" stroke-width="1.3"/>` : ""); };
+                out.push(tube(lx1, -1) + tube(lx2, 1));
+            }
+        }
         out.push(arm(dL) + arm(dR));
-        out.push(`<path d="${body.d}" fill="${skinG}" ${S(5, rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? 0.35 : -0.45))}/>`);
-        // bottoms: a band on the lower part of the body (like Melon Donglee's shorts)
-        const B = fit.bot, bandC = B.ko ? fit.bc : fit.tc, y0 = body.bot - (body.bot - body.top) * (B.sk || !B.ko ? 0.3 : 0.26);
+        out.push(`<path d="${body.d}" fill="${skinG}" ${edge}/>`);
+        const y0 = body.bot - (body.bot - body.top) * (body.waist || (skirt ? 0.3 : 0.26));
         out.push(`<clipPath id="bc"><path d="${body.d}"/></clipPath><g clip-path="url(#bc)"><path d="M0 ${f1(y0)}Q128 ${f1(y0 + 16)} 256 ${f1(y0)}V256H0Z" fill="${bandC}" ${S(4)}/>` +
-            (B.leg ? `<path d="M128 ${f1(y0 + 14)}V256" stroke="${shade(bandC, -0.3)}" stroke-width="3"/>` : [-48, -24, 0, 24, 48].map(x => `<path d="M${128 + x} ${f1(y0 + 12)}V256" stroke="${shade(bandC, -0.2)}" stroke-width="1.8"/>`).join("")) + `</g><path d="${body.d}" fill="none" ${S(5, rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? 0.35 : -0.45))}/>`);
+            (body.legY ? `<path d="M0 ${f1(y0 + 5)}Q128 ${f1(y0 + 21)} 256 ${f1(y0 + 5)}" fill="none" stroke="${bd}" stroke-width="2.2" opacity=".7"/>` : "") +
+            (!skirt ? `<path d="M128 ${f1(y0 + 14)}V256" stroke="${bd}" stroke-width="3"/>` + (B.stitch && body.legY ? `<path d="M${128 - 26} ${f1(y0 + 20)}q8 10 18 4M${128 + 26} ${f1(y0 + 20)}q-8 10 -18 4" fill="none" stroke="${bd}" stroke-width="1.6"/>` : "")
+                : [-48, -24, 0, 24, 48].map(x => `<path d="M${128 + x} ${f1(y0 + 12)}V256" stroke="${shade(bandC, -0.2)}" stroke-width="1.8"/>`).join("")) + `</g><path d="${body.d}" fill="none" ${edge}/>`);
+        if (skirt && body.legY) {
+            const yT = body.skY, hip = body.hip, fl = B.f || 12, hem = body.bot + (B.sk ? Math.max(10, Math.round((B.sk - 186) * 0.75) + 10) : 18);
+            const nf = B.pleat ? 7 : 4, folds = Array.from({ length: nf }, (_, i) => { const u = (i + 1) / (nf + 1) * 2 - 1; return `<path d="M${f1(128 + u * hip)} ${yT + 4}L${f1(128 + u * (hip + fl))} ${hem}" stroke="${shade(bandC, -0.22)}" stroke-width="${B.pleat ? 1.8 : 1.4}"/>`; }).join("");
+            out.push(`<path d="M${128 - hip} ${yT}Q128 ${yT + 7} ${128 + hip} ${yT}L${128 + hip + fl} ${hem}Q128 ${hem + 9} ${128 - hip - fl} ${hem}Z" fill="${bandC}" ${S(4)}/>` + folds);
+        }
         out.push(`<circle cx="${xL - 18}" cy="${ay + 42}" r="8.5" fill="${skinG}" ${S(3)}/><circle cx="${hR[0]}" cy="${hR[1]}" r="8.5" fill="${skinG}" ${S(3)}/>`);
         wrist = [xL - 19, ay + 31];
     }
@@ -594,6 +622,7 @@ export function buildAvatar(opts = {}) {
     K = 1 / hf[2];
     out.push(grp(hf, ht.front + headExtraFront));
     K = 1;
+    if (humanoid) out.push("</g>");
     if (race.id === "other" && o.raceText) out.push(`<text x="128" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#00000055">${esc(String(o.raceText).slice(0, 20))}</text>`);
     out.push("</g>");
     const meta = `<desc>gen:${esc(JSON.stringify(o))}</desc>`;

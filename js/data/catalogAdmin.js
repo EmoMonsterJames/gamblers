@@ -117,8 +117,7 @@ export function locationsWithShop(shopId) { return LOCATIONS.filter(l => locatio
 export function altItems(shopId, locId) { return (SHOPS[shopId]?.list || []).filter(it => it.alt && !(it.locs && locId && !it.locs.includes(locId)) && !saleOf(it.cat, it.id).off && !(ITEM_BY_ID[it.id]?.letter && !cardSoldHere(shopId, ITEM_BY_ID[it.id].letter, locId))).map(it => ({ cat: it.cat, id: it.id, price: it.price })); }
 
 // What a map's shop tab sells. A tab left with nothing to sell (e.g. every
-// product moved elsewhere / turned off in the admin) is stocked with 2~8
-// different goods of that shop type, fixed per map (seeded by map + shop).
+// product moved elsewhere / turned off in the admin) gets up to 2 goods (see emptyShopFill below).
 // Map passes and alphabet cards are never used as filler.
 // 🔄 Survival Land (패자부활전) general shops: a fixed list per map (Survival Land passes = "pass_<map id>", 45,000G)
 //    + whatever the admin placed on that map by name (an item whose 판매 맵 lists it, e.g. ⏹️ 턴 종료권)
@@ -157,9 +156,59 @@ export function shopListing(shopId, locId) {
     }
     const list = [...shopItems(shopId, locId), ...altItems(shopId, locId)];
     if (!locId || shopId === "discount") return list;
-    if (shopId === "decor" && list.length < 2) return [...list, ...decorTopUp(locId, list)]; // 🖼️ never an empty / one-item frame shop
+    if (shopId === "decor" && list.length === 1) return [...list, ...decorTopUp(locId, list)]; // 🖼️ never a one-item frame shop
     if (list.length) return list;
-    return fillerItems(shopId, locId);
+    return emptyShopFill(shopId, locId);
+}
+// 📦 a shop tab with nothing to sell (every shop type: 일반 · 펫 · 무기 · 프레임/효과 · 포인트 · 포인트+골드):
+// up to 2 goods of that shop type, picked for ALL the empty shops of that type together so no two of them
+// carry the same good. When there are not enough goods, the goods sold at the fewest places are repeated first.
+// Fixed while the maps / the admin catalog stay the same (seeded).
+const FILL_N = 2;
+const fillCache = {};
+function emptyShopFill(shopId, locId) {
+    // cheap change check: the maps' own shop lists + the admin catalog object and its size
+    const c = conf(), key = LOCATIONS.map(l => `${l.id}${l.off ? "!" : ""}/${(l.shops || []).join(",")}`).join("|") + "#" + Object.keys(c.edits || {}).length + "#" + Object.values(c.custom || {}).reduce((a, x) => a + (x?.length || 0), 0);
+    if (fillCache[shopId]?.key !== key || fillCache[shopId].conf !== Store.catalog) {
+        const maps = LOCATIONS.filter(l => !l.off && !l.kidnap && l.region !== "survival" && locationShops(l).includes(shopId));
+        fillCache[shopId] = { key, conf: Store.catalog, out: allocateFill(shopId, maps) };
+    }
+    return (fillCache[shopId].out[locId] || []).map(it => ({ ...it, price: saleOf(it.cat, it.id).price || it.price }));
+}
+function allocateFill(shopId, maps) {
+    const k = it => `${it.cat}:${it.id}`;
+    // how many maps sell each good of this shop type right now
+    const count = new Map(), empty = [];
+    for (const l of maps) {
+        const list = [...shopItems(shopId, l.id), ...altItems(shopId, l.id)];
+        if (!list.length) empty.push(l);
+        for (const it of new Map(list.map(x => [k(x), x])).values()) count.set(k(it), (count.get(k(it)) || 0) + 1);
+    }
+    if (!empty.length) return {};
+    // every good this shop type can sell (map passes · alphabet cards · Survival Land goods never)
+    const ok = it => it.price && !saleOf(it.cat, it.id).off && !ITEM_BY_ID[it.id]?.loc && !ITEM_BY_ID[it.id]?.letter && !ITEM_BY_ID[it.id]?.survival && !(it.cat === "item" && /^pass_|^card_/.test(it.id));
+    const uniq = list => [...new Map(list.filter(ok).map(it => [k(it), { cat: it.cat, id: it.id, price: saleOf(it.cat, it.id).price || it.price, gold: it.gold || 0 }])).values()];
+    let pool = uniq([...shopItems(shopId), ...(SHOPS[shopId]?.list || []).filter(it => !it.alt)]);
+    if (!pool.length && SHOPS[shopId]?.cur === "G") pool = uniq([...shopItems("general"), ...SHOPS.general.list]);
+    if (!pool.length) return {};
+    const rnd = seeded(`empty-fill|${shopId}`);
+    const tie = new Map(pool.map(it => [k(it), rnd()]));
+    const order = [...empty];
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const out = {};
+    for (const l of order) {
+        const got = [];
+        for (let n = 0; n < FILL_N; n++) {
+            const cand = pool.filter(it => !got.some(g => k(g) === k(it)) && !(l.crazy && it.id === "time_ext"));
+            if (!cand.length) break;
+            cand.sort((a, b) => (count.get(k(a)) || 0) - (count.get(k(b)) || 0) || tie.get(k(a)) - tie.get(k(b)));
+            const it = cand[0];
+            got.push(it);
+            count.set(k(it), (count.get(k(it)) || 0) + 1);
+        }
+        out[l.id] = got.map(it => ({ ...it, filler: true }));
+    }
+    return out;
 }
 // 🖼️ frame/effect shop with fewer than 2 goods: random frames · frame effects up to 2~5 (fixed per map).
 // Goods placed on a single other map (that map's new frame) are never borrowed.
@@ -169,19 +218,6 @@ function decorTopUp(locId, have) {
     const pool = shopItems("decor").filter(it => !have.some(h => h.cat === it.cat && h.id === it.id) && (saleOf(it.cat, it.id).locs || []).length !== 1);
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     return pool.slice(0, Math.max(0, want - have.length)).map(it => ({ ...it, filler: true }));
-}
-export function fillerItems(shopId, locId) {
-    const noTime = LOCATIONS.find(l => l.id === locId)?.crazy;
-    // goods tied to certain maps (locs: ⏹️ 턴 종료권 · 🧳 · 🩸 …) never become filler elsewhere
-    const ok = it => it.price && !it.locs && !saleOf(it.cat, it.id).locs && !ITEM_BY_ID[it.id]?.loc && !ITEM_BY_ID[it.id]?.letter && !(noTime && it.id === "time_ext") && !saleOf(it.cat, it.id).off;
-    const seen = new Set();
-    const uniq = it => { const k = `${it.cat}:${it.id}`; if (seen.has(k)) return false; seen.add(k); return true; };
-    let pool = (SHOPS[shopId]?.list || []).filter(ok).filter(uniq);
-    if (!pool.length && SHOPS[shopId]?.cur === "G") pool = SHOPS.general.list.filter(ok).filter(uniq);
-    const rnd = seeded(`fill|${shopId}|${locId}`);
-    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-    const n = Math.min(pool.length, 2 + Math.floor(rnd() * 7)); // 2~8
-    return pool.slice(0, n).map(it => ({ cat: it.cat, id: it.id, price: saleOf(it.cat, it.id).price || it.price, gold: it.gold || 0, filler: true }));
 }
 
 // ---------------------------------------------------------------- discount shop

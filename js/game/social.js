@@ -7,7 +7,7 @@
 //   • 🗳️ 투표 탈락 (16 / 8 left)  season.vote = { size, voters, idx, cast, phase, … }
 // =====================================================================
 import { Store } from "../core/store.js";
-import { S, log, name, alive, noteRefuse } from "./season.js";
+import { S, log, name, alive, noteRefuse, emitEvent } from "./season.js";
 import { LOCATIONS, ITEM_BY_ID, SHOPS } from "../data/catalog.js";
 import { saleOf } from "../data/catalogAdmin.js";
 import { parseGen } from "../ui/avatarGen.js";
@@ -144,6 +144,7 @@ export function giveHelp(pid, to, { gold = 0, item = null } = {}) {
     helps().push(rec);
     const what = kind === "gold" ? `${gold.toLocaleString()}G` : `${ITEM_BY_ID[item]?.name || item}`;
     log(`🤝 ${name(pid)} → ${name(to)} 도움주기: ${what} (친밀도 +${score})`, [pid, to]);
+    emitEvent("help", pid, { to: +to, offSeason: !s.roster.some(x => same(x, to)) });
     save(); Store.saveSeason(true);
     return { ok: true, rec };
 }

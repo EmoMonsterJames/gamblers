@@ -18,9 +18,12 @@
 // =====================================================================
 import { Store } from "../core/store.js";
 import { LOC_BY_ID, JACKPOT_RANK, brandKey, attackCount, ITEM_BY_ID } from "../data/catalog.js";
-import { emoItem } from "../emomon/data.js";
+
 import * as L from "../data/life.js";
-import { S, log, name, roundHooks, seasonEndHooks, locationHooks, jobHooks, playHooks, alive } from "./season.js";
+import { S, log, name, roundHooks, seasonEndHooks, locationHooks, jobHooks, playHooks, eventHooks, alive } from "./season.js";
+import { friendsOf, helps, intimacy, RELS } from "./social.js";
+import { emoItem, TYPE_LIST } from "../emomon/data.js";
+import { toast } from "../core/fx.js";
 import { B, account, accountByCode, activeBiz } from "./bank.js";
 import { ownsTypes } from "./extra.js";
 import { monsOf as emoMons, typesOf as emoTypes, giveItem as emoGive } from "../emomon/game.js";
@@ -295,6 +298,7 @@ function employTick(s) {
         if (gift) { note(+pid, x.co, `🎁 ${C.name} 입사 선물 도착! (탈락 중에 입사해 이번 시즌에 지급) — ${gift}`, "pass"); log(`🎁 ${name(pid)} ${C.name} 입사 선물 ${gift}`); hr(x.co, pid, "gift", `입사 선물 지급 — ${gift}`); }
         Store.saveSeason(true);
     }
+    missionTick(s);
     paySalaries(s);
     accountInterest();
     save();
@@ -306,6 +310,7 @@ seasonEndHooks.push(s => {
     try {
         for (const co of Object.keys(L.COMPANIES)) { const c = cohort(co, s.number); if (c && !c.started) startReview(co, c); }
         seasonReview(s);
+        missionSeasonEnd(s);
         save();
     } catch (e) { console.error(e); }
 });
@@ -337,6 +342,7 @@ function hire(pid, co, code, { auto = false } = {}) {
     if (s) log(`🎉 ${name(pid)} ${C.name} ${auto ? "자동 " : ""}입사!${code ? ` 급여 계좌 ${code} 연동` : ""}${gift ? ` · 입사선물 ${gift}` : ""}`);
     payOne(+pid, x, "입사 첫 급여");
     fireIfFull(co, +pid);
+    seatNew(+pid, co);
     save(); Store.saveSeason(true);
     return { ok: true, gift };
 }
@@ -352,7 +358,7 @@ export function quitJob(pid) {
     if (!x) return { ok: false, why: "소속 회사가 없습니다" };
     const C = L.COMPANIES[x.co];
     delete e.staff[pid];
-    hr(x.co, pid, "quit", `자진 퇴사${x.manager ? " (매니저)" : x.promos ? ` (진급 ${x.promos}/3)` : ""}`);
+    hr(x.co, pid, "quit", `자진 퇴사${x.manager ? " (매니저)" : x.promos ? ` (호봉 ${x.promos}/3)` : ""}`);
     note(pid, x.co, `🚪 ${C?.name || x.co}에서 자진 퇴사했습니다.`, "info");
     elog(`${name(pid)} ${C?.name} 자진 퇴사`);
     if (S()) log(`🚪 ${name(pid)} ${C?.name} 자진 퇴사`);
@@ -413,20 +419,234 @@ function seasonReview(s) {
         const C = L.COMPANIES[x.co], rank = s.ps[pid]?.rank;
         if (!C || rank == null) continue;
         if (rank > C.fireOver) { fire(pid, `시즌 ${s.number} ${rank}위 (TOP ${C.fireOver} 밖)`); continue; }
-        if (rank <= C.mgrTop && !x.manager) {
-            x.manager = true; x.pay = C.mgrPay;
-            note(pid, x.co, `👔 ${C.name} 매니저 승진! 시즌 ${s.number} ${rank}위 — 급여 ${C.mgrPay.toLocaleString()}G 고정`, "pass");
-            elog(`${name(pid)} ${C.name} 매니저 승진 (S${s.number} ${rank}위)`);
-            hr(x.co, pid, "promo", `👔 매니저 승진 — 시즌 ${s.number} ${rank}위 · 급여 ${C.mgrPay.toLocaleString()}G`);
-            continue;
-        }
+        // 👔 manager: only through the promotion request (진급 신청) · a TOP finish still raises the pay step (호봉)
         if (!x.manager && rank <= C.promoTop && (x.promos || 0) < 3) {
             x.promos = (x.promos || 0) + 1; x.pay += C.promoAdd;
-            note(pid, x.co, `📈 ${C.name} 진급 ${x.promos}/3! 시즌 ${s.number} ${rank}위 — 급여 +${C.promoAdd.toLocaleString()}G → ${x.pay.toLocaleString()}G`, "pass");
-            elog(`${name(pid)} ${C.name} 진급 ${x.promos} (S${s.number} ${rank}위)`);
-            hr(x.co, pid, "promo", `📈 진급 ${x.promos}/3 — 시즌 ${s.number} ${rank}위 · 급여 ${x.pay.toLocaleString()}G`);
+            note(pid, x.co, `📈 ${C.name} 호봉 ${x.promos}/3! 시즌 ${s.number} ${rank}위 — 급여 +${C.promoAdd.toLocaleString()}G → ${x.pay.toLocaleString()}G`, "pass");
+            elog(`${name(pid)} ${C.name} 호봉 ${x.promos} (S${s.number} ${rank}위)`);
+            hr(x.co, pid, "promo", `📈 호봉 ${x.promos}/3 — 시즌 ${s.number} ${rank}위 · 급여 ${x.pay.toLocaleString()}G`);
         }
     }
+}
+
+// ================================================================ 🗂️ org chart · 🎯 in-company missions · 👔 promotion request
+// staff[pid] += { team, role: "staff" | "manager", mission: { id, attr?, race?, at, season, state, prog }, mdone, mfail, promoTry }
+const DAY = 86400000;
+export const orgOf = co => L.ORG[co] || [];
+const isMgr = x => x.role === "manager";
+const vacancy = (co, staff = staffOf(co)) => Object.fromEntries(orgOf(co).map(T => [T.id, T.staff - staff.filter(x => x.team === T.id && !isMgr(x)).length]));
+const mgrFree = (co, staff = staffOf(co)) => orgOf(co).filter(T => !staff.some(x => x.team === T.id && isMgr(x))).map(T => T.id);
+export const teamOf = pid => { const x = employer(pid); return x ? orgOf(x.co).find(T => T.id === x.team) || null : null; };
+// "종합적인 친밀도": friends / family / acquaintances (by their weight) + helps given or received
+export function socialScore(pid) {
+    const rel = friendsOf(pid).reduce((a, r) => a + Math.max(1, RELS[r.rel]?.pts || 1), 0);
+    return rel + helps().filter(x => +x.from === +pid || +x.to === +pid).length;
+}
+// what points a new hire to a team: 형용형근 비서 → 비서팀 · 카지노 캐셔 → 회계팀 · friends / intimacy → HR팀 ·
+// 호텔 카운터 + 봉사활동 → 경영팀 · (청소 / 똥쓸이 회사) 카지노 청소부 + 똥쓸이 → 청소부 / 똥쓸이 팀
+export function teamScores(pid, co) {
+    const work = co === "sparkle" || co === "dungdung" ? jobCount(pid, "cleaner") + jobCount(pid, "dungsweep") : 0;
+    return { mgmt: jobCount(pid, "hotel") + jobCount(pid, "volunteer"), hr: socialScore(pid), acct: jobCount(pid, "cashier"), sec: jobCount(pid, "secretary"), work };
+}
+// a random team with a free staff seat — more likely the more the player's record points there (never certain)
+function pickTeam(pid, co) {
+    const vac = vacancy(co), sc = teamScores(pid, co);
+    let open = orgOf(co).filter(T => vac[T.id] > 0);
+    if (!open.length) return null;
+    // 📞 Robot Call Center: nothing in the record points elsewhere → one of the call center teams 1~4
+    if (co === "robot" && !sc.sec && !sc.acct && !sc.hr && open.some(T => T.kind === "work")) open = open.filter(T => T.kind === "work");
+    const w = T => vac[T.id] * (1 + 2 * Math.min(10, sc[T.kind] || 0));
+    let r = rnd() * open.reduce((a, T) => a + w(T), 0);
+    for (const T of open) if ((r -= w(T)) < 0) return T.id;
+    return open[open.length - 1].id;
+}
+// staff hired before the org chart existed: managers take a free manager seat, the others a team · everyone gets a mission
+export function ensureOrg(co) {
+    const e = EM(), list = Object.entries(e.staff).filter(([, x]) => x.co === co);
+    let dirty = false;
+    for (const [, x] of list) if (!x.role) {
+        if (x.manager) { const free = mgrFree(co); if (free.length) { x.team = free[Math.floor(rnd() * free.length)]; x.role = "manager"; } else { x.role = "staff"; x.manager = false; } }
+        else x.role = "staff";
+        dirty = true;
+    }
+    for (const [pid, x] of list) if (!x.team && !isMgr(x)) { const t = pickTeam(+pid, co); if (t) { x.team = t; dirty = true; } }
+    for (const [pid, x] of list) if (!x.mission) { x.mission = newMission(); activateMission(+pid, x); dirty = true; }
+    if (dirty) save();
+}
+export function orgChart(co) {
+    ensureOrg(co);
+    const staff = staffOf(co);
+    return {
+        teams: orgOf(co).map(T => ({ ...T, manager: staff.find(x => x.team === T.id && isMgr(x)) || null, members: staff.filter(x => x.team === T.id && !isMgr(x)) })),
+        waiting: staff.filter(x => !orgOf(co).some(T => T.id === x.team))
+    };
+}
+// a new hire takes a staff seat (every staff seat taken → one random staff member is let go to make room)
+function seatNew(pid, co) {
+    const x = EM().staff[pid], C = L.COMPANIES[co];
+    if (!x) return;
+    ensureOrg(co);
+    x.role = "staff"; x.manager = false;
+    let t = pickTeam(pid, co);
+    if (!t) {
+        const pool = staffOf(co).filter(s => s.pid !== +pid && !isMgr(s) && s.team);
+        if (pool.length) { fire(pool[Math.floor(rnd() * pool.length)].pid, `${C.name} 팀 자리가 가득 차 랜덤 해고`); t = pickTeam(pid, co); }
+    }
+    x.team = t; x.mdone = 0; x.mfail = 0; x.promoTry = null;
+    x.mission = newMission();
+    activateMission(pid, x);
+    const T = orgOf(co).find(y => y.id === t);
+    hr(co, pid, "seat", `${T ? `${T.emoji} ${T.name} 사원 배치` : "배치 대기"} · 🎯 사내 미션: ${missionText(x.mission)}`);
+    note(pid, co, `🗂️ ${C.name} ${T ? T.name + " " : ""}사원으로 배치되었습니다. 🎯 사내 미션: ${missionText(x.mission)} (기한: 시즌 최종 ${EMPLOY_FREEZE_AT}명이 남기 전까지)`, "info");
+}
+
+// ---- 🎯 missions
+export const missionDef = m => L.CO_MISSIONS.find(M => M.id === m?.id) || null;
+export const missionText = m => { const M = missionDef(m); return M ? `${M.emoji} ${M.text.replace("{attr}", m.attr || "?").replace("{race}", m.race || "?")}` : "-"; };
+export function missionProgress(m) {
+    const M = missionDef(m), p = m?.prog || {};
+    if (!M) return "";
+    if (M.id === "casino8k") return `${Math.max(0, p.net || 0).toLocaleString()} / ${M.goal.toLocaleString()}G`;
+    if (M.id === "dead2") return `${p.n || 0} / ${M.goal}회`;
+    if (M.id === "big30k") return `${p.slot ? "✅" : "⬜"} 슬롯 30,000G · ${p.help ? "✅" : "⬜"} ${m.race} 도움주기`;
+    return "";
+}
+function newMission() {
+    const M = L.CO_MISSIONS[Math.floor(rnd() * L.CO_MISSIONS.length)];
+    const m = { id: M.id, at: now(), season: null, state: "active", prog: {} };
+    if (M.id === "capture") m.attr = TYPE_LIST[Math.floor(rnd() * TYPE_LIST.length)];
+    if (M.id === "big30k") {
+        const roster = new Set((S()?.roster || []).map(Number)), pool = Store.players.filter(p => p.ethnicity && !roster.has(+p.id));
+        m.race = (pool[Math.floor(rnd() * pool.length)] || Store.players[0])?.ethnicity || "Human";
+    }
+    return m;
+}
+// a mission counts in the first season the player plays after getting it (until 3 are left)
+function activateMission(pid, x) {
+    const m = x?.mission, s = S();
+    if (!m || m.state !== "active" || m.season != null || !real() || !s.ps[pid] || s.ps[pid].out || employFrozen()) return;
+    m.season = s.number;
+}
+const liveMission = pid => {
+    const x = EM().staff[pid], m = x?.mission;
+    if (!m || m.state !== "active" || !real()) return null;
+    if (m.season == null) activateMission(pid, x);
+    return m.season === S()?.number && !employFrozen() ? m : null;
+};
+function missionDone(pid, m) {
+    const x = EM().staff[pid], C = L.COMPANIES[x.co];
+    m.state = "done"; m.doneAt = now();
+    x.mdone = (x.mdone || 0) + 1;
+    note(pid, x.co, `🎯 ${C.name} 사내 미션 완료! ${missionText(m)} — 진급 심사에 반영됩니다`, "pass");
+    hr(x.co, pid, "mission", `🎯 사내 미션 완료 — ${missionText(m)}`);
+    log(`🎯 ${name(pid)} ${C.name} 사내 미션 완료!`);
+    toast(`🎯 ${C.name} 사내 미션 완료! ${missionText(m)}`, "ok", 4500);
+    save(); Store.saveSeason();
+}
+function missionFail(pid, x, why) {
+    const m = x.mission, C = L.COMPANIES[x.co];
+    m.state = "fail"; m.failAt = now();
+    x.mfail = (x.mfail || 0) + 1;
+    note(pid, x.co, `⌛ ${C.name} 사내 미션 실패 (${why}) — ${missionText(m)} · 진급 확률이 낮아집니다`, "fail");
+    hr(x.co, pid, "mission_fail", `⌛ 사내 미션 실패 — ${missionText(m)}`);
+}
+playHooks.push((pid, kind, bet, win, extra = {}) => {
+    const m = liveMission(pid);
+    if (!m) return;
+    const t = S().turn;
+    if (m.id === "maxi" && kind === "slot" && (extra.jackpots || []).some(j => (JACKPOT_RANK[j] || 0) >= JACKPOT_RANK.MAXI)) return missionDone(pid, m);
+    if (m.id === "casino8k" && kind === "casino") { m.prog.net = (m.prog.net || 0) + (win || 0) - (extra.free ? 0 : bet || 0); if (m.prog.net >= 8000) missionDone(pid, m); return; }
+    if (m.id === "bonus5" && kind === "slot" && t) {
+        // spins counted from the moment a slot machine is opened (free spins are not spins)
+        const c = (t.coSpin ||= {});
+        if (c.game !== (extra.game || "?")) { c.game = extra.game || "?"; c.n = 0; }
+        if (!extra.freeSpin) c.n++;
+        if (extra.bonus && c.n <= 5) missionDone(pid, m);
+        return;
+    }
+    if (m.id === "big30k" && kind === "slot" && bet >= 1000 && win >= 30000 && !m.prog.slot) { m.prog.slot = true; if (m.prog.help) missionDone(pid, m); else { toast("🎯 사내 미션: 슬롯 30,000G 달성! 이제 도움주기만 남았습니다", "ok", 4000); save(); } }
+});
+// ☠️ a Dead Land map visited during a turn
+locationHooks.push((pid, locId) => { const t = S()?.turn; if (t && t.pid === +pid && LOC_BY_ID[locId]?.region === "deadland") t.coDead = true; });
+eventHooks.push((kind, pid, data) => {
+    const m = liveMission(pid);
+    if (!m) return;
+    if (kind === "capture" && m.id === "capture" && (emoTypes(data.mon) || []).some(ty => String(ty).toLowerCase() === String(m.attr).toLowerCase())) return missionDone(pid, m);
+    if (kind === "spell" && m.id === "spell") return missionDone(pid, m);
+    if (kind === "turnEnd" && m.id === "dead2" && data.turn?.coDead && !S().ps[pid]?.out) { m.prog.n = (m.prog.n || 0) + 1; if (m.prog.n >= 2) missionDone(pid, m); else save(); return; }
+    if (kind === "help" && m.id === "big30k" && data.offSeason && !m.prog.help && String(Store.player(data.to)?.ethnicity || "").toLowerCase() === String(m.race).toLowerCase()) {
+        m.prog.help = true;
+        if (m.prog.slot) missionDone(pid, m); else { toast(`🎯 사내 미션: ${m.race} 도움주기 완료! 슬롯 30,000G만 남았습니다`, "ok", 4000); save(); }
+    }
+});
+// round start: missions start in the season the player plays · 3 or fewer left → unfinished missions fail · a new season → a new mission
+function missionTick(s) {
+    const frozen = employFrozen();
+    for (const [pidS, x] of Object.entries(EM().staff)) {
+        const pid = +pidS;
+        if (!x.mission) { x.mission = newMission(); }
+        const m = x.mission;
+        if (m.state !== "active" && (m.season ?? 0) < s.number && s.ps[pid] && !s.ps[pid].out && !frozen) x.mission = newMission();
+        activateMission(pid, x);
+        if (frozen && x.mission.state === "active" && x.mission.season === s.number) missionFail(pid, x, `시즌 ${s.number} 최종 ${EMPLOY_FREEZE_AT}명이 남을 때까지 완료하지 못함`);
+    }
+}
+function missionSeasonEnd(s) {
+    for (const [pid, x] of Object.entries(EM().staff)) if (x.mission?.state === "active" && x.mission.season === s.number) missionFail(+pid, x, `시즌 ${s.number} 종료`);
+}
+
+// ---- 👔 promotion request (staff → their team's manager)
+export function promoStatus(pid) {
+    const x = employer(pid);
+    if (!x) return { ok: false, why: "소속 회사가 없습니다" };
+    if (isMgr(x)) return { ok: false, why: "이미 매니저입니다", manager: true };
+    const from = Math.max(Date.parse(x.at) || 0, Date.parse(x.promoTry || "") || 0), left = from + L.PROMO_WAIT_DAYS * DAY - Date.now();
+    if (left > 0) return { ok: false, why: `${x.promoTry ? "진급 실패 후" : "입사 후"} 1개월이 지나야 진급 신청을 할 수 있습니다 (D-${Math.ceil(left / DAY)})`, left };
+    return { ok: true };
+}
+export function promoCheck(pid) {
+    const x = employer(pid), C = L.COMPANIES[x.co], staff = staffOf(x.co);
+    const since = Math.max(Date.parse(x.at) || 0, Date.parse(x.promoTry || "") || 0);
+    const hrPeople = staff.filter(s => s.team === "hr" && s.pid !== +pid);
+    const hrSum = hrPeople.reduce((a, s) => a + (intimacy(pid, s.pid).score || 0), 0);
+    const ranks = Store.results.filter(r => r.playerId === +pid && r.rank != null && (x.season == null || r.season >= x.season)).map(r => r.rank);
+    const best = ranks.length ? Math.min(...ranks) : 99;
+    const T = teamOf(pid);
+    const checks = [
+        { label: "근속 1개월", ok: Date.now() - since >= L.PROMO_WAIT_DAYS * DAY, text: `입사 ${new Date(x.at).toLocaleDateString()}` },
+        { label: "사내 미션 완료", ok: (x.mdone || 0) >= 1, text: `완료 ${x.mdone || 0}회 · 실패 ${x.mfail || 0}회` },
+        { label: `${T?.name || "소속 팀"} 매니저 자리`, ok: !!T && !staff.some(s => s.team === T.id && isMgr(s)), text: T ? (staff.some(s => s.team === T.id && isMgr(s)) ? `매니저 ${name(staff.find(s => s.team === T.id && isMgr(s)).pid)} 재직 중` : "공석") : "배치 대기" }
+    ];
+    const parts = [["기본", 35]];
+    const hrB = Math.max(-10, Math.min(30, hrSum * 4));
+    if (hrPeople.length) parts.push([`HR팀 ${hrPeople.length}명과의 친밀도 ${hrSum}`, hrB]); else parts.push(["HR팀 직원 없음", 0]);
+    if (best <= C.mgrTop) parts.push([`입사 후 최고 ${best}위 (TOP ${C.mgrTop})`, 15]); else if (best <= C.promoTop) parts.push([`입사 후 최고 ${best}위 (TOP ${C.promoTop})`, 8]);
+    if ((x.mdone || 0) > 1) parts.push([`사내 미션 추가 완료 ${(x.mdone || 0) - 1}회`, Math.min(15, ((x.mdone || 0) - 1) * 5)]);
+    if (x.mfail) parts.push([`사내 미션 실패 ${x.mfail}회`, -Math.min(45, x.mfail * 15)]);
+    const chance = Math.max(5, Math.min(95, parts.reduce((a, p) => a + p[1], 0)));
+    return { checks, parts, chance, basic: checks.every(c => c.ok) };
+}
+export function applyPromotion(pid) {
+    const st = promoStatus(pid);
+    if (!st.ok) return st;
+    const x = employer(pid), C = L.COMPANIES[x.co], T = teamOf(pid);
+    const ck = promoCheck(pid), roll = Math.floor(rnd() * 100);
+    const promoted = ck.basic && roll < ck.chance;
+    if (promoted) {
+        x.role = "manager"; x.manager = true; x.pay = C.mgrPay; x.promoTry = null;
+        note(pid, x.co, `👔 ${C.name} ${T.name} 매니저 진급! 급여 ${C.mgrPay.toLocaleString()}G`, "pass");
+        hr(x.co, pid, "promo", `👔 ${T.name} 매니저 진급 (진급 신청 · 확률 ${ck.chance}%) · 급여 ${C.mgrPay.toLocaleString()}G`);
+        elog(`${name(pid)} ${C.name} ${T.name} 매니저 진급`);
+        if (S()) log(`👔 ${name(pid)} ${C.name} ${T.name} 매니저 진급!`);
+    } else {
+        x.promoTry = now();
+        const why = !ck.basic ? `조건 미달 (${ck.checks.filter(c => !c.ok).map(c => c.label).join(" · ")})` : `심사 탈락 (확률 ${ck.chance}%)`;
+        note(pid, x.co, `📉 ${C.name} 진급 신청 결과: 불합격 — ${why}. 1개월 뒤 다시 도전할 수 있습니다`, "fail");
+        hr(x.co, pid, "promo_fail", `📉 진급 신청 불합격 — ${why}`);
+        if (S()) log(`📉 ${name(pid)} ${C.name} 진급 신청 불합격`);
+    }
+    save(); Store.saveSeason(true);
+    return { ok: true, promoted, ...ck, roll };
 }
 
 // ================================================================ 🧪 Arizal Tech Test

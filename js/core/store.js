@@ -8,6 +8,16 @@ import { CONFIG } from "../config.js";
 import { SEED_PLAYERS } from "../data/players.js";
 import { SLOTS } from "../slots/configs.js";
 import { toast } from "./fx.js";
+import { buildAvatar, parseGen, toDataUri } from "../ui/avatarGen.js";
+
+// 🎨 pictures made with the player image generator carry their options: they are redrawn with the
+// current generator on load (same colours / face / makeup / clothes — only the drawing rules change)
+const regenCache = new Map();
+function freshAvatar(src) {
+    if (!String(src || "").startsWith("data:image/svg+xml")) return src;
+    if (!regenCache.has(src)) { let out = src; try { const o = parseGen(src); if (o) out = toDataUri(buildAvatar(o)); } catch (e) { console.warn(e); } regenCache.set(src, out); }
+    return regenCache.get(src);
+}
 
 const LS = "gamblers.v1";
 let sb = null; // supabase client
@@ -283,7 +293,7 @@ export const Store = {
     // ------------------------------------------------------------ players
     player(id) { return this.allPlayers.find(p => p.id === +id); },
     setPlayers(list) {
-        this.allPlayers = [...list].sort((a, b) => a.id - b.id);
+        this.allPlayers = [...list].sort((a, b) => a.id - b.id).map(p => { const img = freshAvatar(p.profile_image); return img === p.profile_image ? p : { ...p, profile_image: img }; });
         let n = 0;
         this.allPlayers = this.allPlayers.map(p => {
             const up = String(p.handler || "").trim().toUpperCase();

@@ -117,7 +117,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                 h("div.en", p.player_name),
                 h("div.badges",
                     p.handler ? badge("전담 " + p.handler, "handler") : null,
-                    badge(rec.avg ? `전적 평균 ${rec.avg.toFixed(1)}위 (${rec.seasons}시즌)` : "전적 없음", "rec"),
+                    badge(rec.avg ? `전적 평균 ${rec.avg.toFixed(1)}위 (시즌 ${rec.seasons}회 출연)` : "전적 없음", "rec"),
                     rec.wins ? badge(`👑 ${rec.wins}회 우승`, "crown") : null,
                     ps?.out ? badge(`탈락 · ${ps.rank}위`, "dead") : null),
                 ps ? vitalBars(ps) : null, ps ? diseaseChips(pid) : null)),
@@ -125,6 +125,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
             h("div.stat.pts", h("small", "포인트"), h("b", fmt(ps.points) + " P"))) : null,
         compact ? null : h("div.pcard-info", info.map(([k, v]) => h("div", h("small", k), h("span", v)))),
+        compact ? null : seasonLog(pid),
         ps && !compact ? h("div.pcard-gear",
             h("div.gear-pet",
                 h("small", "펫"),
@@ -136,6 +137,17 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                 ps.weapons.length ? h("div.wlist", ps.weapons.map(w => weaponChip(w))) : h("div.muted", `없음 — ${BASIC_ATTACK.name} (ATK ${BASIC_ATTACK.atk} / ACC ${BASIC_ATTACK.acc})`)),
             itemsLine(ps)) : null
     );
+}
+// 📜 season log: every finished season the player was in — which season, which place (+ the season running now)
+export function seasonLog(pid) {
+    const rs = (Store.results || []).filter(r => r.playerId === +pid).sort((a, b) => a.season - b.season);
+    const s = Store.season, now = s && s.status !== "done" && s.ps?.[pid] && !rs.some(r => r.season === s.number) ? s : null;
+    if (!rs.length && !now) return h("div.pcard-seasons", h("small", "📜 시즌 기록"), h("span.muted", "아직 시즌 출연 기록이 없습니다"));
+    const medal = r => r === 1 ? "👑" : r === 2 ? "🥈" : r === 3 ? "🥉" : r <= 10 ? "🎖️" : "";
+    return h("div.pcard-seasons", h("small", `📜 시즌 기록 · 출연 ${rs.length + (now ? 1 : 0)}회`),
+        h("div.ps-log", ...rs.map(r => h("span.ps-row" + (r.rank === 1 ? ".win" : r.rank <= 3 ? ".top3" : r.rank <= 10 ? ".top10" : ""),
+            h("b", `시즌 ${r.season}`), h("span", r.rank != null ? `${medal(r.rank)} ${r.rank}위` : "기록 없음"))),
+            now ? h("span.ps-row.now", h("b", `시즌 ${now.number}`), h("span", now.ps[pid].out ? `탈락 · ${now.ps[pid].rank ?? "?"}위` : "진행 중")) : null));
 }
 // ❤️ HP + 🍚 food gauges (the same look as screens/lifeCorners.js vitals())
 export function vitalBars(ps, { mini = false } = {}) {

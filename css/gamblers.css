@@ -251,6 +251,14 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .pcard-info { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .pcard-info div { background: #0e0819; border-radius: 10px; padding: 7px 10px; display: flex; flex-direction: column; }
 .pcard-info small, .pcard-gear small { color: var(--muted); font-size: 11px; }
+/* 📜 season log (ui/profile.js seasonLog) */
+.pcard-seasons { margin-top: 10px; background: #0e0819; border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.pcard-seasons > small { color: var(--muted); font-size: 11px; }
+.ps-log { display: flex; flex-wrap: wrap; gap: 6px; }
+.ps-row { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: #ffffff0a; font-size: 13px; }
+.ps-row b { color: var(--muted); font-weight: 700; font-size: 12px; }
+.ps-row.top10 { border-color: #60a5fa88; } .ps-row.top3 { border-color: #f472b6aa; background: #f472b614; }
+.ps-row.win { border-color: var(--gold); background: #fbbf2422; } .ps-row.now { border-style: dashed; }
 .pcard-gear { display: grid; gap: 12px; }
 .pcard-gear .row b { display: block; }
 .wlist { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }

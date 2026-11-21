@@ -2,7 +2,13 @@
   <!-- Hesitant Square · Square (male) · Young Adult — nervous, fidgeting -->
   <circle cx="128" cy="128" r="124" fill="#eef4fa"/>
   <path d="M100 214 L96 250 M156 214 L160 250" stroke="#2a4a6a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M86 206 L82 240 H112 L114 206 Z M142 206 L144 240 H174 L170 206 Z" fill="#3a4a5a" stroke="#2a4a6a" stroke-width="3.5" stroke-linejoin="round"/>
   <rect x="52" y="52" width="152" height="162" rx="12" fill="#8ab8e8" stroke="#2a4a6a" stroke-width="5"/>
+  <!-- charcoal slacks -->
+  <clipPath id="hb"><rect x="52" y="52" width="152" height="162" rx="12"/></clipPath>
+  <path d="M40 174 Q128 188 216 174 V230 H40 Z" fill="#3a4a5a" stroke="#2a4a6a" stroke-width="4" clip-path="url(#hb)"/>
+  <path d="M128 186 V214" stroke="#22303e" stroke-width="3"/>
+  <rect x="52" y="52" width="152" height="162" rx="12" fill="none" stroke="#2a4a6a" stroke-width="5"/>
   <!-- hands fidgeting together -->
   <path d="M54 160 Q80 186 112 182 M202 160 Q176 186 144 182" stroke="#2a4a6a" stroke-width="8" fill="none" stroke-linecap="round"/>
   <circle cx="118" cy="182" r="10" fill="#8ab8e8" stroke="#2a4a6a" stroke-width="4"/><circle cx="138" cy="182" r="10" fill="#8ab8e8" stroke="#2a4a6a" stroke-width="4"/>

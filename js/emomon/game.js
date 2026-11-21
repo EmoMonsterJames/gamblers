@@ -9,7 +9,7 @@
 import { CONFIG } from "../config.js";
 import { cardId } from "../data/catalog.js";
 import { Store } from "../core/store.js";
-import { S, log, name } from "../game/season.js";
+import { S, log, name, emitEvent } from "../game/season.js";
 import { emoSlots, registerEmoHelpers } from "../game/extra.js";
 import { E } from "./engine.js";
 import { EMO, cat, species, typesOfSpecies, emoItem, captureConfig, isFirstStage, isFinalStage, hasEvolution, monOn, weaponOn, traitOn, isSpecialEvo, TYPE_LIST } from "./data.js";
@@ -222,6 +222,7 @@ export function addMon(pid, mon) {
     mons(pid).push(mon);
     if (!emo(pid).battle) emo(pid).battle = mons(pid)[0].uid;
     seen(pid, mon.sid, mon.from === "evolve" ? "evolve" : "caught");
+    if (mon.from === "capture") emitEvent("capture", pid, { mon });
     Store.saveSeason(true);
     return true;
 }

@@ -18,6 +18,9 @@ import { mapNo } from "../data/mapAdmin.js";
 // other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
 export const locationHooks = [], jobHooks = [], playHooks = [];
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
+// 📣 game events other rules listen to (game/employ.js in-company missions): "capture" · "spell" · "help" · "turnEnd"
+export const eventHooks = [];
+export const emitEvent = (kind, pid, data = {}) => runHooks(eventHooks, kind, pid, data);
 // 📊 season counters the missions read (ps.<key> for the season · turn.stats.<key> for this turn)
 //   refused (입장 거절) · eats (식량 소비) · wxDmg (날씨 HP 피해) · lodgeIn (숙소 입장) · begs (구걸 횟수)
 //   jobGold (직업 + 회사 급여) · earnGold (돈벌기) · spellWins · shopCount { general, discount, … }
@@ -48,6 +51,11 @@ export function selectionPool() {
     const taken = new Set(s.roster);
     return Store.players.filter(p => !taken.has(p.id));
 }
+// 🎖️ players who already took part in an earlier season: at most 5 of them in a season's 20
+export const MAX_VETERANS = 5;
+export const isVeteran = id => (Store.results || []).some(r => r.playerId === +id && r.season !== S()?.number);
+export const veteransIn = ids => ids.filter(isVeteran).length;
+const vetPool = pool => veteransIn(S()?.roster || []) >= MAX_VETERANS ? pool.filter(p => !isVeteran(p.id)) : pool;
 // players of the previous season are drawn again with only 20% of the normal weight
 export const REPICK_WEIGHT = 0.2;
 export function prevSeasonPlayers() {
@@ -96,11 +104,13 @@ export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 4
     // weighted random order in one pass (key = u^(1/w)): same odds as pickForSelection
     const prev = prevSeasonPlayers();
     const wOf = p => prev.has(p.id) ? REPICK_WEIGHT : 1;
+    const vet = new Set(elig.filter(p => isVeteran(p.id)).map(p => p.id));
     for (let t = 0; t < tries; t++) {
         const order = elig.map(p => [Math.pow(Math.random(), 1 / wOf(p)), p]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
         const c = selectionCounts(fixed), picked = [];
-        const take = p => { picked.push(p.id); const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; };
-        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half;
+        let vets = veteransIn(fixed);
+        const take = p => { picked.push(p.id); if (vet.has(p.id)) vets++; const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; };
+        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half && (vets < MAX_VETERANS || !vet.has(p.id));
         // 1) three from every country
         for (const p of order) if (picked.length < need && (c.country[selCountry(p)] || 0) < SELECT_PER_COUNTRY && fits(p)) take(p);
         if (SELECT_COUNTRIES.some(k => (c.country[k] || 0) < SELECT_PER_COUNTRY)) continue;
@@ -116,7 +126,8 @@ export function nextSelection() {
     if (!s.plan || s.plan.some(id => !poolIds.has(id) && !s.roster.includes(id))) s.plan = buildSelectionPlan(s.roster, pool) || [];
     const left = (s.plan || []).filter(id => !s.roster.includes(id));
     if (left.length) return Store.player(left[Math.floor(Math.random() * left.length)]);
-    return pool.length ? pickForSelection(pool) : null;
+    const open = vetPool(pool);
+    return open.length ? pickForSelection(open) : null;
 }
 // everyone still to be drawn (SKIP)
 export function restSelection() {
@@ -1328,6 +1339,7 @@ export function endTurn() {
     if (!t) return;
     const pass = t.ticket || missionMet(s.mission, t.stats);
     s.results[t.pid] = { stats: t.stats, pass, ticket: t.ticket, loc: t.loc };
+    emitEvent("turnEnd", t.pid, { turn: t });
     log(`${pass ? "✅" : "❌"} ${name(t.pid)} 턴 종료 — ${judgedMission(s.mission) ? "판정 대기" : `미션 ${pass ? "성공" : "실패"}`}`);
     s.turn = null;
     s.turnIdx++;

@@ -762,7 +762,36 @@ function locationStage(s) {
         ...(LF.foodCornersAt(loc).length ? [["food", `🍚 푸드${LF.foodCornersAt(loc).length > 1 ? ` (${LF.foodCornersAt(loc).length})` : ""}`]] : []),
         ...(LF.lodgesAt(loc, pid).length ? [["lodge", `🏨 숙소${LF.lodgesAt(loc, pid).length > 1 ? ` (${LF.lodgesAt(loc, pid).length})` : ""}`]] : []),
         ...(rev || (loc.arcade && !(t.arcade?.found || []).length) ? [] : EP.employer(pid) ? [["company", `${EP.companyOf(pid)?.emoji || "🏢"} ${EP.companyOf(pid)?.name || "회사"}`]] : [["employ", "🏢 취업"]])];
-    const tabList = () => { const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv")); l.splice(at, 0, ...lifeTabs(), ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : [])); return l; };
+    // 🗂️ several corners under ONE tab (a row of sub-tabs inside — like 🍚 푸드 / 🏨 숙소):
+    //    🛒 상점 (every shop + 🏷️ 할인 상점 + 🏬 백화점) · 🏅 Honorarium (TOP 10 / 6 / 3 / Winners) ·
+    //    🐾 EmoMonster (Capture · Hospital · Lab · Monster Shop · Gotcha — not the Dex) · 💰 Money (직업 · 구걸 · 취업 · 돈벌기 · 로또 · Highlight · 도움주기)
+    const GROUPS = [
+        ["grp:shop", "🛒 상점", k => k.startsWith("shop:") || k === "dept"],
+        ["grp:honor", "🏅 Honorarium", k => k.startsWith("honor:")],
+        ["grp:emo", "🐾 EmoMonster", k => ["emo:capture", "emo:hospital", "emo:lab", "emo:shop", "gotcha"].includes(k)],
+        ["grp:money", "💰 Money", k => ["job", "beg", "employ", "company", "earn", "lotto", "highlight", "help"].includes(k)]
+    ];
+    // (the arcade keeps its found corners as plain tabs: they pause the arcade clock by tab id)
+    const groupOf = k => loc.arcade || loc.kidnap ? null : GROUPS.find(g => g[2](k))?.[0] || null;
+    const groupMembers = {};
+    const tabList = () => {
+        const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv"));
+        l.splice(at, 0, ...lifeTabs(), ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : []));
+        // one tab per id (a map whose admin-placed goods add a 🏷️ discount shop tab of its own would otherwise show it twice — both lit at once)
+        const seen = new Set(), out = [];
+        for (const k of Object.keys(groupMembers)) delete groupMembers[k];
+        for (const [k, label] of l) {
+            if (seen.has(k)) continue;
+            seen.add(k);
+            const g = groupOf(k);
+            if (!g) { out.push([k, label]); continue; }
+            if (!groupMembers[g]) { groupMembers[g] = []; out.push([g, null]); }
+            groupMembers[g].push([k, label]);
+        }
+        return out.map(([k, label]) => { if (label != null) return [k, label]; const n = groupMembers[k].length; return [k, `${GROUPS.find(g => g[0] === k)[1]}${n > 1 ? ` (${n})` : ""}`]; });
+    };
+    // is this corner on screen right now (as a tab, or as the picked sub-tab of its group)?
+    const isOn = k => currentTab === k || (currentTab === groupOf(k) && subPick[currentTab] === k);
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
@@ -793,6 +822,9 @@ function locationStage(s) {
         return wrap;
     }
     function tabBody(id) {
+        // a corner that lives inside a group → open the group with that corner picked
+        const grp = groupOf(id);
+        if (grp) { subPick[grp] = id; id = grp; }
         currentTab = id;
         // 🕹️ Arcade: using a corner found in the game (from the tab bar too) stops the turn clock until the arcade resumes
         if (loc.arcade && ARC_CORNER_TABS.includes(id) && !cornerPaused) { cornerPaused = true; t.running = false; arcadeInst?.pause?.(); updateHud(); }
@@ -804,6 +836,14 @@ function locationStage(s) {
             body.replaceChildren(infernoGate(pid, t, id, label, { onOpen: () => tabBody(id), onDead: () => { clearInterval(timer); fx.stop(); render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } }));
             return;
         }
+        content = id.startsWith("grp:") ? groupView(id) : cornerContent(id);
+        if (loc.arcade && cornerPaused && id !== "arcade" && !id.startsWith("arc:")) content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")), content);
+        // 🧊 Icy Castle: every corner behind an ice wall until the hammer breaks it
+        if (loc.icy) content = iceWrap(loc, t, pid, id, content);
+        body.replaceChildren(content);
+    }
+    function cornerContent(id) {
+        let content;
         if (id === "games" && !loc.slots.length && !loc.casino.length) content = h("p.notice.center", loc.stuck ? "🧗 Stuck Casino: 게임이 하나도 없습니다… 시간이 끝날 때까지 갇혀 있어야 합니다." : "🫥 이 맵에는 게임이 없습니다.");
         else if (id === "kidnap") content = kidnapView(pid, {
             onChange: () => { updateHud(); side.replaceChildren(sideCard()); },
@@ -863,7 +903,7 @@ function locationStage(s) {
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
         else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
-        else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === id) tabBody(id); } });
+        else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (isOn(id)) tabBody(id); } });
         else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: bizChanged });
         else if (id.startsWith("biz:")) content = bizView(pid, id.slice(4), { turn: t, onChange: bizChanged });
@@ -877,10 +917,15 @@ function locationStage(s) {
         else if (id === "dept") content = deptView(pid, loc.id, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "gotcha") content = gotchaView(pid, loc.id, { onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else content = playerCard(pid, ps);
-        if (loc.arcade && cornerPaused && id !== "arcade" && !id.startsWith("arc:")) content = h("div", h("div.rv-arc-back", "🕹️ 아케이드 안의 코너 — 이용하는 동안 시간이 멈춥니다 ", h("button.btn.small.gold", { onclick: () => tabBody("arcade") }, "🕹️ 아케이드로 돌아가기")), content);
-        // 🧊 Icy Castle: every corner behind an ice wall until the hammer breaks it
-        if (loc.icy) content = iceWrap(loc, t, pid, id, content);
-        body.replaceChildren(content);
+        return content;
+    }
+    // 🗂️ a group tab: its corners as sub-tabs (the one picked last stays picked for this turn)
+    function groupView(gid) {
+        const list = groupMembers[gid] || [];
+        if (!list.length) return h("p.notice", "코너가 없습니다");
+        if (!list.some(([k]) => k === subPick[gid])) subPick[gid] = list[0][0];
+        const bar = h("div.sub-tabs", list.map(([k, label]) => h("button.sub-tab" + (k === subPick[gid] ? ".on" : ""), { onclick: () => { if (k === subPick[gid]) return; Sound.click(); tabBody(k); } }, label)));
+        return h("div.sub-corner.grp-corner", bar, h("div.sub-pane", cornerContent(subPick[gid])));
     }
     const sideCard = () => h("div.loc-side-inner",
         avatar(pid, 120),

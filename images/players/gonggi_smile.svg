@@ -12,7 +12,13 @@
   <path d="M206 120 C226 104 228 78 214 64" fill="none" stroke="#7a3a00" stroke-width="5" stroke-linecap="round"/>
   <circle cx="212" cy="62" r="14" fill="#fff" stroke="#7a3a00" stroke-width="4"/>
   <!-- perfect circle body -->
+  <path d="M90 212 L88 246 H120 L120 212 Z M136 212 L136 246 H168 L166 212 Z" fill="#3a7ae0" stroke="#7a3a00" stroke-width="4" stroke-linejoin="round"/>
   <circle cx="128" cy="134" r="92" fill="url(#sm)" stroke="#7a3a00" stroke-width="5"/>
+  <!-- blue shorts -->
+  <clipPath id="gb"><circle cx="128" cy="134" r="92"/></clipPath>
+  <path d="M30 186 Q128 204 226 186 V240 H30 Z" fill="#3a7ae0" stroke="#7a3a00" stroke-width="4" clip-path="url(#gb)"/>
+  <path d="M128 200 V226" stroke="#2a5ab0" stroke-width="3"/>
+  <circle cx="128" cy="134" r="92" fill="none" stroke="#7a3a00" stroke-width="5"/>
   <ellipse cx="92" cy="80" rx="26" ry="12" fill="#fff" opacity=".55" transform="rotate(-25 92 80)"/>
   <!-- puzzled face -->
   <path d="M84 98 L112 106 M144 96 Q158 84 172 92" fill="none" stroke="#5a2a00" stroke-width="5" stroke-linecap="round"/>
