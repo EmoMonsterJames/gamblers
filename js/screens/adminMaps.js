@@ -15,7 +15,7 @@ import { gotchaManager } from "./gotcha.js";
 import { SLOTS, SLOT_BY_ID } from "../slots/configs.js";
 import { CASINO_GAMES, CASINO_BY_ID } from "../data/casino.js";
 import { applyMaps, locDefault, regionDefault, mapNo } from "../data/mapAdmin.js";
-import { FOOD_CORNERS, FOOD_CORNER_LIST, FOOD_BY_ID, FOODS, ENTRY_KINDS, WEATHERS, WEATHER_DEFAULT_BY_REGION, LODGES, LODGE_LIST } from "../data/life.js";
+import { FOOD_CORNERS, FOOD_CORNER_LIST, FOOD_BY_ID, FOODS, ENTRY_KINDS, LODGES, LODGE_LIST, FOOD_HOME_COUNTRY, FOOD_CORNER_RACES } from "../data/life.js";
 
 const NEEDS = [["", "없음"], ["wings", "🪽 날개"], ["space_suit", "🧑‍🚀 우주복"], ["oxygen", "🤿 산소통"]];
 const REQS = [["", "누구나"], ["points", "포인트 보유"], ["country", "국적 전용"], ["fee", "입장료 (G)"], ["feePts", "입장료 (P)"], ["random", "랜덤 입장"]];
@@ -161,7 +161,6 @@ export function adminMapsPage() {
             l.needMon && "🐾 이모몬 보유자만", l.battleGate && "⚔️ 배틀러를 이겨야 입장", l.typeGate && "🔷 랜덤 속성 보유자만", l.req?.who && `🚧 ${l.req.who} 전용`,
             l.noEnd && "🔒 턴 종료 불가", l.passLate && "⏱️ 5분 이하에서만 맵권", l.disaster && "🌪️ 재난", l.buttonTax && `🔘 버튼마다 HP −${l.buttonTax}`, l.church && "⛪ 안개 · 악마 조각상 · Priest",
             l.arcade && "🕹️ 아케이드", l.quiz && "🧠 퀴즈 팝업", l.inferno && "🔥 코너마다 죽음의 룰렛",
-            l.weather && l.weather !== "sun" && `${l.weather === "random" ? "🎲 날씨 랜덤" : `${WEATHERS[l.weather]?.emoji} ${WEATHERS[l.weather]?.name}`}`,
         ].filter(Boolean);
         return h("div.ag-card.am-loc" + (l.off ? ".off" : ""),
             h("div.row.between",
@@ -224,7 +223,7 @@ export function adminMapsPage() {
             const used = new Set(items.map(x => x.id));
             return h("div.am-life-card", { style: { "--c": T.color } },
                 h("div.row.between", h("b", `${T.emoji} ${c.name || T.name}`), h("button.btn.small.ghost", { title: "이 코너 빼기", onclick: () => setFood(foods.filter((_, k) => k !== i)) }, "✕ 빼기")),
-                h("div.am-life-row", h("small", "입장"), entrySel(entry, v => upd({ entry: v })), entry === "paid" ? feeIn(fee, v => upd({ fee: v })) : null, T.free ? h("small.muted", "· 모두 무료") : null),
+                h("div.am-life-row", h("small", "입장"), h("small.muted", `🎡 입장 룰렛 (모든 푸드 코너 · 무료 30% · 1천/3천/5천/1만G 각 5% · 거절 50%)${FOOD_HOME_COUNTRY[c.k] ? ` · 🏠 ${FOOD_HOME_COUNTRY[c.k]} 출신: 무료 50% · 1천G 20% · 거절 30%` : ""}${FOOD_CORNER_RACES[c.k] ? ` · 🧬 ${FOOD_CORNER_RACES[c.k].join("/")} 종족만` : ""}`), T.free ? h("small.muted", "· 모두 무료") : null),
                 h("div.am-food-items", items.map((it, k) => {
                     const f = FOOD_BY_ID[it.id];
                     return f ? h("span.am-food", h("span", `${f.emoji} ${f.name}`), h("small", `🍚${f.food >= 0 ? "+" : ""}${f.food}`),
@@ -245,14 +244,8 @@ export function adminMapsPage() {
                 h("small.muted", `${T.reserve ? "📅 예약 1~3라운드" : "예약 불가"} · ` + T.rooms.map(r => `${r.label} ${r.n}자리 ${r.price ? r.price.toLocaleString() + "G" : "무료"} (${r.pick === "random" ? "랜덤" : "바로 선택"})`).join(" · ")
                     + (T.needTypes ? ` · 🐾 ${T.needTypes.join("/")} 필요` : "") + (T.freeTypes ? ` · 🐾 ${T.freeTypes.join("/")} 무료` : "") + (T.shop ? ` · 🔐 ${FOOD_CORNERS[T.shop].name}` : "") + (T.foods ? ` · 🔐 ${T.foods.map(k => FOOD_CORNERS[k].name).join(" · ")}` : "")));
         };
-        const wDefault = WEATHER_DEFAULT_BY_REGION[l.region] || "sun";
         return h("div.am-life",
-            h("div.am-togs", h("small", "🌦️ 날씨:"),
-                h("select", { onchange: ev => { const v = ev.target.value; if (v === "") delete e.weather; else e.weather = v; dirty(); draw(); } },
-                    h("option", { value: "", selected: l.weather == null || l.weather === "" }, `지역 기본 (${wDefault === "random" ? "🎲 랜덤" : WEATHERS[wDefault].emoji + " " + WEATHERS[wDefault].name})`),
-                    ...Object.values(WEATHERS).map(w => h("option", { value: w.id, selected: l.weather === w.id }, `${w.emoji} ${w.name}${w.hp ? ` (HP −${w.hp})` : " (영향 없음)"}`)),
-                    h("option", { value: "random", selected: l.weather === "random" }, "🎲 랜덤 (라운드마다)")),
-                h("small.muted", "맵에서 1분이 지나면, 그 뒤로 3분마다 HP 피해 · 숙소에 머물면 무사")),
+            h("div.am-togs", h("small", "🌦️ 날씨:"), h("small.muted", "🎲 모든 맵 랜덤 (라운드마다 · 해 10% · 비 10% · 폭우 20% · 눈 10% · 폭설 20% · 우박 20% · 폭염 10%) · 맵에서 1분마다 HP 피해 · 숙소에 머물면 무사")),
             h("div.am-togs", h("small", `🍚 푸드 코너 (${foods.length}):`),
                 h("select", { onchange: ev => { if (ev.target.value) setFood([...foods, { k: ev.target.value }]); } }, h("option", { value: "" }, "+ 푸드 코너 추가…"), FOOD_CORNER_LIST.map(T => h("option", { value: T.id }, `${T.emoji} ${T.name}`)))),
             foods.length ? h("div.am-life-list", foods.map(foodCard)) : null,

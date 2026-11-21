@@ -4,7 +4,9 @@
 // options + seed always give the same picture ("다시 생성" = new seed).
 // Humanoid races (torso + head, neck, arms/hands, legs): rabbit, bunny, bear,
 // human, cloud, kalisto, devil, angel, invisible, jiangshi, other.
-// Shape races (a body with arms/legs only, like Melon Donglee): ant,
+// 🐜 Ant is drawn like Dark Ant / Black Ant (a dark ant head with antennae on a body in clothes) · 🐰 Dungi like
+// Jiggly Wobbly Dungi (a rabbit with long ears and 몽이주름 folds beside the mouth).
+// Shape races (a body with arms/legs only, like Melon Donglee):
 // smile, donglee, triangle, square, rectangle, trapezoid (+ ghost).
 // Head parts are drawn in a head-local frame (head = ellipse 38x36 at
 // 0,0) so hair / wigs / hats / glasses fit every body.
@@ -31,14 +33,14 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 // ------------------------------------------------------------ option lists
 // [id, label, body kind (h = humanoid, s = shape), default skin]
 export const RACES = [
-    ["rabbit", "토끼", "h", "#ffffff"], ["bunny", "버니", "h", "#ffe4ee"], ["bear", "곰돌이", "h", "#b98455"], ["human", "인간", "h", "#f6d3b0"], ["ant", "개미", "s", "#5a5462"],
+    ["rabbit", "토끼", "h", "#ffffff"], ["bunny", "버니", "h", "#ffe4ee"], ["bear", "곰돌이", "h", "#b98455"], ["human", "인간", "h", "#f6d3b0"], ["ant", "개미", "h", "#3e2c22"], ["dungi", "덩이", "h", "#7a4a2a"],
     ["smile", "스마일", "s", "#ffd83b"], ["cloud", "구름", "h", "#eaf6ff"], ["kalisto", "칼리스토", "h", "#5cc469"], ["devil", "데빌", "h", "#e2463f"],
     ["angel", "엔젤", "h", "#fff3d6"], ["ghost", "고스트", "s", "#f4f4ff"], ["invisible", "투명인간", "h", "#cfe9ff"], ["jiangshi", "강시", "h", "#b7d9c2"],
     ["donglee", "동글이", "s", "#a8e070"], ["triangle", "삼각형", "s", "#ff9f43"], ["square", "사각형 (정사각형)", "s", "#5fa8ff"], ["rectangle", "직사각형", "s", "#b388ff"],
     ["trapezoid", "사다리꼴", "s", "#4dd0b1"], ["rhombus", "마름모", "s", "#ffd84a"], ["other", "기타 (직접 입력)", "h", "#f6d3b0"]
 ];
 const RACE = Object.fromEntries(RACES.map(r => [r[0], { id: r[0], ko: r[1], kind: r[2], skin: r[3] }]));
-const ETH = { rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid", trepezoid: "trapezoid", rhombus: "rhombus", diamond: "rhombus" };
+const ETH = { dungi: "dungi", "덩이": "dungi", rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "bear", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid", trepezoid: "trapezoid", rhombus: "rhombus", diamond: "rhombus" };
 export const raceFromEthnicity = e => ETH[String(e || "").trim().toLowerCase()] || "other";
 
 export const HUMAN_TYPES = [["asian", "동양인"], ["western", "서양인"], ["black", "흑인 (피부색 자동)"]];
@@ -174,7 +176,9 @@ export const outfitNames = (gender, season) => ((OUTFIT_SRC[gender] || OUTFIT_SR
 export const DEFAULTS = {
     gender: "male", race: "human", raceText: "", human: "asian", skin: "auto", hair: "#1c1a1e", hairStyle: 0,
     wig: -1, wigColor: "#7a4a2a", hat: -1, glasses: -1, sun: -1, makeup: -1, mouthLines: false, eyeWrinkle: false, leprosy: false,
-    acc: -1, season: "spring", outfit: 0, seed: 1
+    acc: -1, season: "spring", outfit: 0, seed: 1,
+    // extras (screen-space, humanoid pictures): logo text on the clothes · 🐿️ squirrel tail colour + 🤍 cheek fluff · 🦋 butterfly wing colour
+    logo: "", tail: "", cheekFluff: false, wings: ""
 };
 
 // ------------------------------------------------------------ hair / wigs (head-local)
@@ -371,6 +375,7 @@ export function buildAvatar(opts = {}) {
         `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
     out.push(`<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
     // 🧑 humanoid races: a profile picture — the face and the upper body only (zoomed in on the head and torso)
+    out.push(extrasBack(o)); // 🦋 wings · 🐿️ tail behind everything
     if (humanoid) out.push(`<g transform="translate(128 128) scale(${UPPER.k}) translate(-128 -${UPPER.cy})">`);
 
     const body = humanoid ? null : shapeBody(race.id);
@@ -396,7 +401,10 @@ export function buildAvatar(opts = {}) {
     if (race.id === "human" || race.id === "other" || race.id === "jiangshi" || race.id === "devil" || race.id === "angel") headExtraBack = [-1, 1].map(s => `<circle cx="${s * 37}" cy="2" r="6.5" fill="${skinL}" ${stH()}/>`).join("");
     if (race.id === "devil") headExtraFront = [-1, 1].map(s => `<path d="M${s * 27} -24C${s * 38} -42 ${s * 32} -58 ${s * 20} -62C${s * 24} -50 ${s * 20} -40 ${s * 13} -33Z" fill="#7a1420" stroke="${OUT}" stroke-width="${sw(3)}" stroke-linejoin="round"/>`).join("");
     if (race.id === "angel") headExtraFront = `<ellipse cx="0" cy="-52" rx="23" ry="6.5" fill="none" stroke="#b8860b" stroke-width="${sw(7)}"/><ellipse cx="0" cy="-52" rx="23" ry="6.5" fill="none" stroke="#ffe066" stroke-width="${sw(4)}"/>`;
-    if (race.id === "ant") headExtraBack = [-1, 1].map(s => `<path d="M${s * 12} -32Q${s * 15} -54 ${s * 29} -60" fill="none" stroke="${OUT}" stroke-width="${sw(4)}" stroke-linecap="round"/><circle cx="${s * 30}" cy="-61" r="5" fill="${skinL}" stroke="${OUT}" stroke-width="${sw(3)}"/>`).join("");
+    // 🐜 ant (like Dark Ant / Black Ant): long curved antennae with a ball at the tip
+    if (race.id === "ant") headExtraBack = [-1, 1].map(s => `<path d="M${s * 13} -31C${s * 20} -58 ${s * 36} -68 ${s * 46} -58" fill="none" stroke="${line}" stroke-width="${sw(4.5)}" stroke-linecap="round"/><circle cx="${s * 47}" cy="-57" r="5.5" fill="${skinL}" stroke="${line}" stroke-width="${sw(3)}"/>`).join("");
+    // 🐰 dungi (like Jiggly Wobbly Dungi): long upright rabbit ears with a pink inside
+    if (race.id === "dungi") headExtraBack = [-1, 1].map(s => `<g transform="rotate(${s * 10} ${s * 17} -30)"><ellipse cx="${s * 17}" cy="-54" rx="10" ry="26" fill="${skinL}" ${stH()}/><ellipse cx="${s * 17}" cy="-51" rx="4.6" ry="19" fill="#ffb8cf"/></g>`).join("");
 
     // ---- back layer
     if (race.id === "angel") out.push([-1, 1].map(s => `<g transform="translate(128 142) scale(${s} 1)"><path d="M22 -14C60 -52 96 -40 92 -6C104 0 98 22 80 22C82 36 62 42 50 32C44 42 28 40 22 24Z" fill="#ffffff" ${S(3.5)}/><path d="M40 -8Q62 -22 78 -10M38 8Q58 0 76 8M38 22Q50 18 62 24" fill="none" stroke="#c8d4e0" stroke-width="2.4" stroke-linecap="round"/></g>`).join(""));
@@ -551,6 +559,9 @@ export function buildAvatar(opts = {}) {
         if (race.id === "rabbit" || race.id === "bunny") face.push(`<path d="M-3.5 6h7l-3.5 4.5Z" fill="#ff8fa8" stroke="${OUT}" stroke-width="1"/><path d="M-30 8L-20 10M-30 15L-20 13M30 8L20 10M30 15L20 13" stroke="${ink}" stroke-width="1.1" opacity=".55" stroke-linecap="round"/>`);
         if (human || race.id === "other" || race.id === "jiangshi") face.push(`<path d="M-1 4Q3 9 -1 10" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`);
         if (race.id === "jiangshi") face.push([-1, 1].map(s => `<ellipse cx="${s * 15}" cy="0" rx="10" ry="9" fill="#5a4a6a" opacity=".28"/>`).join(""));
+        // 🐜 the shiny ant head · 🐰 dungi 몽이주름 (the folds beside the mouth)
+        if (race.id === "ant") face.push(`<ellipse cx="-15" cy="-18" rx="12" ry="5" fill="#ffffff" opacity=".2" transform="rotate(-22 -15 -18)"/>`);
+        if (race.id === "dungi") face.push(`<path d="M-12 9Q-18 17 -12 25M12 9Q18 17 12 25" fill="none" stroke="${line}" stroke-width="2.6" stroke-linecap="round"/>`);
     }
     const fo = inv ? ' opacity=".6"' : "";
     const mk = o.makeup >= 0 && MAKEUP_SPECS[o.makeup] ? MAKEUP_SPECS[o.makeup][1] : null;
@@ -623,12 +634,36 @@ export function buildAvatar(opts = {}) {
     out.push(grp(hf, ht.front + headExtraFront));
     K = 1;
     if (humanoid) out.push("</g>");
+    out.push(extrasFront(o)); // LUX logo on the clothes · cheek fluff
     if (race.id === "other" && o.raceText) out.push(`<text x="128" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#00000055">${esc(String(o.raceText).slice(0, 20))}</text>`);
     out.push("</g>");
     const meta = `<desc>gen:${esc(JSON.stringify(o))}</desc>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">${meta}${out.join("")}</svg>`;
 }
 function rbStops() { return ["#ff7b7b", "#ffc56b", "#fff07a", "#8ef08e", "#7ac8ff", "#c49bff"].map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join(""); }
+// ---- extras drawn in picture space (256×256), around a humanoid picture
+// 🦋 big butterfly wings behind the body · 🐿️ a big bushy squirrel tail behind the right shoulder
+function extrasBack(o) {
+    let s = "";
+    if (isHex(o.wings)) {
+        const c = o.wings, l = shade(c, 0.3), d = shade(c, -0.75), v = shade(c, -0.45);
+        s += [-1, 1].map(k => `<g transform="translate(128 150) scale(${k} 1)"><path d="M6 -8C30 -84 104 -110 120 -62C132 -26 92 4 40 8Z" fill="${c}" stroke="${d}" stroke-width="4" stroke-linejoin="round"/><path d="M8 6C52 8 98 26 92 66C86 100 40 96 14 40Z" fill="${shade(c, 0.12)}" stroke="${d}" stroke-width="4" stroke-linejoin="round"/><path d="M22 -14C46 -62 92 -82 104 -56C112 -36 80 -14 40 -6Z" fill="${l}" opacity=".55"/><circle cx="92" cy="-56" r="11" fill="${d}"/><circle cx="92" cy="-56" r="5" fill="#ffd34d"/><circle cx="66" cy="58" r="8" fill="${d}"/><circle cx="66" cy="58" r="3.5" fill="#ffd34d"/><g fill="#fff" opacity=".85"><circle cx="112" cy="-34" r="3"/><circle cx="104" cy="-20" r="2.5"/><circle cx="84" cy="80" r="2.5"/></g><path d="M14 -6C44 -40 80 -60 108 -60M14 4C40 20 62 40 74 70" fill="none" stroke="${v}" stroke-width="2" opacity=".6"/></g>`).join("");
+    }
+    if (isHex(o.tail)) {
+        const c = o.tail, T = "M158 236C196 238 226 214 228 176C230 146 214 130 220 104C226 78 246 66 238 42C230 20 196 16 180 34C168 48 174 70 190 72C182 92 168 118 172 150C175 176 168 206 158 236Z";
+        s += `<g transform="translate(-16 14)"><path d="${T}" fill="none" stroke="${OUT}" stroke-width="20" stroke-dasharray="1 9" stroke-linecap="round"/><path d="${T}" fill="${c}" stroke="${OUT}" stroke-width="4" stroke-linejoin="round"/><path d="${T}" fill="none" stroke="${c}" stroke-width="13" stroke-dasharray="1 9" stroke-linecap="round"/>` +
+            `<path d="M186 214C206 196 212 172 206 150C200 128 200 108 214 88C222 74 226 58 216 44" fill="none" stroke="${shade(c, 0.45)}" stroke-width="12" stroke-linecap="round"/><path d="M180 228l10 -6M206 190l12 -4M200 140l12 2M212 100l12 -2M224 60l10 4" stroke="${shade(c, -0.25)}" stroke-width="3" stroke-linecap="round"/></g>`;
+    }
+    return s;
+}
+// LUX-style logo patch on the clothes · 🤍 white fluff on both cheeks
+function extrasFront(o) {
+    let s = "";
+    if (o.logo) s += `<g transform="translate(128 206) scale(1.05)"><rect x="-23" y="-13" width="46" height="24" rx="5" fill="#111" stroke="#d4af37" stroke-width="2"/><text x="0" y="6" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="17" letter-spacing="2" fill="#d4af37">${esc(String(o.logo).slice(0, 5))}</text></g>`;
+    if (o.cheekFluff) s += [-1, 1].map(k => { const x = 128 + k * 47, y = 112; return `<g fill="#ffffff" stroke="#d9d4cf" stroke-width="1.2">${[[0, 0, 7], [k * 6, -6, 5.5], [k * 7, 6, 6], [k * 12, 0, 5], [k * 2, 9, 5]].map(([dx, dy, r]) => `<circle cx="${x + dx}" cy="${y + dy}" r="${r}"/>`).join("")}<path d="M${x + k * 13} ${y - 3}l${k * 6} -2M${x + k * 14} ${y + 3}l${k * 6} 2" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></g>`; }).join("");
+    return s;
+}
+
 // leprosy: sores and pale numb patches on the skin
 function spots(R, list, k) {
     return list.map(([x, y, r], i) => {

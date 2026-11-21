@@ -665,7 +665,7 @@ function locationStage(s) {
             ps.loan ? h("div.stat.debt", h("small", `갚을 돈 · ${ps.loan.due}R까지`), h("b", fmt(ps.loan.owed) + " G")) : null,
             h("div.stat.pts", h("small", "포인트"), h("b", ps.points + " P")),
             bankAccount(pid) ? h("div.stat.bgold", h("small", `Business Gold · ${bankAccount(pid).code}`), h("b", fmt(bankAccount(pid).bgold) + " BG")) : null,
-            h("div.stat.stat-vitals", vitals(ps, { compact: true }), h("small.vit-next", `🍚 −10까지 ${fmtTime(LF.nextDrainIn(t))}`)),
+            h("div.stat.stat-vitals", vitals(ps, { compact: true }), LF.starving(pid) ? h("small.vit-next.starve", `🍽️ 굶주림 · HP −10까지 ${fmtTime(LF.nextDrainIn(t))}`) : h("small.vit-next", `🍚 −10까지 ${fmtTime(LF.nextDrainIn(t))}`)),
             h("div.stat", h("small", "남은 횟수"), h("b", `🎰 ${G.playsLeft(pid, "slot")} · 🃏 ${G.playsLeft(pid, "casino")}`)),
             h("div.stat", h("small", "슬롯 손익"), h("b" + (t.stats.slotNet >= 0 ? ".up" : ".down"), fmt(t.stats.slotNet))),
             h("div.stat", h("small", "카지노 손익"), h("b" + (t.stats.casinoNet >= 0 ? ".up" : ".down"), fmt(t.stats.casinoNet))),
@@ -1064,7 +1064,11 @@ function locationStage(s) {
     // 🍚 −10 food every 3 min of play · 🌦️ the map's weather (1:00 on the map, then every 3:00) · 🧪 Arizal test minute
     function lifeTick() {
         const fd = LF.foodTick(t);
-        if (fd?.drained) { toast(`🍚 배가 고파진다… 식량 −${fd.drained} (${fd.food})${fd.food <= 0 ? " — 0이면 턴이 끝날 때 HP −10!" : ""}`, fd.food <= 10 ? "warn" : "info", 3200); side.replaceChildren(sideCard()); }
+        if (fd?.drained) { toast(`🍚 배가 고파진다… 식량 −${fd.drained} (${fd.food})${fd.food <= 0 ? " — 굶주림 시작! 게이지를 11 이상으로 올리기 전까지 HP가 줄어듭니다" : ""}`, fd.food <= 10 ? "warn" : "info", 3200); side.replaceChildren(sideCard()); }
+        // 🍽️ starving: HP −10 on the clock (0:30 / 1:00 / 1:30 by what is left in the gauge)
+        if (fd?.dead) { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; Sound.boom(); starvePopup(pid).then(() => render()); return; }
+        if (fd?.starveHit || fd?.shield) { Sound.hit?.(); toast(`🍽️ 굶주림… HP −${fd.starveHit || 0}${fd.shield ? " (🎭 보호)" : ""} (남은 HP ${Math.round(fd.hp)})`, "warn", 3200); side.replaceChildren(sideCard()); }
+        if (!G.S().turn) { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; render(); return; }
         if (!loc.kidnap) {
             const w = LF.weatherTick(t);
             if (w?.sheltered) toast(`${w.w.emoji} ${w.w.name}! 🏨 숙소 덕분에 무사합니다`, "ok", 2600);

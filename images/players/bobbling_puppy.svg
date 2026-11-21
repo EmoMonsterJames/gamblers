@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #278 머리흔드는 강아지 — brown dog with black spots, a black studded collar ringed in gold, head shaking side to side (ghost heads + motion lines) -->
+<defs>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a12"/></linearGradient>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#e8f4ff"/>
+<g clip-path="url(#cc)">
+<!-- body -->
+<path d="M44 262 C48 214 82 192 128 192 C174 192 208 214 212 262 Z" fill="#a0673a" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="92" cy="232" rx="13" ry="9" fill="#1f1714"/><ellipse cx="168" cy="226" rx="10" ry="8" fill="#1f1714"/>
+<!-- collar: black leather, gold rims, silver studs -->
+<path d="M78 190 Q128 214 178 190 L180 204 Q128 230 76 204 Z" fill="#141414" stroke="url(#gold)" stroke-width="3.5" stroke-linejoin="round"/>
+<g fill="#e5e7eb" stroke="#6b7280" stroke-width="1"><path d="M88 200 l4 -6 l4 6 l-4 5 Z"/><path d="M104 206 l4 -6 l4 6 l-4 5 Z"/><path d="M120 209 l4 -6 l4 6 l-4 5 Z"/><path d="M136 209 l4 -6 l4 6 l-4 5 Z"/><path d="M152 206 l4 -6 l4 6 l-4 5 Z"/><path d="M168 200 l4 -6 l4 6 l-4 5 Z"/></g>
+<circle cx="128" cy="222" r="7" fill="url(#gold)" stroke="#a87a12" stroke-width="2"/>
+<!-- ghost heads (motion blur, left and right) -->
+<g opacity=".18" fill="#a0673a"><ellipse cx="104" cy="116" rx="58" ry="52" transform="rotate(-14 104 116)"/><ellipse cx="152" cy="116" rx="58" ry="52" transform="rotate(14 152 116)"/></g>
+<!-- main head, tilted -->
+<g transform="rotate(-9 128 118)">
+<!-- floppy ears flying -->
+<path d="M78 82 C50 70 36 100 44 140 C50 156 66 150 72 132 C76 116 80 100 84 92 Z" fill="#5c3a1e" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round" transform="rotate(-18 78 92)"/>
+<path d="M178 82 C206 70 220 100 212 140 C206 156 190 150 184 132 C180 116 176 100 172 92 Z" fill="#1f1714" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round" transform="rotate(18 178 92)"/>
+<ellipse cx="128" cy="118" rx="60" ry="54" fill="#a0673a" stroke="#3a2a24" stroke-width="4"/>
+<!-- black spots -->
+<path d="M140 70 C160 66 176 80 172 96 C162 104 146 96 140 86 Z" fill="#1f1714"/>
+<ellipse cx="94" cy="98" rx="11" ry="8" fill="#1f1714"/><circle cx="160" cy="150" r="5" fill="#1f1714"/><circle cx="84" cy="146" r="4" fill="#1f1714"/>
+<!-- muzzle -->
+<ellipse cx="128" cy="144" rx="30" ry="22" fill="#d9a877" stroke="#3a2a24" stroke-width="3"/>
+<ellipse cx="128" cy="132" rx="11" ry="8" fill="#1a1a1a"/><ellipse cx="125" cy="129" rx="4" ry="2" fill="#fff" opacity=".7"/>
+<path d="M128 140 V148 M128 148 Q118 156 110 150 M128 148 Q138 156 146 150" fill="none" stroke="#3a2a24" stroke-width="3" stroke-linecap="round"/>
+<path d="M120 152 Q128 172 136 152 Z" fill="#ff6f91" stroke="#3a2a24" stroke-width="2.5"/>
+<!-- dizzy happy eyes -->
+<path d="M96 112 Q104 102 112 112" fill="none" stroke="#1a1a1a" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M144 112 Q152 102 160 112" fill="none" stroke="#1a1a1a" stroke-width="4.5" stroke-linecap="round"/>
+</g>
+<!-- motion lines -->
+<g fill="none" stroke="#3a2a24" stroke-width="3.5" stroke-linecap="round" opacity=".75">
+<path d="M30 92 Q22 116 30 140"/><path d="M18 102 Q12 116 18 130"/>
+<path d="M226 92 Q234 116 226 140"/><path d="M238 102 Q244 116 238 130"/>
+</g>
+<path d="M60 54 q10 -10 20 0 M176 54 q10 -10 20 0" fill="none" stroke="#5b8cff" stroke-width="3" stroke-linecap="round"/>
+</g>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #277 무비캐시덩이 — a Dungi (rabbit shape, 몽이주름) in a glamorous gown and a wide feathered hat, wearing a HUGE diamond necklace -->
+<defs>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a12"/></linearGradient>
+<linearGradient id="dia" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#bfefff"/><stop offset="1" stop-color="#6fc3ea"/></linearGradient>
+<linearGradient id="gown" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4143c"/><stop offset="1" stop-color="#7a0a24"/></linearGradient>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#fff4dc"/>
+<g fill="#ffe08a" opacity=".9"><path d="M28 98 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/><path d="M224 120 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/></g>
+<g clip-path="url(#cc)">
+<!-- gown (off the shoulder, gold trim) -->
+<path d="M30 262 C34 222 66 198 98 192 L158 192 C190 198 222 222 226 262 Z" fill="url(#gown)" stroke="#3a2a24" stroke-width="4"/>
+<path d="M64 210 Q128 232 192 210" fill="none" stroke="url(#gold)" stroke-width="5"/>
+<path d="M98 192 Q128 206 158 192" fill="#7a4a2a" stroke="#3a2a24" stroke-width="3"/>
+<!-- ears -->
+<ellipse cx="100" cy="30" rx="15" ry="40" transform="rotate(-12 100 70)" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/><ellipse cx="156" cy="30" rx="15" ry="40" transform="rotate(12 156 70)" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="100" cy="34" rx="7" ry="30" transform="rotate(-12 100 70)" fill="#ffb8cf"/><ellipse cx="156" cy="34" rx="7" ry="30" transform="rotate(12 156 70)" fill="#ffb8cf"/>
+<!-- head -->
+<ellipse cx="128" cy="122" rx="64" ry="58" fill="#7a4a2a" stroke="#3a2a24" stroke-width="4"/>
+<!-- wide hat with a gold band, a bow and a big feather -->
+<path d="M150 74 C178 34 214 30 226 44 C204 44 186 56 168 76 Z" fill="#fff6e0" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/>
+<path d="M176 60 l10 -6 M186 52 l10 -4 M196 46 l10 -2" stroke="#d9c7a0" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="128" cy="80" rx="82" ry="16" fill="#9e0f30" stroke="#3a2a24" stroke-width="4"/>
+<path d="M92 80 C92 54 164 54 164 80 Z" fill="#c8173f" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
+<path d="M93 74 Q128 66 163 74" fill="none" stroke="url(#gold)" stroke-width="7"/>
+<circle cx="150" cy="71" r="6" fill="url(#dia)" stroke="#a87a12" stroke-width="2"/>
+<!-- face -->
+<ellipse cx="94" cy="138" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/><ellipse cx="162" cy="138" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/>
+<ellipse cx="104" cy="116" rx="12" ry="12" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="105" cy="117" rx="8" ry="8.5" fill="#1a1a22"/><circle cx="107" cy="114" r="3" fill="#fff"/>
+<ellipse cx="152" cy="116" rx="12" ry="12" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="151" cy="117" rx="8" ry="8.5" fill="#1a1a22"/><circle cx="153" cy="114" r="3" fill="#fff"/>
+<path d="M94 110 l-7 -6 M100 107 l-3 -8 M162 110 l7 -6 M156 107 l3 -8" stroke="#1a1a22" stroke-width="3" stroke-linecap="round"/>
+<path d="M124 134 h8 l-4 5 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.2"/>
+<path d="M116 148 Q128 156 140 148" fill="#c2185b" stroke="#4a1a1a" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M108 139 Q100 151 108 163 M148 139 Q156 151 148 163" fill="none" stroke="#3a2a24" stroke-width="3.5" stroke-linecap="round"/>
+<!-- drop earrings -->
+<path d="M70 150 v8 M186 150 v8" stroke="url(#gold)" stroke-width="2.5"/><path d="M70 158 l5 7 l-5 8 l-5 -8 Z M186 158 l5 7 l-5 8 l-5 -8 Z" fill="url(#dia)" stroke="#6fc3ea" stroke-width="1.2"/>
+<!-- the HUGE diamond necklace -->
+<g fill="url(#dia)" stroke="#5aa9d0" stroke-width="1.2"><path d="M96 196 l5 5 l-5 5 l-5 -5 Z"/><path d="M106 204 l5 5 l-5 5 l-5 -5 Z"/><path d="M150 204 l5 5 l-5 5 l-5 -5 Z"/><path d="M160 196 l5 5 l-5 5 l-5 -5 Z"/><path d="M116 210 l5 5 l-5 5 l-5 -5 Z"/><path d="M140 210 l5 5 l-5 5 l-5 -5 Z"/></g>
+<path d="M128 208 L150 222 L128 254 L106 222 Z" fill="url(#dia)" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/>
+<path d="M106 222 H150 M128 208 L118 222 L128 254 L138 222 Z" fill="none" stroke="#6fc3ea" stroke-width="1.6"/>
+<path d="M114 216 l6 -4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+<g fill="#fff"><path d="M156 214 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/><path d="M98 236 l1.5 -4 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 Z"/></g>
+</g>
+</svg>

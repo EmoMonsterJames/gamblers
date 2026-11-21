@@ -394,6 +394,8 @@ export const ITEMS = [
     { id: "raincoat_1", name: "1회용우비",  emoji: "🥼", wx: ["rain", "snow", "storm", "blizzard", "hail"], once: true, desc: "비 · 눈 · 폭우 · 폭설 · 우박을 피하는 1회용 아이템입니다. 날씨가 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
     { id: "parasol",    name: "양산",       emoji: "⛱️", wx: ["heat"], desc: "폭염을 피하는 영구 아이템입니다 (갖고만 있으면 자동으로 막아 줍니다)." },
     { id: "parasol_1",  name: "1회용양산",  emoji: "🏖️", wx: ["heat"], once: true, desc: "폭염을 피하는 1회용 아이템입니다. 폭염이 닥치면 자동으로 사용되고, 그 라운드가 끝날 때까지 지속됩니다." },
+    // 🔑 투숙객교체권 (10P · 20 point shops): a random room comes up already taken → take it over (the guest there is moved out)
+    { id: "guest_swap", name: "투숙객교체권", emoji: "🔑", desc: "숙소에서 랜덤으로 뽑힌 객실에 이미 다른 플레이어가 있을 때, 이 권을 써서 그 자리를 빼앗습니다 (원래 손님은 퇴실)." },
     { id: "flu_cure",    name: "독감치료제", emoji: "💉", cure: "flu",    desc: "플레이어가 걸린 독감을 바로 치료합니다." },
     { id: "cancer_cure", name: "암치료제",   emoji: "💊", cure: "cancer", desc: "플레이어가 걸린 암을 바로 치료합니다." },
     // 🐾 EmoMon slots: 3 free, +1 per ticket up to 10
@@ -697,6 +699,10 @@ export const WX_GEAR_MAPS = 20;
     const ok = l => !l.kidnap && l.region !== "survival";
     const pts = pick(LOCATIONS.filter(l => ok(l) && l.shops.includes("point")));
     for (const [id, price] of [["umbrella", 300], ["raincoat", 500], ["parasol", 150]]) SHOPS.point.list.push({ cat: "item", id, price, locs: pts });
+    // 🔑 투숙객교체권 10P: 20 other random point-shop maps (its own draw)
+    { const r2 = (() => { let h = 2166136261; for (const c of "gamblers-guest-swap") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
+      const a = LOCATIONS.filter(l => ok(l) && l.shops.includes("point")); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r2() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+      SHOPS.point.list.push({ cat: "item", id: "guest_swap", price: 10, locs: a.slice(0, 20).map(l => l.id) }); }
     for (const [id, price] of [["umbrella_1", 4000], ["raincoat_1", 8000], ["parasol_1", 2000]]) SHOPS.discount.list.push({ cat: "item", id, price }); // which 20 discount maps: wxGearDiscountMaps() in catalogAdmin.js (the admin can move discount shops)
 }
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions

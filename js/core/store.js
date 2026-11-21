@@ -8,16 +8,51 @@ import { CONFIG } from "../config.js";
 import { SEED_PLAYERS } from "../data/players.js";
 import { SLOTS } from "../slots/configs.js";
 import { toast } from "./fx.js";
-import { buildAvatar, parseGen, toDataUri } from "../ui/avatarGen.js";
+import { buildAvatar, parseGen, toDataUri, raceFromEthnicity, RACES } from "../ui/avatarGen.js";
 
 // 🎨 pictures made with the player image generator carry their options: they are redrawn with the
 // current generator on load (same colours / face / makeup / clothes — only the drawing rules change)
+// 🐜 Ant / 🐰 Dungi players are always drawn in their own race's form (Dark Ant style · Jiggly Wobbly Dungi style),
+// whatever race the picture was first made with — the colours stay.
+const FORCED_RACE = new Set(["ant", "dungi"]);
 const regenCache = new Map();
-function freshAvatar(src) {
+function freshAvatar(src, ethnicity = "", extras = null) {
     if (!String(src || "").startsWith("data:image/svg+xml")) return src;
-    if (!regenCache.has(src)) { let out = src; try { const o = parseGen(src); if (o) out = toDataUri(buildAvatar(o)); } catch (e) { console.warn(e); } regenCache.set(src, out); }
-    return regenCache.get(src);
+    const key = src + "|" + ethnicity + "|" + (extras ? JSON.stringify(extras) : "");
+    if (!regenCache.has(key)) {
+        let out = src;
+        try {
+            const o = parseGen(src);
+            if (o) {
+                const r = raceFromEthnicity(ethnicity);
+                if (FORCED_RACE.has(r) && o.race !== r) {
+                    if (!o.skin || o.skin === "auto") o.skin = RACES.find(x => x[0] === o.race)?.[3] || "auto";
+                    o.race = r;
+                }
+                if (extras) Object.assign(o, extras);
+                out = toDataUri(buildAvatar(o));
+            }
+        } catch (e) { console.warn(e); }
+        regenCache.set(key, out);
+    }
+    return regenCache.get(key);
 }
+// 🖌️ hand-drawn pictures for players whose picture was made with the generator (a file or URL the admin sets later wins)
+export const PLAYER_ART = {
+    275: "images/players/linda_jones.svg",          // 린다존스 — a Human turned Dungi by surgery
+    276: "images/players/ddongzzi.svg",             // 똥찌
+    277: "images/players/movie_cash_dungi.svg",     // 무비캐시덩이
+    278: "images/players/bobbling_puppy.svg",       // 머리흔드는강아지
+    282: "images/players/odongtong_dungdung.svg",   // 오동통덩덩
+    285: "images/players/kanzi_ant.svg"             // 간지나는개미
+};
+// 🎨 extras added on top of a generated picture (generator options — see extrasBack / extrasFront in ui/avatarGen.js)
+export const PLAYER_EXTRAS = {
+    280: { tail: "#ff9ec4", cheekFluff: true },  // 다람쥐토끼 — white cheek fluff + a big pink squirrel tail
+    283: { logo: "LUX" },                         // 깜지 — LUX logo on the clothes
+    286: { wings: "#e11d2e" }                     // 꽃나비 — big red butterfly wings
+};
+const playerImage = p => PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, PLAYER_EXTRAS[p.id]);
 
 const LS = "gamblers.v1";
 let sb = null; // supabase client
@@ -293,7 +328,7 @@ export const Store = {
     // ------------------------------------------------------------ players
     player(id) { return this.allPlayers.find(p => p.id === +id); },
     setPlayers(list) {
-        this.allPlayers = [...list].sort((a, b) => a.id - b.id).map(p => { const img = freshAvatar(p.profile_image); return img === p.profile_image ? p : { ...p, profile_image: img }; });
+        this.allPlayers = [...list].sort((a, b) => a.id - b.id).map(p => { const img = playerImage(p); return img === p.profile_image ? p : { ...p, profile_image: img }; });
         let n = 0;
         this.allPlayers = this.allPlayers.map(p => {
             const up = String(p.handler || "").trim().toUpperCase();

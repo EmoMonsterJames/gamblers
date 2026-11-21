@@ -189,7 +189,11 @@ export function jobView(pid, turn, onChange, payout) {
         for (let k = 0; k < 16; k++) { chips.forEach(c => c.classList.remove("hot")); chips[k % chips.length].classList.add("hot"); Sound.tick(); await sleep(70 + k * 12); }
         chips.forEach(c => c.classList.remove("hot"));
         chips[ok.indexOf(job)]?.classList.add("chosen");
-        if (!(await confirmBox(`${job.emoji} ${job.name}\n플레이 시간 -${Math.round(job.cut / 60)}분 · 보수 ${fmt(job.min)}~${fmt(job.max)}G\n일할까요?`, "일하기", "그만두기"))) { btn.disabled = false; chips.forEach(c => c.classList.remove("chosen")); return; }
+        if (!(await confirmBox(`${job.emoji} ${job.name}\n플레이 시간 -${Math.round(job.cut / 60)}분 · 보수 ${fmt(job.min)}~${fmt(job.max)}G\n일할까요?`, "일하기", "그만두기"))) {
+            G.quitJob(pid, job); Sound.lose();
+            wrap.replaceChildren(h("p.notice", `🚪 ${job.emoji} ${job.name} 그만두기 — 이번 턴의 직업 시도를 사용했습니다.`));
+            onChange(); return;
+        }
         const was = turn.running; turn.running = false;
         const count = h("div.task-count", "10"), bar = h("div.task-bar", h("i"));
         const ov = taskOverlay(h("div.task-scene.job", h("div.worker", avatar(pid, 150), h("span.pick", job.emoji)), h("div.task-label", `${job.emoji} ${job.name} 근무 중…`), count, bar));

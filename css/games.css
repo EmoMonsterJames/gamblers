@@ -1323,3 +1323,20 @@
     .gift-row { flex-wrap: wrap; gap: 4px; }
     .gift-row .gift-box { font-size: 20px; }
 }
+
+/* ---------------------------------------------------------- 📐 STANDARD SLOT SIZE (all machines, also future ones)
+   Every cabinet is the same 960×720 box (SLOT_STD in js/screens/slot.js). The reel frame takes the height
+   that is left; fitSlotToScreen() zooms the board inside it and then zooms the whole box to the window. */
+.slot-screen { max-width: 980px; }
+.cabinet.std { box-sizing: border-box; width: 960px; height: 720px; max-width: none; margin: 0 auto; display: flex; flex-direction: column; }
+.cabinet.std > :not(.reel-frame) { flex: none; }
+.cabinet.std > .reel-frame { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.cabinet.std > .reel-frame > * { flex: none; }
+.cabinet.std .cab-top { flex-wrap: nowrap; min-height: 0; }
+.cabinet.std .cab-top .cab-btns { flex-wrap: nowrap; flex: none; }
+.cabinet.std .cab-title { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 40px; line-height: 1.15; }
+.cabinet.std .jp-bar { margin: 6px 0 4px; }
+.cabinet.std > .slot-msg { min-height: 34px; max-height: 60px; overflow: hidden; padding: 6px; }
+.cabinet.std > .cab-ctrl { flex-wrap: nowrap; }
+/* boards that sized themselves from the window height now get a fixed size — the fit does the rest */
+.cabinet.std.theme-chaos_cube .reels.sp-reels { --cell: 84px; }

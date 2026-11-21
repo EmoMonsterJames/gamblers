@@ -3,7 +3,7 @@
 // screens: screens/lifeCorners.js · admin: screens/adminMaps.js).
 //   FOODS        every food (price = the admin's default; a map's food corner may change it)
 //   FOOD_CORNERS food corner templates (an admin adds them to maps: loc.food = [{ k, entry, fee, items }])
-//   WEATHERS     map weather (loc.weather) — HP loss from 1:00 on a map, then every 3:00
+//   WEATHERS     map weather (random on every map, WEATHER_ODDS) — HP loss every 1:00 on a map
 //   LODGES       lodging corners (loc.lodge = [{ k, entry, fee }]) — shelter from weather + NPCs
 //   SCHOOL_GRADE school → A+ … F (employment corner)
 //   COMPANIES    the employment corner's companies
@@ -13,11 +13,15 @@ import { ITEMS, ITEM_BY_ID } from "./catalog.js";
 
 // ---------------------------------------------------------------- 🍚 food gauge
 export const FOOD_MAX = 100, FOOD_START = 30;
-export const FOOD_DRAIN = 10, FOOD_DRAIN_SEC = 180;   // −10 every 3 minutes of play
-export const STARVE_HP = 10;                         // food 0 at the end of a turn → HP −10
+export const FOOD_DRAIN = 10, FOOD_DRAIN_SEC = 120;   // −10 every 2 minutes of play
+export const STARVE_HP = 10;                         // starving (the gauge hit 0): HP −10 on the clock below
+// 🍽️ starving: once the gauge hits 0, HP −10 comes on a clock until the gauge is back at 11+ (then −10 food every 2:00 again).
+// The clock depends on what is left in the gauge: 0 / 1~3 → 0:30 · 4~7 → 1:00 · 8~10 → 1:30 — the bit left is used up, then HP −10.
+export const STARVE_EXIT = 11;
+export const starveDelay = food => food <= 3 ? 30 : food <= 7 ? 60 : 90;
 export const FOOD_USES_PER_ROUND = 2;                // purchases in food corners per round (all corners together)
 
-// races: only these ethnicities may eat it (case-insensitive) · art: a drawn icon (ui/foodArt.js), else the emoji
+// art: a drawn icon (ui/foodArt.js), else the emoji · (no food is limited to a race any more — only the ☀️ 햇살 상점 corner is: FOOD_CORNER_RACES)
 const F = (id, name, emoji, price, food, x = {}) => ({ id, name, emoji, price, food, ...x });
 export const FOODS = [
     F("rice", "밥", "🍚", 3000, 20),
@@ -52,11 +56,11 @@ export const FOODS = [
     F("guraball", "구라볼", "🟤", 1500, 4, { art: "guraball" }),
     F("jjongji", "쫑지", "🥬", 3000, 13, { art: "jjongji", desc: "김치 모양 반찬" }),
     F("bosongkimchi", "보송이 김치", "🫙", 9000, 40, { art: "bosongkimchi", desc: "고급 통에 담긴 김치" }),
-    F("clearjuice", "투명주스", "🧃", 2000, 10, { art: "clearjuice", races: ["Ghost", "Jiangshi", "Angel", "Devil", "Others"], desc: "유령 무늬가 새겨진 투명한 주스" }),
-    F("antnoodle", "개밋입국수", "🍜", 5000, 40, { art: "antnoodle", races: ["Ant", "Bug", "Others"] }),
+    F("clearjuice", "투명주스", "🧃", 2000, 10, { art: "clearjuice", desc: "유령 무늬가 새겨진 투명한 주스" }),
+    F("antnoodle", "개밋입국수", "🍜", 5000, 40, { art: "antnoodle" }),
     F("pinenoodle", "솔잎국수", "🍜", 3000, 30, { art: "pinenoodle" }),
-    F("shapecookie", "도형쿠키", "🍪", 4000, 10, { art: "shapecookie", races: ["Square", "Triangle", "Trapezoid", "Donglee", "Rhombus", "Others"] }),
-    F("sunshine", "햇살", "☀️", 5000, 50, { art: "sunshine", races: ["Smile"], desc: "햇살이 담긴 상자 — 눈부시다!" }),
+    F("shapecookie", "도형쿠키", "🍪", 4000, 10, { art: "shapecookie" }),
+    F("sunshine", "햇살", "☀️", 5000, 50, { art: "sunshine", desc: "햇살이 담긴 상자 — 눈부시다!" }),
     F("fish", "생선", "🐟", 3000, 25),
     F("energybar", "에너지바", "🍫", 2500, 20, { art: "energybar" }),
     F("yogurt", "요거트", "🥣", 2000, 15, { art: "yogurt" }),
@@ -80,8 +84,21 @@ for (const f of FOODS) {
 }
 
 // ---------------------------------------------------------------- 🏪 food corners
-// entry: "free" | "paid" (fee) | "random" (60% in / 40% refused)
+// 🎡 every food corner on a map is entered through a roulette (50% in / 50% refused), spun once per corner per round:
+//   free 30% · 1,000G 5% · 3,000G 5% · 5,000G 5% · 10,000G 5% · refused 50%
+// 🏠 a corner's home country gets kinder odds: free 50% · 1,000G 20% · refused 30%
+// (inner corners — hotel mini shop · cave vending machine · penthouse restaurants · HYHG Pantry — keep their own door)
+const SEG = (kind, w, fee = 0) => ({ kind, w, fee });
+export const FOOD_ENTRY_WHEEL = [SEG("free", 30), SEG("paid", 5, 1000), SEG("paid", 5, 3000), SEG("paid", 5, 5000), SEG("paid", 5, 10000), SEG("no", 50)];
+export const FOOD_HOME_WHEEL = [SEG("free", 50), SEG("paid", 20, 1000), SEG("no", 30)];
+export const FOOD_HOME_COUNTRY = { sol_rest: "Emo World", ddeogwi_rest: "Dung Town", juice_shop: "Foggy Nation", cookie_shop: "Polynesia", antnoodle_rest: "Ground Town", carrot_rest: "MJ World" };
+// 🧬 food corners open to everyone (any country · any race) — except these
+export const FOOD_CORNER_RACES = { sunshine_shop: ["Smile"] };
+export const sameCountry = (a, b) => String(a || "").toLowerCase().replace(/[^a-z]/g, "") === String(b || "").toLowerCase().replace(/[^a-z]/g, "");
+export const cornerRaceOk = (k, ethnicity) => !FOOD_CORNER_RACES[k] || FOOD_CORNER_RACES[k].some(r => norm(r) === norm(ethnicity));
+// entry (inner corners only now): "free" | "paid" (fee) | "random" (60% in / 40% refused)
 export const ENTRY_KINDS = { free: "무료 입장", paid: "유료 입장", random: "랜덤 입장 (60% 허용)" };
+export const ROULETTE_LABEL = "🎡 입장 룰렛 (50% 입장)";
 export const RANDOM_ENTRY = 0.6;
 const C = (id, name, emoji, color, items, x = {}) => ({ id, name, emoji, color, items, entry: "free", fee: 0, ...x });
 export const FOOD_CORNERS = {
@@ -120,7 +137,7 @@ export const FOOD_HOME = {
 };
 
 // ---------------------------------------------------------------- 🌦️ weather
-// hp: HP lost when it hits (from 1:00 on the map, then every 3:00) · a room in that map's lodging keeps the player safe
+// hp: HP lost when it hits (every 1:00 on the map) · a room in that map's lodging keeps the player safe
 export const WEATHERS = {
     sun: { id: "sun", name: "해", emoji: "☀️", hp: 0 },
     rain: { id: "rain", name: "비", emoji: "🌧️", hp: 5 },
@@ -130,7 +147,9 @@ export const WEATHERS = {
     hail: { id: "hail", name: "우박", emoji: "🧊", hp: 20 },
     heat: { id: "heat", name: "폭염", emoji: "🥵", hp: 15 }
 };
-export const WEATHER_FIRST = 60, WEATHER_EVERY = 180;
+export const WEATHER_FIRST = 60, WEATHER_EVERY = 60; // 1:00 on the map, then every 1:00
+// 🎲 EVERY map draws its weather at random each round with these odds (%) — a map's own setting is no longer used
+export const WEATHER_ODDS = { sun: 10, rain: 10, storm: 20, snow: 10, blizzard: 20, hail: 20, heat: 10 };
 // loc.weather: one of WEATHERS · "random" (drawn per round) · "" / missing → the region default below
 export const WEATHER_DEFAULT_BY_REGION = { arctic: "snow", desert: "heat", spooky: "rain", sky: "random" };
 

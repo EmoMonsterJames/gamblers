@@ -51,6 +51,7 @@ for (const [shopId, shop] of Object.entries(SHOPS)) for (const it of shop.list) 
 const conf = () => Store.catalog || {};
 
 export function applyCatalog() {
+    editShopIdx = null; // the admin may have edited the catalog object in place
     const { edits = {}, custom = {} } = conf();
     for (const [cat, c] of Object.entries(CATS)) {
         const fresh = ORIGINAL[cat].map(e => structuredClone(e));
@@ -99,15 +100,29 @@ export function shopItems(shopId, locId) {
 
 // Shop tabs for a location: its built-in shops plus any shop type that an
 // item has been explicitly assigned to at this location.
-export function locationShops(loc) {
-    const set = new Set(loc.shops);
-    const { edits = {} } = conf();
-    for (const [key, ed] of Object.entries(edits)) {
-        if (ed.off || !ed.locs?.includes(loc.id)) continue;
-        const [cat, id] = key.split(":");
-        const s = saleOf(cat, id);
-        if (s.shop) set.add(s.shop);
+// ⚡ the admin edits are indexed once per catalog (locId → shop types) — scanning every edit on every call made
+// the first 🏷️ discount-shop tab of a map take seconds (alphabet-card homes / discount extras call this for every map)
+let editShopIdx = null;
+function editShops(locId) {
+    const c = conf();
+    if (editShopIdx?.conf !== c) {
+        const map = new Map();
+        for (const [key, ed] of Object.entries(c.edits || {})) {
+            if (ed.off || !ed.locs?.length) continue;
+            const [cat, id] = key.split(":");
+            const s = saleOf(cat, id);
+            if (!s.shop) continue;
+            for (const l of ed.locs) { if (!map.has(l)) map.set(l, new Set()); map.get(l).add(s.shop); }
+        }
+        editShopIdx = { conf: c, map };
     }
+    return editShopIdx.map.get(locId);
+}
+export function locationShops(loc) {
+    const extra = editShops(loc.id);
+    if (!extra) return Object.keys(SHOPS).filter(k => loc.shops?.includes(k));
+    const set = new Set(loc.shops);
+    for (const s of extra) set.add(s);
     return Object.keys(SHOPS).filter(k => set.has(k));
 }
 

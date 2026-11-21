@@ -35,7 +35,48 @@ export function vitals(ps, { compact = false, mini = false } = {}) {
         return h("div.vbar." + cls + (pct <= 30 ? ".low" : "") + (pct <= 0 ? ".empty" : ""), { title: `${title} ${Math.round(v * 100) / 100} / ${max}` },
             h("i.vbar-ico", icon), h("div.vbar-track", h("u", { style: { width: pct + "%" } }), mini ? null : h("b", `${Math.round(v * 10) / 10}`)));
     };
-    return h("div.vitals" + (compact ? ".compact" : "") + (mini ? ".mini" : ""), bar("hp", "❤️", hp, CONFIG.START_HP, "HP"), bar("food", "🍚", food, L.FOOD_MAX, "식량"));
+    const fb = bar("food", "🍚", food, L.FOOD_MAX, "식량");
+    // ⓘ a small info icon above the food gauge: how the gauge drains and what starving costs
+    if (!mini) fb.prepend(h("button.vit-info", { title: "식량 게이지 정보", onclick: e => { e.stopPropagation(); foodGaugeInfo(); } }, "ⓘ"));
+    if (ps?.starve) fb.classList.add("starving");
+    return h("div.vitals" + (compact ? ".compact" : "") + (mini ? ".mini" : ""), bar("hp", "❤️", hp, CONFIG.START_HP, "HP"), fb);
+}
+export function foodGaugeInfo() {
+    const m = modal(h("div.fg-info",
+        h("p", `🍚 식량 게이지는 플레이 ${L.FOOD_DRAIN_SEC / 60}분마다 −${L.FOOD_DRAIN} 줄어듭니다 (최대 ${L.FOOD_MAX}).`),
+        h("p", h("b", "게이지가 0이 되면 굶주림 시작"), ` — 게이지를 ${L.STARVE_EXIT} 이상으로 올리기 전까지 HP가 −${L.STARVE_HP}씩 줄어듭니다:`),
+        h("table.fg-table",
+            h("tr", h("th", "남은 게이지"), h("th", "HP −10까지")),
+            h("tr", h("td", "계속 0"), h("td", "30초마다")),
+            h("tr", h("td", "1 ~ 3"), h("td", "게이지를 다 쓰고 30초 뒤")),
+            h("tr", h("td", "4 ~ 7"), h("td", "게이지를 다 쓰고 1분 뒤")),
+            h("tr", h("td", "8 ~ 10"), h("td", "게이지를 다 쓰고 1분 30초 뒤"))),
+        h("p.muted", `그 뒤로는 남은 게이지(0)에 따라 계속 줄어듭니다. 게이지를 ${L.STARVE_EXIT} 이상으로 올리면 굶주림이 끝나고, 다시 ${L.FOOD_DRAIN_SEC / 60}분 뒤부터 게이지가 −${L.FOOD_DRAIN}씩 줄어듭니다.`),
+        h("p.muted", "HP가 0이 되면 굶주림으로 바로 사망합니다. (시간은 내 턴을 플레이하는 동안만 흐릅니다)"),
+        h("button.btn.gold", { onclick: () => m.close() }, "확인")), { title: "🍚 식량 게이지 정보" });
+}
+// 🎡 the food corner entry roulette (a wheel cut by the odds; spinTo(i) lands on segment i)
+const segLabel = s => s.kind === "free" ? "무료 입장" : s.kind === "paid" ? `${fmt(s.fee)}G` : "입장 거절";
+const SEG_COLOR = s => s.kind === "free" ? "#22c55e" : s.kind === "no" ? "#ef4444" : ({ 1000: "#facc15", 3000: "#f59e0b", 5000: "#f97316", 10000: "#a855f7" }[s.fee] || "#eab308");
+function entryWheelEl(wheel, landed = null) {
+    const total = wheel.reduce((a, s) => a + s.w, 0);
+    let a = 0;
+    const segs = wheel.map(s => { const from = a / total * 360; a += s.w; return { s, from, to: a / total * 360 }; });
+    const disc = h("div.fc-wheel-disc", { style: { background: `conic-gradient(${segs.map(g => `${SEG_COLOR(g.s)} ${g.from}deg ${g.to}deg`).join(", ")})` } },
+        segs.map(g => h("span.fc-wheel-lbl" + (g.to - g.from < 25 ? ".tiny" : ""), { style: { transform: `rotate(${(g.from + g.to) / 2}deg)` } }, h("em", segLabel(g.s)))));
+    const el = h("div.fc-wheel", h("i.fc-wheel-ptr", "▼"), disc);
+    const angleOf = i => { const g = segs[i]; return g.from + (g.to - g.from) * (0.2 + Math.random() * 0.6); };
+    if (landed != null && segs[landed]) disc.style.transform = `rotate(${-(segs[landed].from + segs[landed].to) / 2}deg)`;
+    return {
+        el,
+        spinTo: i => new Promise(res => {
+            const turns = 5 + Math.floor(Math.random() * 3);
+            disc.style.transition = "transform 3.6s cubic-bezier(.12,.7,.15,1)";
+            requestAnimationFrame(() => { disc.style.transform = `rotate(${turns * 360 - angleOf(i)}deg)`; });
+            let ticks = 0; const tk = setInterval(() => { if (++ticks > 22) clearInterval(tk); else Sound.tick(); }, 60 + ticks * 8);
+            setTimeout(() => { clearInterval(tk); res(); }, 3700);
+        })
+    };
 }
 
 // ================================================================ 🏪 food corner
@@ -47,8 +88,26 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
         const door = LF.doorOf(pid, key);
         const left = corner.pantry ? LF.pantryLeft(pid) : LF.foodUsesLeft(pid);
         const head = h("div.fc-head", h("span.fc-ico", corner.emoji), h("div",
-            h("h3", corner.name), h("small.muted", `${L.ENTRY_KINDS[corner.entry]}${corner.entry === "paid" && corner.fee ? ` ${fmt(corner.fee)}G` : ""} · ${corner.free ? "모두 무료" : "판매 상품은 라운드마다 랜덤"} · ${corner.pantry ? `라운드당 1회 무료 (남은 ${left})` : `푸드 코너 이용 라운드당 ${L.FOOD_USES_PER_ROUND}회 (남은 ${left})`}`)),
+            h("h3", corner.name, corner.races ? h("small.lg-tag", `🧬 ${corner.races.join(" · ")} 종족 전용`) : null), h("small.muted", `${corner.entry === "roulette" ? L.ROULETTE_LABEL : L.ENTRY_KINDS[corner.entry]}${corner.entry === "paid" && corner.fee ? ` ${fmt(corner.fee)}G` : ""} · ${corner.free ? "모두 무료" : "판매 상품은 라운드마다 랜덤"} · ${corner.pantry ? `라운드당 1회 무료 (남은 ${left})` : `푸드 코너 이용 라운드당 ${L.FOOD_USES_PER_ROUND}회 (남은 ${left})`}`)),
             h("div.fc-gauge", vitals(ps, { compact: true })));
+        // 🎡 map food corners: the entry roulette
+        if (corner.entry === "roulette") {
+            if (!LF.cornerOpenTo(pid, corner)) { wrap.replaceChildren(head, h("div.fc-door.no", h("div.fc-door-ico", "🧬"), h("p", `${corner.name}은(는) ${corner.races.join(" · ")} 종족만 이용할 수 있습니다.`))); return; }
+            const wheel = LF.entryWheel(pid, corner), home = LF.isHomeCorner(pid, corner);
+            const wh = entryWheelEl(wheel, door?.i);
+            const oddsNote = h("small.muted.fc-odds", home ? `🏠 ${corner.home} 출신 전용 룰렛 · ` : "", wheel.map(s => `${segLabel(s)} ${s.w}%`).join(" · "));
+            if (!door) {
+                wrap.replaceChildren(head, note ? h("p.notice", note) : null, h("div.fc-door.fc-wheel-box", wh.el, oddsNote,
+                    h("button.btn.gold.big", { onclick: e => spin(e.currentTarget, wh) }, "🎡 입장 룰렛 돌리기")));
+                return;
+            }
+            if (door.pay) {
+                wrap.replaceChildren(head, h("div.fc-door.fc-wheel-box", wh.el, h("p", h("b", `💰 유료 입장 ${fmt(door.pay)}G`), " — 입장료를 내면 들어갈 수 있습니다"),
+                    h("div.row.center", h("button.btn.gold.big", { onclick: payIn }, `💰 ${fmt(door.pay)}G 내고 입장`), h("button.btn.ghost", { onclick: giveUp }, "포기하기"))));
+                return;
+            }
+            if (!door.in) { wrap.replaceChildren(head, h("div.fc-door.no.fc-wheel-box", wh.el, h("p", door.gaveUp ? "입장료를 내지 않고 돌아갔습니다 — 이번 라운드에는 들어갈 수 없습니다." : "🙅 입장 거절… 이번 라운드에는 이 코너에 들어갈 수 없습니다."))); return; }
+        }
         if (!door) {
             const label = corner.entry === "paid" && corner.fee ? `💰 입장료 ${fmt(corner.fee)}G 내고 입장` : corner.entry === "random" ? "🎲 입장 시도 (60%)" : "🚪 입장하기";
             wrap.replaceChildren(head, note ? h("p.notice", note) : null, h("div.fc-door", h("div.fc-door-ico", "🚪"), h("p", `${corner.name}에 오신 것을 환영합니다!`),
@@ -83,6 +142,27 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
         d.in ? (Sound.coin(), d.rolled && toast("🙆 입장 허가!", "ok")) : (Sound.lose(), toast("🙅 입장 거절!", "warn"));
         onChange(); render();
     }
+    let spinning = false;
+    async function spin(btn, wh) {
+        if (spinning || !timeOk(turn)) return;
+        const d = LF.foodSpin(pid, key, corner);
+        if (d.short) return toast(d.why, "warn");
+        spinning = true; btn.disabled = true;
+        const done = Activity.hold();
+        try { Sound.tease?.(); await wh.spinTo(d.i); } finally { done(); spinning = false; }
+        if (d.in) { Sound.coin(); toast("🙆 무료 입장!", "ok"); }
+        else if (d.pay) { Sound.tick(); toast(`💰 유료 입장 ${fmt(d.pay)}G`, "info"); }
+        else { Sound.lose(); toast("🙅 입장 거절!", "warn"); }
+        onChange(); render();
+    }
+    function payIn() {
+        if (!timeOk(turn)) return;
+        const d = LF.foodPayEntry(pid, key, corner);
+        if (d.short) return toast(d.why, "warn");
+        Sound.coin(); toast("🙆 입장 완료!", "ok");
+        onChange(); render();
+    }
+    function giveUp() { LF.foodGiveUp(pid, key, corner); Sound.lose(); onChange(); render(); }
     let rolling = false;
     async function roll(btn, pool, cards) {
         if (rolling || !pool.length || !timeOk(turn)) return;
@@ -117,31 +197,35 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
 // ================================================================ 🏨 lodging
 export function lodgeView(pid, loc, lodge, { turn, onChange = () => { } } = {}) {
     const wrap = h("div.lg-view", { style: { "--lg": lodge.color || "#eab308" } });
-    const ps = G.S().ps[pid];
     let rounds = 1, inner = null;
     const discount = lodge.id === "hotel" || lodge.k === "hotel" ? EP.hotelDiscount(pid) : 0;
+    // 🙈 a random (or free) door is rolled only when the player pays for a room — the result is not shown before that
+    const hiddenDoor = lodge.entry !== "paid";
     const render = () => {
         const door = LF.lodgeDoorOf(turn, loc.id, lodge);
         const stay = LF.stayOf(pid, loc.id), mine = stay && stay.k === lodge.k;
         const need = LF.lodgeNeed(pid, lodge);
         const head = h("div.lg-head", h("span.lg-ico", lodge.emoji), h("div",
             h("h3", lodge.name, lodge.reserve ? h("small.lg-tag", "📅 예약 가능 (1~3라운드)") : h("small.lg-tag.no", "예약 불가 · 이번 라운드만")),
-            h("small.muted", `${L.ENTRY_KINDS[lodge.entry]}${lodge.entry === "paid" && lodge.fee ? ` ${fmt(lodge.fee)}G` : ""} · 머무는 동안 이 맵에서 🌦️ 날씨와 👹 NPC 공격을 막아 줍니다`),
+            h("small.muted", `${L.ENTRY_KINDS[lodge.entry]}${lodge.entry === "paid" && lodge.fee ? ` ${fmt(lodge.fee)}G` : ""} · 예약하면 ${lodge.name}이(가) 있는 모든 맵에서 🌦️ 날씨와 👹 NPC 공격을 막아 줍니다`),
             lodge.needTypes ? h("small.lg-need" + (need.ok ? ".ok" : ""), `🐾 ${lodge.needTypes.join(" / ")} 속성 이모몬스터 필요`) : null,
             lodge.freeTypes ? h("small.lg-need.ok", `🐾 ${lodge.freeTypes.join(" / ")} 속성 이모몬스터 보유자는 무료`) : null,
             discount ? h("small.lg-need.ok", `🏙️ HYHG Corp. 직원 할인 ${Math.round(discount * 100)}%`) : null,
             lodge.owner ? h("small.lg-need.ok", "🔑 이 맵의 Self-Business 오너 전용 · 시즌 내내 무료 (입장만 랜덤)") : null));
+        const where = stay && stay.locId !== loc.id ? ` (${LOC_BY_ID[stay.locId]?.name || stay.locId}에서 예약)` : "";
         const stayBox = stay ? h("div.lg-stay" + (mine ? ".mine" : ""), avatar(pid, 40, { effect: false }),
-            h("div", h("b", mine ? "🛏️ 이 숙소에 머무는 중" : `🛏️ 이 맵의 ${stay.lodge || "숙소"}에 머무는 중`), h("small", `${stay.until >= 9999 ? "시즌 끝까지" : `ROUND ${stay.until}까지`} · 이 맵에서는 날씨 · NPC 공격을 받지 않습니다`))) : null;
+            h("div", h("b", mine ? `🛏️ ${lodge.name} ${stay.key.split("-")[1]}번에 머무는 중${where}` : `🛏️ ${stay.lodge || "숙소"}에 머무는 중${where}`),
+                h("small", `${stay.until >= 9999 ? "시즌 끝까지" : `ROUND ${stay.until}까지`} · ${stay.lodge || "그 숙소"}이(가) 있는 모든 맵에서 날씨 · NPC 공격을 받지 않습니다`)),
+            mine ? h("button.btn.small.red.lg-out", { onclick: checkout }, "🧳 체크아웃") : null) : null;
         const kids = [head, stayBox];
         if (!need.ok) { wrap.replaceChildren(...kids, h("p.notice.warn", `🚫 ${need.why}`), roomBoard(false)); return; }
-        if (!door) {
-            const label = lodge.entry === "paid" && lodge.fee && !LF.freeStay(pid, lodge) ? `💰 입장료 ${fmt(lodge.fee)}G 내고 입장` : lodge.entry === "random" ? "🎲 입장 시도 (60%)" : "🚪 입장하기";
+        if (!door && !hiddenDoor) {
+            const label = lodge.fee && !LF.freeStay(pid, lodge) ? `💰 입장료 ${fmt(lodge.fee)}G 내고 입장` : "🚪 입장하기";
             wrap.replaceChildren(...kids, h("div.fc-door", h("div.fc-door-ico", lodge.emoji), h("button.btn.gold.big", { onclick: enter }, label)), roomBoard(false));
             return;
         }
-        if (!door.in) { wrap.replaceChildren(...kids, h("div.fc-door.no", h("div.fc-door-ico", "🙅"), h("p", "입장 거절… 이번 턴에는 들어갈 수 없습니다.")), roomBoard(false)); return; }
-        kids.push(!stay && lodge.reserve ? h("div.lg-rounds", h("small", "📅 예약할 라운드:"), [1, 2, 3].map(n => h("button.btn.small" + (rounds === n ? ".gold" : ".ghost"), { onclick: () => { rounds = n; render(); } }, `${n}라운드`))) : null);
+        if (door && !door.in) { wrap.replaceChildren(...kids, h("div.fc-door.no", h("div.fc-door-ico", "🙅"), h("p", hiddenDoor ? "입장 거절… 결제는 취소되었습니다. 이번 턴에는 들어갈 수 없습니다." : "입장 거절… 이번 턴에는 들어갈 수 없습니다.")), roomBoard(false)); return; }
+        kids.push(!stay && lodge.reserve ? h("div.lg-rounds", h("small", "📅 예약할 라운드:"), [1, 2, 3].map(n => h("button.btn.small" + (rounds === n ? ".gold" : ".ghost"), { onclick: () => { rounds = n; render(); } }, `${n}라운드`)), h("small.muted", ` (이번 라운드부터 · ${lodge.name}이(가) 있는 모든 맵)`)) : null);
         kids.push(roomBoard(!stay));
         // guests only: 🛎️ hotel mini shop · 🏧 cave vending machine · 🌇 penthouse restaurants
         const inners = [...(lodge.shop ? [lodge.shop] : []), ...(lodge.foods || [])];
@@ -161,49 +245,83 @@ export function lodgeView(pid, loc, lodge, { turn, onChange = () => { } } = {}) 
             const rows = h("div.lg-rooms", rooms.map(r => {
                 const pick = active && rt.pick === "direct" && !r.who;
                 const drawn = d?.room === r.key;
-                return h("button.lg-room" + (r.who ? ".taken" : "") + (pick ? ".pick" : "") + (drawn ? (d.taken != null ? ".drawn.bad" : ".drawn") : ""), { disabled: !pick, title: r.who ? `${nm(r.who.pid)} · ROUND ${r.who.until >= 9999 ? "시즌 끝" : r.who.until}까지` : "빈 자리", onclick: () => pick && take(rt, r.key) },
+                return h("button.lg-room" + (r.who ? ".taken" : "") + (pick ? ".pick" : "") + (drawn ? (d.result === "taken" ? ".drawn.bad" : ".drawn") : ""), { disabled: !pick, title: r.who ? `${nm(r.who.pid)} · ROUND ${r.who.until >= 9999 ? "시즌 끝" : r.who.until}까지` : "빈 자리", onclick: () => pick && payFor(rt, r.key, true) },
                     h("small.lg-no", `${r.i + 1}`), r.who ? avatar(r.who.pid, 34, { effect: false }) : h("span.lg-bed", rt.pick === "random" && !r.who ? "🚪" : "🛏️"), r.who ? h("small.lg-who", nm(r.who.pid)) : null);
             }));
-            const drawBtn = active && rt.pick === "random" ? (d ? (d.taken == null
-                ? h("div.lg-drawn", h("b", `🎉 ${d.i + 1}번 빈 방 당첨!`), h("button.btn.gold", { onclick: () => take(rt, d.room) }, total ? `💰 ${fmt(total)}G 내고 체크인` : "무료로 체크인"))
-                : h("div.lg-drawn.bad", h("b", `😢 ${d.i + 1}번 방은 이미 ${nm(d.taken)}님이 사용 중 — 들어갈 수 없습니다`), h("small.muted", " (랜덤 뽑기는 방문마다 1번)")))
-                : h("button.btn.gold", { disabled: !free, onclick: () => draw(rt) }, free ? "🎲 랜덤 객실 뽑기 (먼저 뽑고, 빈 방이면 결제)" : "만실")) : null;
+            let drawBtn = null;
+            if (active && rt.pick === "random") {
+                if (!d) drawBtn = h("button.btn.gold", { onclick: () => draw(rt) }, "🎲 객실 입장 시도 (랜덤 객실 뽑기)");
+                else if (!d.result) drawBtn = h("div.lg-drawn", h("b", `🚪 ${d.i + 1}번 객실을 골랐습니다! ${total ? `숙박비 ${fmt(total)}G를 지불하세요` : "체크인하세요"}`),
+                    h("button.btn.gold", { onclick: () => payFor(rt, d.room, false) }, total ? `💰 ${fmt(total)}G 지불하기` : "무료로 체크인"));
+                else if (d.result === "taken") {
+                    const who = rooms.find(x => x.key === d.room)?.who;
+                    drawBtn = h("div.lg-drawn.bad", h("b", `😢 ${d.i + 1}번 객실은 이미 ${who ? nm(who.pid) + "님이" : "다른 손님이"} 사용 중 — 결제가 취소되었습니다`),
+                        who && (G.S().ps[pid].items?.guest_swap || 0) > 0 ? h("button.btn.gold", { onclick: () => askSwap(rt, d.room, who.pid) }, "🔑 투숙객교체권 사용") : h("small.muted", " (랜덤 뽑기는 방문마다 1번)"));
+                }
+            }
             return h("div.lg-type",
-                h("div.lg-type-head", h("b", rt.label), h("small", `${rt.n}자리 · ${price ? `${fmt(price)}G${lodge.reserve ? " / 라운드" : ""}` : "무료"} · ${rt.pick === "random" ? "🎲 랜덤 선택" : "👆 바로 선택 (먼저 결제)"} · 빈 자리 ${free}`)),
+                h("div.lg-type-head", h("b", rt.label), h("small", `${rt.n}자리 · ${price ? `${fmt(price)}G${lodge.reserve ? " / 라운드" : ""}` : "무료"} · ${rt.pick === "random" ? "🎲 랜덤 선택 (뽑고 결제한 뒤 결과 공개)" : "👆 바로 선택 (먼저 결제)"} · 빈 자리 ${free}`)),
                 rows, drawBtn);
         }));
     }
     function enter() {
         if (!timeOk(turn)) return;
         const d = LF.lodgeDoor(pid, turn, loc.id, lodge);
-        if (d.why && !d.in && d.short) return toast(d.why, "warn");
         if (d.why && !d.in) return toast(d.why, "warn");
-        d.in ? (Sound.coin(), d.rolled && toast("🙆 입장 허가!", "ok")) : (Sound.lose(), toast("🙅 입장 거절!", "warn"));
+        d.in ? Sound.coin() : (Sound.lose(), toast("🙅 입장 거절!", "warn"));
         onChange(); render();
     }
     async function draw(rt) {
         if (!timeOk(turn)) return;
         const done = Activity.hold();
+        let r;
         try {
-            const r = LF.drawRoom(pid, turn, loc.id, lodge, rt);
-            // a little roulette over the doors
+            r = LF.drawRoom(pid, turn, loc.id, lodge, rt);
+            // a little roulette over the doors (no hint whether the room is free)
             render();
             const btns = [...wrap.querySelectorAll(".lg-type")].find(el => el.querySelector(".lg-type-head b")?.textContent === rt.label)?.querySelectorAll(".lg-room") || [];
             for (let k = 0; k < 14 && btns.length; k++) { btns.forEach(b => b.classList.remove("hot")); btns[(r.i + k + 1) % btns.length]?.classList.add("hot"); Sound.tick(); await sleep(70 + k * 12); }
             btns.forEach(b => b.classList.remove("hot"));
-            r.taken == null ? Sound.fanfare() : Sound.lose();
+            Sound.coin();
         } finally { done(); }
         render();
+        toast(`🚪 ${r.i + 1}번 객실을 골랐습니다 — 숙박비를 지불하세요`, "info", 3000);
     }
-    async function take(rt, key) {
+    // 💳 pay for the chosen room → only now: let in or not · the room free or taken (nothing is charged when it fails)
+    async function payFor(rt, key, ask) {
         if (!timeOk(turn)) return;
         const n = lodge.reserve ? rounds : 1;
         const cost = LF.roomPrice(pid, lodge, rt, discount) * n;
-        if (cost && !(await confirmBox(`${lodge.emoji} ${lodge.name} ${rt.label} ${key.split("-")[1]}번\n${lodge.reserve ? `${n}라운드 예약 · ` : ""}${fmt(cost)}G를 낼까요?`, "결제하고 체크인", "취소"))) return;
-        const r = LF.checkIn(pid, turn, loc.id, lodge, rt, key, n, discount);
+        if (ask && cost && !(await confirmBox(`${lodge.emoji} ${lodge.name} ${rt.label} ${key.split("-")[1]}번\n${lodge.reserve ? `${n}라운드 예약 · ` : ""}${fmt(cost)}G를 낼까요?`, "결제하고 체크인", "취소"))) return;
+        const r = LF.enterRoom(pid, turn, loc.id, lodge, rt, key, n, discount);
+        if (r.ok) return checkedIn(r);
+        if (r.refused) { Sound.lose(); toast("🙅 입장 거절! 결제가 취소되었습니다", "warn", 3500); onChange(); return render(); }
+        if (r.taken != null) {
+            Sound.lose(); onChange(); render();
+            if (r.canSwap) return askSwap(rt, key, r.taken);
+            return toast(`😢 이미 ${nm(r.taken)}님이 사용 중인 객실입니다 — 결제가 취소되었습니다`, "warn", 3500);
+        }
+        toast(r.why, "warn");
+    }
+    // 🔑 투숙객교체권: "해당 아이템을 사용하여 자리를 빼앗으시겠습니까?" (아니요 / 네)
+    async function askSwap(rt, key, who) {
+        const n = lodge.reserve ? rounds : 1, cost = LF.roomPrice(pid, lodge, rt, discount) * n;
+        if (!(await confirmBox(`😢 ${key.split("-")[1]}번 객실은 이미 ${nm(who)}님이 사용 중입니다.\n\n🔑 해당 아이템(투숙객교체권)을 사용하여 자리를 빼앗으시겠습니까?${cost ? `\n(숙박비 ${fmt(cost)}G)` : ""}`, "네", "아니요"))) return;
+        if (!timeOk(turn)) return;
+        const r = LF.swapRoom(pid, turn, loc.id, lodge, rt, key, n, discount);
         if (!r.ok) return toast(r.why, "warn");
+        checkedIn(r, `🔑 ${nm(who)}님을 내보내고 `);
+    }
+    function checkedIn(r, pre = "") {
         Sound.fanfare(); confetti(30, ["🛏️", "🔑", "✨"]);
-        toast(`🛏️ 체크인 완료! ${r.until >= 9999 ? "시즌 끝까지" : `ROUND ${r.until}까지`} 이 맵에서 날씨 · NPC 공격을 막아 줍니다`, "ok", 4000);
+        toast(`🛏️ ${pre}체크인 완료! ${r.until >= 9999 ? "시즌 끝까지" : `ROUND ${r.until}까지`} ${lodge.name}이(가) 있는 모든 맵에서 날씨 · NPC 공격을 막아 줍니다`, "ok", 4000);
+        onChange(); render();
+    }
+    async function checkout() {
+        if (!(await confirmBox(`🧳 ${lodge.name}에서 체크아웃할까요?\n지금 바로 방을 비웁니다 (남은 예약 기간은 환불되지 않습니다).`, "체크아웃", "취소"))) return;
+        const r = LF.checkOut(pid, lodge.k);
+        if (!r.ok) return toast(r.why, "warn");
+        Sound.click?.(); toast("🧳 체크아웃했습니다", "ok");
         onChange(); render();
     }
     render();
@@ -216,7 +334,7 @@ export function weatherHud(t) {
     const update = () => {
         const w = LF.weatherAt(t.loc), sh = LF.sheltered(t.pid, t.loc), next = LF.weatherNextIn(t);
         el.className = "wx-badge wx-" + w.id + (sh ? " safe" : "");
-        el.title = w.hp ? `${w.name}: 이 맵에서 1분이 지나면, 그 뒤로 3분마다 HP −${w.hp} (숙소에 머물면 무사)` : "맑음 — 날씨 피해 없음";
+        el.title = w.hp ? `${w.name}: 이 맵에서 1분마다 HP −${w.hp} (숙소에 머물면 무사) · 날씨는 라운드마다 랜덤` : "맑음 — 날씨 피해 없음";
         el.replaceChildren(h("span", w.emoji), h("b", w.name), w.hp ? h("small", sh ? "🏨 숙소 보호 중" : `HP −${w.hp} · ${fmtTime(next ?? 0)}`) : null);
     };
     update();

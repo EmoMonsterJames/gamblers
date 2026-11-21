@@ -24,38 +24,56 @@ const wallet = ps => (ps?.money || 0) + (ps?.loanGold || 0);
 
 // ================================================================ 🍚 food gauge
 export const foodOf = pid => { const ps = ps_(pid); return ps ? Math.max(0, Math.min(L.FOOD_MAX, ps.food ?? L.FOOD_START)) : L.FOOD_START; };
+// 🍽️ ps.starve = { left } while starving: the gauge hit 0 and has not been brought back to 11+ yet.
+// left = play seconds until the next HP −10 (only the player's own turn clock runs it).
 export function addFood(pid, n) {
     const ps = ps_(pid);
     if (!ps) return 0;
     const before = foodOf(pid);
     ps.food = Math.max(0, Math.min(L.FOOD_MAX, before + n));
+    if (ps.food <= 0 && !ps.starve) ps.starve = { left: L.starveDelay(0) };          // the gauge just ran out
+    else if (ps.starve && ps.food >= L.STARVE_EXIT) { delete ps.starve; ps.foodReset = true; } // back to 11+: −10 food in 2:00 again
+    else if (ps.starve && n > 0) ps.starve.left = L.starveDelay(ps.food);              // 1~10: that bit is used up first, then HP −10
     return ps.food - before;
 }
-// one second of play (the turn clock ran): −10 food every 3 minutes → { drained, food }
+export const starving = pid => !!ps_(pid)?.starve;
+// one second of play (the turn clock ran):
+//   normal  → −10 food every 2:00 → { drained, food }
+//   starving → HP −10 when the clock runs out (the gauge left is used up) → { starveHit, hp } | { dead } | { shield }
 export function foodTick(t) {
-    const life = (t.life ||= { sec: 0 });
+    const life = (t.life ||= { sec: 0 }), ps = ps_(t.pid);
     life.sec = (life.sec || 0) + 1;
-    if (life.sec % L.FOOD_DRAIN_SEC) return null;
+    if (!ps) return null;
+    if (ps.foodReset) { life.drainLeft = L.FOOD_DRAIN_SEC; delete ps.foodReset; }
+    if (!ps.starve && foodOf(t.pid) <= 0) ps.starve = { left: L.starveDelay(0) }; // (a gauge saved at 0 before this rule)
+    if (ps.starve) {
+        ps.starve.left = (ps.starve.left ?? L.starveDelay(foodOf(t.pid))) - 1;
+        if (ps.starve.left > 0) return null;
+        ps.food = 0;
+        ps.starve.left = L.starveDelay(0);
+        life.drainLeft = L.FOOD_DRAIN_SEC;
+        if (ps.out && !S()?.revival) return null;
+        if (ps.hp <= L.STARVE_HP) {
+            if (killPlayer(t.pid, "🍽️ 굶주림으로 바로 사망", { quiet: true, hl: "starve" }) === false) { Store.saveSeason(true); return { shield: true, hp: ps.hp }; }
+            return { dead: true };
+        }
+        ps.hp -= L.STARVE_HP;
+        log(`🍽️ ${name(t.pid)} 식량 게이지 0 — 굶주림으로 HP −${L.STARVE_HP} (남은 HP ${Math.round(ps.hp)})`);
+        Store.saveSeason(true);
+        return { starveHit: L.STARVE_HP, hp: ps.hp };
+    }
+    life.drainLeft = (life.drainLeft ?? L.FOOD_DRAIN_SEC) - 1;
+    if (life.drainLeft > 0) return null;
+    life.drainLeft = L.FOOD_DRAIN_SEC;
     const got = addFood(t.pid, -L.FOOD_DRAIN);
     if (got) log(`🍚 ${name(t.pid)} 식량 게이지 −${-got} (플레이 ${Math.round(life.sec / 60)}분) → ${foodOf(t.pid)}`);
     Store.saveSeason();
-    return { drained: -got, food: foodOf(t.pid) };
+    return { drained: -got, food: foodOf(t.pid), starving: !!ps.starve };
 }
-export const nextDrainIn = t => L.FOOD_DRAIN_SEC - ((t?.life?.sec || 0) % L.FOOD_DRAIN_SEC);
-// end of a turn: an empty food gauge costs HP −10 · HP 0 → starved to death → { hp } | { dead } | null
-export function starveCheck(pid) {
-    const ps = ps_(pid);
-    if (!ps || ps.out && !S()?.revival) return null;
-    if (foodOf(pid) > 0) return null;
-    if (ps.hp <= L.STARVE_HP) {
-        if (killPlayer(pid, "🍽️ 굶주림으로 바로 사망", { quiet: true, hl: "starve" }) === false) return { hp: ps.hp, shield: true };
-        return { dead: true };
-    }
-    ps.hp -= L.STARVE_HP;
-    log(`🍽️ ${name(pid)} 식량 게이지 0 — 굶주림으로 HP −${L.STARVE_HP} (남은 HP ${Math.round(ps.hp)})`);
-    Store.saveSeason(true);
-    return { hp: ps.hp };
-}
+// seconds until the next −10 (food, or HP while starving)
+export const nextDrainIn = t => { const ps = ps_(t?.pid); return ps?.starve ? Math.max(0, ps.starve.left ?? 0) : (t?.life?.drainLeft ?? L.FOOD_DRAIN_SEC); };
+// (the end-of-turn starvation check is gone: starving now costs HP on the clock while playing — see foodTick)
+export function starveCheck() { return null; }
 // eat one food → { ok, got, why }
 export function eat(pid, foodId, how = "") {
     const f = L.FOOD_BY_ID[foodId], p = Store.player(pid);
@@ -82,7 +100,49 @@ export function cornerCfg(c) {
     const T = L.FOOD_CORNERS[c?.k];
     if (!T) return null;
     const items = (c.items || T.items.map(id => ({ id }))).filter(x => L.FOOD_BY_ID[x.id]);
-    return { ...T, ...c, k: c.k, name: c.name || T.name, entry: c.entry || T.entry, fee: c.fee ?? T.fee, items };
+    // 🎡 every food corner on a map is entered through the roulette (inner corners keep their own door)
+    const entry = T.inner ? c.entry || T.entry : "roulette";
+    return { ...T, ...c, k: c.k, name: c.name || T.name, entry, fee: c.fee ?? T.fee, items, races: L.FOOD_CORNER_RACES[c.k] || null, home: L.FOOD_HOME_COUNTRY[c.k] || null };
+}
+// 🎡 the entry roulette this player gets at that corner (its home country: kinder odds)
+export const isHomeCorner = (pid, corner) => !!(corner?.home && L.sameCountry(Store.player(pid)?.country, corner.home));
+export const entryWheel = (pid, corner) => isHomeCorner(pid, corner) ? L.FOOD_HOME_WHEEL : L.FOOD_ENTRY_WHEEL;
+// 🧬 ☀️ 햇살 상점: Smile only — every other corner is open to anyone
+export const cornerOpenTo = (pid, corner) => L.cornerRaceOk(corner?.k, Store.player(pid)?.ethnicity);
+// spin the roulette (once per corner per round) → the door: { in, seg, i } | { pay: fee, seg, i } (waiting for the fee)
+export function foodSpin(pid, key, corner) {
+    const u = useOf(pid);
+    if (u.door[key]) return u.door[key];
+    if (!cornerOpenTo(pid, corner)) return { in: false, why: `${corner.name}은(는) ${corner.races.join(" · ")} 종족만 이용할 수 있습니다`, short: true };
+    const wheel = entryWheel(pid, corner);
+    let x = rnd() * wheel.reduce((a, s) => a + s.w, 0), i = 0;
+    for (; i < wheel.length - 1; i++) if ((x -= wheel[i].w) < 0) break;
+    const seg = wheel[i];
+    const d = seg.kind === "free" ? { in: true, seg, i } : seg.kind === "paid" ? { pay: seg.fee, seg, i } : { in: false, seg, i };
+    u.door[key] = { ...d, rolled: true, home: isHomeCorner(pid, corner) };
+    if (seg.kind === "no") noteRefuse(pid);
+    log(`🎡 ${corner.emoji} ${name(pid)} ${corner.name} 입장 룰렛 → ${seg.kind === "free" ? "무료 입장" : seg.kind === "paid" ? `유료 입장 ${seg.fee.toLocaleString()}G` : "입장 거절"}${u.door[key].home ? " (출신 국가 룰렛)" : ""}`);
+    Store.saveSeason(true);
+    return u.door[key];
+}
+// the roulette asked for a fee: pay it and go in (or give up → refused for this round)
+export function foodPayEntry(pid, key, corner) {
+    const u = useOf(pid), ps = ps_(pid), d = u.door[key];
+    if (!d?.pay) return d || { in: false };
+    if (wallet(ps) < d.pay) return { ...d, why: `입장료 ${d.pay.toLocaleString()}G가 부족합니다`, short: true };
+    pay(ps, d.pay);
+    u.door[key] = { ...d, in: true, paid: d.pay, pay: 0 };
+    log(`${corner.emoji} ${name(pid)} ${corner.name} 입장료 ${d.pay.toLocaleString()}G 내고 입장`);
+    Store.saveSeason(true);
+    return u.door[key];
+}
+export function foodGiveUp(pid, key, corner) {
+    const u = useOf(pid), d = u.door[key];
+    if (!d?.pay) return d;
+    u.door[key] = { ...d, in: false, pay: 0, gaveUp: true };
+    log(`${corner.emoji} ${name(pid)} ${corner.name} 입장료를 내지 않고 돌아감`);
+    Store.saveSeason(true);
+    return u.door[key];
 }
 export const foodCornersAt = loc => (loc?.food || []).map(cornerCfg).filter(Boolean);
 export const innerCorner = (k, extra = {}) => cornerCfg({ k, ...extra });
@@ -126,6 +186,7 @@ export function buyFood(pid, key, corner, it, { discount = 0 } = {}) {
     if (!f) return { ok: false, why: "없는 음식입니다" };
     if (corner.pantry ? pantryLeft(pid) <= 0 : foodUsesLeft(pid) <= 0) return { ok: false, why: corner.pantry ? "HYHG Pantry는 라운드당 1번만 이용할 수 있습니다" : `푸드 코너는 라운드당 ${L.FOOD_USES_PER_ROUND}번만 이용할 수 있습니다` };
     if (!doorOf(pid, key)?.in) return { ok: false, why: "먼저 입장하세요" };
+    if (!cornerOpenTo(pid, corner)) return { ok: false, why: `${corner.name}은(는) ${corner.races.join(" · ")} 종족만 이용할 수 있습니다` };
     if (!L.canEatRace(f, Store.player(pid)?.ethnicity)) return { ok: false, why: `${f.name}은(는) ${f.races.join(" · ")} 종족만 먹을 수 있습니다` };
     const price = Math.round(foodPrice(corner, it) * (1 - discount));
     if (wallet(ps) < price) return { ok: false, why: "골드가 부족합니다" };
@@ -139,20 +200,21 @@ export function buyFood(pid, key, corner, it, { discount = 0 } = {}) {
 export function weatherAt(locId) {
     const loc = LOC_BY_ID[locId];
     if (!loc || loc.kidnap) return L.WEATHERS.sun;
-    let w = loc.weather;
-    if (w == null || w === "") w = L.WEATHER_DEFAULT_BY_REGION[loc.region] || "sun";
-    if (w === "random") {
-        const s = S();
-        if (!s) return L.WEATHERS.sun;
-        const wx = (s.wx ||= {});
-        if (wx[locId]?.round !== s.round) {
-            const ids = Object.keys(L.WEATHERS);
-            wx[locId] = { round: s.round, w: ids[Math.floor(rnd() * ids.length)] };
-            Store.saveSeason();
-        }
-        w = wx[locId].w;
+    // 🎲 every map is random now (WEATHER_ODDS: 해 10 · 비 10 · 폭우 20 · 눈 10 · 폭설 20 · 우박 20 · 폭염 10 %), drawn once per round
+    const s = S();
+    if (!s) return L.WEATHERS.sun;
+    const wx = (s.wx ||= {});
+    if (wx[locId]?.round !== s.round || !L.WEATHERS[wx[locId]?.w]) {
+        wx[locId] = { round: s.round, w: drawWeather() };
+        Store.saveSeason();
     }
-    return L.WEATHERS[w] || L.WEATHERS.sun;
+    return L.WEATHERS[wx[locId].w] || L.WEATHERS.sun;
+}
+export function drawWeather() {
+    const odds = Object.entries(L.WEATHER_ODDS).filter(([id]) => L.WEATHERS[id]);
+    let x = rnd() * odds.reduce((a, [, p]) => a + p, 0);
+    for (const [id, p] of odds) { if ((x -= p) < 0) return id; }
+    return odds[odds.length - 1]?.[0] || "sun";
 }
 // seconds until the weather hits again on this map (null = no harm)
 export function weatherNextIn(t) {
@@ -235,13 +297,18 @@ export function roomsOf(locId, lodge) {
     const o = occ(locId, lodgeKey(lodge)), r = round();
     return lodge.rooms.map(rt => ({ rt, rooms: Array.from({ length: rt.n }, (_, i) => { const key = roomKey(rt, i), x = o[key]; return { key, i, who: x && x.until >= r ? x : null }; }) }));
 }
-// this player's stay on this map (any lodging there) → { k, key, until, from } | null
+// 🌍 a booking counts on EVERY map that has that kind of lodging: a room booked at Rainbow Casino's 🏨 호텔 for 2 rounds
+// shelters the player on every map with a 호텔 this round and the next (the room itself stays where it was booked).
+// this player's stay that covers this map → { k, key, until, from, locId (where it was booked) } | null
 export function stayOf(pid, locId) {
-    const s = S(), r = round();
-    const byK = s?.lodge?.[locId] || {};
-    for (const [k, rooms] of Object.entries(byK)) for (const [key, x] of Object.entries(rooms)) if (x && +x.pid === +pid && x.until >= r) return { k, key, ...x };
-    return null;
+    const loc = LOC_BY_ID[locId];
+    if (!loc) return null;
+    const kinds = new Set(lodgesAt(loc, pid).map(lodgeKey));
+    if (!kinds.size) return null;
+    return staysOf(pid).find(x => kinds.has(x.k)) || null;
 }
+// this player's stay in that kind of lodging (any map) → stay | null
+export const stayOfKind = (pid, k) => staysOf(pid).find(x => x.k === k) || null;
 export const sheltered = (pid, locId) => !!(locId && stayOf(pid, locId));
 export const staysOf = pid => { const s = S(), out = []; for (const [locId, byK] of Object.entries(s?.lodge || {})) for (const [k, rooms] of Object.entries(byK)) for (const [key, x] of Object.entries(rooms)) if (+x?.pid === +pid && x.until >= round()) out.push({ locId, k, key, ...x }); return out; };
 // can this player use this lodging at all (EmoMonster attribute rules)
@@ -284,7 +351,8 @@ export function drawRoom(pid, t, locId, lodge, rt) {
     const x = occ(locId, lodgeKey(lodge))[rk];
     const taken = x && x.until >= round() ? x : null;
     dr[key] = { room: rk, i, taken: taken ? +taken.pid : null, at: Date.now() };
-    log(`${lodge.emoji} ${name(pid)} ${lodge.name} ${rt.label} 랜덤 뽑기 → ${i + 1}번 ${taken ? `(이미 ${name(taken.pid)} 사용 중)` : "(빈 방)"}`);
+    // 🙈 whether the room is free is only told after the player pays (enterRoom)
+    log(`${lodge.emoji} ${name(pid)} ${lodge.name} ${rt.label} 랜덤 뽑기 → ${i + 1}번`);
     Store.saveSeason(true);
     return dr[key];
 }
@@ -293,19 +361,68 @@ export const drawOf = (t, locId, lodge, rt) => t?.lodgeDraw?.[`${doorKey(locId, 
 export function checkIn(pid, t, locId, lodge, rt, rk, rounds = 1, discount = 0) {
     const ps = ps_(pid), r = round();
     if (stayOf(pid, locId)) return { ok: false, why: "이 맵에는 이미 머무는 숙소가 있습니다" };
+    if (stayOfKind(pid, lodgeKey(lodge))) return { ok: false, why: `이미 ${lodge.name}을(를) 예약했습니다 (${lodge.name}이(가) 있는 모든 맵에 적용)` };
     if (!lodgeDoorOf(t, locId, lodge)?.in) return { ok: false, why: "먼저 입장하세요" };
     const o = occ(locId, lodgeKey(lodge)), x = o[rk];
     if (x && x.until >= r) return { ok: false, why: "이미 다른 플레이어가 있는 자리입니다" };
-    if (rt.pick === "random") { const d = drawOf(t, locId, lodge, rt); if (d?.room !== rk || d.taken != null) return { ok: false, why: "랜덤으로 뽑힌 빈 방만 잡을 수 있습니다" }; }
+    if (rt.pick === "random") { const d = drawOf(t, locId, lodge, rt); if (d?.room !== rk) return { ok: false, why: "랜덤으로 뽑힌 방만 잡을 수 있습니다" }; }
     const n = lodge.owner ? 1 : lodge.reserve ? Math.max(1, Math.min(L.MAX_RESERVE, Math.round(rounds) || 1)) : 1;
     const cost = roomPrice(pid, lodge, rt, discount) * n;
     if (wallet(ps) < cost) return { ok: false, why: `숙박비 ${cost.toLocaleString()}G가 부족합니다` };
     if (cost) pay(ps, cost);
     const until = lodge.owner ? 9999 : r + n - 1;
     o[rk] = { pid: +pid, from: r, until, paid: cost, lodge: lodge.name };
+    if (t) { const d = drawOf(t, locId, lodge, rt); if (d?.room === rk) d.result = "in"; }
     log(`${lodge.emoji} ${name(pid)} ${LOC_BY_ID[locId]?.name || locId} ${lodge.name} ${rt.label} ${rk.split("-")[1]}번 체크인 — ${lodge.owner ? "시즌 끝까지 무료" : `${n}라운드 (R${r}~R${until})${cost ? ` · ${cost.toLocaleString()}G` : " · 무료"}`}`);
     Store.saveSeason(true);
     return { ok: true, cost, until, rounds: n };
+}
+// 💳 "I picked this room — here is the money": the door (random entry) and whether the room is free are only revealed now.
+// Nothing is charged when it does not work out. → { ok, … } | { refused } | { taken: pid, canSwap } | { ok:false, why }
+export function enterRoom(pid, t, locId, lodge, rt, rk, rounds = 1, discount = 0) {
+    const ps = ps_(pid), n = lodge.owner ? 1 : lodge.reserve ? Math.max(1, Math.min(L.MAX_RESERVE, Math.round(rounds) || 1)) : 1;
+    const cost = roomPrice(pid, lodge, rt, discount) * n;
+    if (wallet(ps) < cost) return { ok: false, why: `숙박비 ${cost.toLocaleString()}G가 부족합니다` };
+    const d = rt.pick === "random" ? drawOf(t, locId, lodge, rt) : null;
+    let door = lodgeDoorOf(t, locId, lodge);
+    if (!door) { door = lodgeDoor(pid, t, locId, lodge); if (door.short || (door.why && !door.in)) return { ok: false, why: door.why }; }
+    if (!door.in) { if (d) d.result = "refused"; Store.saveSeason(true); return { ok: false, refused: true }; }
+    const x = occ(locId, lodgeKey(lodge))[rk];
+    if (x && x.until >= round() && +x.pid !== +pid) {
+        if (d) d.result = "taken";
+        log(`${lodge.emoji} ${name(pid)} ${lodge.name} ${rk.split("-")[1]}번 — 이미 ${name(x.pid)} 사용 중`);
+        Store.saveSeason(true);
+        return { ok: false, taken: +x.pid, canSwap: (ps.items?.guest_swap || 0) > 0 };
+    }
+    return checkIn(pid, t, locId, lodge, rt, rk, n, discount);
+}
+// 🔑 투숙객교체권: take over a room that came up taken (the guest there is moved out, nothing refunded to them)
+export function swapRoom(pid, t, locId, lodge, rt, rk, rounds = 1, discount = 0) {
+    const ps = ps_(pid);
+    if (!(ps.items?.guest_swap > 0)) return { ok: false, why: "🔑 투숙객교체권이 없습니다" };
+    const o = occ(locId, lodgeKey(lodge)), x = o[rk];
+    const n = lodge.owner ? 1 : lodge.reserve ? Math.max(1, Math.min(L.MAX_RESERVE, Math.round(rounds) || 1)) : 1;
+    const cost = roomPrice(pid, lodge, rt, discount) * n;
+    if (wallet(ps) < cost) return { ok: false, why: `숙박비 ${cost.toLocaleString()}G가 부족합니다` };
+    const old = x && x.until >= round() ? +x.pid : null;
+    if (old != null) { delete o[rk]; log(`🔑 ${name(pid)} 투숙객교체권 사용 — ${LOC_BY_ID[locId]?.name || locId} ${lodge.name} ${rk.split("-")[1]}번에서 ${name(old)} 퇴실`, [old]); }
+    ps.items.guest_swap--;
+    const r = checkIn(pid, t, locId, lodge, rt, rk, n, discount);
+    if (!r.ok) { ps.items.guest_swap++; if (old != null) o[rk] = x; return r; }
+    const d = rt.pick === "random" ? drawOf(t, locId, lodge, rt) : null;
+    if (d) d.result = "swapped";
+    Store.saveSeason(true);
+    return { ...r, swapped: old };
+}
+// 🧳 check out now (any round) — the room is free at once, nothing is refunded
+export function checkOut(pid, k) {
+    const st = stayOfKind(pid, k);
+    if (!st) return { ok: false, why: "예약된 객실이 없습니다" };
+    const rooms = S().lodge?.[st.locId]?.[st.k];
+    if (rooms?.[st.key]) delete rooms[st.key];
+    log(`🧳 ${name(pid)} ${LOC_BY_ID[st.locId]?.name || st.locId} ${st.lodge || "숙소"} ${st.key.split("-")[1]}번 체크아웃`);
+    Store.saveSeason(true);
+    return { ok: true, stay: st };
 }
 // new round: stays that are over → forced check-out
 function evictTick(s) {

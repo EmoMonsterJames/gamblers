@@ -282,3 +282,27 @@ html[lang="en"] .sub-tab, html[lang="en"] .chip { white-space: nowrap; overflow:
 .co-promo-result.lose h3 { color: #ef4444; }
 .co-promo-parts { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; font-size: 12px; }
 .co-promo-parts span { padding: 2px 6px; border-radius: 6px; background: rgba(255,255,255,.05); }
+
+/* ⓘ food gauge info (a small icon sitting above the 🍚 bar) */
+.vbar.food { position: relative; }
+.vit-info { position: absolute; top: -11px; right: 2px; z-index: 2; width: 15px; height: 15px; padding: 0; border-radius: 50%; border: 1px solid #fde68a99; background: #1c1206; color: #fde68a; font: 900 10px/13px sans-serif; cursor: pointer; }
+.vit-info:hover { background: #f59e0b; color: #1c1206; }
+.vitals.compact .vit-info { top: -10px; }
+.vbar.food.starving .vbar-track { border-color: #ef4444; box-shadow: 0 0 8px #ef4444aa, inset 0 2px 4px #0009; animation: vitPulse 1s ease-in-out infinite; }
+.vit-next.starve { color: #fca5a5; font-weight: 900; }
+.fg-info p { margin: 6px 0; line-height: 1.5; }
+.fg-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+.fg-table th, .fg-table td { border: 1px solid #ffffff22; padding: 5px 8px; text-align: left; }
+.fg-table th { background: #ffffff10; }
+
+/* 🎡 food corner entry roulette */
+.fc-wheel-box { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.fc-wheel { position: relative; width: 220px; height: 220px; margin: 6px auto 0; }
+.fc-wheel-ptr { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 2; font-style: normal; font-size: 26px; color: #fde047; text-shadow: 0 2px 4px #000; }
+.fc-wheel-disc { position: absolute; inset: 0; border-radius: 50%; border: 5px solid #fde047; box-shadow: 0 0 0 4px #000, 0 8px 24px #000a, inset 0 0 20px #0006; }
+.fc-wheel-disc::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff7cc, #f59e0b); border: 3px solid #000; }
+.fc-wheel-lbl { position: absolute; inset: 0; display: flex; justify-content: center; padding-top: 12px; pointer-events: none; }
+.fc-wheel-lbl em { font-style: normal; font: 900 12px/1.1 var(--font, sans-serif); color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; white-space: nowrap; }
+.fc-wheel-lbl.tiny em { font-size: 9px; writing-mode: vertical-rl; }
+.fc-odds { text-align: center; max-width: 420px; }
+.lg-stay .lg-out { margin-left: auto; flex: none; }

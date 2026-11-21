@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #276 똥찌 — a Dungi with rainbow skin: rabbit shape, 몽이주름, all dressed up (bow, sparkles, sequins) and holding a LUX handbag -->
+<defs>
+<linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a12"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#fff0f8"/>
+<g fill="#ffd34d"><path d="M32 66 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/><path d="M222 58 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/><path d="M40 176 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/></g>
+<g clip-path="url(#cc)">
+<!-- sequin top -->
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="4"/>
+<g fill="#ffe0f2" opacity=".9"><circle cx="70" cy="224" r="2.4"/><circle cx="84" cy="236" r="2.4"/><circle cx="98" cy="222" r="2.4"/><circle cx="112" cy="240" r="2.4"/><circle cx="144" cy="240" r="2.4"/><circle cx="158" cy="222" r="2.4"/><circle cx="172" cy="236" r="2.4"/><circle cx="186" cy="224" r="2.4"/><circle cx="128" cy="232" r="2.4"/></g>
+<path d="M100 190 Q128 214 156 190" fill="none" stroke="url(#gold)" stroke-width="4"/>
+<g fill="#7ad7ff" stroke="#fff" stroke-width="1"><path d="M128 212 l6 6 l-6 9 l-6 -9 Z"/></g>
+<!-- ears (rainbow) + a big bow -->
+<ellipse cx="100" cy="32" rx="15" ry="40" transform="rotate(-10 100 70)" fill="url(#rb)" stroke="#3a2a24" stroke-width="4"/><ellipse cx="156" cy="32" rx="15" ry="40" transform="rotate(10 156 70)" fill="url(#rb)" stroke="#3a2a24" stroke-width="4"/>
+<ellipse cx="100" cy="36" rx="7" ry="30" transform="rotate(-10 100 70)" fill="#ffb8cf"/><ellipse cx="156" cy="36" rx="7" ry="30" transform="rotate(10 156 70)" fill="#ffb8cf"/>
+<!-- head -->
+<ellipse cx="128" cy="120" rx="64" ry="58" fill="url(#rb)" stroke="#3a2a24" stroke-width="4"/>
+<g transform="translate(160 62) rotate(18)"><path d="M0 0 C-20 -18 -26 8 -4 6 Z M0 0 C20 -18 26 8 4 6 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="2" r="5" fill="#ffd34d" stroke="#3a2a24" stroke-width="2.5"/></g>
+<!-- glam eyes -->
+<ellipse cx="94" cy="136" rx="12" ry="7" fill="#ff4f8b" opacity=".45"/><ellipse cx="162" cy="136" rx="12" ry="7" fill="#ff4f8b" opacity=".45"/>
+<ellipse cx="104" cy="114" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="2"/><ellipse cx="104" cy="115" rx="8" ry="9" fill="#5a2a8a"/><circle cx="106" cy="111" r="3" fill="#fff"/>
+<ellipse cx="152" cy="114" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="2"/><ellipse cx="152" cy="115" rx="8" ry="9" fill="#5a2a8a"/><circle cx="154" cy="111" r="3" fill="#fff"/>
+<path d="M93 106 l-7 -6 M98 102 l-3 -8 M104 101 l0 -8 M163 106 l7 -6 M158 102 l3 -8 M152 101 l0 -8" stroke="#1a1a22" stroke-width="2.8" stroke-linecap="round"/>
+<path d="M96 125 l1.5 -4 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 Z" fill="#fff"/>
+<!-- nose · smile · 몽이주름 -->
+<path d="M124 132 h8 l-4 5 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.2"/>
+<path d="M115 145 Q128 157 141 145" fill="#d81b60" stroke="#4a1a1a" stroke-width="3" stroke-linecap="round"/>
+<path d="M108 137 Q100 149 108 161 M148 137 Q156 149 148 161" fill="none" stroke="#3a2a24" stroke-width="3.5" stroke-linecap="round"/>
+<!-- heart earrings -->
+<path d="M70 156 c-8 -6 -4 -13 0 -9 c4 -4 8 3 0 9 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="1.5"/><path d="M186 156 c-8 -6 -4 -13 0 -9 c4 -4 8 3 0 9 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="1.5"/>
+<path d="M70 142 v6 M186 142 v6" stroke="url(#gold)" stroke-width="2"/>
+<!-- the LUX handbag in a rainbow hand -->
+<path d="M180 208 C180 188 210 188 210 208" fill="none" stroke="url(#gold)" stroke-width="5"/>
+<rect x="170" y="206" width="50" height="38" rx="8" fill="#1a1a1a" stroke="#3a2a24" stroke-width="3"/>
+<path d="M170 218 h50" stroke="#e8b923" stroke-width="2"/>
+<text x="195" y="236" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="13" letter-spacing="1.5" fill="#f0c75e">LUX</text>
+<rect x="191" y="213" width="8" height="7" rx="1.5" fill="url(#gold)" stroke="#a87a12" stroke-width="1"/>
+<circle cx="182" cy="200" r="9" fill="url(#rb)" stroke="#3a2a24" stroke-width="3"/>
+</g>
+</svg>

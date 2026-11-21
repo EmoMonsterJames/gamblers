@@ -541,6 +541,14 @@ export function payBeg(pid, gold) {
 }
 // job corner: once per turn, the job's time comes off the turn timer
 export const canWork = pid => S().turn?.pid === pid && !S().turn.worked;
+// 🚪 "그만두기" on the drawn job also uses up this turn's job try (no pay · no time cut)
+export function quitJob(pid, career) {
+    const s = S(), t = s.turn;
+    if (!t || t.pid !== pid) return;
+    t.worked = true;
+    log(`💼 ${name(pid)} ${career.name} 그만두기 — 이번 턴의 직업 시도 사용`);
+    Store.saveSeason(true);
+}
 export function payJob(pid, career, gold, card = null) {
     const s = S(), ps = s.ps[pid], t = s.turn;
     if (t) { t.worked = true; t.remaining = Math.max(0, t.remaining - career.cut); t.stats.job = (t.stats.job || 0) + gold; t.stats.jobs = (t.stats.jobs || 0) + 1; }
