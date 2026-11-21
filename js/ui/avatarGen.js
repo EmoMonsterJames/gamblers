@@ -178,7 +178,7 @@ export const DEFAULTS = {
     wig: -1, wigColor: "#7a4a2a", hat: -1, glasses: -1, sun: -1, makeup: -1, mouthLines: false, eyeWrinkle: false, leprosy: false,
     acc: -1, season: "spring", outfit: 0, seed: 1,
     // extras (screen-space, humanoid pictures): logo text on the clothes · 🐿️ squirrel tail colour + 🤍 cheek fluff · 🦋 butterfly wing colour
-    logo: "", tail: "", cheekFluff: false, wings: ""
+    logo: "", tail: "", cheekFluff: false, wings: "", antennae: "", ribbon: ""
 };
 
 // ------------------------------------------------------------ hair / wigs (head-local)
@@ -649,6 +649,10 @@ function extrasBack(o) {
         const c = o.wings, l = shade(c, 0.3), d = shade(c, -0.75), v = shade(c, -0.45);
         s += [-1, 1].map(k => `<g transform="translate(128 150) scale(${k} 1)"><path d="M6 -8C30 -84 104 -110 120 -62C132 -26 92 4 40 8Z" fill="${c}" stroke="${d}" stroke-width="4" stroke-linejoin="round"/><path d="M8 6C52 8 98 26 92 66C86 100 40 96 14 40Z" fill="${shade(c, 0.12)}" stroke="${d}" stroke-width="4" stroke-linejoin="round"/><path d="M22 -14C46 -62 92 -82 104 -56C112 -36 80 -14 40 -6Z" fill="${l}" opacity=".55"/><circle cx="92" cy="-56" r="11" fill="${d}"/><circle cx="92" cy="-56" r="5" fill="#ffd34d"/><circle cx="66" cy="58" r="8" fill="${d}"/><circle cx="66" cy="58" r="3.5" fill="#ffd34d"/><g fill="#fff" opacity=".85"><circle cx="112" cy="-34" r="3"/><circle cx="104" cy="-20" r="2.5"/><circle cx="84" cy="80" r="2.5"/></g><path d="M14 -6C44 -40 80 -60 108 -60M14 4C40 20 62 40 74 70" fill="none" stroke="${v}" stroke-width="2" opacity=".6"/></g>`).join("");
     }
+    if (isHex(o.antennae)) { // 🦋 long antennae with a soft curl at the tip
+        const c = o.antennae;
+        s += [-1, 1].map(k => `<g transform="translate(128 0) scale(${k} 1)"><path d="M12 66C14 48 24 32 40 24C52 18 64 22 64 31C64 40 53 42 49 36C46 31 50 27 55 29" fill="none" stroke="${c}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g>`).join("");
+    }
     if (isHex(o.tail)) {
         const c = o.tail, T = "M158 236C196 238 226 214 228 176C230 146 214 130 220 104C226 78 246 66 238 42C230 20 196 16 180 34C168 48 174 70 190 72C182 92 168 118 172 150C175 176 168 206 158 236Z";
         s += `<g transform="translate(-16 14)"><path d="${T}" fill="none" stroke="${OUT}" stroke-width="20" stroke-dasharray="1 9" stroke-linecap="round"/><path d="${T}" fill="${c}" stroke="${OUT}" stroke-width="4" stroke-linejoin="round"/><path d="${T}" fill="none" stroke="${c}" stroke-width="13" stroke-dasharray="1 9" stroke-linecap="round"/>` +
@@ -660,6 +664,10 @@ function extrasBack(o) {
 function extrasFront(o) {
     let s = "";
     if (o.logo) s += `<g transform="translate(128 206) scale(1.05)"><rect x="-23" y="-13" width="46" height="24" rx="5" fill="#111" stroke="#d4af37" stroke-width="2"/><text x="0" y="6" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="17" letter-spacing="2" fill="#d4af37">${esc(String(o.logo).slice(0, 5))}</text></g>`;
+    if (isHex(o.ribbon)) { // 🎀 a ribbon tied on the right antenna
+        const c = o.ribbon, d = shade(c, -0.45);
+        s += `<g transform="translate(149 42) rotate(-28)"><path d="M0 0L-6 16L-1 13L1 18Z M0 0L7 15L2 13L1 18Z" fill="${shade(c, -0.15)}" stroke="${d}" stroke-width="1.5" stroke-linejoin="round"/><path d="M0 0C-16 -14 -22 4 -4 4Z M0 0C16 -14 22 4 4 4Z" fill="${c}" stroke="${d}" stroke-width="2" stroke-linejoin="round"/><circle cx="0" cy="1.5" r="3.6" fill="${shade(c, 0.25)}" stroke="${d}" stroke-width="1.5"/></g>`;
+    }
     if (o.cheekFluff) s += [-1, 1].map(k => { const x = 128 + k * 47, y = 112; return `<g fill="#ffffff" stroke="#d9d4cf" stroke-width="1.2">${[[0, 0, 7], [k * 6, -6, 5.5], [k * 7, 6, 6], [k * 12, 0, 5], [k * 2, 9, 5]].map(([dx, dy, r]) => `<circle cx="${x + dx}" cy="${y + dy}" r="${r}"/>`).join("")}<path d="M${x + k * 13} ${y - 3}l${k * 6} -2M${x + k * 14} ${y + 3}l${k * 6} 2" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></g>`; }).join("");
     return s;
 }

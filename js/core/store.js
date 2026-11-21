@@ -50,7 +50,7 @@ export const PLAYER_ART = {
 export const PLAYER_EXTRAS = {
     280: { tail: "#ff9ec4", cheekFluff: true },  // 다람쥐토끼 — white cheek fluff + a big pink squirrel tail
     283: { logo: "LUX" },                         // 깜지 — LUX logo on the clothes
-    286: { wings: "#e11d2e" }                     // 꽃나비 — big red butterfly wings
+    286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings
 };
 const playerImage = p => PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, PLAYER_EXTRAS[p.id]);
 
