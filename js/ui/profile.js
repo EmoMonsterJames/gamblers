@@ -7,6 +7,7 @@ import { FRAME_BY_ID, PEFFECT_BY_ID, PET_BY_ID, PETFX_BY_ID, WEAPON_BY_ID, ITEM_
 import { CONFIG } from "../config.js";
 import { frameDeco } from "./frames.js";
 import { FOOD_START, FOOD_MAX } from "../data/life.js";
+import { specialBadges } from "../game/specialSeason.js";
 
 // 🦠 every disease a player can have (game/extra.js DISEASES — kept here too so the picture never needs the season rules)
 export const DISEASE_ICON = { flu: { emoji: "🤧", name: "독감" }, cancer: { emoji: "🎗️", name: "암" } };
@@ -119,7 +120,8 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
                     p.handler ? badge("전담 " + p.handler, "handler") : null,
                     badge(rec.avg ? `전적 평균 ${rec.avg.toFixed(1)}위 (시즌 ${rec.seasons}회 출연)` : "전적 없음", "rec"),
                     rec.wins ? badge(`👑 ${rec.wins}회 우승`, "crown") : null,
-                    ps?.out ? badge(`탈락 · ${ps.rank}위`, "dead") : null),
+                    ps?.out ? badge(`탈락 · ${ps.rank}위`, "dead") : null,
+                    ...specialBadges(pid).map(([t, c]) => badge(t, c))),
                 ps ? vitalBars(ps) : null, ps ? diseaseChips(pid) : null)),
         ps ? h("div.pcard-money",
             h("div.stat.gold", h("small", "보유금액"), h("b", fmt(ps.money) + " G")),
@@ -169,6 +171,6 @@ function itemsLine(ps) {
 export function miniPlayer(pid, ps, extra = null) {
     const p = Store.player(pid);
     return h("div.mini" + (ps?.out ? ".out" : ""), avatar(pid, 40, { effect: false }),
-        h("div.mini-t", h("b", displayName(p)), h("small", ps ? `${fmt(ps.money)} G · ${ps.points} P` : p.country)), extra);
+        h("div.mini-t", h("b", displayName(p), ...specialBadges(pid).map(([t, c]) => h("span.sp-tag." + c, t))), h("small", ps ? `${fmt(ps.money)} G · ${ps.points} P` : p.country)), extra);
 }
 export { esc };

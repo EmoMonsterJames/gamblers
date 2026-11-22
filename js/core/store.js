@@ -8,7 +8,7 @@ import { CONFIG } from "../config.js";
 import { SEED_PLAYERS } from "../data/players.js";
 import { SLOTS } from "../slots/configs.js";
 import { toast } from "./fx.js";
-import { buildAvatar, parseGen, toDataUri, raceFromEthnicity, RACES } from "../ui/avatarGen.js";
+import { buildAvatar, parseGen, toDataUri, raceFromEthnicity, RACES, isNoImage } from "../ui/avatarGen.js";
 
 // 🎨 pictures made with the player image generator carry their options: they are redrawn with the
 // current generator on load (same colours / face / makeup / clothes — only the drawing rules change)
@@ -25,7 +25,7 @@ function freshAvatar(src, ethnicity = "", extras = null) {
             const o = parseGen(src);
             if (o) {
                 const r = raceFromEthnicity(ethnicity);
-                if (FORCED_RACE.has(r) && o.race !== r) {
+                if (FORCED_RACE.has(r) && o.race !== r && o.race !== "noimage") {
                     if (!o.skin || o.skin === "auto") o.skin = RACES.find(x => x[0] === o.race)?.[3] || "auto";
                     o.race = r;
                 }
@@ -53,7 +53,8 @@ export const PLAYER_EXTRAS = {
     283: { logo: "LUX" },                         // 깜지 — LUX logo on the clothes
     286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings
 };
-const playerImage = p => PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, PLAYER_EXTRAS[p.id]);
+// 🚫 "No Image" (admin → 플레이어 관리) wins over the hand-drawn pictures too
+const playerImage = p => isNoImage(p.profile_image) ? p.profile_image : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, PLAYER_EXTRAS[p.id]);
 
 const LS = "gamblers.v1";
 let sb = null; // supabase client
@@ -415,16 +416,16 @@ export const Store = {
         if (!s) return null;
         const ps = {};
         for (const pid of s.roster || []) { const p = s.ps?.[pid] || {}; ps[pid] = { rank: p.rank ?? null, out: !!p.out, outRound: p.outRound ?? null, money: p.money || 0, points: p.points || 0, hp: p.hp ?? 0 }; }
-        return { number: s.number, status: s.status, winnerId: s.winnerId ?? null, round: s.round || 0, roster: [...(s.roster || [])], history: structuredClone(s.history || []), ps };
+        return { number: s.number, status: s.status, special: s.special ? { id: s.special.id, name: s.special.name } : null, winnerId: s.winnerId ?? null, round: s.round || 0, roster: [...(s.roster || [])], history: structuredClone(s.history || []), ps };
     },
     // every season (newest first). Cloud: read from the seasons table; local: the archive + the current one.
     async seasonDigests() {
         if (this.cloud && sb) {
             const { data, error } = await sb.from("seasons")
-                .select("number,status,winner_id,round:state->round,roster:state->roster,history:state->history,ps:state->ps")
+                .select("number,status,winner_id,round:state->round,special:state->special,roster:state->roster,history:state->history,ps:state->ps")
                 .order("number", { ascending: false });
             if (error) throw error;
-            return (data || []).map(r => this.seasonDigest({ number: r.number, status: r.status, winnerId: r.winner_id, round: r.round, roster: r.roster, history: r.history, ps: r.ps }));
+            return (data || []).map(r => this.seasonDigest({ number: r.number, status: r.status, special: r.special, winnerId: r.winner_id, round: r.round, roster: r.roster, history: r.history, ps: r.ps }));
         }
         const list = [...this.archive];
         if (this.season && !list.some(d => d.number === this.season.number)) list.push(this.seasonDigest(this.season));

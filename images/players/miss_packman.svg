@@ -1,12 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-<!-- #115 미스팩맨 big ribbon -->
-<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
-<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<!-- #115 미스팩맨 — one eye, round body (mouth open to the right) with arms and legs, big bow, red high heels -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
 <circle cx="128" cy="128" r="124" fill="#dff0ff"/>
 <g clip-path="url(#cc)">
-<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#ffb3c8" stroke="#3a2a24" stroke-width="4"/>
-<path d="M100 192 C108 210 120 208 128 200 C136 208 148 210 156 192" fill="#fff" stroke="#3a2a24" stroke-width="3"/>
-<path d="M128 114 L196 82 A70 70 0 1 0 196 146 Z" fill="#ffd93b" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
-<ellipse cx="80" cy="114" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/><ellipse cx="140" cy="114" rx="12" ry="7" fill="#ff7aa0" opacity=".45"/><ellipse cx="90" cy="92" rx="8" ry="9" fill="#1a1a22"/><circle cx="92" cy="89" r="3" fill="#fff"/><ellipse cx="130" cy="92" rx="8" ry="9" fill="#1a1a22"/><circle cx="132" cy="89" r="3" fill="#fff"/><g transform="translate(128 36) scale(1.50)"><path d="M0 0 L-24 -14 L-24 14 Z M0 0 L24 -14 L24 14 Z" fill="#ff4f7a" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle r="6" fill="#cc3f61" stroke="#3a2a24" stroke-width="3"/></g>
+<path d="M104 188L98 228M138 190L144 228" stroke="#d4a017" stroke-width="8" stroke-linecap="round"/>
+<path d="M100 226Q84 224 80 236H95Q98 232 101 234Z" fill="#e2463f" stroke="#3a2a24" stroke-width="2.6" stroke-linejoin="round"/><path d="M100 230L102 244" stroke="#e2463f" stroke-width="3.6" stroke-linecap="round"/>
+<path d="M142 226Q158 224 162 236H147Q144 232 141 234Z" fill="#e2463f" stroke="#3a2a24" stroke-width="2.6" stroke-linejoin="round"/><path d="M142 230L140 244" stroke="#e2463f" stroke-width="3.6" stroke-linecap="round"/>
+<path d="M60 150Q36 156 34 186M164 178Q188 188 194 210" fill="none" stroke="#d4a017" stroke-width="8" stroke-linecap="round"/>
+<path d="M120 122 L188 86 A74 74 0 1 0 188 158 Z" fill="#ffd93b" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="34" cy="189" r="8.5" fill="#ffd93b" stroke="#3a2a24" stroke-width="3"/><circle cx="194" cy="213" r="8.5" fill="#ffd93b" stroke="#3a2a24" stroke-width="3"/>
+<ellipse cx="96" cy="116" rx="13" ry="8" fill="#ff7aa0" opacity=".45"/>
+<ellipse cx="112" cy="82" rx="11" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="2"/><ellipse cx="114" cy="84" rx="6" ry="8" fill="#1a1a22"/><circle cx="116" cy="80" r="2.5" fill="#fff"/>
+<path d="M102 70 l-6 -6 M107 68 l-3 -8 M113 68 l0 -8" stroke="#1a1a22" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M176 92 L186 86 L185 96 Z M176 152 L186 158 L185 148 Z" fill="#e2463f"/>
+<circle cx="140" cy="152" r="3" fill="#2a1a1e"/>
+<g transform="translate(112 50) scale(1.35)"><path d="M0 0 L-24 -14 L-24 14 Z M0 0 L24 -14 L24 14 Z" fill="#ff4f7a" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle r="6" fill="#cc3f61" stroke="#3a2a24" stroke-width="3"/></g>
 </g>
 </svg>

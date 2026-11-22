@@ -17,6 +17,7 @@ const CASINO_CARD_RATE = 0.01; // per casino play
 import { CASINO_BY_ID } from "../data/casino.js";
 import { SLOT_BY_ID } from "../slots/configs.js";
 import * as G from "../game/season.js";
+import * as SP from "../game/specialSeason.js";
 import { avatar, playerCard, miniPlayer, displayName, petView, weaponChip, diseaseChips } from "../ui/profile.js";
 import { reelMachine } from "../ui/reelpick.js";
 import { worldMap, regionMap } from "../ui/map.js";
@@ -173,13 +174,38 @@ function noSeason() {
     return h("div.center-card",
         h("div.logo-big", "GAMBLERS"),
         h("p", "진행 중인 시즌이 없습니다."),
-        h("button.btn.gold.big", { onclick: () => { G.newSeason(); render(); } }, `🎰 시즌 ${(Store.seasonCount || 0) + 1} 시작`));
+        h("div.row.center.sp-start",
+            h("button.btn.gold.big", { onclick: () => { G.newSeason(); render(); } }, `🎰 시즌 ${(Store.seasonCount || 0) + 1} 시작`),
+            h("button.btn.purple.big", { onclick: specialPicker }, "✨ 특수 시즌 시작")));
+}
+// ✨ special season picker: a type can be chosen only when a full 20-player roster can be drawn for it right now
+function specialPicker() {
+    const n = (Store.seasonCount || 0) + 1;
+    let m = null;
+    const rows = SP.SPECIAL_SEASONS.map(t => {
+        const st = SP.specialStatus(t);
+        return h("button.sp-type" + (st.ok ? "" : ".off"), { disabled: !st.ok, onclick: async () => {
+            if (!st.ok) return;
+            if (!(await confirmBox(`시즌 ${n}: ${t.name}\n\n${t.desc}\n\n이 특수 시즌으로 시작할까요? (참가자 20명이 이 조건으로 뽑힙니다)`, "✨ 시작", "취소"))) return;
+            const again = SP.specialStatus(t); // drawn fresh at the start
+            if (!again.ok) return toast(again.why, "warn");
+            m.close();
+            G.newSeason({ id: t.id, plan: again.plan });
+            toast(`✨ 시즌 ${n}: ${t.name} 시작!`, "ok");
+            render();
+        } },
+            h("span.sp-emo", t.emoji),
+            h("div.sp-txt", h("b", t.name), h("small", t.desc), h("small" + (st.ok ? ".sp-ok" : ".sp-no"), st.ok ? `✅ 시작 가능 · 대상 ${st.pool}명` : `🚫 ${st.why}`)));
+    });
+    m = modal(h("div.sp-picker",
+        h("p.muted", `특수 시즌은 테마에 맞는 플레이어 20명(DYLAN 10명 · JAMES 10명)이 랜덤으로 선발됩니다. 타이틀은 '시즌 ${n}: 이름' 으로 표시됩니다. 데이터(플레이어 · 지난 시즌 기록 · 잭팟 기록)가 부족한 종류는 고를 수 없습니다.`),
+        h("div.sp-list", rows)), { title: `✨ 특수 시즌 선택 — 시즌 ${n}`, wide: true });
 }
 
 function header(s) {
     const tier = s.mission ? s.mission.tier : (s.status === "mission" ? G.tierForRound() : null);
     return h("div.season-head",
-        h("div.sh-left", h("b", `SEASON ${s.number}`), s.round ? h("span", `ROUND ${s.round}`) : null,
+        h("div.sh-left", h("b", SP.seasonTitleEn(s)), s.round ? h("span", `ROUND ${s.round}`) : null,
             tier != null ? h("span.tier.t" + tier, `난이도 ${TIERS[tier]}`) : null),
         RV.revivalOpen() || s.revival?.phase === "intro" ? h("div.sh-mission.rv-head", "🔄 패자부활전 ", s.mission?.revival ? h("span", "· ", s.mission.text) : h("span.muted", "· Survival Land")) :
         s.mission ? h("div.sh-mission", "📜 ", s.mission.text) : h("div.sh-mission.muted", { select: "참가자 선발 중", final: "최종 결승전", done: "시즌 종료" }[s.status] || ""),
@@ -255,7 +281,7 @@ function selectStage(s) {
     machine.idle(pool);
     const grid = h("div.roster-grid", Array.from({ length: CONFIG.SEASON_SIZE }, (_, i) => {
         const pid = s.roster[i];
-        return h("div.rslot" + (pid != null ? ".filled" : ""), pid != null ? [avatar(pid, 64, { effect: false }), h("small", displayName(Store.player(pid)))] : h("span", i + 1));
+        return h("div.rslot" + (pid != null ? ".filled" : ""), pid != null ? [avatar(pid, 64, { effect: false }), h("small", displayName(Store.player(pid))), ...SP.specialBadges(pid).map(([t, c]) => h("span.sp-tag." + c, t))] : h("span", i + 1));
     }));
     let spinning = false;
     const spinBtn = h("button.btn.gold.huge", { onclick: async () => {
@@ -281,13 +307,16 @@ function selectStage(s) {
     // quota board: 3 per country + 2 free · 10 male / 10 female · 10 JAMES / 10 DYLAN
     const qc = G.selectionCounts(s.roster), half = CONFIG.SEASON_SIZE / 2;
     const chip = (label, n, goal) => h("span.sq-chip" + (n >= goal ? ".ok" : ""), `${label} ${n}/${goal}`);
-    const quota = h("div.sel-quota",
+    const spT = SP.specialOf(s);
+    const quota = spT ? h("div.sel-quota", h("div", h("small", `${spT.emoji} ${spT.desc}`)), h("div", SP.specialQuota(s).map(([l, n, g]) => chip(l, n, g))))
+        : h("div.sel-quota",
         h("div", h("small", "국가별 3명 + 자유 2명"), G.SELECT_COUNTRIES.map(c => chip(c, qc.country[c] || 0, G.SELECT_PER_COUNTRY))),
         h("div", h("small", "성별 · 전담자"), chip("♂ 남자", qc.gender.male || 0, half), chip("♀ 여자", qc.gender.female || 0, half), chip("JAMES", qc.handler.JAMES || 0, half), chip("DYLAN", qc.handler.DYLAN || 0, half)));
     return h("div.select-stage",
+        spT ? h("div.sp-banner", `✨ ${SP.seasonTitle(s)}`) : null,
         h("h2.stage-title", "🎰 시즌 참가자 선발 🎰", h("small", `${s.roster.length} / ${CONFIG.SEASON_SIZE}`)),
         quota,
-        G.prevSeasonPlayers().size ? h("p.muted.center", `지난 시즌 참가자는 다시 뽑힐 확률이 ${Math.round(G.REPICK_WEIGHT * 100)}%로 낮아집니다 (연속 출전 방지)`) : null,
+        !spT && G.prevSeasonPlayers().size ? h("p.muted.center", `지난 시즌 참가자는 다시 뽑힐 확률이 ${Math.round(G.REPICK_WEIGHT * 100)}%로 낮아집니다 (연속 출전 방지)`) : null,
         machine.el,
         full ? h("div.row.center", h("button.btn.gold.huge", { onclick: () => { G.startRound(); render(); } }, "▶ 라운드 1 시작")) : h("div.row.center", spinBtn, skipBtn),
         grid);

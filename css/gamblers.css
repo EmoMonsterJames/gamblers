@@ -689,3 +689,31 @@ main { padding: 16px; max-width: 1500px; margin: 0 auto; }
 .gc-badge.superhot { background: linear-gradient(135deg, #f43f5e, #dc2626 55%, #f59e0b); animation: gcHot 1.2s ease-in-out infinite; }
 @keyframes gcHot { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.08); filter: brightness(1.25); } }
 @media (prefers-reduced-motion: reduce) { .gc-badge.superhot { animation: none; } }
+
+/* ✨ 특수 시즌 (game/specialSeason.js) */
+.btn.purple { background: linear-gradient(180deg, #c9a2ff, #8b5cf6); color: #fff; box-shadow: 0 4px 0 #5b2fb0, 0 8px 20px #8b5cf655; }
+.sp-start { gap: 12px; flex-wrap: wrap; }
+.sp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 64vh; overflow: auto; }
+.sp-type { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 10px; border-radius: 12px; border: 1px solid #8b5cf677; background: #8b5cf61c; color: inherit; cursor: pointer; font: inherit; }
+.sp-type:hover:not(:disabled) { background: #8b5cf63a; transform: translateY(-1px); }
+.sp-type.off { opacity: .45; cursor: not-allowed; border-color: #ffffff22; background: #ffffff08; }
+.sp-emo { font-size: 26px; line-height: 1; }
+.sp-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sp-txt small { opacity: .8; font-size: 12px; }
+.sp-txt .sp-ok { color: #4ade80; opacity: 1; }
+.sp-txt .sp-no { color: #f87171; opacity: 1; }
+.sp-banner { text-align: center; font-weight: 900; font-size: 18px; color: #d8b4fe; margin: 0 0 4px; }
+.badge.sp-jp, .sp-tag.sp-jp { background: #f59e0b33; border-color: #f59e0b; color: #fcd34d; }
+.badge.sp-new, .sp-tag.sp-new { background: #22c55e33; border-color: #22c55e; color: #86efac; }
+.badge.sp-vet, .sp-tag.sp-vet { background: #8b5cf633; border-color: #a78bfa; color: #ddd6fe; }
+.badge.sp-rich, .sp-tag.sp-rich { background: #eab30833; border-color: #eab308; color: #fde047; }
+.badge.sp-poor, .sp-tag.sp-poor { background: #78716c44; border-color: #a8a29e; color: #e7e5e4; }
+.sp-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px; border: 1px solid; font-weight: 700; white-space: nowrap; }
+
+/* 🧬 종족 카테고리 › 서브카테고리 · 🚫 No Image (screens/adminPlayers.js) */
+.ap-race-f { grid-column: 1 / -1; }
+.ap-race { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ap-nosub { font-size: 12px; opacity: .75; padding: 6px 8px; border: 1px dashed #ffffff33; border-radius: 8px; }
+.ap-noimg { margin-top: 4px; font-size: 13px; }
+.badge.noimg { background: #adb5bd33; border-color: #adb5bd; color: #dee2e6; }
+.gen-race { margin: 0; font-size: 12px; }

@@ -7,9 +7,12 @@ import { COUNTRIES } from "../data/catalog.js";
 import { avatar, displayName } from "../ui/profile.js";
 import { jobList, saveJobs } from "../data/jobs.js";
 import {
-    buildAvatar, toDataUri, parseGen, raceFromEthnicity, DEFAULTS, RACES, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
-    HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames
+    buildAvatar, toDataUri, parseGen, DEFAULTS, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
+    HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames, NO_IMAGE_URI, isNoImage,
+    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS
 } from "../ui/avatarGen.js";
+import { RACE_CATEGORIES, RACE_CAT, subsOf, categoryOf, drawRace, addCustomSub } from "../data/races.js";
+import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
 
 const FIELDS = [
     ["login_id", "로그인 ID"], ["name_ko", "이름 (한글)"], ["player_name", "영문 이름"],
@@ -37,17 +40,22 @@ function choices(k, current) {
 
 export function adminPlayersPage() {
     if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🧑‍🤝‍🧑 플레이어 관리"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
-    let q = "", showOff = true;
+    let q = "", showOff = true, onlyNo = false;
     const list = h("div.ap-list");
-    const search = h("input.input", { placeholder: "이름 / ID / 국가 검색", oninput: e => { q = e.target.value.trim().toLowerCase(); draw(); } });
+    const search = h("input.input", { placeholder: "이름 / ID / 국가 / 종족 검색", oninput: e => { q = e.target.value.trim().toLowerCase(); draw(); } });
     const offChk = h("label.check", h("input", { type: "checkbox", checked: true, onchange: e => { showOff = e.target.checked; draw(); } }), "비활성 포함");
+    // 🚫 players set to No Image (to order their pictures all at once later)
+    const noChk = h("label.check", h("input", { type: "checkbox", onchange: e => { onlyNo = e.target.checked; draw(); } }), "🚫 No Image만");
+    const noCount = h("small.muted");
     function draw() {
-        const rows = Store.allPlayers.filter(p => (showOff || p.is_active !== false) &&
-            (!q || `${p.id} ${p.login_id} ${p.name_ko} ${p.player_name} ${p.country}`.toLowerCase().includes(q)));
+        const rows = Store.allPlayers.filter(p => (showOff || p.is_active !== false) && (!onlyNo || isNoImage(p.profile_image)) &&
+            (!q || `${p.id} ${p.login_id} ${p.name_ko} ${p.player_name} ${p.country} ${p.ethnicity} ${categoryOf(p.ethnicity)}`.toLowerCase().includes(q)));
+        noCount.textContent = `No Image ${Store.allPlayers.filter(p => isNoImage(p.profile_image)).length}명`;
         list.replaceChildren(...rows.map(p => h("button.ap-row" + (p.is_active === false ? ".off" : ""), { onclick: () => editPlayer(p, draw) },
             avatar(p.id, 44, { effect: false }),
             h("div.ap-who", h("b", displayName(p)), h("small", `#${p.id} · ${p.player_name || ""} · ${p.login_id || ""}`)),
-            h("small.ap-c", p.country || "-"), h("small.ap-c", p.handler ? `전담 ${p.handler}` : ""),
+            h("small.ap-c", p.country || "-"), h("small.ap-c", (c => !p.ethnicity || c.toLowerCase() === String(p.ethnicity).toLowerCase() ? c : `${c} › ${p.ethnicity}`)(categoryOf(p.ethnicity))), h("small.ap-c", p.handler ? `전담 ${p.handler}` : ""),
+            isNoImage(p.profile_image) ? h("span.badge.noimg", "No Image") : null,
             p.is_active === false ? h("span.badge.off", "비활성") : null)));
     }
     draw();
@@ -55,7 +63,7 @@ export function adminPlayersPage() {
         h("div.row.between", h("h2.page-title", "🧑‍🤝‍🧑 플레이어 관리"),
             h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
         h("p.muted", Store.cloud ? "변경 사항은 Supabase에 바로 저장됩니다." : "로컬 모드: 이 브라우저에만 저장됩니다."),
-        h("div.row", search, offChk, h("small.muted", `전체 ${Store.allPlayers.length}명 · 활성 ${Store.players.length}명`)),
+        h("div.row", search, offChk, noChk, h("small.muted", `전체 ${Store.allPlayers.length}명 · 활성 ${Store.players.length}명 · `), noCount),
         list);
 }
 
@@ -64,18 +72,66 @@ function editPlayer(p, onSaved) {
     const v = isNew ? { id: Store.nextPlayerId(), is_active: true, profile_image: "", country: COUNTRIES[0], gender: "male", ethnicity: "Human", age_group: "Young Adult", preference: "Straight" } : { ...p };
     const images = [...new Set(Store.allPlayers.map(x => x.profile_image).filter(s => s && !s.startsWith("data:")))].sort();
     const prev = h("img.ap-prev", { src: v.profile_image || "", alt: "" });
-    const setImage = src => { v.profile_image = src; prev.src = src; imgInput.value = src.startsWith("data:") ? "" : src; imgInput.placeholder = src.startsWith("data:") ? "(생성기로 만든 이미지)" : "images/players/xxx.svg 또는 https://…"; };
-    const imgInput = h("input.input", { value: (v.profile_image || "").startsWith("data:") ? "" : v.profile_image || "", placeholder: "images/players/xxx.svg 또는 https://…", oninput: e => { gen.disable(); v.profile_image = e.target.value.trim(); prev.src = v.profile_image; } });
+    const setImage = src => {
+        v.profile_image = src; prev.src = src; imgInput.value = src.startsWith("data:") ? "" : src;
+        imgInput.placeholder = isNoImage(src) ? "(No Image)" : src.startsWith("data:") ? "(생성기로 만든 이미지)" : "images/players/xxx.svg 또는 https://…";
+        if (noChk) noChk.checked = isNoImage(src);
+    };
+    const imgInput = h("input.input", { value: (v.profile_image || "").startsWith("data:") ? "" : v.profile_image || "", placeholder: isNoImage(v.profile_image) ? "(No Image)" : "images/players/xxx.svg 또는 https://…", oninput: e => { gen.disable(); v.profile_image = e.target.value.trim(); prev.src = v.profile_image; noChk.checked = false; } });
     const imgSel = h("select", { onchange: e => { if (!e.target.value) return; gen.disable(); setImage(e.target.value); } },
         h("option", { value: "" }, "기존 이미지에서 고르기…"), images.map(src => h("option", { value: src, selected: src === v.profile_image }, src.split("/").pop())));
+    // 🚫 No Image: shows the placeholder everywhere until the picture is ordered (unticking brings the old picture back)
+    let beforeNo = isNoImage(v.profile_image) ? "" : v.profile_image;
+    const noChk = h("input", { type: "checkbox", checked: isNoImage(v.profile_image), onchange: e => {
+        if (e.target.checked) { if (!isNoImage(v.profile_image)) beforeNo = v.profile_image; gen.disable(); setImage(NO_IMAGE_URI); }
+        else { setImage(beforeNo || ""); if (!beforeNo) toast("이미지를 지정하거나 오른쪽 생성기를 켜세요", "info"); }
+    } });
 
     // image generator: on for new players, off for existing ones until asked for
     const saved = parseGen(v.profile_image);
-    const gen = generatorPanel(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: raceFromEthnicity(v.ethnicity), raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) },
-        isNew || !!saved, src => setImage(src));
+    const dr = drawRace(v.ethnicity);
+    const gen = generatorPanel(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: dr.race, sub: dr.sub || "", raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) },
+        isNew || !!saved, src => setImage(src), () => (c => !v.ethnicity || c.toLowerCase() === String(v.ethnicity).toLowerCase() ? c : `${c} › ${v.ethnicity}`)(categoryOf(v.ethnicity)));
 
+    let raceCat = categoryOf(v.ethnicity);
     const inputs = FIELDS.map(([k, label]) => {
         let el;
+        if (k === "ethnicity") {
+            // 🧬 종족 = 카테고리 › 서브카테고리 (the subcategory is what the game uses)
+            const wrap = h("div.ap-race");
+            const setSub = s => { v.ethnicity = String(s || "").trim(); sync("ethnicity"); };
+            const drawRaceField = () => {
+                const C = RACE_CAT[raceCat], subs = subsOf(raceCat);
+                const catSel = h("select", { onchange: e => {
+                    raceCat = e.target.value;
+                    const s2 = subsOf(raceCat);
+                    setSub(s2.length ? s2[0] : RACE_CAT[raceCat].typed ? "" : raceCat);
+                    drawRaceField();
+                } }, RACE_CATEGORIES.map(x => h("option", { value: x.id, selected: x.id === raceCat }, `${x.emoji} ${x.id}`)));
+                const typedBox = (val = "") => {
+                    const inp = h("input.input", { value: val, placeholder: `새 ${raceCat} 종족 입력 (예: ${raceCat === "Other Animal" ? "Wolf" : raceCat === "Other Shape" ? "Star" : "…"})`, onchange: ev => setSub(ev.target.value) });
+                    return inp;
+                };
+                let subEl;
+                if (!subs.length && !C.typed) { if (v.ethnicity !== raceCat) setSub(raceCat); subEl = h("div.ap-nosub", `서브카테고리 없음 → 게임에서는 '${raceCat}' 으로 쓰입니다`); }
+                else if (!subs.length) subEl = typedBox(v.ethnicity === raceCat ? "" : v.ethnicity);
+                else {
+                    const known = subs.some(s => s.toLowerCase() === String(v.ethnicity).toLowerCase());
+                    const sel = h("select", { onchange: e => {
+                        if (e.target.value === "__custom") { const inp = typedBox(); subBox.replaceChildren(inp); inp.focus(); return; }
+                        setSub(e.target.value);
+                    } },
+                        !known ? h("option", { value: v.ethnicity, selected: true }, v.ethnicity ? `${v.ethnicity} (${v.ethnicity === raceCat ? "서브카테고리 미지정" : "직접 입력"})` : "선택…") : null,
+                        subs.map(s => h("option", { value: s, selected: s.toLowerCase() === String(v.ethnicity).toLowerCase() }, s)),
+                        C.typed ? h("option", { value: "__custom" }, "✏️ 직접 입력…") : null);
+                    subEl = sel;
+                }
+                const subBox = h("div.ap-dd", subEl);
+                wrap.replaceChildren(h("div.ap-dd", catSel), subBox);
+            };
+            drawRaceField();
+            return h("label.cf.ap-race-f", h("small", "종족 (카테고리 › 서브카테고리)"), wrap);
+        }
         if (CHOICES[k]) {
             const draw = () => {
                 const sel = h("select", { onchange: e => {
@@ -98,17 +154,19 @@ function editPlayer(p, onSaved) {
     // profile → generator: gender and race follow the profile dropdowns
     function sync(k) {
         if (k === "gender" && (v.gender === "male" || v.gender === "female")) gen.set({ gender: v.gender });
-        if (k === "ethnicity") gen.set({ race: raceFromEthnicity(v.ethnicity), raceText: v.ethnicity || "" });
+        if (k === "ethnicity") { const d = drawRace(v.ethnicity); gen.set({ race: d.race, sub: d.sub || "", raceText: v.ethnicity || "" }); }
     }
     const active = h("label.check", h("input", { type: "checkbox", checked: v.is_active !== false, onchange: e => { v.is_active = e.target.checked; } }), "활성 (시즌 선발 대상)");
     const m = modal(h("div.ap-form.with-gen",
         h("div.ap-left",
-            h("div.ap-img", prev, h("div", h("small.muted", `ID #${v.id}`), imgSel, imgInput)),
+            h("div.ap-img", prev, h("div", h("small.muted", `ID #${v.id}`), imgSel, imgInput, h("label.check.ap-noimg", noChk, "🚫 No Image (나중에 이미지 주문)"))),
             h("div.ap-grid", inputs),
             active,
             h("div.row", h("button.btn.gold", { onclick: async () => {
                 if (!(v.name_ko || "").trim() && !(v.player_name || "").trim()) return toast("이름을 입력하세요", "warn");
-                if (!v.profile_image) return toast("프로필 이미지를 지정하세요 (오른쪽 생성기를 켜면 자동 등록)", "warn");
+                if (!(v.ethnicity || "").trim()) return toast("종족(서브카테고리)을 입력하세요", "warn");
+                if (!v.profile_image) return toast("프로필 이미지를 지정하세요 (오른쪽 생성기를 켜면 자동 등록 · 또는 No Image)", "warn");
+                await addCustomSub(raceCat, v.ethnicity); // a typed-in subcategory is offered next time
                 const ok = await Store.savePlayer(v);
                 if (ok === false) return;
                 toast(isNew ? "플레이어를 추가했습니다 (이미지 포함)" : "저장했습니다", "ok");
@@ -120,7 +178,7 @@ function editPlayer(p, onSaved) {
 }
 
 // ---------------------------------------------------------------- image generator panel
-function generatorPanel(initial, startOn, onImage) {
+function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
     const o = { ...DEFAULTS, ...initial };
     let on = startOn;
     const view = h("div.gen-view");
@@ -152,14 +210,32 @@ function generatorPanel(initial, startOn, onImage) {
         const human = o.race === "human", black = human && o.human === "black";
         // keep indexes inside their lists when the gender changes
         for (const [k, n] of [["hairStyle", 15], ["wig", 15], ["hat", 20], ["acc", 20], ["outfit", 20]]) if (o[k] >= n) o[k] = n - 1;
+        if (o.race === "noimage") { // ❓ Others: no drawing until the picture is ordered
+            body.replaceChildren(h("div.gen-sec", h("h5", "기본"), h("p.muted", `종족: ${raceLabel()}`),
+                h("p.notice", "🚫 Others 종족은 이미지를 따로 주문할 종족이라 주문이 들어가기 전까지 No Image로 둡니다.")));
+            return;
+        }
+        const bfly = o.race === "bug" && BUGS[o.sub]?.wings && ["butterfly", "moth"].includes(BUGS[o.sub].wings);
+        // 🧬 race styles: shown only for the races they belong to (ui/avatarRaces.js)
+        const styles = [
+            o.race === "jiangshi" ? [L("귀 모양 (12종)", sel("jsEar", JS_EARS, { num: true })), L("이빨 (12종)", sel("jsFang", JS_FANGS, { num: true }))] : null,
+            o.race === "angel" ? [L("Halo (12종)", sel("halo", HALOS, { num: true })), L("천사 날개 (12종)", sel("angelWing", ANGEL_WINGS, { num: true }))] : null,
+            o.race === "devil" ? [L("머리뿔 (12종)", sel("horn", DEVIL_HORNS, { num: true })), L("악마 꼬리 (12종)", sel("devilTail", DEVIL_TAILS, { num: true }))] : null,
+            o.race === "goblin" ? [L("머리뿔 1개 (12종)", sel("gobHorn", GOB_HORNS, { num: true })), L("이빨 (12종)", sel("gobTeeth", GOB_TEETH, { num: true }))] : null,
+            EAR_DEFAULT[o.race] != null ? [L("귀 형태 (15종)", sel("earShape", EAR_SHAPES, { none: "종족 기본", num: true })), L("귀 크기", sel("earSize", EAR_SIZES, { num: true })), L("귀 안쪽 문양 (14종)", sel("earIn", EAR_INNERS, { num: true }))] : null,
+            o.race === "ant" || o.race === "bug" ? [L("더듬이 (15종)", sel("antStyle", ANT_STYLES, { none: "종족 기본", num: true }))] : null,
+            bfly ? [L("날개 문양 (14종)", sel("wingPat", WING_PATS, { num: true }))] : null
+        ].filter(Boolean).flat();
         body.replaceChildren(
             h("div.gen-sec", h("h5", "기본"),
+                h("p.muted.gen-race", `🧬 종족: ${raceLabel()} — 왼쪽 프로필의 종족을 따라 기본 형태가 정해집니다`),
                 h("div.gen-grid",
                     L("성별", sel("gender", [["male", "남자"], ["female", "여자"]])),
-                    L("인종", sel("race", RACES.map(r => [r[0], r[1]]))),
-                    o.race === "other" ? L("인종 이름 (타이핑)", h("input.input", { value: o.raceText || "", placeholder: "예: Dungi", onchange: e => change("raceText", e.target.value) })) : null,
+                    ["other", "animal", "shape"].includes(o.race) ? L("종족 이름 (그림 아래 표시)", h("input.input", { value: o.raceText || "", placeholder: "예: Wolf", onchange: e => change("raceText", e.target.value) })) : null,
                     human ? L("인간 종류", sel("human", HUMAN_TYPES)) : null),
-                L(black ? "피부색 — 흑인은 자동으로 검은색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide")),
+                L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide")),
+            styles.length || bfly ? h("div.gen-sec", h("h5", "종족 스타일"), h("div.gen-grid", styles),
+                bfly ? L("나비 날개 색", swatches("wings", SKIN_COLORS.filter(c => c[0].startsWith("#"))), ".wide") : null) : null,
             human
                 ? h("div.gen-sec", h("h5", "머리"),
                     L("머리색", swatches("hair", HAIR_COLORS), ".wide"),

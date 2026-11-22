@@ -1,13 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-<!-- #193 블랙땅콩 -->
-<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7b7b"/><stop offset=".2" stop-color="#ffc56b"/><stop offset=".4" stop-color="#fff07a"/><stop offset=".6" stop-color="#8ef08e"/><stop offset=".8" stop-color="#7ac8ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
-<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<!-- #193 블랙땅콩 — full body: peanut body with arms, legs and green POLO shorts -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath><clipPath id="pb"><path d="M128 34C178 34 188 84 170 106C194 130 184 202 128 202C72 202 62 130 86 106C68 84 78 34 128 34Z"/></clipPath></defs>
 <circle cx="128" cy="128" r="124" fill="#dff0ff"/>
 <g clip-path="url(#cc)">
-<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#3cb46e" stroke="#3a2a24" stroke-width="4"/>
-<path d="M104 188 L124 204 L116 214 Z M152 188 L132 204 L140 214 Z" fill="#fff" stroke="#3a2a24" stroke-width="3"/><path d="M128 204 L128 232" stroke="#3a2a24" stroke-width="3"/><g fill="#fff" stroke="#3a2a24" stroke-width="1.5"><circle cx="128" cy="214" r="2.5"/><circle cx="128" cy="226" r="2.5"/></g><path d="M156 226 c4 -6 10 -6 12 0" fill="none" stroke="#fff" stroke-width="2.5"/><text x="162" y="244" font-family="Arial" font-size="7" fill="#fff" text-anchor="middle">POLO</text>
-<path d="M128 40 C176 40 186 86 168 108 C190 130 180 186 128 186 C76 186 66 130 88 108 C70 86 80 40 128 40 Z" fill="#3b3b44" stroke="#3a2a24" stroke-width="4"/><g fill="#6c6c72"><circle cx="104" cy="70" r="3"/><circle cx="150" cy="66" r="3"/><circle cx="108" cy="166" r="3"/><circle cx="152" cy="160" r="3"/></g>
-<ellipse cx="104" cy="126" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="104" cy="126" rx="8" ry="9" fill="#1a1a22"/><circle cx="106" cy="123" r="3" fill="#fff"/><ellipse cx="152" cy="126" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="152" cy="126" rx="8" ry="9" fill="#1a1a22"/><circle cx="154" cy="123" r="3" fill="#fff"/><path d="M117 154 Q128 163 139 154" fill="none" stroke="#4a1a1a" stroke-width="4" stroke-linecap="round"/>
-
+<path d="M110 196L104 236M146 196L152 236" stroke="#2a2a30" stroke-width="9" stroke-linecap="round"/>
+<path d="M104 200L101 222H119L117 200Z M152 200L155 222H137L139 200Z" fill="#3cb46e" stroke="#3a2a24" stroke-width="3.5" stroke-linejoin="round"/>
+<ellipse cx="98" cy="240" rx="14" ry="6.5" fill="#f5f5f5" stroke="#3a2a24" stroke-width="3"/><ellipse cx="158" cy="240" rx="14" ry="6.5" fill="#f5f5f5" stroke="#3a2a24" stroke-width="3"/>
+<path d="M76 138Q50 148 50 180M180 138Q206 148 206 180" fill="none" stroke="#2a2a30" stroke-width="9" stroke-linecap="round"/>
+<path d="M128 34C178 34 188 84 170 106C194 130 184 202 128 202C72 202 62 130 86 106C68 84 78 34 128 34Z" fill="#3b3b44"/>
+<g clip-path="url(#pb)"><path d="M0 168Q128 184 256 168V256H0Z" fill="#3cb46e" stroke="#3a2a24" stroke-width="4"/><path d="M128 182V256" stroke="#2a8a50" stroke-width="3"/><text x="158" y="194" font-family="Arial" font-size="7" fill="#fff" text-anchor="middle">POLO</text></g>
+<path d="M128 34C178 34 188 84 170 106C194 130 184 202 128 202C72 202 62 130 86 106C68 84 78 34 128 34Z" fill="none" stroke="#3a2a24" stroke-width="4"/>
+<g fill="#6c6c72"><circle cx="104" cy="64" r="3"/><circle cx="150" cy="60" r="3"/><circle cx="110" cy="94" r="2.5"/><circle cx="154" cy="150" r="3"/><circle cx="96" cy="152" r="2.5"/></g>
+<circle cx="50" cy="183" r="8.5" fill="#3b3b44" stroke="#3a2a24" stroke-width="3"/><circle cx="206" cy="183" r="8.5" fill="#3b3b44" stroke="#3a2a24" stroke-width="3"/>
+<ellipse cx="106" cy="124" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="106" cy="124" rx="8" ry="9" fill="#1a1a22"/><circle cx="108" cy="121" r="3" fill="#fff"/><ellipse cx="150" cy="124" rx="12" ry="13" fill="#fff" stroke="#1a1a22" stroke-width="1.5"/><ellipse cx="150" cy="124" rx="8" ry="9" fill="#1a1a22"/><circle cx="152" cy="121" r="3" fill="#fff"/><path d="M117 150 Q128 159 139 150" fill="none" stroke="#c9c9d0" stroke-width="4" stroke-linecap="round"/>
 </g>
 </svg>

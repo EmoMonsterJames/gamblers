@@ -15,6 +15,7 @@ import { isSurvivalPass } from "../data/catalog.js";
 import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
 import { FOOD_START } from "../data/life.js";
 import { mapNo } from "../data/mapAdmin.js";
+import { SPECIAL_BY_ID, makeTags } from "./specialSeason.js";
 // other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
 export const locationHooks = [], jobHooks = [], playHooks = [];
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
@@ -34,13 +35,15 @@ export const noteRefuse = pid => { bump(pid, "refused"); Store.saveSeason(); };
 
 export const S = () => Store.season;
 
-export function newSeason() {
+// ✨ special: { id, plan } from game/specialSeason.js specialStatus() — the 20 players are fixed up front
+export function newSeason(special = null) {
     const number = (Store.seasonCount || 0) + 1;
     Store.seasonCount = number;
     Store.season = {
         number, status: "select", startedAt: new Date().toISOString(),
         roster: [], ps: {}, round: 0, mission: null, order: [], turnIdx: 0, turn: null,
-        results: {}, candidates: [], history: [], log: []
+        results: {}, candidates: [], history: [], log: [],
+        ...(special && SPECIAL_BY_ID[special.id] ? { special: { id: special.id, name: SPECIAL_BY_ID[special.id].name, emoji: SPECIAL_BY_ID[special.id].emoji, tags: makeTags(SPECIAL_BY_ID[special.id], special.plan) }, plan: [...special.plan] } : {})
     };
     Store.saveSeason(true);
     return Store.season;
@@ -123,7 +126,9 @@ export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 4
 // the next player for SPIN (null → quotas impossible, use the plain weighted draw)
 export function nextSelection() {
     const s = S(), pool = selectionPool(), poolIds = new Set(pool.map(p => p.id));
-    if (!s.plan || s.plan.some(id => !poolIds.has(id) && !s.roster.includes(id))) s.plan = buildSelectionPlan(s.roster, pool) || [];
+    // ✨ special season: only the roster drawn when it was created (game/specialSeason.js)
+    if (s.special) { const left = (s.plan || []).filter(id => !s.roster.includes(id) && poolIds.has(id)); return left.length ? Store.player(left[Math.floor(Math.random() * left.length)]) : null; }
+    if (!s.plan ||s.plan.some(id => !poolIds.has(id) && !s.roster.includes(id))) s.plan = buildSelectionPlan(s.roster, pool) || [];
     const left = (s.plan || []).filter(id => !s.roster.includes(id));
     if (left.length) return Store.player(left[Math.floor(Math.random() * left.length)]);
     const open = vetPool(pool);

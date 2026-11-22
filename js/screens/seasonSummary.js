@@ -84,7 +84,7 @@ function seasonView(d) {
     const out = d.roster.filter(pid => d.ps[pid]?.out).length;
     return h("div.ss-season",
         h("div.ss-head",
-            h("b", `SEASON ${d.number}`),
+            h("b", `SEASON ${d.number}${d.special?.name ? `: ${d.special.name}` : ""}`),
             live ? h("span.ss-tag.live", `🔴 LIVE · 라운드 ${d.round || 0}`) : h("span.ss-tag.win", "🏁 종료"),
             h("span.muted", `참가 ${d.roster.length}명 · 생존 ${d.roster.length - out}명 · 탈락 ${out}명`),
             d.winnerId != null ? h("span", "👑 ", chip(d.winnerId)) : null),
