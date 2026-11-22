@@ -51,7 +51,7 @@ const EAR_DEF = [
     ["M0 2C-22 -12 -16 -36 0 -26C16 -36 22 -12 0 2Z", -15, 24, -26, 18],
     ["M-10 -15a10 17 0 1 0 20 0a10 17 0 1 0-20 0Z", -15, 24, -26, 18]
 ];
-export const EAR_DEFAULT = { rabbit: 0, bunny: 3, bear: 6, teddy: 6, rat: 7, cat: 9 };
+export const EAR_DEFAULT = { rabbit: 0, bunny: 3, bear: 6, teddy: 6, rat: 7, cat: 9, dungi: 1 };
 const EAR_SCALE = [0.75, 1, 1.25, 1.5];
 const INNER_COL = ["#ffb3c7", "#ff6f9f", "#ffffff", null, "#ffb3c7", "#ffb3c7", "#ffb3c7", "#ffb3c7", "url(#eg)", "none", "#ffd6e2", "#ffb3c7", "#ffb3c7", "url(#erb)"];
 export const EAR_DEFS = `<linearGradient id="eg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5f97"/><stop offset="1" stop-color="#fff0f6"/></linearGradient><linearGradient id="erb" x1="0" y1="1" x2="0" y2="0">${["#ff7b7b", "#ffc56b", "#fff07a", "#8ef08e", "#7ac8ff", "#c49bff"].map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join("")}</linearGradient>`;

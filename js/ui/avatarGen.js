@@ -443,7 +443,7 @@ export function buildAvatar(opts = {}) {
     // 🐰 dungi (like Jiggly Wobbly Dungi): long upright rabbit ears with a pink inside
     if (race.id === "dungi") headExtraBack = [-1, 1].map(s => `<g transform="rotate(${s * 10} ${s * 17} -30)"><ellipse cx="${s * 17}" cy="-54" rx="10" ry="26" fill="${skinL}" ${stH()}/><ellipse cx="${s * 17}" cy="-51" rx="4.6" ry="19" fill="#ffb8cf"/></g>`).join("");
     // 🐰 main animals: ear shape (15) · size (4) · inner pattern (14) — rabbit / bunny / bear keep their old ears until one is changed
-    const legacyEar = ["rabbit", "bunny", "bear"].includes(race.id) && !(o.earShape >= 0) && (o.earSize ?? 1) === 1 && !(o.earIn > 0);
+    const legacyEar = ["rabbit", "bunny", "bear", "dungi"].includes(race.id) && !(o.earShape >= 0) && (o.earSize ?? 1) === 1 && !(o.earIn > 0);
     if (AR.EAR_DEFAULT[race.id] != null && !legacyEar) headExtraBack = AR.animalEars(o.earShape >= 0 ? o.earShape : AR.EAR_DEFAULT[race.id], o.earSize ?? 1, o.earIn | 0, skinL, line, sw, rainbow ? "#ffffff" : skin);
     // 🐾 other animals: ears / mane / fins behind the head + muzzle / beak / markings on the face
     let animalFace = "";
