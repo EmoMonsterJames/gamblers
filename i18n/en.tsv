@@ -2133,7 +2133,6 @@ x3~x5 확정	x3~x5 sure
 동위원소 플링코! 양 끝 x25	Isotope plinko! Both ends x25
 동전 물이 차오름	Coin water rising
 동전 섞인 나뭇잎 바람	A leafy wind with coins
-동전던지기	Coin Flip
 동전을 물고 있는 개구리	A frog holding a coin
 동점	Tie
 동쪽 ➡️	East ➡️
@@ -3084,7 +3083,6 @@ x3~x5 확정	x3~x5 sure
 수면	Sleep
 수면 · ACC {0}	Sleep · ACC {0}
 수면 마법 (1~2턴)	Sleep magic (1~2 turns)
-수면피리	Sleep Flute
 수수께끼 같은	Enigmatic
 수수료	Fee
 수수료 {0} G 차감	Fee {0} G deducted
@@ -4730,7 +4728,6 @@ x3~x5 확정	x3~x5 sure
 호텔 카운터	Hotel counter
 혼돈의 주사위 한 판!	A round of chaos dice!
 홀? 짝? 맞히면 x1.9	Odd? Even? Guess right for x1.9
-홀로그램볼	Hologram Ball
 홍보 문구 (80자)	Promo text (80 chars)
 홍보 문구를 입력하세요	Enter promo text
 홍보 프로필 6칸이 모두 찼습니다 — 지금은 투표 기간입니다	All 6 promo profiles filled — it's voting time now
@@ -4752,7 +4749,6 @@ x3~x5 확정	x3~x5 sure
 환상적인	Fantastic
 활성 (시즌 선발 대상)	Active (eligible for season picks)
 활성 코너 {0}개:	{0} active corners:
-황금 동전 폭풍	Gold coin storm
 황금 무늬 얼룩말	Gold-patterned zebra
 황금 소원의 우물과 자선 광장 — 분수 · 비둘기 · 축복. 금화를 연못에 튕기면 물보라가 15개의 연잎 위에 연꽃 그릇을 정렬한다 (243 WAYS). 🌊 RIPPLE OF GENEROSITY = 당첨 시 황금 물결이 퍼져 옆 심볼을 더 높은 배당으로 업그레이드 · 🔔 소원의 종 2개 = GOLDEN DOVE RELEASE — 비둘기가 WILD 깃털 2~4개를 떨어뜨린다 · 🎁 자선 상자 3개 = TRIPLE KARMA BONUS — 황금 석상을 탭해 즉시 잭팟 · 배수 부스트!	A golden wishing well and charity plaza — fountains · doves · blessings. Flick a gold coin into the pond and the splash lines up lotus bowls on 15 lily pads (243 WAYS). 🌊 RIPPLE OF GENEROSITY = on a win a golden ripple spreads, upgrading neighbor symbols to higher pay · 🔔 2 wishing bells = GOLDEN DOVE RELEASE — doves drop 2~4 WILD feathers · 🎁 3 charity boxes = TRIPLE KARMA BONUS — tap golden statues for instant jackpots · multiplier boosts!
 황금 용 프레임	Golden Dragon Frame
@@ -6429,3 +6425,40 @@ x3~x5 확정	x3~x5 sure
 {0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• The company corner goes and the employment corner comes back
 {0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 매니저 직급도 사라집니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• The manager rank is lost too\n• The company corner goes and the employment corner comes back
 {0}에서 정말 자진 퇴사할까요?\n• 급여 · 직원 혜택이 바로 끊깁니다\n• 진급 {1}/3 기록도 사라집니다\n• 회사 코너가 없어지고 취업 코너가 다시 생깁니다	Really quit {0}?\n• Pay · staff perks stop right away\n• Promotion {1}/3 is lost too\n• The company corner goes and the employment corner comes back
+
+# 무기 영어 이름 (2026-11-22 지정) — 띄어쓰기 있는 이름 / 없는 이름 모두
+홀로그램 볼	Hologram Ball
+홀로그램볼	Hologram Ball
+수면 피리	Sleepy Flute
+수면피리	Sleepy Flute
+동전 던지기	Throw Coins
+동전던지기	Throw Coins
+황금 동전 폭풍	Gold Coin Storm
+황금동전폭풍	Gold Coin Storm
+별빛 세레나데	Sparkling Serenade
+별빛세레나데	Sparkling Serenade
+농구공 던지기	Throw a Basketball
+농구공던지기	Throw a Basketball
+악마의 천둥 번개	Evil Thunder/Lightening
+악마의천둥번개	Evil Thunder/Lightening
+일시 정지	Pause
+일시정지	Pause
+불 지피기	Set Fire
+불지피기	Set Fire
+가위 찌르기	Scissors Attack
+가위찌르기	Scissors Attack
+골프공 떨어뜨리기	Drop a Golf Ball
+골프공떨어뜨리기	Drop a Golf Ball
+블락	Block
+로켓 발사	Rocket Attack
+로켓발사	Rocket Attack
+자장가	Nursery Rhythm
+모자이크	Mosaic
+명중 다트	Dart Attack
+명중다트	Dart Attack
+에네르기 파워	Zen Power
+에네르기파워	Zen Power
+지렁이 던지기	Throw a Worm
+지렁이던지기	Throw a Worm
+{0} 악마의 천둥 번개	{0} Evil Thunder/Lightening
+{0}악마의 천둥 번개	{0}Evil Thunder/Lightening
