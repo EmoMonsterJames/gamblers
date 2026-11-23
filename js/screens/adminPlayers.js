@@ -9,7 +9,7 @@ import { jobList, saveJobs } from "../data/jobs.js";
 import {
     buildAvatar, toDataUri, parseGen, DEFAULTS, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
     HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames, NO_IMAGE_URI, isNoImage,
-    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS
+    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES
 } from "../ui/avatarGen.js";
 import { RACE_CATEGORIES, RACE_CAT, subsOf, categoryOf, drawRace, addCustomSub } from "../data/races.js";
 import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
@@ -233,7 +233,8 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                     L("성별", sel("gender", [["male", "남자"], ["female", "여자"]])),
                     ["other", "animal", "shape"].includes(o.race) ? L("종족 이름 (그림 아래 표시)", h("input.input", { value: o.raceText || "", placeholder: "예: Wolf", onchange: e => change("raceText", e.target.value) })) : null,
                     human ? L("인간 종류", sel("human", HUMAN_TYPES)) : null),
-                L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide")),
+                L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide"),
+                FUR_RACES.includes(o.race) ? L("피부 스타일", chk("curly", "🐑 곱슬 (곱슬털 외곽선)")) : null),
             styles.length || bfly ? h("div.gen-sec", h("h5", "종족 스타일"), h("div.gen-grid", styles),
                 bfly ? L("나비 날개 색", swatches("wings", SKIN_COLORS.filter(c => c[0].startsWith("#"))), ".wide") : null) : null,
             human

@@ -123,12 +123,12 @@ function apply(m, fin) {
 }
 
 // ---------------------------------------------------------------- 📖 dex (persistent, per player)
-export const DEX_HOW = { capture: "🔍 Capture에서 만남", caught: "🎯 직접 포획", battler: "⚔️ EmoMon Battler와 싸움", pvp: "🤺 다른 플레이어와 배틀", evolve: "✨ 진화로 얻음", own: "🐾 보유", bot: "🤖 기본 Battlebot — 몬스터가 없을 때 대신 싸웁니다 (포획 불가)" };
+export const DEX_HOW = { capture: "🔍 Capture에서 만남", rented: "🏷️ Rented — 대여샵에서 대여", caught: "🎯 직접 포획", battler: "⚔️ EmoMon Battler와 싸움", pvp: "🤺 다른 플레이어와 배틀", evolve: "✨ 진화로 얻음", own: "🐾 보유", bot: "🤖 기본 Battlebot — 몬스터가 없을 때 대신 싸웁니다 (포획 불가)" };
 export function seen(pid, sid, how) {
     if (pid == null || sid == null) return;
     const d = (Store.emodex[pid] ||= {});
     const cur = d[sid];
-    const rank = ["capture", "battler", "pvp", "evolve", "caught"];
+    const rank = ["capture", "rented", "battler", "pvp", "evolve", "caught"];
     if (cur && rank.indexOf(cur.how) >= rank.indexOf(how)) return;
     d[sid] = { how, at: new Date().toISOString(), season: S()?.number ?? null };
     Store.saveEmodex();
@@ -221,7 +221,7 @@ export function addMon(pid, mon) {
     if (mons(pid).length >= emoSlots(pid)) return false;
     mons(pid).push(mon);
     if (!emo(pid).battle) emo(pid).battle = mons(pid)[0].uid;
-    seen(pid, mon.sid, mon.from === "evolve" ? "evolve" : "caught");
+    seen(pid, mon.sid, mon.from === "evolve" ? "evolve" : mon.from === "rent" ? "rented" : "caught");
     if (mon.from === "capture") emitEvent("capture", pid, { mon });
     Store.saveSeason(true);
     return true;

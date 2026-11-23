@@ -11,6 +11,7 @@ import { homePage, playersPage, hallPage, mapPage, practicePage, guidePage, admi
 import { adminCatalogPage } from "./screens/adminCatalog.js";
 import { slotGenPage } from "./screens/slotGen.js";
 import { adminPlayersPage } from "./screens/adminPlayers.js";
+import { adminStatsPage } from "./screens/adminStats.js";
 import { slotdexPage } from "./screens/slotdex.js";
 import { adminMapsPage } from "./screens/adminMaps.js";
 import { adminSimPage, adminTestPage } from "./screens/adminSim.js";
@@ -27,7 +28,7 @@ import "./data/life.js"; // 🍚 food items join the item list before any screen
 const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
-    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-games": adminGamesPage,
+    "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-stats": adminStatsPage, "admin-games": adminGamesPage,
     "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage
 };
 

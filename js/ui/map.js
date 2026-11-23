@@ -3,6 +3,8 @@ import { h, sleep, shuffle } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { LOCATIONS, REGIONS } from "../data/catalog.js";
 import { mapNo } from "../data/mapAdmin.js";
+import { typeGateTypes } from "../game/extra.js";
+import { S as seasonState } from "../game/season.js";
 
 const ISLANDS = `
 <defs>
@@ -67,12 +69,17 @@ const reqLabel = r => !r ? null : [r.gear?.length ? r.gear.map(g => GEAR_ICON[g]
 export function worldMap({ onPick = null, locked = new Set(), small = false, region = "cl1" } = {}) {
     const R = REGION_BG[region];
     const svg = R ? "" : `<svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" class="map-svg">${ISLANDS}</svg>`;
+    const tgTypes = seasonState()?.roster?.length && LOCATIONS.some(l => l.typeGate && (l.region || "cl1") === region) ? typeGateTypes() : null;
     const pins = LOCATIONS.filter(l => (l.region || "cl1") === region && !l.off).map(l => h("button.pin" + (locked.has(l.id) ? ".locked" : ""), {
         style: { left: l.x + "%", top: l.y + "%", "--c": l.color }, "data-id": l.id,
         onclick: onPick ? () => onPick(l) : null, title: l.name
-    }, h("span.pin-ico", l.emoji), h("span.pin-name", mapNo(l.id) ? h("small.pin-no", `#${mapNo(l.id)} `) : null, l.name), reqLabel(l.req) ? h("span.pin-req", reqLabel(l.req)) : null));
+    }, h("span.pin-ico", l.emoji), h("span.pin-name", mapNo(l.id) ? h("small.pin-no", `#${mapNo(l.id)} `) : null, l.name), reqLabel(l.req) ? h("span.pin-req", reqLabel(l.req)) : null,
+        l.typeGate && tgTypes ? h("span.pin-req.pin-tg", tgTypes.join(" · ")) : null));
+    // 🔷 Type Casino: this round's 3 allowed attributes, shown on the map itself
+    const tgLoc = tgTypes && LOCATIONS.find(l => l.typeGate && (l.region || "cl1") === region && !l.off);
+    const tgBanner = tgLoc ? h("div.tg-banner", `${tgLoc.emoji} ${tgLoc.name}: 이번 라운드 허용 속성 `, tgTypes.map(t => h("b", `'${t}'`)).reduce((a, b, i) => i ? [...a, ", ", b] : [b], [])) : null;
     const deco = R ? h("div.region-deco", R.deco.map((d, i) => h("i", { style: { left: 6 + i * 16 + "%", top: (i % 2 ? 70 : 12) + "%", "--d": i * 0.7 + "s" } }, d))) : null;
-    const el = h("div.world" + (small ? ".small" : "") + (R ? ".region-world.rw-" + region : ""), R ? { style: { background: R.bg } } : { html: svg }, deco, ...pins);
+    const el = h("div.world" + (small ? ".small" : "") + (R ? ".region-world.rw-" + region : ""), R ? { style: { background: R.bg } } : { html: svg }, deco, tgBanner, ...pins);
     return {
         el,
         async roulette(candidates, targetId) {

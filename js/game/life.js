@@ -80,10 +80,14 @@ export function eat(pid, foodId, how = "") {
     if (!f) return { ok: false, why: "없는 음식입니다" };
     if (!L.canEatRace(f, p?.ethnicity)) return { ok: false, why: `${f.name}은(는) ${f.races.join(" · ")} 종족만 먹을 수 있습니다` };
     const got = addFood(pid, f.food);
+    // ❤️ HP +1~30 by the food's price (찌 · 똥 · 똥주 excluded) — never above the start HP
+    const ps = ps_(pid);
+    let hpGot = 0;
+    if (ps && L.foodHp(f) > 0 && ps.hp > 0) { const before = ps.hp; ps.hp = Math.min(CONFIG.START_HP, ps.hp + L.foodHp(f)); hpGot = ps.hp - before; }
     bump(pid, "eats"); // 🍚 food missions count every food eaten
-    log(`${f.emoji} ${name(pid)} ${f.name} 먹음${how ? ` (${how})` : ""} → 식량 ${got >= 0 ? "+" : ""}${got} (${foodOf(pid)})`);
+    log(`${f.emoji} ${name(pid)} ${f.name} 먹음${how ? ` (${how})` : ""} → 식량 ${got >= 0 ? "+" : ""}${got} (${foodOf(pid)})${hpGot ? ` · HP +${Math.round(hpGot)}` : ""}`);
     Store.saveSeason(true);
-    return { ok: true, got, food: foodOf(pid) };
+    return { ok: true, got, hp: hpGot, food: foodOf(pid) };
 }
 // 🎒 a food in the bag (Self-Business markets · gifts)
 export function eatFromBag(pid, itemId) {

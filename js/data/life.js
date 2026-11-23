@@ -72,6 +72,9 @@ export const FOODS = [
     F("combo_carrot", "콤보세트 (구운당근+콜라+감자튀김+아이스크림)", "🍱", 15000, 65, { combo: ["carrot", "cola", "fries", "icecream"] })
 ];
 export const FOOD_BY_ID = Object.fromEntries(FOODS.map(f => [f.id, f]));
+// ❤️ every food also heals HP by its price: 1 HP per 1,000G (min 1 · max 30) — except the foods that hurt (찌 · 똥 · 똥주)
+export const FOOD_NO_HP = ["jji", "poop", "ddongju"];
+export const foodHp = f => !f || FOOD_NO_HP.includes(f.id) || f.food < 0 ? 0 : Math.max(1, Math.min(30, Math.round((f.price || 0) / 1000)));
 export const foodItemId = id => "food_" + id;
 export const foodOfItem = itemId => String(itemId || "").startsWith("food_") ? FOOD_BY_ID[itemId.slice(5)] || null : null;
 const norm = s => String(s || "").trim().toLowerCase();
@@ -79,7 +82,7 @@ export const canEatRace = (food, ethnicity) => !food?.races || food.races.some(r
 // every food is a bag item too (Self-Business markets · gifts) — eaten from the 🎒 inventory
 for (const f of FOODS) {
     if (ITEM_BY_ID[foodItemId(f.id)]) continue;
-    const it = { id: foodItemId(f.id), name: f.name, emoji: f.emoji, food: f.food, foodPrice: f.price, desc: `${f.desc ? f.desc + " · " : ""}식량 게이지 ${f.food >= 0 ? "+" : ""}${f.food}${f.races ? ` · ${f.races.join("/")} 종족만` : ""} (🎒 인벤토리에서 먹기)` };
+    const it = { id: foodItemId(f.id), name: f.name, emoji: f.emoji, food: f.food, foodPrice: f.price, desc: `${f.desc ? f.desc + " · " : ""}식량 게이지 ${f.food >= 0 ? "+" : ""}${f.food}${foodHp(f) ? ` · HP +${foodHp(f)}` : ""}${f.races ? ` · ${f.races.join("/")} 종족만` : ""} (🎒 인벤토리에서 먹기)` };
     ITEMS.push(it); ITEM_BY_ID[it.id] = it;
 }
 

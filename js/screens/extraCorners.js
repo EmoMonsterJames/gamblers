@@ -382,7 +382,7 @@ export function arenaView(pid, { turn, onChange = () => { } } = {}) {
             const pool = X.arenaPlayerPool(pid);
             let foeMon, foeLabel, foePid = null;
             if (pool.length && Math.random() >= X.ARENA_NPC) {
-                // any registered player — season participant or not; no known monster → a generated one under their name
+                // a season participant, or a non-season player who owned a real EmoMonster in an earlier season
                 foePid = pool[Math.floor(Math.random() * pool.length)];
                 foeMon = X.arenaFoeMon(foePid);
                 if (!foeMon) { foeMon = M.makeBattler(); foeMon.trainer = pname(foePid); }

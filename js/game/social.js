@@ -4,10 +4,11 @@
 //   • 💖/👎 on comments          post.likes / post.dislikes = [{ pid, season, at }]
 //   • 🤝 도움주기 corner          community.helps = [{ from, to, season, round, kind, amount, item, score, at }]
 //   • 💞 친밀도 (intimacy)        intimacy(a, b) → { score, parts: [{ label, pts }] }
-//   • 🗳️ 투표 탈락 (16 / 8 left)  season.vote = { size, voters, idx, cast, phase, … }
+//   • 🗳️ 투표 탈락 (17 / 9 left)  season.vote = { size, voters, idx, cast, phase, … }
 // =====================================================================
 import { Store } from "../core/store.js";
-import { S, log, name, alive, noteRefuse, emitEvent } from "./season.js";
+import { S, log, name, alive, noteRefuse, emitEvent, roundHooks } from "./season.js";
+import { CONFIG } from "../config.js";
 import { LOCATIONS, ITEM_BY_ID, SHOPS } from "../data/catalog.js";
 import { saleOf } from "../data/catalogAdmin.js";
 import { parseGen } from "../ui/avatarGen.js";
@@ -254,11 +255,16 @@ export function intimacy(aId, bId) {
     return { score: parts.reduce((t, p) => t + p.pts, 0), parts };
 }
 
-// ================================================================ 🗳️ vote elimination (16 and 8 left)
-export const VOTE_AT = [16, 8];
-export const voteDue = () => { const s = S(); const n = alive().length; return VOTE_AT.includes(n) && !(s.votedAt || []).includes(n); };
+// ================================================================ 🗳️ vote elimination (17 and 9 left)
+// Each threshold runs once per season: due as soon as the alive count is AT or BELOW it (a round that removes 2+
+// players can jump past the exact number), checked when a round starts (roundHooks) and when the season screen draws.
+export const VOTE_AT = [17, 9];
+const votePending = s => { const n = alive().length; return n > CONFIG.FINALISTS ? VOTE_AT.filter(t => n <= t && !(s.voteDone || []).includes(t)) : []; };
+export const voteDue = () => { const s = S(); return !!s && votePending(s).length > 0; };
+roundHooks.push(s => { if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason) && voteDue()) startVote(); });
 export function startVote() {
     const s = S(), live = alive();
+    s.voteDone = [...new Set([...(s.voteDone || []), ...votePending(s)])]; // one vote also covers a threshold jumped past
     s.status = "vote";
     s.mission = { id: "vote", type: "vote", tier: null, text: `🗳️ 투표 탈락 — ${live.length}명 중 친밀도 투표로 1명 탈락` };
     s.turn = null; s.candidates = [];

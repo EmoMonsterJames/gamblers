@@ -126,7 +126,7 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
                 const card = h("div.fc-item" + (f.food < 0 ? ".bad" : "") + (raceOk ? "" : ".locked"),
                     foodArt(f.id, 64),
                     h("b.fc-name", f.name),
-                    h("span.fc-food" + (f.food < 0 ? ".neg" : ""), `🍚 ${f.food >= 0 ? "+" : ""}${f.food}`),
+                    h("span.fc-food" + (f.food < 0 ? ".neg" : ""), `🍚 ${f.food >= 0 ? "+" : ""}${f.food}${L.foodHp(f) ? ` ❤️ +${L.foodHp(f)}` : ""}`),
                     f.races ? h("small.fc-race", `🧬 ${f.races.join(" · ")} 전용`) : f.desc ? h("small.fc-race", f.desc) : null,
                     h("small.fc-price", !raceOk ? "먹을 수 없음" : price ? `${fmt(price)} G` : "무료"));
                 cards.set(it.id, card);
@@ -187,7 +187,7 @@ export function foodCornerView(pid, corner, key, { turn = null, onChange = () =>
         const r = LF.buyFood(pid, key, corner, it);
         if (!r.ok) return toast(r.why, "warn");
         f.food >= 0 ? (Sound.coin(), confetti(16, [f.emoji, "✨"])) : Sound.lose();
-        toast(`${f.emoji} ${f.name} 냠냠! 식량 ${r.got >= 0 ? "+" : ""}${r.got} → ${r.food}`, f.food >= 0 ? "ok" : "warn");
+        toast(`${f.emoji} ${f.name} 냠냠! 식량 ${r.got >= 0 ? "+" : ""}${r.got} → ${r.food}${r.hp ? ` · ❤️ HP +${Math.round(r.hp)}` : ""}`, f.food >= 0 ? "ok" : "warn");
         onChange(); render();
     }
     render();
@@ -602,8 +602,8 @@ export function lifeInventory(pid, onChange = () => { }) {
         const foods = Object.entries(ps.items || {}).filter(([k, n]) => n > 0 && L.foodOfItem(k));
         const rows = [];
         if (foods.length) rows.push(h("h4", "🍚 음식", h("small.muted", ` · 식량 ${LF.foodOf(pid)} / ${L.FOOD_MAX}`)),
-            h("div.fc-grid.small", foods.map(([k, n]) => { const f = L.foodOfItem(k); return h("div.fc-item" + (f.food < 0 ? ".bad" : ""), foodArt(f.id, 44), h("b.fc-name", `${f.name} ×${n}`), h("span.fc-food" + (f.food < 0 ? ".neg" : ""), `🍚 ${f.food >= 0 ? "+" : ""}${f.food}`),
-                h("button.btn.small.gold", { onclick: () => { const r = LF.eatFromBag(pid, k); if (!r.ok) return toast(r.why, "warn"); Sound.coin(); toast(`${f.emoji} 냠냠! 식량 → ${r.food}`, "ok"); render(); onChange(); } }, "먹기")); })));
+            h("div.fc-grid.small", foods.map(([k, n]) => { const f = L.foodOfItem(k); return h("div.fc-item" + (f.food < 0 ? ".bad" : ""), foodArt(f.id, 44), h("b.fc-name", `${f.name} ×${n}`), h("span.fc-food" + (f.food < 0 ? ".neg" : ""), `🍚 ${f.food >= 0 ? "+" : ""}${f.food}${L.foodHp(f) ? ` ❤️ +${L.foodHp(f)}` : ""}`),
+                h("button.btn.small.gold", { onclick: () => { const r = LF.eatFromBag(pid, k); if (!r.ok) return toast(r.why, "warn"); Sound.coin(); toast(`${f.emoji} 냠냠! 식량 → ${r.food}${r.hp ? ` · ❤️ HP +${Math.round(r.hp)}` : ""}`, "ok"); render(); onChange(); } }, "먹기")); })));
         if (ps.items.loan_erase > 0) rows.push(h("div.row", h("button.btn.small.gold", { onclick: async () => {
             if (!(await confirmBox("🧾 대부기록 삭제권을 사용해 대출 이용 기록을 삭제할까요? (계좌 개설 대출 심사에 영향을 주지 않게 됩니다)", "삭제하기", "취소"))) return;
             const r = EP.eraseLoanRecord(pid); if (!r.ok) return toast(r.why, "warn"); Sound.bonus(); toast("🧾 대출 이용 기록이 삭제되었습니다", "ok"); render(); onChange();

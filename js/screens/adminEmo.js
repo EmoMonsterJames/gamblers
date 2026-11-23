@@ -449,3 +449,38 @@ function stockTab() {
     draw();
     return wrap;
 }
+
+// ---------------------------------------------------------------- 🏷️ EmoMonster Rent Shop (every rent shop shares these settings)
+// monsters per grade (add / remove) · gold & points per round · rounds needed for the weapon roulette · roulette chances
+export async function rentManager(onSaved = () => { }) {
+    await emoReady(); if (!cat()) await loadCatalog();
+    if (!cat()) return toast("EmoMon 데이터를 먼저 불러오세요", "warn");
+    const R = await import("../game/emoRent.js");
+    const cfg = structuredClone(R.rentCfg());
+    const body = h("div.rent-admin");
+    const m = modal(body, { title: "🏷️ 이모몬스터 Rent Shop 관리", wide: true });
+    const num = (v, on) => h("input.input.rent-num", { type: "number", min: 0, value: v, onchange: e => on(Math.max(0, +e.target.value || 0)) });
+    const draw = () => put(body,
+        h("p.muted.small", `모든 대여샵이 같은 설정을 씁니다. 입장 60% · 시즌당 1회 · 1~${R.RENT_MAX_ROUNDS}라운드 · 등급 안에서 몬스터는 랜덤. 참가자 ${R.RENT_LATE_ALIVE}명 이하부터 라운드당 +${R.RENT_LATE_PTS}P 추가 · ${R.RENT_CLOSED_ALIVE}명 이하부터 대여 불가. 대여샵이 열리는 맵은 각 맵의 '🏷️ 대여샵' 체크로 정합니다 (기본: 몬스터 코너가 있는 맵 중 랜덤 ${LOCATIONS.filter(l => l.emorent).length}곳).`),
+        ...cfg.tiers.map(t => {
+            const rows = t.mons.map((ref, i) => { const s = R.speciesOfRef(ref);
+                return h("div.rent-mon" + (s ? "" : ".missing"), s ? monPic(s, 34) : h("span.big", "❔"), h("b", s ? s.name : String(ref)), s ? h("span", ...typesOfSpecies(s).map(typeChip)) : h("small.warn", "카탈로그에 없음 — 대여 목록에서 빠집니다"),
+                    h("button.btn.small.ghost", { onclick: () => { t.mons.splice(i, 1); draw(); } }, "✕ 빼기")); });
+            const pickSel = h("select", h("option", { value: "" }, "＋ 몬스터 추가…"),
+                cat().mons.filter(s => !t.mons.some(r => R.speciesOfRef(r)?.id === s.id)).map(s => h("option", { value: s.id }, `#${s.id} ${s.name}`)));
+            pickSel.onchange = () => { if (pickSel.value) { t.mons.push(cat().mons.find(s => String(s.id) === pickSel.value).name); draw(); } };
+            return h("div.rent-tier",
+                h("h4", `${t.emoji} ${t.name}`),
+                h("div.row.wrap", h("label", "라운드당 골드 ", num(t.gold, v => t.gold = v), " G"), h("label", " 또는 포인트 ", num(t.pts, v => t.pts = v), " P"),
+                    h("label", " · 룰렛 찬스: ", num(t.minRounds, v => t.minRounds = Math.max(1, v)), "라운드 이상 대여")),
+                h("div.rent-mons", rows.length ? rows : h("p.muted.small", "몬스터 없음 — 이 등급은 대여할 수 없습니다")), pickSel);
+        }),
+        h("div.rent-tier", h("h4", "🎡 무기 포함 룰렛 찬스 (%)"),
+            h("div.rent-wps", cfg.weapons.map(w => h("label.rent-wp", `${w[0]} (${w[1]}) `, R.weaponByName(w[0]) ? null : h("small.warn", "카탈로그에 없음 "), num(w[2], v => { w[2] = v; draw(); }), "%"))),
+            h("p.muted.small", `꽝 ${Math.max(0, 100 - cfg.weapons.reduce((a, w) => a + (+w[2] || 0), 0))}%`)),
+        h("div.row", h("button.btn.gold", { onclick: async () => {
+            await Store.saveMaps({ ...(Store.maps || {}), emoRent: { tiers: cfg.tiers.map(({ id, mons, gold, pts, minRounds }) => ({ id, mons, gold, pts, minRounds })), weapons: cfg.weapons } });
+            toast("🏷️ 대여샵 설정 저장", "ok"); m.close(); onSaved();
+        } }, "💾 저장"), h("button.btn.ghost", { onclick: async () => { if (await confirmBox("기본 설정으로 되돌릴까요?", "되돌리기", "취소")) { const d = structuredClone({ tiers: R.RENT_TIERS, weapons: R.RENT_WEAPONS }); cfg.tiers = d.tiers; cfg.weapons = d.weapons; draw(); } } }, "↩ 기본값")));
+    draw();
+}

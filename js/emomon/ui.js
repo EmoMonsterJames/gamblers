@@ -64,7 +64,7 @@ function monCard(pid, m, bm, refresh, slotLabel = null) {
     return h("button.emo-pcard" + (isB ? ".battle" : "") + (M.fainted(m) ? ".fainted" : "") + (evo ? ".evo-ready" : ""), { onclick: () => monDetail(pid, m.uid, refresh), title: evo ? "✨ 진화 준비 완료 — 🧪 Monster Lab에서 진화할 수 있습니다" : "" },
         monPic(s, 46),
         h("div.emo-pc-info",
-            h("div.emo-pc-name", s?.name || "?", sick ? h("span.emo-sick-warn", { title: "질병 · 상태이상 — 치료할 때까지 표시됩니다" }, "⚠️") : null, isB ? h("i.emo-btag", "⚔ BATTLE") : null, evo ? h("i.emo-evo-tag", "✨ 진화 준비") : null, slotLabel),
+            h("div.emo-pc-name", s?.name || "?", sick ? h("span.emo-sick-warn", { title: "질병 · 상태이상 — 치료할 때까지 표시됩니다" }, "⚠️") : null, isB ? h("i.emo-btag", "⚔ BATTLE") : null, m.rent ? h("i.emo-rent-tag", { title: `라운드 ${m.rent.until}까지 대여 — 기간이 끝나면 자동 반납` }, `🏷️ 대여중 ~R${m.rent.until}`) : null, evo ? h("i.emo-evo-tag", "✨ 진화 준비") : null, slotLabel),
             h("div.emo-pc-sub", stars(s?.rarity), ...M.typesOf(m).map(typeChip)),
             hpBar(m),
             h("div.emo-pc-w", `⚔ ${m.weapons.length}/${EMO.MAX_WEAPONS} · 🧬 ${m.traits.length}/${EMO.MAX_TRAITS}`, M.weaponRows(m).some(w => M.ppLeft(m, w) <= 0) ? h("span.emo-dis", "🔋 PP 0") : null, ...diseaseChips(m))));
@@ -306,7 +306,7 @@ function monsterDex(pid) {
         const d = dex[m.id];
         return h("button.emo-dex-card" + (d ? ".found" : ".unseen"), { onclick: () => d ? speciesInfo(m, d, pid) : null },
             h("small.emo-no", `#${m.id}`), monPic(m, 64, { unseen: !d }),
-            h("b", d ? m.name : "???"), h("small", d ? "FOUND" : "UNSEEN"), d ? h("div", ...typesOfSpecies(m).map(typeChip)) : null);
+            h("b", d ? m.name : "???"), h("small" + (d?.how === "rented" ? ".emo-rented" : ""), d ? (d.how === "rented" ? "RENTED" : "FOUND") : "UNSEEN"), d ? h("div", ...typesOfSpecies(m).map(typeChip)) : null);
     };
     const br = rangeBrowser({ items: list, render: card, count: l => `발견 ${l.filter(m => dex[m.id]).length} / ${l.length}`,
         placeholder: "이름 / 속성 검색 (발견한 몬스터만)", searchText: m => dex[m.id] ? `${m.name} ${typesOfSpecies(m).join(" ")}` : "" });

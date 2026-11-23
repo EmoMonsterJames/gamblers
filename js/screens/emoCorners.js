@@ -5,6 +5,7 @@
 // =====================================================================
 import * as RV from "../game/revival.js";
 import { emoSlots } from "../game/extra.js";
+import * as RENT from "../game/emoRent.js";
 import { h, fmt, sleep, put } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { toast, confirmBox, modal, confetti, Activity } from "../core/fx.js";
@@ -542,6 +543,85 @@ export function monsterShopView(pid, loc, { onChange = () => { } } = {}) {
                         h("span.big", "🧬"), h("div", h("b", t.name, " "), stars(t.rarity), h("small", E.traits.describe(t) || ""), haveTag(M.emo(pid).tbag?.[t.id])), h("span.emo-price", priceLabel(price))); })),
                 h("p.muted.small", "산 무기 · 특성은 오른쪽 🐾 내 EmoMon에서 몬스터를 눌러 배웁니다. 못 배우는 무기 · 특성은 🧪 Monster Lab의 🔬 실험실에서 가르칠 수 있습니다."));
         };
+        draw();
+        return wrap;
+    });
+}
+
+// ---------------------------------------------------------------- 🏷️ EmoMonster Rent Shop (game/emoRent.js)
+export function rentShopView(pid, loc, { onChange = () => { } } = {}) {
+    return lazy(() => {
+        const ps = G.S().ps[pid];
+        const wrap = h("div.emo-rent");
+        let tierId = "normal", rounds = 1, payWith = "gold", busy = false;
+        const head = () => h("div.emo-lab-head", h("div.big", "🏷️"), h("div", h("h3", `이모몬스터 Rent Shop · ${loc.name}`),
+            h("p.muted.small", `랜덤 입장 (60% 허용 · 40% 거절) · 시즌당 1회 · 1~${RENT.RENT_MAX_ROUNDS}라운드 대여 · 등급 안에서 몬스터는 랜덤 · 기간이 끝나면 자동 반납 · 참가자 ${RENT.RENT_CLOSED_ALIVE}명 이하부터 대여 불가`)));
+        const draw = () => {
+            const door = RENT.doorOf(pid, loc.id);
+            const mine = M.mons(pid).filter(m => m.rent);
+            if (RENT.rentClosed()) return put(wrap, head(), h("p.notice.warn", `🚫 참가자가 ${RENT.RENT_CLOSED_ALIVE}명 이하로 남아 이제 이모몬스터를 대여할 수 없습니다.`),
+                mine.length ? h("p.muted.small", `🏷️ 대여중: ${mine.map(m => `${M.sp(m)?.name} (라운드 ${m.rent.until}까지)`).join(", ")}`) : null,
+                ...mine.filter(m => m.rent.spin === "ready").map(m => h("button.btn.small.gold", { onclick: () => spin(m) }, `🎡 ${M.sp(m)?.name} 무기 룰렛 돌리기`)));
+            if (!door) return put(wrap, head(), h("div.fc-roll", h("button.btn.big.gold", { onclick: () => {
+                const d = RENT.rentDoor(pid, loc.id);
+                d.ok ? (Sound.coin(), toast("🙆 대여샵 입장 허가!", "ok")) : (Sound.lose(), toast("🙅 입장 거절! 다음 라운드에 다시 오세요", "warn"));
+                onChange(); draw();
+            } }, "🚪 입장 시도 (60%)")));
+            if (!door.ok) return put(wrap, head(), h("p.notice.warn", "🙅 이번 라운드에는 이 대여샵에 들어갈 수 없습니다 (입장 거절)."));
+            const used = RENT.rentedThisSeason(pid);
+            const spinFor = mine.find(m => m.rent.spin === "ready");
+            const late = RENT.lateFee();
+            const t = RENT.tierOf(tierId), pool = RENT.tierSpecies(t);
+            const price = RENT.rentPrice(t, rounds, payWith);
+            const full = M.mons(pid).length >= emoSlots(pid);
+            put(wrap, head(),
+                mine.length ? h("div.emo-rent-mine", h("h4", "🏷️ 대여중"), ...mine.map(m => h("div.emo-rent-row", monPic(M.sp(m), 40),
+                    h("div", h("b", M.sp(m)?.name || "?"), h("small", ` ${RENT.tierOf(m.rent.tier)?.name || ""} · 라운드 ${m.rent.until}까지 (남은 ${RENT.roundsLeft(m)}라운드)`),
+                        m.rent.spin && m.rent.spin !== "ready" ? h("small", m.rent.spin === "miss" ? " · 🎡 룰렛 꽝" : ` · 🎡 ${m.rent.spin} 포함`) : null),
+                    m.rent.spin === "ready" ? h("button.btn.small.gold", { onclick: () => spin(m) }, "🎡 무기 룰렛 돌리기") : null))) : null,
+                used ? h("p.notice", spinFor ? "🎡 무기 포함 룰렛 찬스가 남아 있습니다!" : "✅ 이번 시즌 대여를 이미 했습니다 (시즌당 1회).") : h("div",
+                    late ? h("p.notice.warn.small", `⚠️ 참가자 ${RENT.RENT_LATE_ALIVE}명 이하 — 모든 대여에 라운드당 +${RENT.RENT_LATE_PTS}P 추가`) : null,
+                    h("h4", "1️⃣ 등급 (몬스터는 등급 안에서 랜덤)"),
+                    h("div.emo-rent-tiers", RENT.rentCfg().tiers.map(x => { const sps = RENT.tierSpecies(x);
+                        return h("button.emo-rent-tier" + (x.id === tierId ? ".on" : ""), { disabled: !sps.length, onclick: () => { tierId = x.id; draw(); } },
+                            h("b", `${x.emoji} ${x.name}`), h("small", `라운드당 ${fmt(x.gold)}G 또는 ${x.pts}P`),
+                            h("div.emo-rent-pics", sps.map(s => h("span", { title: s.name }, monPic(s, 30)))),
+                            h("small.muted", `${x.minRounds}라운드 이상 대여 시 🎡 무기 룰렛`)); })),
+                    h("h4", "2️⃣ 대여 기간"),
+                    h("div.emo-rent-rounds", Array.from({ length: RENT.RENT_MAX_ROUNDS }, (_, i) => i + 1).map(n => h("button.btn.small" + (n === rounds ? ".gold" : ".ghost"), { onclick: () => { rounds = n; draw(); } }, `${n}R`))),
+                    h("h4", "3️⃣ 결제"),
+                    h("div.emo-rent-rounds", [["gold", "💰 골드"], ["pts", "💎 포인트"]].map(([k, l]) => h("button.btn.small" + (k === payWith ? ".gold" : ".ghost"), { onclick: () => { payWith = k; draw(); } }, l))),
+                    h("div.emo-rent-sum", h("span", `${t.emoji} ${t.name} · ${rounds}라운드 → `), h("b.emo-price", priceLabel(price)),
+                        rounds >= t.minRounds ? h("small", " · 🎡 무기 룰렛 1회") : h("small.muted", ` · 룰렛은 ${t.minRounds}라운드 이상`)),
+                    full ? h("p.notice.warn.small", "⚠️ 몬스터 슬롯이 꽉 찼습니다 — 빈 슬롯이 있어야 대여할 수 있습니다") : null,
+                    h("button.btn.big.gold", { disabled: busy || full || !pool.length || !canPay(ps, price), onclick: () => doRent() }, "🏷️ 대여하기")));
+        };
+        async function doRent() {
+            const t = RENT.tierOf(tierId), price = RENT.rentPrice(t, rounds, payWith);
+            if (!(await confirmBox(`${t.emoji} ${t.name} 등급 이모몬스터를 ${rounds}라운드 대여할까요?\n\n대여료: ${priceLabel(price)}\n몬스터는 ${t.name} 등급 중 랜덤으로 정해집니다.\n시즌당 1회만 대여할 수 있습니다.`, "🏷️ 대여", "취소"))) return;
+            busy = true;
+            const r = RENT.rent(pid, tierId, rounds, payWith, loc.id);
+            busy = false;
+            if (!r.ok) { toast(r.why, "warn"); draw(); return; }
+            Sound.fanfare(); confetti(40, ["🏷️", "🐾"]);
+            toast(`🏷️ ${r.species.name} 대여 완료! (라운드 ${r.mon.rent.until}까지)`, "ok", 3500);
+            onChange(); draw();
+            if (r.spin) spin(r.mon);
+        }
+        async function spin(m) {
+            const list = RENT.rentCfg().weapons, segs = ["꽝", ...list.map(w => `${w[0]} (${w[1]})`)];
+            const reel = h("div.rent-reel", segs.map(s => h("div.rent-seg", s)));
+            const msg = h("p.center.muted", "🎡 돌아가는 중…");
+            const mm = modal(h("div.rent-spin", h("p.center", `${M.sp(m)?.name} 대여 — 무기 포함 룰렛 찬스!`), reel, msg), { title: "🎡 무기 포함 룰렛 찬스" });
+            const r = RENT.spinWeapon(pid, m.uid);
+            if (!r.ok) { mm.close(); return toast(r.why, "warn"); }
+            const cells = [...reel.children];
+            const steps = segs.length * 3 + r.idx;
+            for (let i = 0; i <= steps; i++) { cells.forEach((c, j) => c.classList.toggle("on", j === i % segs.length)); Sound.tick?.(); await sleep(50 + i * 4); }
+            if (r.idx) { Sound.fanfare(); confetti(50, ["⚔️", "✨"]); put(msg, h("b", `🎉 ${r.name} 당첨! 대여한 몬스터에 무기가 포함됩니다`), r.weapon ? null : h("small.warn", " (EmoMon 카탈로그에 없는 무기라 실제로 배우지는 못했습니다)")); }
+            else { Sound.lose(); put(msg, h("b", "꽝… 무기 없이 대여합니다")); }
+            onChange(); draw();
+        }
         draw();
         return wrap;
     });

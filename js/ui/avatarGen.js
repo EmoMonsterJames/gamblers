@@ -190,7 +190,7 @@ export const DEFAULTS = {
     logo: "", tail: "", cheekFluff: false, wings: "", antennae: "", ribbon: "", eyeColor: "",
     // 🧬 race styles (ui/avatarRaces.js lists) — sub = the subcategory (bug / fruit / veggie / flower preset key)
     sub: "", jsEar: 0, jsFang: 0, halo: 0, angelWing: 0, horn: 0, devilTail: 0, gobHorn: 0, gobTeeth: 0,
-    earShape: -1, earSize: 1, earIn: 0, antStyle: -1, wingPat: 0
+    earShape: -1, earSize: 1, earIn: 0, antStyle: -1, wingPat: 0, curly: false
 };
 // 🚫 No Image: a plain placeholder (still carries its options so the generator can reopen it)
 export function noImageSvg(meta = "") {
@@ -373,6 +373,21 @@ function shapeBody(id) {
 
 // humanoid zoom: scale k around the point (128, cy) → about y 12..189 of the full figure is shown (head + torso)
 const UPPER = { k: 1.4, cy: 100 };
+// 🐑 곱슬 fur (Main Animal / Other Animal): the smooth outline becomes a ring of curls
+export const FUR_RACES = ["rabbit", "bunny", "bear", "teddy", "rat", "cat", "dog", "bird", "hippo", "lion", "tiger", "horse", "pig", "dolphin", "panda", "kangaroo", "fox", "snake", "giraffe", "animal"];
+function curlyOval(rx, ry, n = 20, amp = 0.17) {
+    const pt = (a, k) => `${f1(rx * k * Math.cos(a))} ${f1(ry * k * Math.sin(a))}`;
+    let d = `M${pt(0, 1)}`;
+    for (let i = 0; i < n; i++) {
+        const a0 = i * 2 * Math.PI / n, a1 = (i + 1) * 2 * Math.PI / n, am = (a0 + a1) / 2;
+        d += `C${pt(a0 + (a1 - a0) * 0.05, 1 + amp * 1.25)} ${pt(a1 - (a1 - a0) * 0.05, 1 + amp * 1.25)} ${pt(a1, 1)}`;
+    }
+    return d + "Z";
+}
+function furCurls(rx, ry, col) {
+    return [[-0.55, -0.62, 0], [0.1, -0.78, 1], [0.6, -0.55, 0], [-0.78, 0.15, 1], [0.8, 0.2, 0], [-0.4, 0.72, 0], [0.45, 0.7, 1]]
+        .map(([x, y, f]) => { const cx = f1(rx * x), cy = f1(ry * y), s = f ? -1 : 1; return `<path d="M${cx} ${cy}c${s * 3} -4 ${s * 8} -1 ${s * 6} 3c${s * -1.5} 3 ${s * -5} 2 ${s * -4} -1" fill="none" stroke="${col}" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>`; }).join("");
+}
 // ------------------------------------------------------------ build
 export function buildAvatar(opts = {}) {
     const o = { ...DEFAULTS, ...opts };
@@ -635,6 +650,7 @@ export function buildAvatar(opts = {}) {
             const cs = [[-22, -16, 21], [0, -22, 23], [22, -16, 21], [-30, 8, 17], [30, 8, 17], [0, 12, 30], [-16, 22, 16], [16, 22, 16]];
             face.push(cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}" stroke="${line}" stroke-width="8"/>`).join("") + cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}"/>`).join(""));
         } else if (bugP?.head === "tri") face.push(`<path d="M0 38L-44 -24Q-44 -38 -28 -36H28Q44 -38 44 -24Z" ${hs}/>`); // 🦗 mantis: a triangle head
+        else if (o.curly && FUR_RACES.includes(race.id)) face.push(`<path d="${curlyOval(38, 36)}" ${hs}/>` + furCurls(30, 28, line)); // 🐑 곱슬 fur
         else face.push(`<ellipse cx="0" cy="0" rx="38" ry="36" ${flowerP ? `fill="${flowerP.center}" stroke="${OUT}" stroke-width="4"` : hs}/>`); // 🌸 the flower centre is the face
         face.push(animalFace);
         // 🐛 bug marks: body rings · fuzz · stink-bug shield · ladybug spots · stripes · mosquito proboscis · spider fangs

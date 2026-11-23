@@ -743,6 +743,14 @@ for (const l of LOCATIONS) {
     if (EMO_HOSPITAL_MAPS.includes(l.id)) l.hospital = true;
     if (EMO_LAB_MAPS.includes(l.id)) l.lab = true;
 }
+// 🏷️ EmoMonster Rent Shop: 25 random maps among every map with a 🐾 monster corner (Capture · Hospital · Lab · Shop).
+// "Random" but stable (the same 25 on every device): ordered by a hash of the map id. The admin can turn it on / off per map.
+export const EMO_RENT_COUNT = 25;
+{
+    const hash = s => { let x = 2166136261; for (const ch of s + "#rent") x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; return x; };
+    LOCATIONS.filter(l => (l.capture || l.hospital || l.lab || l.emoshop) && !l.kidnap)
+        .sort((a, b) => hash(a.id) - hash(b.id)).slice(0, EMO_RENT_COUNT).forEach(l => { l.emorent = true; });
+}
 for (const id of BANK_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bank = true; }
 for (const id of COMMUNITY_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.community = true; }
 for (const id of ARENA_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.arena = true; }

@@ -38,6 +38,7 @@ export function mapCorners(l, { detail = true } = {}) {
         l.capture && d("🔍 EmoMon Capture", cap && `${cap.types.slice(0, 3).join("·")}${cap.types.length > 3 ? ` 외 ${cap.types.length - 3}` : ""} · 출현 ${cap.chance}% · ${cap.mons.length}종 · ${doorText[cap.door]}`),
         l.hospital && "🏥 Monster Hospital",
         l.lab && d("🧪 Monster Lab", lab && `LAB 상점 ${lab.items.length}종`),
+        l.emorent && "🏷️ 이모몬스터 Rent Shop",
         l.emoshop && d("🛒 Monster Shop", st && `속성 볼 ${st.balls.map(id => emoItem(id)?.attr).filter(Boolean).join("·")} · 무기 ${st.weapons.length} · 특성 ${st.traits.length}`),
         l.community && d("💬 커뮤니티", "500G · 시즌당 1회 · 입장 60%"),
         helpHere(l) && d("🤝 도움주기", "라운드당 1회 · 입장 60%"),

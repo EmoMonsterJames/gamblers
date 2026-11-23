@@ -35,7 +35,7 @@ import { Activity, activityBusy } from "../core/fx.js";
 import { bankView, remoteBank } from "./bank.js";
 import { bizHubView, bizHubHere, bizTabs, bizView, remoteBiz, reportList } from "./business.js";
 import { account as bankAccount, reportsOf } from "../game/bank.js";
-import { captureView, hospitalView, labView, monsterShopView, emoDexTab, emoPartySide, emoBattleStage, emoBoot } from "./emoCorners.js";
+import { captureView, hospitalView, labView, monsterShopView, rentShopView, emoDexTab, emoPartySide, emoBattleStage, emoBoot } from "./emoCorners.js";
 import { emoInventory } from "../emomon/ui.js";
 import { regionWarning, extraEntry, arrivalExtra, deathWheel, mapEffects, kidnapView, communityView, arenaView, extraInventory, sickTickNotice, cursedConfig } from "./extraCorners.js";
 import { promoAtTurn } from "./promo.js";
@@ -119,7 +119,7 @@ function render() {
     // 🖼️ the page around the play screen: a scene that fits the map being played
     if (s.turn?.loc && LOC_BY_ID[s.turn.loc]) setMapBackdrop(LOC_BY_ID[s.turn.loc]); else clearMapBackdrop();
     if (RV.revivalDue()) RV.openRevival();
-    // 🗳️ 16 / 8 players left: this round is a vote instead of a mission (applies to the running season too)
+    // 🗳️ 17 / 9 players left (or fewer, if a round jumped past it): this round is a vote instead of a mission
     if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason) && SO.voteDue()) SO.startVote();
     if (arcadeInst && (s.turn?.loc !== "arcade" || arcadeTurn !== s.turn)) { arcadeInst.stop(); arcadeInst = null; arcadeTurn = null; }
     const revStage = s.revival?.phase === "intro" ? (x => revivalIntroStage(x, render)) : s.status === "revival" ? (x => revivalStage(x, render)) : null;
@@ -798,7 +798,7 @@ function locationStage(s) {
     const GROUPS = [
         ["grp:shop", "🛒 상점", k => k.startsWith("shop:") || k === "dept"],
         ["grp:honor", "🏅 Honorarium", k => k.startsWith("honor:")],
-        ["grp:emo", "🐾 EmoMonster", k => ["emo:capture", "emo:hospital", "emo:lab", "emo:shop", "gotcha"].includes(k)],
+        ["grp:emo", "🐾 EmoMonster", k => ["emo:capture", "emo:hospital", "emo:lab", "emo:shop", "emo:rent", "gotcha"].includes(k)],
         ["grp:money", "💰 Money", k => ["job", "beg", "employ", "company", "earn", "lotto", "highlight", "help"].includes(k)]
     ];
     // (the arcade keeps its found corners as plain tabs: they pause the arcade clock by tab id)
@@ -827,7 +827,7 @@ function locationStage(s) {
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
-        ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
+        ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ...(loc.emorent ? [["emo:rent", "🏷️ 이모몬스터 Rent Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
     const invWrap = el => h("div", rev ? revivalInvView(pid) : null, extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), lifeInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); }), el, emoInventory(pid, emoChanged));
@@ -941,6 +941,7 @@ function locationStage(s) {
         else if (id === "emo:hospital") content = hospitalView(pid, { onChange: emoChanged });
         else if (id === "emo:lab") content = labView(pid, { loc, onChange: emoChanged });
         else if (id === "emo:shop") content = monsterShopView(pid, loc, { onChange: emoChanged });
+        else if (id === "emo:rent") content = rentShopView(pid, loc, { onChange: emoChanged });
         else if (id === "emo:dex") content = emoDexTab(pid);
         else if (id === "lotto") content = lottoView(pid, { hold: lottoHold, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "highlight") content = highlightView(pid, { hold: () => { npcBusy = true; return () => { npcBusy = false; updateHud(); }; }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });

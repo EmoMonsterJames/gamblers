@@ -12,7 +12,7 @@ import { sandboxNextTurn } from "./sandbox.js";
 import { emoHas, randomNatureSafe, monsOf as emoMons, totalWeapons as emoWeapons, totalTraits as emoTraits, giveItem as emoGiveItem, newMon as emoNewMon, addMon as emoAddMon } from "../emomon/game.js";
 import * as RV from "./revival.js";
 import { isSurvivalPass } from "../data/catalog.js";
-import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
+import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_TEXT, ownsMon, ownsTypes, typeGateType, typeGateTypes, keepMons, arrivalInfection, noteKidnap } from "./extra.js";
 import { FOOD_START } from "../data/life.js";
 import { mapNo } from "../data/mapAdmin.js";
 import { SPECIAL_BY_ID, makeTags } from "./specialSeason.js";
@@ -896,7 +896,7 @@ export function canEnter(pid, loc) {
     if (loc.kidnap) return { ok: false, why: "갈 수 없는 곳" };
     // 🐾 EmoMonster Casino: monster owners only · 🔷 Type Casino: owners of this round's attribute only
     if (loc.needMon && !ownsMon(pid)) return { ok: false, why: "이모몬스터가 있어야 입장" };
-    if (loc.typeGate) { const tp = typeGateType(); if (!ownsTypes(pid, [tp])) return { ok: false, why: `${tp} 속성 몬스터 보유자만` }; }
+    if (loc.typeGate && !ownsTypes(pid, typeGateTypes())) return { ok: false, why: `${typeGateType()} 속성 몬스터 보유자만` };
     const r = loc.req;
     if (!r) return { ok: true };
     // 🚧 restricted zone: only that kind of player — anybody else needs the map pass (used up on entry)
@@ -946,7 +946,7 @@ export function passNeeds(pid, loc) {
     for (const g of gear) if (!(ps.items[g] > 0)) missing.push(`${gearName(g)} 부족 → ${ITEM_BY_ID[g]?.name || g}부터 갖추세요`);
     if (r.points != null && ps.points < r.points) missing.push(`포인트가 부족합니다 (${r.points}P 이상 필요) → 포인트부터 모으세요`);
     if (loc.needMon && !ownsMon(pid)) missing.push("이모몬스터가 없습니다 → EmoMon Capture에서 몬스터부터 잡으세요");
-    if (loc.typeGate && !ownsTypes(pid, [typeGateType()])) missing.push(`이번 라운드 Type Casino는 ${typeGateType()} 속성 몬스터 보유자만 들어갈 수 있습니다`);
+    if (loc.typeGate && !ownsTypes(pid, typeGateTypes())) missing.push(`이번 라운드 Type Casino는 ${typeGateTypes().join(" · ")} 속성 중 하나의 몬스터 보유자만 들어갈 수 있습니다`);
     if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
     if (RV.revivalTurns() && loc.region !== "survival") missing.push("🔄 패자부활전 중에는 Survival Land 맵으로만 이동할 수 있습니다");
     if (RV.survivalPassWait() > 0) missing.push(RV.survivalWaitText());

@@ -49,17 +49,21 @@ export function registerEmoHelpers(api) { EM = api; }
 export const ownsMon = pid => monsOf(pid).length > 0;
 export const ownsTypes = (pid, types) => !!EM && types.some(t => EM.ownsType(pid, t));
 
-// 🔷 Type Casino: one attribute per round (shown when the map is drawn)
-export function typeGateType() {
+// 🔷 Type Casino: 3 random attributes per round (shown on the map) — owning a monster of any of them lets you in
+export function typeGateTypes() {
     const s = S();
-    if (!s) return "Normal";
-    if (s.typeGate?.round !== s.round) {
-        const list = EM?.TYPE_LIST || ["Normal", "Fire", "Water", "Grass", "Electric"];
-        s.typeGate = { round: s.round, type: list[Math.floor(Math.random() * list.length)] };
+    if (!s) return ["Normal", "Fire", "Water"];
+    if (s.typeGate?.round !== s.round || !Array.isArray(s.typeGate.types)) {
+        const list = [...(EM?.TYPE_LIST || ["Normal", "Fire", "Water", "Grass", "Electric"])];
+        const types = [];
+        while (types.length < 3 && list.length) types.push(list.splice(Math.floor(Math.random() * list.length), 1)[0]);
+        s.typeGate = { round: s.round, types };
         Store.saveSeason();
     }
-    return s.typeGate.type;
+    return s.typeGate.types;
 }
+export const typeGateType = () => typeGateTypes().join(" / ");
+export const typeGateLabel = () => `이번 라운드 허용 속성 ${typeGateTypes().map(t => `'${t}'`).join(", ")}`;
 
 // ---------------------------------------------------------------- 🧳 EmoMon slots: 3 free + tickets, max 10
 export const EMO_FREE_SLOTS = 3, EMO_MAX_SLOTS = 10;
@@ -309,7 +313,7 @@ export function keepMons() {
     if (!s || !EM || s.sandbox) return;
     let n = 0;
     for (const pid of s.roster || []) {
-        const m = EM.battleMon(pid) || monsOf(pid)[0];
+        const bm = EM.battleMon(pid), m = bm && !bm.rent ? bm : monsOf(pid).find(x => !x.rent); // 🏷️ rented monsters are not theirs
         if (!m) continue;
         const { uid, sid, nature, types, weapons, traits } = m;
         Store.emokeep[pid] = { uid, sid, nature, types, weapons: [...(weapons || [])], traits: [...(traits || [])], season: s.number };
@@ -317,10 +321,11 @@ export function keepMons() {
     }
     if (n) Store.saveEmokeep();
 }
-// a random opponent player — ANY registered player (season participant or not), never the player themself.
-// Players with a known monster (this season / remembered from a past season) bring it; the rest get a generated one.
+// a random opponent player — a season participant, or a NON-season player who owned a real EmoMonster in an earlier
+// season (remembered in Store.emokeep). Non-season players without one never come up. Never the player themself.
+// Season players with no monster yet get a generated one.
 export function arenaPlayerPool(pid) {
-    return Store.players.map(p => +p.id).filter(id => id !== +pid);
+    return Store.players.map(p => +p.id).filter(id => id !== +pid && (arenaInSeason(id) || Store.emokeep?.[id]?.sid != null));
 }
 export const arenaInSeason = foePid => (S()?.roster || []).some(id => +id === +foePid);
 // the opponent's monster for the arena: a COPY at full HP / PP and no status — the real one is never touched
