@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #444 샴쌍덩이 — grey Dungi siamese twins: two rabbit heads on one body.
+     Left = the older sister (bigger head, lively, full makeup and a bow) · right = the younger one (smaller, expressionless, just staring).
+     Both have 몽이주름. The outfit is the sister's taste: a glamorous sequin gown on a curvy figure. -->
+<defs>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a12"/></linearGradient>
+<linearGradient id="gown" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4fa3"/><stop offset="1" stop-color="#9b1d63"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#2a1a3a"/>
+<g fill="#ffd34d"><path d="M28 90 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/><path d="M226 120 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/><path d="M200 34 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/></g>
+<g clip-path="url(#cc)">
+<!-- one curvy body in a sequin gown (sweetheart neckline) -->
+<path d="M40 262 C44 226 60 206 84 198 Q128 186 172 198 C196 206 212 226 216 262 Z" fill="#9aa3ad" stroke="#3a2a24" stroke-width="4"/>
+<path d="M70 262 C70 236 76 222 86 214 Q100 206 112 214 Q128 224 144 214 Q156 206 170 214 C180 222 186 236 186 262 Z" fill="url(#gown)" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<g fill="#ffe0f2" opacity=".9"><circle cx="96" cy="230" r="2.2"/><circle cx="110" cy="244" r="2.2"/><circle cx="124" cy="232" r="2.2"/><circle cx="140" cy="246" r="2.2"/><circle cx="154" cy="230" r="2.2"/><circle cx="168" cy="244" r="2.2"/><circle cx="84" cy="246" r="2.2"/><circle cx="132" cy="256" r="2.2"/></g>
+<path d="M98 214 Q112 222 128 224 Q144 222 158 214" fill="none" stroke="#3a2a24" stroke-width="2" opacity=".4"/>
+<path d="M76 214 Q96 236 128 238 Q160 236 180 214" fill="none" stroke="url(#gold)" stroke-width="3"/>
+<path d="M128 238 l5 6 l-5 8 l-5 -8 Z" fill="#7ad7ff" stroke="#ffffff" stroke-width="1"/>
+<!-- two necks joining the one body -->
+<path d="M70 190 Q86 168 102 176 L108 202 Q88 206 70 190 Z" fill="#9aa3ad" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M186 192 Q172 174 158 180 L150 202 Q170 206 186 192 Z" fill="#9aa3ad" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<!-- ===== younger sister (right, smaller) ===== -->
+<g transform="rotate(8 176 76)"><ellipse cx="164" cy="40" rx="9" ry="24" fill="#9aa3ad" stroke="#3a2a24" stroke-width="3.4"/><ellipse cx="164" cy="42" rx="4" ry="17" fill="#ffb8cf"/><ellipse cx="192" cy="44" rx="9" ry="24" fill="#9aa3ad" stroke="#3a2a24" stroke-width="3.4"/><ellipse cx="192" cy="46" rx="4" ry="17" fill="#ffb8cf"/></g>
+<ellipse cx="178" cy="132" rx="44" ry="40" fill="#9aa3ad" stroke="#3a2a24" stroke-width="4"/>
+<circle cx="164" cy="126" r="4.6" fill="#1c1a1e"/><circle cx="192" cy="126" r="4.6" fill="#1c1a1e"/>
+<path d="M156 114 H172 M184 114 H200" stroke="#3a2a24" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+<path d="M174 138 h8 l-4 4 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.2"/>
+<path d="M170 152 H186" stroke="#3a2a24" stroke-width="3" stroke-linecap="round"/>
+<path d="M164 142 Q158 152 164 162 M192 142 Q198 152 192 162" fill="none" stroke="#3a2a24" stroke-width="2.8" stroke-linecap="round"/>
+<!-- ===== older sister (left, bigger, made up) ===== -->
+<g transform="rotate(-10 84 70)"><ellipse cx="62" cy="22" rx="12" ry="32" fill="#9aa3ad" stroke="#3a2a24" stroke-width="4"/><ellipse cx="62" cy="25" rx="5.4" ry="24" fill="#ffb8cf"/><ellipse cx="102" cy="22" rx="12" ry="32" fill="#9aa3ad" stroke="#3a2a24" stroke-width="4"/><ellipse cx="102" cy="25" rx="5.4" ry="24" fill="#ffb8cf"/></g>
+<ellipse cx="86" cy="116" rx="58" ry="54" fill="#9aa3ad" stroke="#3a2a24" stroke-width="4"/>
+<!-- big bow -->
+<g transform="translate(110 66) rotate(16)"><path d="M0 0 C-20 -18 -26 8 -4 6 Z M0 0 C20 -18 26 8 4 6 Z" fill="#ff3fa4" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="2" r="5" fill="url(#gold)" stroke="#3a2a24" stroke-width="2.4"/></g>
+<!-- eyeshadow + lashes + sparkly eyes (lively) -->
+<ellipse cx="66" cy="104" rx="14" ry="10" fill="#c77dff" opacity=".55"/><ellipse cx="106" cy="104" rx="14" ry="10" fill="#c77dff" opacity=".55"/>
+<ellipse cx="66" cy="110" rx="10" ry="12" fill="#1c1a1e"/><circle cx="69" cy="106" r="3.6" fill="#fff"/><circle cx="63" cy="115" r="1.6" fill="#fff"/>
+<ellipse cx="106" cy="110" rx="10" ry="12" fill="#1c1a1e"/><circle cx="109" cy="106" r="3.6" fill="#fff"/><circle cx="103" cy="115" r="1.6" fill="#fff"/>
+<path d="M56 102 l-7 -6 M60 98 l-4 -8 M116 102 l7 -6 M112 98 l4 -8" stroke="#1c1a1e" stroke-width="3" stroke-linecap="round"/>
+<path d="M54 90 Q66 82 78 90 M94 90 Q106 82 118 90" fill="none" stroke="#3a2a24" stroke-width="3.2" stroke-linecap="round"/>
+<ellipse cx="54" cy="132" rx="11" ry="6.5" fill="#ff4f8b" opacity=".55"/><ellipse cx="118" cy="132" rx="11" ry="6.5" fill="#ff4f8b" opacity=".55"/>
+<path d="M82 124 h8 l-4 5 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.2"/>
+<!-- wide red-lipstick laugh -->
+<path d="M70 136 Q86 158 102 136 Q86 142 70 136 Z" fill="#d81b60" stroke="#4a1a1a" stroke-width="2.6" stroke-linejoin="round"/><path d="M78 140 q8 6 16 0" fill="#ffffff" opacity=".9"/>
+<path d="M64 128 Q56 142 64 156 M108 128 Q116 142 108 156" fill="none" stroke="#3a2a24" stroke-width="3.4" stroke-linecap="round"/>
+<path d="M60 120 l1.4 -3.6 l1.4 3.6 l3.6 1.4 l-3.6 1.4 l-1.4 3.6 l-1.4 -3.6 l-3.6 -1.4 Z" fill="#fff"/>
+<!-- the sister's long earrings + necklace on the body -->
+<path d="M30 124 v14 M142 124 v14" stroke="url(#gold)" stroke-width="2.4"/><circle cx="30" cy="142" r="4.4" fill="#7ad7ff" stroke="#ffffff" stroke-width="1"/><circle cx="142" cy="142" r="4.4" fill="#7ad7ff" stroke="#ffffff" stroke-width="1"/>
+</g>
+</svg>

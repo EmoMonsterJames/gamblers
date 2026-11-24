@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #453 모스 — (reference image 2) a big glossy green bowl/mushroom haircut with a little sprout on top, thick dark-green brows,
+     big round green glasses with big eyes glancing to the side, a little smile, red cheeks, a dark vest, white collar and a green checked tie -->
+<defs>
+<linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4cc04a"/><stop offset="1" stop-color="#1f8a2a"/></linearGradient>
+<pattern id="chk" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#3fae3a"/><rect width="3" height="3" fill="#1f7a24"/><rect x="3" y="3" width="3" height="3" fill="#1f7a24"/></pattern>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#eefbe9"/>
+<g clip-path="url(#cc)">
+<!-- white shirt, dark vest, green checked tie -->
+<path d="M36 262 C40 224 70 202 102 196 L154 196 C186 202 216 224 220 262 Z" fill="#3a3d46" stroke="#141216" stroke-width="4"/>
+<path d="M104 196 L128 236 L152 196 Z" fill="#ffffff" stroke="#141216" stroke-width="3" stroke-linejoin="round"/>
+<path d="M104 194 L118 214 L128 202 L138 214 L152 194 L146 188 L128 198 L110 188 Z" fill="#ffffff" stroke="#141216" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M122 204 L134 204 L138 240 L128 252 L118 240 Z" fill="url(#chk)" stroke="#141216" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M122 204 L134 204 L131 212 L125 212 Z" fill="#1f7a24" stroke="#141216" stroke-width="2"/>
+<!-- face -->
+<rect x="114" y="168" width="28" height="30" rx="10" fill="#f6cfa8" stroke="#141216" stroke-width="4"/>
+<ellipse cx="128" cy="140" rx="54" ry="44" fill="#f6cfa8" stroke="#141216" stroke-width="4"/>
+<!-- big glossy green bowl hair over the top of the head -->
+<path d="M56 140 C44 70 76 30 128 30 C180 30 212 70 200 140 C196 130 190 118 184 112 L176 122 L168 108 L156 120 L148 104 L136 118 L128 102 L120 118 L108 104 L100 120 L88 108 L80 122 L72 112 C66 118 60 130 56 140 Z" fill="url(#hair)" stroke="#141216" stroke-width="5" stroke-linejoin="round"/>
+<path d="M150 46 C172 52 186 66 190 86" fill="none" stroke="#bff0b0" stroke-width="9" stroke-linecap="round" opacity=".8"/>
+<circle cx="168" cy="44" r="5" fill="#eaffe0" opacity=".9"/>
+<!-- sprout -->
+<path d="M128 32 C124 18 112 14 104 18 C112 22 120 26 128 32 Z M128 32 C132 18 146 12 154 18 C144 22 136 26 128 32 Z" fill="#3fae3a" stroke="#141216" stroke-width="3" stroke-linejoin="round"/>
+<!-- thick brows -->
+<path d="M88 116 Q100 104 116 112 L114 120 Q102 114 92 122 Z M168 116 Q156 104 140 112 L142 120 Q154 114 164 122 Z" fill="#1f6a24" stroke="#141216" stroke-width="2.4" stroke-linejoin="round"/>
+<!-- big round green glasses, eyes glancing right -->
+<circle cx="104" cy="144" r="21" fill="#ffffff" stroke="#2f9a34" stroke-width="7"/><circle cx="152" cy="144" r="21" fill="#ffffff" stroke="#2f9a34" stroke-width="7"/>
+<circle cx="104" cy="144" r="24.5" fill="none" stroke="#141216" stroke-width="2.2"/><circle cx="152" cy="144" r="24.5" fill="none" stroke="#141216" stroke-width="2.2"/>
+<path d="M125 142 Q128 138 131 142" fill="none" stroke="#2f9a34" stroke-width="5" stroke-linecap="round"/>
+<circle cx="112" cy="146" r="10" fill="#141216"/><circle cx="116" cy="141" r="3.6" fill="#fff"/>
+<circle cx="160" cy="146" r="10" fill="#141216"/><circle cx="164" cy="141" r="3.6" fill="#fff"/>
+<!-- small smile + red cheeks -->
+<ellipse cx="80" cy="168" rx="9" ry="6" fill="#ff5f5f" opacity=".7"/><ellipse cx="176" cy="168" rx="9" ry="6" fill="#ff5f5f" opacity=".7"/>
+<path d="M122 172 Q130 178 138 171" fill="none" stroke="#141216" stroke-width="3" stroke-linecap="round"/>
+</g>
+</svg>

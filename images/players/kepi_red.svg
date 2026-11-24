@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #451 케피 — (reference image 6) a crimson hood with round bear ears and a white band, brown bangs,
+     a RED-skinned face, big sleepy eyes under heavy red lids, a small "o" mouth, a green bow tie and a white belly -->
+<defs>
+<linearGradient id="hood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4a72"/><stop offset="1" stop-color="#c8143c"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<clipPath id="hc"><ellipse cx="128" cy="116" rx="82" ry="78"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#fff0f2"/>
+<g clip-path="url(#cc)">
+<!-- body: crimson with a white belly + green bow tie -->
+<path d="M36 262 C38 216 72 190 128 190 C184 190 218 216 220 262 Z" fill="url(#hood)" stroke="#5a0a1e" stroke-width="4"/>
+<ellipse cx="128" cy="246" rx="52" ry="40" fill="#ffffff"/>
+<path d="M128 198 L96 184 L98 214 Z M128 198 L160 184 L158 214 Z" fill="#1f8a6a" stroke="#0a3a2a" stroke-width="3" stroke-linejoin="round"/><rect x="120" y="190" width="16" height="16" rx="5" fill="#1a7058" stroke="#0a3a2a" stroke-width="2.4"/>
+<!-- round ears -->
+<circle cx="56" cy="56" r="28" fill="url(#hood)" stroke="#5a0a1e" stroke-width="4"/><circle cx="200" cy="56" r="28" fill="url(#hood)" stroke="#5a0a1e" stroke-width="4"/>
+<!-- hood -->
+<ellipse cx="128" cy="116" rx="82" ry="78" fill="url(#hood)" stroke="#5a0a1e" stroke-width="4"/>
+<path d="M70 66 q26 -26 64 -26" fill="none" stroke="#ff9ab0" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+<!-- face opening: red skin -->
+<path d="M62 104 Q128 76 194 104 C200 160 172 186 128 186 C84 186 56 160 62 104 Z" fill="#f2504e" stroke="#5a0a1e" stroke-width="3.4" stroke-linejoin="round"/>
+<!-- white band + brown bangs -->
+<g clip-path="url(#hc)"><path d="M40 84 Q128 50 216 84 L216 98 Q128 66 40 98 Z" fill="#ffffff"/></g>
+<path d="M78 100 Q128 80 178 100 L174 116 L164 106 L156 118 L146 106 L136 118 L128 106 L120 118 L110 106 L100 118 L92 106 L82 116 Z" fill="#8a4a24" stroke="#4a2410" stroke-width="2.6" stroke-linejoin="round"/>
+<!-- big sleepy eyes: white with brown irises under heavy red lids -->
+<ellipse cx="102" cy="142" rx="22" ry="20" fill="#ffffff" stroke="#5a0a1e" stroke-width="3"/><ellipse cx="154" cy="142" rx="22" ry="20" fill="#ffffff" stroke="#5a0a1e" stroke-width="3"/>
+<circle cx="104" cy="150" r="9" fill="#6a3a1e"/><circle cx="152" cy="150" r="9" fill="#6a3a1e"/><circle cx="104" cy="150" r="4" fill="#1c1a1e"/><circle cx="152" cy="150" r="4" fill="#1c1a1e"/>
+<circle cx="107" cy="147" r="2.4" fill="#fff"/><circle cx="155" cy="147" r="2.4" fill="#fff"/>
+<path d="M80 142 Q80 120 102 120 Q124 120 124 142 Z" fill="#d81b3c" stroke="#5a0a1e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M132 142 Q132 120 154 120 Q176 120 176 142 Z" fill="#d81b3c" stroke="#5a0a1e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M88 128 q10 -4 18 -2 M140 128 q10 -4 18 -2" fill="none" stroke="#ff7a8a" stroke-width="3" stroke-linecap="round"/>
+<!-- little "o" mouth -->
+<path d="M124 170 Q128 178 134 170 Q128 166 124 170 Z" fill="#7a0a1a" stroke="#5a0a1e" stroke-width="2"/><path d="M126 173 q2 2 6 0" fill="#ff8a9a"/>
+</g>
+</svg>

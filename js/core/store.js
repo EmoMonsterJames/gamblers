@@ -44,7 +44,22 @@ export const PLAYER_ART = {
     277: "images/players/movie_cash_dungi.svg",     // 무비캐시덩이
     278: "images/players/bobbling_puppy.svg",       // 머리흔드는강아지
     282: "images/players/odongtong_dungdung.svg",   // 오동통덩덩
-    285: "images/players/kanzi_ant.svg"             // 간지나는개미
+    285: "images/players/kanzi_ant.svg",            // 간지나는개미
+    180: "images/players/baezzi_bear.svg",          // 배찌 — bear boy, pilot cap + goggles
+    440: "images/players/ice_boy.svg",              // 아이스보이 — snowman with a scarf
+    441: "images/players/turtle.svg",               // 거북이 — shell poking out of his clothes
+    442: "images/players/stock_emobu.svg",          // 주식투자이모부 — blond/purple hair, sunglasses, cigar
+    443: "images/players/one_ear_rabbit.svg",       // 한귀토끼 — one big ear
+    444: "images/players/siamese_dungi.svg",        // 샴쌍덩이 — two Dungi heads on one body
+    445: "images/players/tinky_winky.svg",          // 보라돌이
+    446: "images/players/dipsy.svg",                // 뚜비
+    447: "images/players/naa_naa.svg",              // 나나
+    448: "images/players/po.svg",                   // 뽀 — LUX dress
+    450: "images/players/uni.svg",                  // 우니
+    451: "images/players/kepi_red.svg",             // 케피 — red pig
+    452: "images/players/ettie.svg",                // 에띠
+    453: "images/players/mos.svg",                  // 모스
+    454: "images/players/shiro.svg"                 // 흰둥이 — white curly puppy
 };
 // 🎨 extras added on top of a generated picture (generator options — see extrasBack / extrasFront in ui/avatarGen.js)
 export const PLAYER_EXTRAS = {
@@ -54,7 +69,9 @@ export const PLAYER_EXTRAS = {
     286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings
 };
 // 🚫 "No Image" (admin → 플레이어 관리) wins over the hand-drawn pictures too
-const playerImage = p => isNoImage(p.profile_image) ? p.profile_image : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, { ...(PLAYER_EXTRAS[p.id] || {}), baby: String(p.age_group || "").trim().toLowerCase() === "baby" }); // 👶 Baby players are drawn smaller
+// 📦 ordered pictures that have been delivered: these players were saved as "No Image" while waiting, their art wins now
+const ART_DELIVERED = new Set([440, 441, 442, 443, 444, 445, 446, 447, 448, 450, 451, 452, 453, 454]);
+const playerImage = p => isNoImage(p.profile_image) && !ART_DELIVERED.has(p.id) ? p.profile_image : ART_DELIVERED.has(p.id) && isNoImage(p.profile_image) ? PLAYER_ART[p.id] : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, { ...(PLAYER_EXTRAS[p.id] || {}), baby: String(p.age_group || "").trim().toLowerCase() === "baby" }); // 👶 Baby players are drawn smaller
 
 const LS = "gamblers.v1";
 let sb = null; // supabase client

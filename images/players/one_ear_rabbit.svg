@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #443 한귀토끼 — a yellow-skinned rabbit with only ONE big, wide ear, big eyes, 몽이주름 beside the mouth and a silly face -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>
+<circle cx="128" cy="128" r="124" fill="#fff4d6"/>
+<g fill="#ffb3c7" opacity=".7"><circle cx="40" cy="150" r="5"/><circle cx="220" cy="160" r="4"/><circle cx="212" cy="54" r="3.5"/></g>
+<g clip-path="url(#cc)">
+<!-- clothes: a pink striped tee -->
+<path d="M32 262 C36 222 68 196 100 188 L156 188 C187 196 220 222 224 262 Z" fill="#ff9fc0" stroke="#3a2a24" stroke-width="4"/>
+<path d="M40 228 H216 M36 246 H220" stroke="#ffffff" stroke-width="6" opacity=".85"/>
+<path d="M104 190 Q128 206 152 190" fill="none" stroke="#3a2a24" stroke-width="3"/>
+<!-- the one big wide ear (left), flopping a little to the side -->
+<g transform="translate(4 22) rotate(-18 102 70)"><path d="M70 74 C56 30 66 -6 100 -10 C138 -12 142 30 128 74 Z" fill="#ffd83b" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/><path d="M82 70 C74 36 80 10 100 8 C122 8 124 36 116 70 Z" fill="#ffb8cf"/></g>
+<!-- just a little stub where the other ear should be -->
+<path d="M160 70 q6 -12 16 -4 q4 6 -2 10" fill="#ffd83b" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<!-- head -->
+<ellipse cx="128" cy="122" rx="64" ry="58" fill="#ffd83b" stroke="#3a2a24" stroke-width="4"/>
+<!-- big goofy eyes (looking two ways) -->
+<ellipse cx="100" cy="112" rx="19" ry="21" fill="#ffffff" stroke="#3a2a24" stroke-width="3"/><circle cx="108" cy="116" r="9" fill="#1c1a1e"/><circle cx="111" cy="112" r="3.2" fill="#fff"/>
+<ellipse cx="158" cy="110" rx="17" ry="19" fill="#ffffff" stroke="#3a2a24" stroke-width="3"/><circle cx="160" cy="102" r="8" fill="#1c1a1e"/><circle cx="163" cy="99" r="2.8" fill="#fff"/>
+<path d="M82 86 l8 -8 M92 84 l3 -9 M174 84 l-8 -7 M166 82 l-3 -8" stroke="#1c1a1e" stroke-width="3" stroke-linecap="round"/>
+<!-- nose · buck teeth · tongue · 몽이주름 -->
+<path d="M122 132 h12 l-6 6 Z" fill="#ff8fa8" stroke="#3a2a24" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M108 144 Q128 166 150 142" fill="#a8323a" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/>
+<rect x="120" y="143" width="8" height="9" rx="1.5" fill="#ffffff" stroke="#3a2a24" stroke-width="1.6"/><rect x="128" y="143" width="8" height="9" rx="1.5" fill="#ffffff" stroke="#3a2a24" stroke-width="1.6"/>
+<path d="M134 156 q2 12 10 10 q8 -2 4 -12 Z" fill="#ff7b93" stroke="#3a2a24" stroke-width="2" stroke-linejoin="round"/>
+<path d="M100 134 Q92 148 100 162 M158 134 Q166 148 158 162" fill="none" stroke="#3a2a24" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M70 134 L88 138 M70 144 L88 142 M186 134 L168 138 M186 144 L168 142" stroke="#3a2a24" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
+<ellipse cx="84" cy="142" rx="9" ry="5" fill="#ff8aa0" opacity=".45"/><ellipse cx="172" cy="142" rx="9" ry="5" fill="#ff8aa0" opacity=".45"/>
+</g>
+</svg>

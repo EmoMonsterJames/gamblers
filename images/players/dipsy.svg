@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #446 뚜비 — the green one with the straight stick antenna, wearing his black-and-white cow-print hat and a scarf -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f4ff"/><stop offset="1" stop-color="#9fb8d0"/></linearGradient></defs>
+<circle cx="128" cy="128" r="124" fill="#e2f4ff"/>
+<g fill="#ffd84a"><circle cx="212" cy="58" r="14"/></g>
+<g clip-path="url(#cc)">
+<path d="M4 196 Q70 176 128 190 Q190 204 252 184 V256 H4Z" fill="#8fd16a"/>
+<!-- body + tummy screen -->
+<path d="M30 262 C34 216 66 192 100 186 L156 186 C190 192 222 216 226 262 Z" fill="#5cc469" stroke="#3a2a24" stroke-width="4"/>
+<rect x="100" y="206" width="56" height="44" rx="8" fill="#c0c6ce" stroke="#3a2a24" stroke-width="3.4"/>
+<rect x="106" y="212" width="44" height="32" rx="5" fill="url(#scr)"/><path d="M112 218 l10 10" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+<!-- striped scarf -->
+<path d="M84 186 Q128 204 172 186 L170 200 Q128 218 86 200 Z" fill="#3f7df0" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M98 192 v10 M114 196 v12 M130 198 v12 M146 196 v12 M160 192 v10" stroke="#ffd84a" stroke-width="5"/>
+<path d="M78 196 L66 236 L84 240 L94 200 Z" fill="#3f7df0" stroke="#3a2a24" stroke-width="3.4" stroke-linejoin="round"/>
+<!-- ears + head -->
+<ellipse cx="72" cy="118" rx="10" ry="14" fill="#5cc469" stroke="#3a2a24" stroke-width="3.4"/><ellipse cx="184" cy="118" rx="10" ry="14" fill="#5cc469" stroke="#3a2a24" stroke-width="3.4"/>
+<ellipse cx="128" cy="120" rx="60" ry="58" fill="#5cc469" stroke="#3a2a24" stroke-width="4"/>
+<!-- cow-print hat with the straight antenna poking out the top -->
+<path d="M128 46 V2" stroke="#3a2a24" stroke-width="11" stroke-linecap="round"/><path d="M128 46 V2" stroke="#5cc469" stroke-width="6.5" stroke-linecap="round"/>
+<path d="M74 82 C76 46 180 46 182 82 Z" fill="#ffffff" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
+<path d="M62 84 Q128 66 194 84 Q196 92 186 94 Q128 80 70 94 Q60 92 62 84 Z" fill="#ffffff" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
+<g fill="#1c1a1e"><path d="M92 60 q10 -8 18 0 q4 10 -8 12 q-12 0 -10 -12Z"/><path d="M146 56 q12 -2 14 8 q-2 10 -12 6 q-8 -6 -2 -14Z"/><path d="M118 74 q8 -4 12 2 q-2 6 -10 4Z"/><path d="M168 82 q8 -4 12 2 q-4 6 -10 2Z"/><path d="M76 86 q6 -2 8 2 q-4 4 -8 0Z"/></g>
+<!-- face panel -->
+<ellipse cx="128" cy="128" rx="44" ry="36" fill="#d9a77a" stroke="#3a8a46" stroke-width="3"/>
+<circle cx="110" cy="122" r="6" fill="#1c1a1e"/><circle cx="112" cy="120" r="2" fill="#fff"/><circle cx="146" cy="122" r="6" fill="#1c1a1e"/><circle cx="148" cy="120" r="2" fill="#fff"/>
+<path d="M104 110 q6 -4 12 0 M140 110 q6 -4 12 0" fill="none" stroke="#3a2a24" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="128" cy="133" rx="5" ry="3.6" fill="#b8805a"/>
+<path d="M110 142 Q128 160 146 142" fill="none" stroke="#3a2a24" stroke-width="3.4" stroke-linecap="round"/>
+<ellipse cx="96" cy="140" rx="8" ry="5" fill="#ff8a7a" opacity=".5"/><ellipse cx="160" cy="140" rx="8" ry="5" fill="#ff8a7a" opacity=".5"/>
+</g>
+</svg>

@@ -9,7 +9,7 @@ import { jobList, saveJobs } from "../data/jobs.js";
 import {
     buildAvatar, toDataUri, parseGen, DEFAULTS, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
     HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames, NO_IMAGE_URI, isNoImage,
-    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES, BEARDS, MUSTACHES, SMILE_HAIRS
+    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES, BEARDS, MUSTACHES, SMILE_HAIRS, EXPRESSIONS, SWIM_RACES, SWIM_SEASON
 } from "../ui/avatarGen.js";
 import { RACE_CATEGORIES, RACE_CAT, subsOf, categoryOf, drawRace, addCustomSub } from "../data/races.js";
 import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
@@ -242,6 +242,9 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
         el.classList.toggle("off", !on);
         const g = o.gender === "female" ? "female" : "male";
         const human = o.race === "human", black = human && o.human === "black";
+        // 👙 swimwear / lingerie: Human Form · Main/Other Animal · Kalisto · Dungi only, never a baby
+        const swimOk = SWIM_RACES.includes(o.race) && !o.baby;
+        if (o.season === "swim" && !swimOk) o.season = "summer";
         // keep indexes inside their lists when the gender changes
         for (const [k, n] of [["hairStyle", 15], ["wig", 15], ["hat", 20], ["acc", 20], ["outfit", 20]]) if (o[k] >= n) o[k] = n - 1;
         if (o.race === "noimage") { // ❓ Others: no drawing until the picture is ordered
@@ -268,7 +271,7 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                     ["other", "animal", "shape"].includes(o.race) ? L("종족 이름 (그림 아래 표시)", h("input.input", { value: o.raceText || "", placeholder: "예: Wolf", onchange: e => change("raceText", e.target.value) })) : null,
                     human ? L("인간 종류", sel("human", HUMAN_TYPES)) : null),
                 L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide"),
-                FUR_RACES.includes(o.race) ? L("피부 스타일", chk("curly", "🐑 곱슬 (곱슬털 외곽선)")) : null),
+                FUR_RACES.includes(o.race) ? L("피부 스타일", chk("curly", "🐑 곱슬털 (귀·얼굴·몸 전체가 살짝 곱슬)")) : null),
             h("div.row.wrap", chk("baby", "👶 아기 크기 (연령대 Baby면 자동으로 켜짐)")),
             styles.length || bfly ? h("div.gen-sec", h("h5", "종족 스타일"), h("div.gen-grid", styles),
                 bfly ? L("나비 날개 색", swatches("wings", SKIN_COLORS.filter(c => c[0].startsWith("#"))), ".wide") : null) : null,
@@ -290,6 +293,7 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                     o.wig >= 0 ? L("가발색", swatches("wigColor", HAIR_COLORS), ".wide") : null),
             h("div.gen-sec", h("h5", "얼굴"),
                 h("div.gen-grid",
+                    L(`😀 표정 (${EXPRESSIONS.length}종)`, sel("expr", EXPRESSIONS, { none: "랜덤 (다시 생성마다 바뀜)", num: true })),
                     L("안경 (20종)", sel("glasses", GLASSES, { none: "없음", num: true })),
                     L("선글래스 (20종)", sel("sun", SUNGLASSES, { none: "없음", num: true })),
                     L("화장 (15종)", sel("makeup", MAKEUPS, { none: "없음", num: true }))),
@@ -298,8 +302,8 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                 h("div.gen-grid",
                     L(`모자 (${g === "female" ? "여" : "남"} 20종)`, sel("hat", HATS[g], { none: "없음", num: true })),
                     L(g === "female" ? "악세사리 세트 (귀걸이·목걸이·팔찌 20종)" : "악세사리 세트 (시계·남성 목걸이 20종)", sel("acc", ACCS[g], { none: "없음", num: true })),
-                    L("옷 — 계절", sel("season", SEASONS)),
-                    L("옷 — 상의/하의 세트 (20종)", sel("outfit", outfitNames(g, o.season), { num: true })))));
+                    L("옷 — 계절", sel("season", swimOk ? [...SEASONS, SWIM_SEASON] : SEASONS)),
+                    L(o.season === "swim" ? (g === "female" ? "👙 수영복 · 란제리 (20종)" : "🩳 몸매 + 수영 팬츠 (20종)") : "옷 — 상의/하의 세트 (20종)", sel("outfit", outfitNames(g, o.season), { num: true })))));
     }
     draw();
     view.innerHTML = buildAvatar(o);

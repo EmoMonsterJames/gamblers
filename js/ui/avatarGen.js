@@ -12,6 +12,8 @@
 // 0,0) so hair / wigs / hats / glasses fit every body.
 // =====================================================================
 import * as AR from "./avatarRaces.js";
+import { exprParts, SWIM_RACES, swimNames, swimSpec, swimArm, swimTorso, furDefs, furWrap, woolEdge } from "./avatarExtra.js";
+export { EXPRESSIONS, SWIM_RACES, SWIM_SEASON } from "./avatarExtra.js";
 export { EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS } from "./avatarRaces.js";
 const OUT = "#3a2a24";
 const f1 = n => +(+n).toFixed(1);
@@ -180,7 +182,7 @@ function outfit(gender, season, i) {
     return { top: TOP[t] || TOP.tee, tc: (COL[tc] || COL.white)[1], bot: BOT[b] || BOT.pants, bc: (COL[bc] || COL.navy)[1],
         name: `${(COL[tc] || COL.white)[0]} ${(TOP[t] || TOP.tee).ko}` + (b === "none" ? "" : ` + ${(COL[bc] || COL.navy)[0]} ${(BOT[b] || BOT.pants).ko}`) };
 }
-export const outfitNames = (gender, season) => ((OUTFIT_SRC[gender] || OUTFIT_SRC.male)[season] || "").split(" ").map((_, i) => outfit(gender, season, i).name);
+export const outfitNames = (gender, season) => season === "swim" ? swimNames(gender) : ((OUTFIT_SRC[gender] || OUTFIT_SRC.male)[season] || "").split(" ").map((_, i) => outfit(gender, season, i).name);
 
 export const DEFAULTS = {
     gender: "male", race: "human", raceText: "", human: "asian", skin: "auto", hair: "#1c1a1e", hairStyle: 0,
@@ -192,7 +194,9 @@ export const DEFAULTS = {
     sub: "", jsEar: 0, jsFang: 0, halo: 0, angelWing: 0, horn: 0, devilTail: 0, gobHorn: 0, gobTeeth: 0,
     earShape: -1, earSize: 1, earIn: 0, antStyle: -1, wingPat: 0, curly: false,
     // 👶 baby (age group Baby): the whole figure drawn smaller · 🧔 human men: beard / mustache · 😊 Smile: 가닥털 (2~3 hair strands)
-    baby: false, beard: -1, mustache: -1, beardColor: "", smileHair: -1, smileHairN: 3, smileHairColor: "#1c1a1e"
+    baby: false, beard: -1, mustache: -1, beardColor: "", smileHair: -1, smileHairN: 3, smileHairColor: "#1c1a1e",
+    // 😀 expression (20 · ui/avatarExtra.js EXPRESSIONS, −1 = random by seed) · 👙 season "swim" = swimwear / lingerie
+    expr: -1
 };
 // 🚫 No Image: a plain placeholder (still carries its options so the generator can reopen it)
 export function noImageSvg(meta = "") {
@@ -459,13 +463,18 @@ export function buildAvatar(opts = {}) {
     const ink = dark ? "#fbefe6" : "#2a1a1e";
     const line = dark ? shade(skin, 0.45) : OUT; // outline that stays visible on dark skin
     const vary = { bg: Math.floor(R() * 8), eye: Math.floor(R() * 4), mood: Math.floor(R() * 4), pose: Math.floor(R() * 3), blush: R() < 0.55, eyeCol: ["#3a2a1e", "#3f7df0", "#3fae5a", "#6b4a2f", "#7a5af0"][Math.floor(R() * 5)], tilt: R() };
-    const fit = outfit(female ? "female" : "male", o.season, o.outfit);
+    // 👙 swimwear / lingerie: Human Form · Main/Other Animal · Kalisto · Dungi only, never a baby (others get a summer outfit)
+    const swim = o.season === "swim" && humanoid && SWIM_RACES.includes(race.id) && !o.baby ? swimSpec(female ? "female" : "male", o.outfit) : null;
+    const fit = swim ? { top: { ko: "", sl: 0 }, tc: swim[2], bot: BOT.none, bc: swim[2] } : outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit);
+    const season = o.season === "swim" ? "summer" : o.season;
+    // 🐑 curly fur: soft wavy edges + curl texture on the ears, face and body
+    const fur = !!o.curly && FUR_RACES.includes(race.id) && humanoid && !rainbow;
     const out = [];
     const S = (w = 4, col = OUT) => `stroke="${col}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
     const BG = ["#fdeedd", "#e6f4ff", "#eafbe6", "#fff3c9", "#f6e6ff", "#ffe6ee", "#e6fbf6", "#f0f0f4"][vary.bg];
     out.push(`<defs><linearGradient id="rb" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="216" y2="216">${rbStops()}</linearGradient><linearGradient id="rbh" gradientUnits="userSpaceOnUse" x1="-42" y1="-42" x2="42" y2="42">${rbStops()}</linearGradient>` +
         `<linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1a1e"/><stop offset="1" stop-color="#c88a5a"/></linearGradient><linearGradient id="smb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ad7ff"/><stop offset="1" stop-color="#3f4df0"/></linearGradient><linearGradient id="smf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd83b"/><stop offset="1" stop-color="#e2463f"/></linearGradient>` +
-        AR.EAR_DEFS + `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
+        AR.EAR_DEFS + (fur ? furDefs(skin) : "") + `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
     out.push(`<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
     // 👶 Baby: the whole figure a little smaller (shrunk toward the bottom centre, so it still stands in the frame)
     if (o.baby) out.push(`<g transform="translate(128 250) scale(.78) translate(-128 -250)">`);
@@ -533,22 +542,26 @@ export function buildAvatar(opts = {}) {
         out.push(`<path d="${d}" fill="none" ${S(14)}/><path d="${d}" fill="none" stroke="${skinG}" stroke-width="9" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${OUT}" stroke-width="9" stroke-dasharray="1.5 11" opacity=".7"/><path d="M182 96L170 88L176 104Z" fill="#3a2a24" ${S(2)}/>`);
     }
     if (humanoid && fit.top.neck === "hood") out.push(`<path d="M92 126C80 82 176 82 164 126Z" fill="${shade(fit.tc, -0.12)}" ${S()}/>`);
-    out.push(grp(hf, ht.back + hp.back + headExtraBack));
+    out.push(grp(hf, ht.back + hp.back + (fur ? furWrap(headExtraBack, skinL) : headExtraBack)));
 
     let wrist = [82, 165], neckAt = null;
     if (humanoid) {
         const limbC = flowerP ? "#5aa64a" : skinG; // 🌸 a flower's body is its green stem
-        const limb = (d, w) => inv ? `<path d="${d}" fill="none" stroke="#9fd0f5" stroke-width="${w}" stroke-linecap="round" opacity=".3"/><path d="${d}" fill="none" stroke="#5b9fd0" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round"/>`
+        const limb0 = (d, w) => inv ? `<path d="${d}" fill="none" stroke="#9fd0f5" stroke-width="${w}" stroke-linecap="round" opacity=".3"/><path d="${d}" fill="none" stroke="#5b9fd0" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round"/>`
             : `<path d="${d}" fill="none" stroke="${line}" stroke-width="${w + 6}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${limbC}" stroke-width="${w}" stroke-linecap="round"/>`;
-        const blob = (shape) => inv ? shape.replace("FILL", `fill="#9fd0f5" fill-opacity=".22" stroke="#5b9fd0" stroke-width="1.6" stroke-dasharray="4 4"`) : shape.replace("FILL", `fill="${limbC}" ${S(3.5, line)}`);
+        const blob0 = (shape) => inv ? shape.replace("FILL", `fill="#9fd0f5" fill-opacity=".22" stroke="#5b9fd0" stroke-width="1.6" stroke-dasharray="4 4"`) : shape.replace("FILL", `fill="${limbC}" ${S(3.5, line)}`);
+        // 🐑 curly fur: arms, legs, neck and hands get the wavy edge + curl texture too
+        const limb = (d, w) => fur ? `<path d="${d}" fill="none" stroke="${line}" stroke-width="${w + 9}" stroke-dasharray="0 6.5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${limbC}" stroke-width="${w + 5}" stroke-dasharray="0 6.5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${limbC}" stroke-width="${w + 2}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="url(#fzp)" stroke-width="${w + 2}" stroke-linecap="round"/>` : limb0(d, w);
+        const blob = shape => fur ? woolEdge(shape.replace("FILL", "WOOL"), limbC, line, 3, 6) : blob0(shape);
+        const armW = swim ? swimArm(swim) : 10;
         const T = fit.top, B = fit.bot, tc = fit.tc, bc = fit.bc, tcd = shade(tc, lum(tc) < 0.25 ? 0.3 : -0.25), bcd = shade(bc, lum(bc) < 0.25 ? 0.3 : -0.25);
         const dR = vary.pose === 1 ? ARM_H.RW : ARM_H.R, dL = ARM_H.L;
         const handR = vary.pose === 1 ? [191, 89] : [174, 174];
         // legs + shoes
         out.push(limb("M116 176L114 226", 12) + limb("M140 176L142 226", 12));
-        const shoe = SHOES[o.season] || SHOES.spring;
-        out.push(o.season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
-            : o.season === "summer" ? `<ellipse cx="110" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><ellipse cx="146" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><path d="M104 231l10 -6M152 231l-10 -6" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`
+        const shoe = SHOES[season] || SHOES.spring;
+        out.push(season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
+            : season === "summer" ? `<ellipse cx="110" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><ellipse cx="146" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><path d="M104 231l10 -6M152 231l-10 -6" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`
                 : `<ellipse cx="109" cy="233" rx="14" ry="7.5" fill="${shoe}" ${S(3)}/><ellipse cx="147" cy="233" rx="14" ry="7.5" fill="${shoe}" ${S(3)}/>`);
         // bottom
         if (B.leg) {
@@ -573,7 +586,7 @@ export function buildAvatar(opts = {}) {
         if (race.id === "bird") {
             const wing = "M104 122C74 126 56 156 60 190L72 180L74 194L86 182L90 194L96 178Q102 158 110 136Z";
             out.push([wing, mx(wing)].map(d => `<path d="${d}" fill="${skinG}" ${S(3.5, line)}/>`).join("") + [-1, 1].map(s => `<path d="M${128 + s * 30} 140Q${128 + s * 46} 156 ${128 + s * 56} 176M${128 + s * 26} 154Q${128 + s * 38} 168 ${128 + s * 44} 184" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.25)}" stroke-width="2" stroke-linecap="round"/>`).join(""));
-        } else out.push(limb(dL, 10) + limb(dR, 10));
+        } else out.push(limb(dL, armW) + limb(dR, armW));
         const slc = T.slc ? "#f7f7f5" : tc;
         const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${T.puff ? 22 : 19}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${T.puff ? 17 : 14}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
         if (race.id !== "bird") out.push(sleeve(dL) + sleeve(dR));
@@ -597,7 +610,8 @@ export function buildAvatar(opts = {}) {
         if (T.btn) deco += Array.from({ length: T.len === "coat" ? 4 : 3 }, (_, i) => `<circle cx="${T.open ? 146 : 128}" cy="${136 + i * 14}" r="2.3" fill="${lum(tc) > 0.6 ? "#6b4a2f" : "#f7f7f5"}"/>`).join("");
         if (T.pocket) deco += `<path d="M112 152H144L140 167H116Z" fill="none" stroke="${tcd}" stroke-width="2.4" stroke-linejoin="round"/>`;
         if (T.belt) deco += `<path d="M92 164H164" stroke="${tcd}" stroke-width="7"/><rect x="123" y="159" width="10" height="10" rx="2" fill="none" stroke="#e8b923" stroke-width="2.4"/>`;
-        out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
+        if (swim) out.push(swimTorso(female, swim, skinG, skin, line, fur)); // 👙 bare skin + swimsuit / lingerie / trunks
+        else out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
         // neck line
         const nk = T.open ? "" : T.neck;
         if (nk === "crew") out.push(`<path d="M116 117Q128 127 140 117" fill="none" stroke="${tcd}" stroke-width="3.4" stroke-linecap="round"/>`);
@@ -606,7 +620,7 @@ export function buildAvatar(opts = {}) {
         if (nk === "turtle") out.push(`<rect x="116" y="105" width="24" height="15" rx="5" fill="${tc}" ${S(3)}/>`);
         if (nk === "hood") out.push(`<path d="M114 117Q128 130 142 117" fill="none" stroke="${tcd}" stroke-width="3.4"/><path d="M122 124V142M134 124V142" stroke="#f7f7f5" stroke-width="2.2" stroke-linecap="round"/>`);
         if (nk === "round") out.push(`<circle cx="119" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><circle cx="137" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><path d="M128 124L120 132H136Z" fill="${shade(tc, -0.25)}" ${S(2)}/>`);
-        if (T.sl === 0) out.push(`<path d="M104 121L109 132M152 121L147 132" stroke="${tcd}" stroke-width="2"/>`);
+        if (T.sl === 0 && !swim) out.push(`<path d="M104 121L109 132M152 121L147 132" stroke="${tcd}" stroke-width="2"/>`);
         // hands
         if (race.id === "bird") wrist = [66, 184];
         else out.push(blob(`<circle cx="82" cy="174" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`));
@@ -634,7 +648,7 @@ export function buildAvatar(opts = {}) {
             // 👠 Ms. Pacman wears high heels
             const heel = (x, s) => `<path d="M${x - s * 2} 232Q${x + s * 14} 230 ${x + s * 18} 242H${x + s * 4}Q${x} 238 ${x - s * 3} 240Z" fill="#e2463f" ${S(2.6)}/><path d="M${x - s * 2} 238L${x - s * 4} 248" stroke="#e2463f" stroke-width="3.4" stroke-linecap="round"/><path d="M${x - s * 2} 238L${x - s * 4} 248" fill="none" ${S(1)} opacity=".6"/>`;
             out.push(`<path d="M${lx1} ${lt}L${lx1 - 5} 238M${lx2} ${lt}L${lx2 + 5} 238" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (body.pac && female ? heel(lx1 - 5, -1) + heel(lx2 + 5, 1)
-                : `<ellipse cx="${lx1 - 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/><ellipse cx="${lx2 + 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[o.season] || lc}" ${S(3)}/>`));
+                : `<ellipse cx="${lx1 - 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[season] || lc}" ${S(3)}/><ellipse cx="${lx2 + 9}" cy="241" rx="14" ry="6.5" fill="${SHOES[season] || lc}" ${S(3)}/>`));
             if (!skirt) {
                 const end = B.leg <= 200 ? body.legY + 18 : 233, w = (B.w || 16) / 2 + 5, fl = (B.w || 16) > 19 ? 4 : 0, top = body.bot - 16;
                 const tube = (x0, s) => { const a = legAt(x0, s, top), b = legAt(x0, s, end); return `<path d="M${f1(a - w)} ${top}L${f1(b - w - fl)} ${end}H${f1(b + w + fl)}L${f1(a + w)} ${top}Z" fill="${bandC}" ${S(3.5)}/>` +
@@ -701,7 +715,8 @@ export function buildAvatar(opts = {}) {
             const cs = [[-22, -16, 21], [0, -22, 23], [22, -16, 21], [-30, 8, 17], [30, 8, 17], [0, 12, 30], [-16, 22, 16], [16, 22, 16]];
             face.push(cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}" stroke="${line}" stroke-width="8"/>`).join("") + cs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${skinL}"/>`).join(""));
         } else if (bugP?.head === "tri") face.push(`<path d="M0 38L-44 -24Q-44 -38 -28 -36H28Q44 -38 44 -24Z" ${hs}/>`); // 🦗 mantis: a triangle head
-        else if (o.curly && FUR_RACES.includes(race.id)) face.push(`<path d="${curlyOval(38, 36)}" ${hs}/>` + furCurls(30, 28, line)); // 🐑 곱슬 fur
+        else if (fur) face.push(woolEdge(`<ellipse cx="0" cy="0" rx="38" ry="36" WOOL/>`, skinL, line)); // 🐑 곱슬 fur: soft curly edge + curls all over
+        else if (o.curly && FUR_RACES.includes(race.id)) face.push(`<path d="${curlyOval(38, 36)}" ${hs}/>` + furCurls(30, 28, line)); // (rainbow skin: the old curl ring)
         else face.push(`<ellipse cx="0" cy="0" rx="38" ry="36" ${flowerP ? `fill="${flowerP.center}" stroke="${OUT}" stroke-width="4"` : hs}/>`); // 🌸 the flower centre is the face
         face.push(animalFace);
         // 🐛 bug marks: body rings · fuzz · stink-bug shield · ladybug spots · stripes · mosquito proboscis · spider fangs
@@ -743,29 +758,37 @@ export function buildAvatar(opts = {}) {
     if (race.id === "panda") eyeStyle = 2;
     if (compound) feat.push([-1, 1].map(s => `<ellipse cx="${s * 19}" cy="-6" rx="14" ry="15" fill="${bugP.eyeCol}" stroke="${OUT}" stroke-width="2"/>` + [-6, 0, 6].map(dy => `<path d="M${s * 19 - 12} ${-6 + dy}H${s * 19 + 12}" stroke="#ffffff" stroke-width=".8" opacity=".35"/>`).join("") + `<ellipse cx="${s * 19 + 4}" cy="-12" rx="4" ry="3" fill="#fff" opacity=".7"/>`).join(""));
     if (bugP?.eyes === "multi") feat.push([[-20, -14], [-8, -17], [8, -17], [20, -14]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#c1121f" stroke="${ink}" stroke-width=".8"/>`).join(""));
+    // 😀 a chosen expression (20) replaces the eyes / brows / mouth it changes
+    const XP = o.expr >= 0 ? exprParts(o.expr | 0, { ink, dark, skin: skinL, my: race.id === "bear" ? 15 : 17, female, eyeXs: body?.pac ? [4] : [-15, 15] }) : null;
     for (const s of compound ? [] : body?.pac ? [1] : [-1, 1]) {
         const x = body?.pac ? 4 : s * 15;
+        const xEye = XP?.eyes ? XP.eyes(x, s) : null;
+        if (xEye) { feat.push(xEye, XP.brows(x, s)); continue; }
         if (eyeStyle === 0) feat.push(`<circle cx="${x}" cy="${ey}" r="4.8" fill="${ink}"/><circle cx="${x + 1.6}" cy="${ey - 1.8}" r="1.5" fill="${dark ? "#2a1a1e" : "#fff"}"/>`);
         if (eyeStyle === 1) feat.push(`<ellipse cx="${x}" cy="${ey}" rx="6" ry="7.6" fill="${dark ? "#fff" : "#1a1a22"}" stroke="${ink}" stroke-width="1"/>` + (dark ? `<circle cx="${x}" cy="${ey + 1}" r="4" fill="#1a1a22"/>` : "") + `<circle cx="${x + 2}" cy="${ey - 2.6}" r="2.2" fill="#fff"/><circle cx="${x - 2}" cy="${ey + 2.6}" r="1.2" fill="#fff"/>`);
         if (eyeStyle === 2) feat.push(`<ellipse cx="${x}" cy="${ey}" rx="7" ry="5.6" fill="#fff" stroke="#2a1a1e" stroke-width="1.6"/><circle cx="${x}" cy="${ey}" r="3.9" fill="${isHex(o.eyeColor) ? o.eyeColor : human && o.human === "western" ? "#3f7df0" : vary.eyeCol}"/><circle cx="${x}" cy="${ey}" r="1.9" fill="#1a1a22"/><circle cx="${x + 1.5}" cy="${ey - 1.5}" r="1.1" fill="#fff"/>`);
         if (eyeStyle === 3) feat.push(`<path d="M${x - 6} ${ey + 1}Q${x} ${ey - 7} ${x + 6} ${ey + 1}" fill="none" stroke="${ink}" stroke-width="2.8" stroke-linecap="round"/>`);
+        if (XP?.lid) feat.push(XP.lid(x, s)); // 😏 half-closed lids
         const top = eyeStyle === 1 ? ey - 7 : eyeStyle === 3 ? ey - 3 : ey - 5;
         if (mk?.liner) feat.push(`<path d="M${x - 7} ${top + 2}Q${x} ${top - 2.5} ${x + 7} ${top + 2}${mk.liner === 2 ? `L${x + s * 12} ${top - 3}` : ""}" fill="none" stroke="#1a1a22" stroke-width="${mk.liner === 3 ? 3 : 1.8}" stroke-linecap="round"/>`);
         if (female || mk?.lash) feat.push(`<path d="M${x + s * 6} ${top + 2}l${s * 4} -3M${x + s * 4} ${top}l${s * 2.6} -3.4" stroke="${dark ? ink : "#1a1a22"}" stroke-width="1.5" stroke-linecap="round"/>`);
         if (mk?.glitter) feat.push([[s * 10, -8], [s * 3, -10], [s * 7, 6]].map(([dx, dy]) => `<path d="M${x + dx} ${ey + dy - 2}l.9 1.6 1.6 .9-1.600 .9-.9 1.6-.9-1.600-1.600-.9 1.600-.9Z" fill="#fff"/>`).join(""));
-        feat.push(`<path d="M${x - 6} ${-14 - (s < 0 ? vary.tilt : 1 - vary.tilt) * 1.5}Q${x} ${-17.5} ${x + 6} ${-14 - (s > 0 ? vary.tilt : 1 - vary.tilt) * 1.5}" fill="none" stroke="${ink}" stroke-width="${female ? 1.7 : 2.8}" stroke-linecap="round" opacity=".85"/>`);
+        if (XP) feat.push(XP.brows(x, s));
+        else feat.push(`<path d="M${x - 6} ${-14 - (s < 0 ? vary.tilt : 1 - vary.tilt) * 1.5}Q${x} ${-17.5} ${x + 6} ${-14 - (s > 0 ? vary.tilt : 1 - vary.tilt) * 1.5}" fill="none" stroke="${ink}" stroke-width="${female ? 1.7 : 2.8}" stroke-linecap="round" opacity=".85"/>`);
         if (o.eyeWrinkle) feat.push(`<path d="M${x - 7} ${ey + 8}Q${x} ${ey + 11.5} ${x + 7} ${ey + 8}M${x - 5} ${ey + 11.5}Q${x} ${ey + 14} ${x + 5} ${ey + 11.5}M${x + s * 9} ${ey - 3}l${s * 4.5} -2M${x + s * 9.5} ${ey}l${s * 5} 0M${x + s * 9} ${ey + 3}l${s * 4.5} 2" fill="none" stroke="${ink}" stroke-width="1.1" stroke-linecap="round" opacity=".6"/>`);
     }
     // mouth
     const my = race.id === "bear" ? 15 : 17;
     const big = race.id === "smile" ? 1.5 : 1;
     const noMouth = race.id === "bird" || !!body?.pac || bugP?.marks === "proboscis"; // beak · pacman mouth · mosquito proboscis
-    if (noMouth) { /* no drawn mouth */ } else if (o.mouthLines) {
+    if (noMouth) { /* no drawn mouth */ } else if (XP) {
+        feat.push(XP.mouth + (o.mouthLines ? `<path d="M-11 ${my - 9}Q-17.5 ${my} -11 ${my + 9}M11 ${my - 9}Q17.5 ${my} 11 ${my + 9}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>` : ""));
+    } else if (o.mouthLines) {
         const m = vary.mood < 2 ? `M-5 ${my}Q0 ${my + 2.5} 5 ${my}` : vary.mood === 2 ? `M-5 ${my}H5` : `M-5 ${my + 1.5}Q0 ${my - 1.5} 5 ${my + 1.5}`;
         feat.push(`<path d="${m}" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/><path d="M-11 ${my - 9}Q-17.500 ${my} -11 ${my + 9}M11 ${my - 9}Q17.5 ${my} 11 ${my + 9}" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>`);
     } else if (vary.mood === 1) feat.push(`<path d="M${-10 * big} ${my - 4}Q0 ${my + 12 * big} ${10 * big} ${my - 4}Z" fill="#a8323a" stroke="${dark ? "#fbefe6" : "#2a1a1e"}" stroke-width="2" stroke-linejoin="round"/><path d="M-5 ${my + 2.5 * big}Q0 ${my + 6 * big} 5 ${my + 2.5 * big}" fill="#ff8a9a"/>`);
     else feat.push(`<path d="${vary.mood === 0 ? `M${-9 * big} ${my - 3}Q0 ${my + 6 * big} ${9 * big} ${my - 3}` : vary.mood === 2 ? `M-6 ${my}Q0 ${my + 2} 6 ${my}` : `M-7 ${my}Q2 ${my + 4} 9 ${my - 4}`}" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`);
-    if (noMouth) { /* no lips */ } else if (mk?.lip && !o.mouthLines) {
+    if (noMouth || XP) { /* no lips (an expression keeps its own mouth) */ } else if (mk?.lip && !o.mouthLines) {
         const ly = vary.mood === 1 ? my - 4 : my - 1;
         feat.push(`<path d="M-8 ${ly}Q-4 ${ly - 4} 0 ${ly - 2}Q4 ${ly - 4} 8 ${ly}Q0 ${ly + (vary.mood === 1 ? 2 : 7)} -8 ${ly}Z" fill="${mk.lip}" stroke="${shade(mk.lip, -0.3)}" stroke-width=".8"/>` +
             (mk.lipIn ? `<ellipse cx="0" cy="${ly + 1}" rx="4" ry="2" fill="${mk.lipIn}"/>` : "") + (mk.gloss ? `<path d="M-3 ${ly + 1.5}h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>` : ""));
@@ -773,6 +796,7 @@ export function buildAvatar(opts = {}) {
     if (race.id === "jiangshi") feat.push(AR.fangs(o.jsFang | 0, my));
     if (race.id === "goblin") feat.push(AR.gobTeeth(o.gobTeeth | 0, my));
     if (manFace && o.mustache >= 0) feat.push(mustacheSvg(o.mustache | 0, beardCol));
+    if (XP?.extra) feat.push(XP.extra); // 💧 tears · sweat · 💢 · zz · ✨ …
     if (o.leprosy) feat.push(spots(R, [[-20, -18, 8], [14, -24, 7], [24, 2, 7], [-26, 6, 6], [-8, 24, 6], [12, 22, 7], [2, -6, 5], [-30, -6, 4], [30, -14, 4]], K));
     face.push(`<g${fo}>${feat.join("")}</g>`);
     out.push(grp(ff, face.join("")));

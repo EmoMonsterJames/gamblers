@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #448 뽀 — the red one with the round antenna, all glammed up: a black evening dress with LUX written in gold,
+     a big bow, lashes, red lips, pearl choker and drop earrings -->
+<defs><clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a12"/></linearGradient></defs>
+<circle cx="128" cy="128" r="124" fill="#2a1a2e"/>
+<g fill="#ffd34d"><path d="M32 72 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/><path d="M222 104 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/><path d="M40 166 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/><path d="M206 40 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/></g>
+<g clip-path="url(#cc)">
+<!-- red body in a black satin LUX dress (off-shoulder) -->
+<path d="M30 262 C34 216 66 192 100 186 L156 186 C190 192 222 216 226 262 Z" fill="#e2463f" stroke="#3a2a24" stroke-width="4"/>
+<path d="M50 262 C52 232 64 212 84 206 Q128 220 172 206 C192 212 204 232 206 262 Z" fill="#141216" stroke="#3a2a24" stroke-width="3.4"/>
+<path d="M84 206 Q128 220 172 206" fill="none" stroke="url(#gold)" stroke-width="3"/>
+<path d="M150 214 Q160 236 166 260" fill="none" stroke="#ffffff" stroke-width="3" opacity=".25"/>
+<text x="128" y="246" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="26" letter-spacing="4" fill="url(#gold)" stroke="#a87a12" stroke-width=".6">LUX</text>
+<g fill="#fff1a8"><circle cx="78" cy="236" r="1.8"/><circle cx="182" cy="236" r="1.8"/><circle cx="96" cy="254" r="1.8"/><circle cx="160" cy="254" r="1.8"/></g>
+<!-- pearl choker -->
+<path d="M102 184 Q128 194 154 184" fill="none" stroke="#fff6ea" stroke-width="7" stroke-linecap="round" stroke-dasharray=".1 7.5"/>
+<circle cx="128" cy="194" r="5" fill="#ff3f6e" stroke="url(#gold)" stroke-width="2"/>
+<!-- ears + head -->
+<ellipse cx="72" cy="118" rx="10" ry="14" fill="#e2463f" stroke="#3a2a24" stroke-width="3.4"/><ellipse cx="184" cy="118" rx="10" ry="14" fill="#e2463f" stroke="#3a2a24" stroke-width="3.4"/>
+<!-- the round antenna -->
+<path d="M128 64 V38" stroke="#3a2a24" stroke-width="11" stroke-linecap="round"/><path d="M128 64 V38" stroke="#e2463f" stroke-width="6.5" stroke-linecap="round"/>
+<circle cx="128" cy="24" r="14" fill="none" stroke="#3a2a24" stroke-width="11"/><circle cx="128" cy="24" r="14" fill="none" stroke="#e2463f" stroke-width="6.5"/>
+<ellipse cx="128" cy="120" rx="60" ry="58" fill="#e2463f" stroke="#3a2a24" stroke-width="4"/>
+<!-- big satin bow -->
+<g transform="translate(166 72) rotate(20)"><path d="M0 0 C-22 -20 -28 8 -4 6 Z M0 0 C22 -20 28 8 4 6 Z" fill="#141216" stroke="#3a2a24" stroke-width="3" stroke-linejoin="round"/><circle cx="0" cy="2" r="5" fill="url(#gold)" stroke="#3a2a24" stroke-width="2.4"/></g>
+<!-- face panel with makeup -->
+<ellipse cx="128" cy="126" rx="44" ry="38" fill="#fbe0cc" stroke="#b02a24" stroke-width="3"/>
+<path d="M98 114 Q110 106 122 114 Q110 110 98 114 Z M134 114 Q146 106 158 114 Q146 110 134 114 Z" fill="#7a2038" opacity=".5"/>
+<ellipse cx="110" cy="120" rx="7" ry="8.6" fill="#1c1a1e"/><circle cx="112.6" cy="116.6" r="2.8" fill="#fff"/><circle cx="108" cy="123" r="1.2" fill="#fff"/>
+<ellipse cx="146" cy="120" rx="7" ry="8.6" fill="#1c1a1e"/><circle cx="148.6" cy="116.6" r="2.8" fill="#fff"/><circle cx="144" cy="123" r="1.2" fill="#fff"/>
+<path d="M102 114 l-7 -5 M104 111 l-4 -7 M154 114 l7 -5 M152 111 l4 -7" stroke="#1c1a1e" stroke-width="2.8" stroke-linecap="round"/>
+<path d="M100 104 Q110 98 120 104 M136 104 Q146 98 156 104" fill="none" stroke="#3a2a24" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="96" cy="138" rx="10" ry="6" fill="#ff4f6e" opacity=".45"/><ellipse cx="160" cy="138" rx="10" ry="6" fill="#ff4f6e" opacity=".45"/>
+<path d="M115 142 Q121 137 128 140 Q135 137 141 142 Q128 156 115 142 Z" fill="#c1121f" stroke="#7a0a12" stroke-width="1.6"/><path d="M123 145 h5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".9"/>
+<circle cx="144" cy="134" r="1.8" fill="#3a2a24"/>
+<!-- gold drop earrings -->
+<path d="M72 132 v8 M184 132 v8" stroke="url(#gold)" stroke-width="2.4"/>
+<path d="M72 140 q-6 9 0 12 q6 -3 0 -12Z M184 140 q-6 9 0 12 q6 -3 0 -12Z" fill="#ff3f6e" stroke="url(#gold)" stroke-width="1.6"/>
+</g>
+</svg>

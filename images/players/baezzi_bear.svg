@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #180 배찌 — (reference image 1) a big round red helmet with an orange stripe down the middle and white round knobs,
+     a grey face guard covering the lower face, a peach face window with two oval eyes, white shirt, white round gloves -->
+<defs>
+<linearGradient id="hel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8283a"/><stop offset=".7" stop-color="#b0102a"/><stop offset="1" stop-color="#7a0a24"/></linearGradient>
+<linearGradient id="stripe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa040"/><stop offset="1" stop-color="#e8641a"/></linearGradient>
+<linearGradient id="grey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a4a9b2"/><stop offset="1" stop-color="#6a707a"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<clipPath id="win"><ellipse cx="128" cy="140" rx="46" ry="30"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#fff1e0"/>
+<g clip-path="url(#cc)">
+<!-- white shirt with an orange collar + white round gloves -->
+<path d="M40 262 C44 222 74 198 104 192 L152 192 C182 198 212 222 216 262 Z" fill="#ffffff" stroke="#4a1a2a" stroke-width="4"/>
+<path d="M104 194 Q128 214 152 194 L146 206 Q128 222 110 206 Z" fill="#f08a3c" stroke="#4a1a2a" stroke-width="3" stroke-linejoin="round"/>
+<path d="M60 240 Q80 230 98 238" fill="none" stroke="#d8dce4" stroke-width="3"/>
+<circle cx="38" cy="214" r="24" fill="#ffffff" stroke="#4a1a2a" stroke-width="4"/><path d="M26 204 q8 -6 18 -2" fill="none" stroke="#d8dce4" stroke-width="3" stroke-linecap="round"/>
+<circle cx="218" cy="208" r="24" fill="#ffffff" stroke="#4a1a2a" stroke-width="4"/><path d="M206 198 q8 -6 18 -2" fill="none" stroke="#d8dce4" stroke-width="3" stroke-linecap="round"/>
+<!-- grey head guard (the round face part under the helmet) -->
+<circle cx="128" cy="132" r="68" fill="url(#grey)" stroke="#4a1a2a" stroke-width="4"/>
+<!-- face window -->
+<ellipse cx="128" cy="140" rx="46" ry="30" fill="#f8cfa8" stroke="#4a1a2a" stroke-width="3.4"/>
+<g clip-path="url(#win)"><ellipse cx="128" cy="118" rx="50" ry="14" fill="#e8a878" opacity=".55"/></g>
+<!-- the two oval eyes -->
+<ellipse cx="112" cy="140" rx="6.6" ry="10" fill="#7a1a24" stroke="#3a0a14" stroke-width="1.6"/><ellipse cx="113.6" cy="136" rx="2.6" ry="3.4" fill="#fff"/>
+<ellipse cx="144" cy="140" rx="6.6" ry="10" fill="#7a1a24" stroke="#3a0a14" stroke-width="1.6"/><ellipse cx="145.6" cy="136" rx="2.6" ry="3.4" fill="#fff"/>
+<!-- grey mask over the nose and mouth -->
+<path d="M78 150 Q104 160 128 152 Q152 160 178 150 Q182 178 160 192 Q128 206 96 192 Q74 178 78 150 Z" fill="url(#grey)" stroke="#4a1a2a" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M90 158 Q110 164 128 158 Q146 164 166 158" fill="none" stroke="#c8ccd4" stroke-width="3" stroke-linecap="round"/>
+<!-- the big red helmet with the orange stripe -->
+<path d="M46 122 C38 8 218 8 210 122 Q196 112 176 110 Q128 104 80 110 Q60 112 46 122 Z" fill="url(#hel)" stroke="#4a1a2a" stroke-width="4" stroke-linejoin="round"/>
+<path d="M112 40 Q128 37 144 40 L150 107 Q128 104 106 107 Z" fill="url(#stripe)" stroke="#4a1a2a" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M68 70 Q84 50 106 44" fill="none" stroke="#ff7a8a" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+<path d="M50 118 Q128 98 206 118" fill="none" stroke="#5a0a1a" stroke-width="3" opacity=".6"/>
+<!-- white round knobs on both sides of the helmet -->
+<g stroke="#4a1a2a" stroke-width="3.4"><circle cx="52" cy="66" r="20" fill="#ffffff"/><circle cx="204" cy="66" r="20" fill="#ffffff"/></g>
+<circle cx="48" cy="62" r="10" fill="#f08a3c" stroke="#b5501a" stroke-width="2"/><circle cx="208" cy="62" r="10" fill="#f08a3c" stroke="#b5501a" stroke-width="2"/>
+<circle cx="45" cy="59" r="3" fill="#ffd0a0"/><circle cx="205" cy="59" r="3" fill="#ffd0a0"/>
+</g>
+</svg>

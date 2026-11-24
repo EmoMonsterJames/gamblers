@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<!-- #450 우니 — (reference image 3) a round white helmet with cat ears and a green band with a green goggle visor,
+     a determined little face (the pacifier taken out: a mouth instead), white shirt, black suspenders with yellow buttons, white gloves -->
+<defs>
+<linearGradient id="wh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d8e0ea"/></linearGradient>
+<linearGradient id="vis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cf07a"/><stop offset="1" stop-color="#1fae2a"/></linearGradient>
+<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<clipPath id="hc"><ellipse cx="128" cy="112" rx="80" ry="72"/></clipPath>
+</defs>
+<circle cx="128" cy="128" r="124" fill="#eafbe8"/>
+<g clip-path="url(#cc)">
+<!-- shirt + suspenders + green shorts peek + white gloves -->
+<path d="M42 262 C46 224 74 202 104 196 L152 196 C182 202 210 224 214 262 Z" fill="#ffffff" stroke="#3a3a48" stroke-width="4"/>
+<path d="M96 200 L92 262 M160 200 L164 262" stroke="#2a2a30" stroke-width="12"/>
+<circle cx="94" cy="236" r="6" fill="#ffd23a" stroke="#3a3a48" stroke-width="2"/><circle cx="162" cy="236" r="6" fill="#ffd23a" stroke="#3a3a48" stroke-width="2"/>
+<path d="M60 256 H196" stroke="#2fae3a" stroke-width="10"/>
+<circle cx="40" cy="214" r="24" fill="#ffffff" stroke="#3a3a48" stroke-width="4"/><path d="M28 210 q10 -4 22 0 M30 220 q10 -4 20 0" fill="none" stroke="#c8d0da" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="216" cy="212" r="24" fill="#ffffff" stroke="#3a3a48" stroke-width="4"/><path d="M206 208 q10 -4 22 0 M206 218 q10 -4 20 0" fill="none" stroke="#c8d0da" stroke-width="2.6" stroke-linecap="round"/>
+<!-- cat ears on the helmet -->
+<path d="M56 74 C48 42 60 20 74 20 C88 22 100 38 104 52 Z" fill="url(#wh)" stroke="#3a3a48" stroke-width="4" stroke-linejoin="round"/>
+<path d="M200 74 C208 42 196 20 182 20 C168 22 156 38 152 52 Z" fill="url(#wh)" stroke="#3a3a48" stroke-width="4" stroke-linejoin="round"/>
+<!-- helmet -->
+<ellipse cx="128" cy="112" rx="80" ry="72" fill="url(#wh)" stroke="#3a3a48" stroke-width="4"/>
+<!-- face opening (peach) -->
+<path d="M66 124 Q128 112 190 124 C194 168 168 192 128 192 C88 192 62 168 66 124 Z" fill="#fde0cc" stroke="#3a3a48" stroke-width="3.4" stroke-linejoin="round"/>
+<!-- green band across + goggle visor -->
+<g clip-path="url(#hc)"><path d="M40 82 Q128 62 216 82 L216 112 Q128 92 40 112 Z" fill="#2fae3a" stroke="#3a3a48" stroke-width="3"/></g>
+<rect x="84" y="54" width="88" height="44" rx="16" fill="#c8ccd4" stroke="#3a3a48" stroke-width="4"/>
+<rect x="92" y="61" width="72" height="30" rx="11" fill="url(#vis)" stroke="#3a3a48" stroke-width="2.4"/>
+<path d="M100 68 Q124 62 150 66" fill="none" stroke="#e8ffe0" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+<path d="M88 40 q16 -12 36 -14" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+<!-- determined brows + tall eyes -->
+<path d="M96 132 L116 138 M160 132 L140 138" stroke="#2a2a30" stroke-width="4.4" stroke-linecap="round"/>
+<rect x="105" y="142" width="10" height="20" rx="5" fill="#1c1a1e"/><rect x="108" y="145" width="3.6" height="6" rx="1.8" fill="#fff"/>
+<rect x="141" y="142" width="10" height="20" rx="5" fill="#1c1a1e"/><rect x="144" y="145" width="3.6" height="6" rx="1.8" fill="#fff"/>
+<ellipse cx="88" cy="170" rx="13" ry="8" fill="#ff9aa0" opacity=".65"/><ellipse cx="168" cy="170" rx="13" ry="8" fill="#ff9aa0" opacity=".65"/>
+<!-- a little open mouth (no pacifier) -->
+<path d="M118 174 Q128 188 138 174 Q128 178 118 174 Z" fill="#b8323a" stroke="#3a3a48" stroke-width="2.4" stroke-linejoin="round"/><path d="M123 179 q5 4 10 0" fill="#ff9aa8"/>
+</g>
+</svg>
