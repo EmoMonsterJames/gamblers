@@ -8,6 +8,7 @@ import { Store } from "../core/store.js";
 import { SHOPS, earnKinds } from "../data/catalog.js";
 import { locationShops, cardsAt } from "../data/catalogAdmin.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
+import { HSHOP, hshopKinds } from "../data/honorShop.js";
 import { BIZ_LIST, BIZ_TYPES, bizPriceText } from "../data/business.js";
 import { activeBiz, stockLeft } from "../game/bank.js";
 import { captureConfig, shopStock, labStock, emoItem, cat as emoCat } from "../emomon/data.js";
@@ -29,8 +30,9 @@ export function mapCorners(l, { detail = true } = {}) {
         ...locationShops(l).map(k => `${SHOPS[k].icon} ${SHOPS[k].name}`),
         l.discount && "🏷️ 할인 상점",
         ...earnKinds(l).map(k => `💪 ${EARN_TEXT[k] || k}`),
-        l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && "🐝 Spelling Bee",
+        l.job && "💼 직업", l.beg && "🥺 구걸", l.spell && d("🐝 Spelling Bee", "🔗 Word Chain · 🛋️ 라운지"),
         ...honorKinds(l).map(k => d(`${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`, `시즌 ${rankText(k)} 경력자 전용`)),
+        ...(l.region === "survival" ? [] : hshopKinds(l)).map(k => d(`${HSHOP[k].emoji} ${HSHOP[k].name}`, `시즌 ${HSHOP[k].rank === 1 ? "우승" : "TOP " + HSHOP[k].rank} 경력자 · 20~30% 할인`)),
         l.bank && d("🏦 Business Bank", "모든 플레이어 · 랜덤 입장 60%"),
         hub && d("🏪 Self-Business", "TOP 10 경력자 전용"),
         ...listed.map(T => d(`🏷️ 매물: ${T.emoji} ${T.name}`, `${bizPriceText(T.price, T.pts || 0)} · 남은 ${Math.max(0, stockLeft(T.id))}/${T.max}`)),

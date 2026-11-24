@@ -54,7 +54,7 @@ export const PLAYER_EXTRAS = {
     286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings
 };
 // 🚫 "No Image" (admin → 플레이어 관리) wins over the hand-drawn pictures too
-const playerImage = p => isNoImage(p.profile_image) ? p.profile_image : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, PLAYER_EXTRAS[p.id]);
+const playerImage = p => isNoImage(p.profile_image) ? p.profile_image : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, { ...(PLAYER_EXTRAS[p.id] || {}), baby: String(p.age_group || "").trim().toLowerCase() === "baby" }); // 👶 Baby players are drawn smaller
 
 const LS = "gamblers.v1";
 let sb = null; // supabase client
@@ -341,22 +341,82 @@ export const Store = {
         this.players = this.allPlayers.filter(p => p.is_active !== false);
     },
     nextPlayerId() { return Math.max(0, ...this.allPlayers.map(p => p.id)) + 1; },
-    // Admin: create or update a player (cloud: upsert; local: kept in this browser)
-    async savePlayer(p) {
+    // Admin: create or update a player (cloud: insert / update; local: kept in this browser)
+    // 👥 several admins adding players at the same time: a NEW player never reuses an id another admin already
+    // took — the id is checked against the server right before the insert, and an insert that still collides
+    // (somebody saved in the same second) simply takes the next free id. Existing players are updated by id only.
+    async savePlayer(p, { isNew = false } = {}) {
         const rec = { ...p, id: +p.id };
+        const cols = ["id", "login_id", "name_ko", "player_name", "profile_image", "country", "school", "job", "ethnicity", "age_group", "gender", "preference", "handler", "is_active"];
+        const rowOf = r => Object.fromEntries(cols.map(c => [c, r[c] ?? (c === "is_active" ? true : null)]));
+        if (this.cloud && isNew) {
+            if (!this.user) { toast("관리자 로그인이 필요합니다", "warn"); return false; }
+            await this.refreshPlayers(); // other admins' new players first (so the list and the next id are current)
+            let lastErr = null;
+            for (let tries = 0; tries < 8; tries++) {
+                const { data: top, error: e1 } = await sb.from("players").select("id").order("id", { ascending: false }).limit(1);
+                if (e1) { lastErr = e1; break; }
+                rec.id = Math.max(top?.[0]?.id || 0, ...this.allPlayers.map(x => x.id), 0) + 1 + tries;
+                const { error } = await sb.from("players").insert(rowOf(rec));
+                if (!error) { lastErr = null; break; }
+                lastErr = error;
+                if (error.code !== "23505") break; // only an id clash is retried
+            }
+            if (lastErr) { console.error(lastErr); toast("저장 실패: " + (lastErr.message || lastErr), "error"); return false; }
+            this.io.writes++;
+            this.allPlayers.push(rec);
+            this.setPlayers(this.allPlayers);
+            this.saveLocal();
+            return rec.id;
+        }
+        if (!this.cloud && isNew) rec.id = this.nextPlayerId(); // local mode: one browser, the next free id
         const i = this.allPlayers.findIndex(x => x.id === rec.id);
         if (i >= 0) this.allPlayers[i] = { ...this.allPlayers[i], ...rec }; else this.allPlayers.push(rec);
         this.setPlayers(this.allPlayers);
         if (this.cloud) {
-            const cols = ["id", "login_id", "name_ko", "player_name", "profile_image", "country", "school", "job", "ethnicity", "age_group", "gender", "preference", "handler", "is_active"];
-            const row = Object.fromEntries(cols.map(c => [c, rec[c] ?? (c === "is_active" ? true : null)]));
-            const ok = await this.write(sb => sb.from("players").upsert(row));
+            const { id, ...row } = rowOf(rec);
+            await this.write(sb => sb.from("players").update(row).eq("id", id));
             if (!this.user) return false;
         } else {
             this.playerEdits[rec.id] = rec;
         }
         this.saveLocal();
+        return rec.id;
+    },
+    // 🎲 전담자 랜덤 지정: every player gets DYLAN or JAMES at random — balanced inside each gender
+    // (and each country), so a season can always draw 10 + 10 with 5 men + 5 women per handler.
+    async randomizeHandlers() {
+        const g = p => String(p.gender || "").trim().toLowerCase() === "female" ? "F" : "M";
+        const groups = {};
+        for (const p of this.allPlayers) (groups[`${g(p)}|${String(p.country || "").toLowerCase()}`] ||= []).push(p);
+        const next = {};
+        let flip = Math.random() < 0.5;
+        for (const list of Object.values(groups)) {
+            const sh = [...list].sort(() => Math.random() - 0.5);
+            sh.forEach((p, i) => { next[p.id] = (i % 2 === 0) === flip ? "DYLAN" : "JAMES"; });
+            if (sh.length % 2) flip = !flip; // odd groups alternate which handler gets the extra one
+        }
+        this.allPlayers = this.allPlayers.map(p => ({ ...p, handler: next[p.id] || p.handler }));
+        this.setPlayers(this.allPlayers);
+        if (this.cloud) {
+            if (!this.user) { toast("관리자 로그인이 필요합니다", "warn"); return false; }
+            const rows = Object.entries(next).map(([id, handler]) => ({ id: +id, handler }));
+            for (let i = 0; i < rows.length; i += 200) {
+                await this.write(sb => sb.from("players").upsert(rows.slice(i, i + 200), { onConflict: "id" }));
+            }
+        } else for (const p of this.allPlayers) this.playerEdits[p.id] = { ...(this.playerEdits[p.id] || {}), handler: p.handler };
+        this.saveLocal();
         return true;
+    },
+    // 🔄 reload the player list from the server (players added / edited by another admin show up)
+    async refreshPlayers() {
+        if (!this.cloud || !sb) return false;
+        try {
+            const { data, error } = await sb.from("players").select("*");
+            if (error) throw error;
+            if (data?.length) { this.setPlayers(data); for (const p of data) this.decor[p.id] ||= { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] }; }
+            return true;
+        } catch (e) { console.warn(e); return false; }
     },
     getDecor(pid) { return this.decor[pid] || (this.decor[pid] = { frame: null, effect: null, ownedFrames: [], ownedEffects: [] }); },
     setDecor(pid, patch) {

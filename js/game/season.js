@@ -79,7 +79,7 @@ export function pickManyForSelection(pool, n) {
     return out;
 }
 // ---- quota draft: 3 per country (6 countries = 18) + 2 more from any of them = 20,
-// with exactly 10 male / 10 female and 10 JAMES / 10 DYLAN handlers.
+// with exactly 10 male / 10 female and 10 JAMES / 10 DYLAN handlers — each handler gets 5 men + 5 women.
 // A full valid roster is drawn up front (s.plan, weighted like pickForSelection);
 // SPIN reveals its members one at a time in random order.
 export const SELECT_COUNTRIES = ["Emo World", "MJ World", "Foggy Nation", "Polynesia", "Ground Town", "Dung Town"];
@@ -90,18 +90,19 @@ export const selCountry = p => SELECT_COUNTRIES.find(c => normC(c) === normC(p?.
 export const selGender = p => { const g = String(p?.gender || "").trim().toLowerCase(); return !g ? null : g === "female" ? "female" : "male"; };
 export const selHandler = p => { const x = String(p?.handler || "").trim().toUpperCase(); return x === "JAMES" || x === "DYLAN" ? x : null; };
 export function selectionCounts(ids) {
-    const c = { country: {}, gender: {}, handler: {} };
+    const c = { country: {}, gender: {}, handler: {}, hg: {} };
     for (const id of ids) {
         const p = Store.player(id);
         const k = selCountry(p), g = selGender(p), hd = selHandler(p);
         if (k) c.country[k] = (c.country[k] || 0) + 1;
         if (g) c.gender[g] = (c.gender[g] || 0) + 1;
         if (hd) c.handler[hd] = (c.handler[hd] || 0) + 1;
+        if (hd && g) c.hg[hd + ":" + g] = (c.hg[hd + ":" + g] || 0) + 1;
     }
     return c;
 }
 export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 400) {
-    const N = CONFIG.SEASON_SIZE, half = Math.floor(N / 2), need = N - fixed.length;
+    const N = CONFIG.SEASON_SIZE, half = Math.floor(N / 2), quarter = Math.ceil(half / 2), need = N - fixed.length;
     const elig = pool.filter(p => selCountry(p) && selGender(p) && selHandler(p));
     if (need <= 0) return [];
     // weighted random order in one pass (key = u^(1/w)): same odds as pickForSelection
@@ -112,8 +113,9 @@ export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 4
         const order = elig.map(p => [Math.pow(Math.random(), 1 / wOf(p)), p]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
         const c = selectionCounts(fixed), picked = [];
         let vets = veteransIn(fixed);
-        const take = p => { picked.push(p.id); if (vet.has(p.id)) vets++; const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; };
-        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half && (vets < MAX_VETERANS || !vet.has(p.id));
+        const take = p => { picked.push(p.id); if (vet.has(p.id)) vets++; const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; c.hg[hd + ":" + g] = (c.hg[hd + ":" + g] || 0) + 1; };
+        const hg = p => selHandler(p) + ":" + selGender(p); // 👥 handler × gender: 5 + 5 per handler
+        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half && (c.hg[hg(p)] || 0) < quarter && (vets < MAX_VETERANS || !vet.has(p.id));
         // 1) three from every country
         for (const p of order) if (picked.length < need && (c.country[selCountry(p)] || 0) < SELECT_PER_COUNTRY && fits(p)) take(p);
         if (SELECT_COUNTRIES.some(k => (c.country[k] || 0) < SELECT_PER_COUNTRY)) continue;

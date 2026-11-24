@@ -57,6 +57,10 @@ export const FOODS = [
     F("jjongji", "쫑지", "🥬", 3000, 13, { art: "jjongji", desc: "김치 모양 반찬" }),
     F("bosongkimchi", "보송이 김치", "🫙", 9000, 40, { art: "bosongkimchi", desc: "고급 통에 담긴 김치" }),
     F("clearjuice", "투명주스", "🧃", 2000, 10, { art: "clearjuice", desc: "유령 무늬가 새겨진 투명한 주스" }),
+    // 🐝 Spelling Bee 라운지 꿀벌 자판기 (시즌 1회 무료 랜덤 증정) — hp: fixed HP heal
+    F("honeypot", "벌꿀통", "🍯", 10000, 40, { hp: 10, desc: "꿀이 가득 찬 꿀벌 통" }),
+    F("beeicecream", "꿀벌아이스크림", "🍦", 5000, 15, { hp: 5, desc: "꿀벌 모양 아이스크림" }),
+    F("minihoneypot", "미니 벌꿀통", "🍯", 7000, 20, { hp: 7, desc: "작은 꿀단지" }),
     F("antnoodle", "개밋입국수", "🍜", 5000, 40, { art: "antnoodle" }),
     F("pinenoodle", "솔잎국수", "🍜", 3000, 30, { art: "pinenoodle" }),
     F("shapecookie", "도형쿠키", "🍪", 4000, 10, { art: "shapecookie" }),
@@ -74,7 +78,7 @@ export const FOODS = [
 export const FOOD_BY_ID = Object.fromEntries(FOODS.map(f => [f.id, f]));
 // ❤️ every food also heals HP by its price: 1 HP per 1,000G (min 1 · max 30) — except the foods that hurt (찌 · 똥 · 똥주)
 export const FOOD_NO_HP = ["jji", "poop", "ddongju"];
-export const foodHp = f => !f || FOOD_NO_HP.includes(f.id) || f.food < 0 ? 0 : Math.max(1, Math.min(30, Math.round((f.price || 0) / 1000)));
+export const foodHp = f => !f || FOOD_NO_HP.includes(f.id) || f.food < 0 ? 0 : f.hp != null ? f.hp : Math.max(1, Math.min(30, Math.round((f.price || 0) / 1000)));
 export const foodItemId = id => "food_" + id;
 export const foodOfItem = itemId => String(itemId || "").startsWith("food_") ? FOOD_BY_ID[itemId.slice(5)] || null : null;
 const norm = s => String(s || "").trim().toLowerCase();

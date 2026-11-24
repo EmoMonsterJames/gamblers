@@ -5,7 +5,8 @@
 import { h } from "../core/util.js";
 import { toast, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { REGIONS, LOCATIONS, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds, ITEMS, isPass } from "../data/catalog.js";
+import { REGIONS, LOCATIONS, LOC_BY_ID, EARN_ALL, COUNTRIES, SHOPS, NPCS, earnKinds, ITEMS, isPass } from "../data/catalog.js";
+import { HSHOP, HSHOP_ALL, HSHOP_MAPS, HSHOP_USES, hshopKinds, rollPlacement, honorRegions } from "../data/honorShop.js";
 import { HONOR_KINDS, HONOR_ALL, honorKinds, honorPrizes } from "../data/honor.js";
 const HONOR_TAB = "_honor";
 import { locationShops } from "../data/catalogAdmin.js";
@@ -22,7 +23,7 @@ const REQS = [["", "누구나"], ["points", "포인트 보유"], ["country", "�
 const EARN_LABEL = { blood: "🩸 헌혈", labor: "⛏️ 노동", poop: "💩 똥", sell: "🛍️ 팔기", music: "🎧 음악", survival: "⚔️ 서바이벌", guess: "❓ 이름 맞추기" };
 const reqKind = r => !r ? "" : r.points != null ? "points" : r.country ? "country" : r.fee != null ? "fee" : r.feePts != null ? "feePts" : r.random ? "random" : r.who ? "who" : "";
 // 🚧 제한구역: who may walk in (others need the map pass)
-const WHO = [["baby", "Baby만"], ["female", "Female만"], ["male", "Male만"], ["senior", "Senior만"], ["lgbt", "Straight 아닌 플레이어만"], ["vip", "TOP 10 경력자만"], ["other", "종족 Other만"]];
+const WHO = [["baby", "Baby만"], ["female", "Female만"], ["male", "Male만"], ["senior", "Senior만"], ["lgbt", "Straight 아닌 플레이어만"], ["vip", "TOP 10 경력자만"], ["other", "종족 Other 계열만 (Other Animal · Other Shape · Bug · Fruit · Veggie · Flower · Others)"]];
 REQS.push(["who", "제한구역 (대상 전용)"]);
 
 export function adminMapsPage() {
@@ -76,9 +77,31 @@ export function adminMapsPage() {
             h("div.am-prize.head", h("small", "이름"), h("small", "종류"), h("small", "내용"), h("small", "가중치 → 확률"), h("small", "")),
             list.map(row));
     }
+    // ---- 🏅 Honorarium TOP N 전용 상점: placement (25 maps · 1~2 each) — random by default, admin can re-roll / tick per map
+    const hsExplicit = () => Object.values(work.locs).some(e => Array.isArray(e.honorShop));
+    const hsOf = id => hsExplicit() ? (Array.isArray(work.locs[id]?.honorShop) ? work.locs[id].honorShop.filter(k => HSHOP[k]) : []) : hshopKinds(LOC_BY_ID[id]);
+    const hsMaterialize = () => { if (hsExplicit()) return; for (const l of LOCATIONS) { const k = hshopKinds(l); if (k.length) led(l.id).honorShop = [...k]; } };
+    function hshopPanel() {
+        const placed = allLocs().filter(l => l.region !== "survival" && hsOf(l.id).length);
+        const reroll = () => {
+            const p = rollPlacement();
+            for (const l of LOCATIONS) { const e = work.locs[l.id]; if (e) delete e.honorShop; }
+            for (const [id, kinds] of Object.entries(p)) led(id).honorShop = kinds;
+            if (!Object.keys(p).length) led(LOCATIONS[0].id).honorShop = []; // keep the (empty) admin placement
+            dirty(); draw();
+        };
+        return h("div.ag-card",
+            h("div.row.between", h("h3", `🏪 Honorarium 전용 상점 배치 (${placed.length}곳)`), h("div.row",
+                hsExplicit() ? h("button.btn.small.ghost", { title: "관리자 배치를 지우고 기본 랜덤 배치로", onclick: async () => { if (!(await confirmBox("관리자가 정한 상점 배치를 지우고 기본 랜덤 배치로 되돌릴까요?"))) return; for (const e of Object.values(work.locs)) delete e.honorShop; dirty(); draw(); } }, "↺ 기본 랜덤 배치") : null,
+                h("button.btn.small.gold", { onclick: async () => { if (await confirmBox(`Honorarium 코너가 있는 지역(${[...honorRegions()].map(r => reg(r)?.name || r).join(", ")})의 맵 ${HSHOP_MAPS}곳에 겹치지 않게 1~2개씩 다시 랜덤 배치할까요?`)) reroll(); } }, `🎲 ${HSHOP_MAPS}곳 랜덤 배치`))),
+            h("p.muted", `TOP 15 · TOP 12 · TOP 10 · TOP 6 · TOP 3 · 우승자 전용 상점. 맵마다 2~5개 상품을 기존 관리자 가격에서 20~30% 할인 (시즌마다 새로 구성) · 모든 플레이어 시즌당 ${HSHOP_USES}회 구매 · 각 맵 카드의 '🏪 Honorarium 전용 상점' 체크박스로도 바꿀 수 있습니다. ${hsExplicit() ? "현재: 관리자 배치" : "현재: 기본 랜덤 배치"}`),
+            h("div.am-honor-list", HSHOP_ALL.map(k => { const ls = placed.filter(l => hsOf(l.id).includes(k)); return h("div", h("b", `${HSHOP[k].emoji} ${HSHOP[k].name}`), " ",
+                ls.length ? ls.map(l => h("button.am-corner", { onclick: () => { cur = l.region; draw(); } }, `${l.emoji} ${l.name}`)) : h("span.muted", "배치된 맵 없음")); })));
+    }
     function honorPanel() {
         const placed = HONOR_ALL.map(k => [k, allLocs().filter(l => honorKinds(l).includes(k))]);
         return [
+            hshopPanel(),
             h("div.ag-card", h("h3", "🏅 Honorarium 코너 배치 현황"),
                 h("p.muted", "각 맵 카드의 '🏅 Honorarium 코너' 체크박스로 배치합니다. 입장 조건: 지난 시즌 TOP 10 / TOP 6 / TOP 3 / 우승 경력 · 이용은 시즌당 2회 (Winners는 1회)."),
                 h("div.am-honor-list", placed.map(([k, ls]) => h("div", h("b", `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`), " ",
@@ -199,6 +222,12 @@ export function adminMapsPage() {
                 ev.target.checked ? next.add(k) : next.delete(k);
                 e.honor = next.size ? HONOR_ALL.filter(x => next.has(x)) : false; dirty(); draw();
             } }), `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`))),
+            l.region === "survival" ? null : h("div.am-togs", h("small", "🏪 Honorarium 전용 상점:"), HSHOP_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: hsOf(l.id).includes(k), onchange: ev => {
+                hsMaterialize();
+                const next = new Set(hsOf(l.id));
+                ev.target.checked ? next.add(k) : next.delete(k);
+                led(l.id).honorShop = HSHOP_ALL.filter(x => next.has(x)); dirty(); draw();
+            } }), `${HSHOP[k].emoji} ${HSHOP[k].name}`))),
             h("div.am-togs", h("small", "돈벌기 코너:"), EARN_ALL.map(k => h("label.am-tog", h("input", { type: "checkbox", checked: earn.includes(k), onchange: ev => {
                 const next = new Set(earnKinds(loc(l.id)));
                 ev.target.checked ? next.add(k) : next.delete(k);

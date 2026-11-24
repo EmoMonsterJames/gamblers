@@ -19,7 +19,9 @@ export const LOC_FIELDS = ["off", "name", "emoji", "region", "slots", "casino", 
     // 🔄 Survival Land (패자부활전) map rules
     "noEnd", "passLate", "noPass", "deadNpc", "disaster", "buttonTax", "church", "arcade", "quiz", "inferno",
     // 🍚 food corners · 🌦️ weather · 🏨 lodging (data/life.js)
-    "food", "weather", "lodge"];
+    "food", "weather", "lodge",
+    // 🏅 Honorarium TOP N 전용 상점 (data/honorShop.js)
+    "honorShop"];
 
 export const regionDefault = id => ORIG_REGIONS.find(r => r.id === id);
 export const locDefault = id => ORIG_LOCS.find(l => l.id === id);

@@ -24,7 +24,9 @@ import { worldMap, regionMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
-import { spellingView } from "./spelling.js";
+import { spellStationsView } from "./spellStations.js";
+import { honorShopView } from "./honorShop.js";
+import { HSHOP, hshopKinds } from "../data/honorShop.js";
 import { locationShops } from "../data/catalogAdmin.js";
 import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo, diseaseBadge } from "./corners.js";
 import { battleView } from "./battle.js";
@@ -826,6 +828,7 @@ function locationStage(s) {
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
+        ...(loc.region === "survival" ? [] : hshopKinds(loc).map(k => ["honor:shop_" + k, `${HSHOP[k].emoji} ${HSHOP[k].name}`])), // 🏅 TOP N 전용 상점
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ...(loc.emorent ? [["emo:rent", "🏷️ 이모몬스터 Rent Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
@@ -932,7 +935,8 @@ function locationStage(s) {
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });
-        else if (id === "spell") content = spellingView(pid, loc, () => { updateHud(); tabBody("spell"); });
+        else if (id === "spell") content = spellStationsView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (isOn("spell")) tabBody("spell"); } }); // 🐝 Spelling Bee · 🔗 Word Chain · 🛋️ 라운지
+        else if (id.startsWith("honor:shop_")) content = honorShopView(pid, loc.id, id.slice(11), { onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (isOn(id)) tabBody(id); } });
         else if (id.startsWith("honor:")) content = honorView(pid, id.slice(6), { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); if (isOn(id)) tabBody(id); } });
         else if (id === "bank") content = bankView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
         else if (id === "bizhub") content = bizHubView(pid, loc, { turn: t, onChange: bizChanged });

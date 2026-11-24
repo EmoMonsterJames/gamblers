@@ -389,3 +389,42 @@ button.sb-hint { cursor: pointer; } button.sb-hint:disabled { opacity: .5; curso
   .res-row .res-bar { grid-column: 1 / -1; }
   .res-rank-row { grid-template-columns: 24px 1fr 56px; } .res-rank-row .res-bar { grid-column: 1 / -1; }
 }
+
+/* ================= 🐝 Spelling Bee stations: 🔗 Word Chain · 🛋️ 라운지 (screens/spellStations.js) ================= */
+.word-chain, .bee-lounge { display: flex; flex-direction: column; gap: 12px; }
+.wc-board { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #facc1522, #f59e0b14); border: 1px solid #facc1566; text-align: center; }
+.wc-word { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.wc-cond { font-size: 16px; } .wc-cond small { display: block; opacity: .7; font-size: 12px; } .wc-cond b { color: #fde047; font-size: 19px; }
+.wc-who { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; } .wc-who small { font-weight: 700; }
+.wc-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: 12px; background: #0004; border: 1px dashed var(--line); }
+.wc-link { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 10px; border-radius: 10px; background: #ffffff0d; border: 1px solid var(--line); min-width: 64px; }
+.wc-link b { letter-spacing: 1px; } .wc-link.seed { border-color: #facc1588; } .wc-cond-s { font-size: 10px; opacity: .7; }
+.wc-arrow { opacity: .55; font-weight: 900; }
+.wc-play { display: flex; flex-direction: column; gap: 8px; align-items: stretch; padding: 14px; border-radius: 16px; background: #0005; border: 1px solid var(--line); }
+.wc-clock { text-align: center; font-size: 24px; font-weight: 900; } .wc-clock.hurry { color: #f87171; animation: wcpulse .5s infinite alternate; }
+@keyframes wcpulse { to { transform: scale(1.08); } }
+.wc-bar { height: 8px; border-radius: 6px; background: #ffffff14; overflow: hidden; } .wc-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f87171, #facc15, #4ade80); transition: width .1s linear; }
+.wc-input { text-transform: uppercase; font-size: 20px; font-weight: 900; letter-spacing: 2px; max-width: 260px; text-align: center; }
+.wc-msg { display: flex; flex-direction: column; gap: 2px; color: #fca5a5; text-align: center; }
+.bee-bucket { position: fixed; inset: 0; z-index: 400; display: grid; place-items: center; background: #0008; pointer-events: none; animation: fadein .2s; }
+.bee-bucket.out { opacity: 0; transition: .3s; }
+.bb-bee { position: absolute; top: 22%; left: -120px; font-size: 64px; display: flex; align-items: flex-end; animation: bbfly 1.3s ease-out forwards; }
+.bb-bee .bb-pail { font-size: 38px; margin-left: -18px; transform: rotate(-12deg); }
+.bee-bucket.drop .bb-pail { transform: rotate(-70deg); transition: transform .3s; }
+.bb-card { position: absolute; top: 26%; left: 50%; transform: translate(-50%, 0) scale(.2); opacity: 0; }
+.bee-bucket.drop .bb-card { animation: bbdrop .7s cubic-bezier(.3, 1.6, .6, 1) forwards; }
+.bb-text { position: absolute; top: 66%; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 900; color: #fde047; opacity: 0; white-space: nowrap; }
+.bee-bucket.drop .bb-text { opacity: 1; transition: opacity .4s .4s; }
+@keyframes bbfly { 0% { left: -120px; transform: translateY(20px) rotate(-8deg); } 60% { transform: translateY(-14px) rotate(6deg); } 100% { left: calc(50% - 50px); transform: translateY(0) rotate(0); } }
+@keyframes bbdrop { 0% { transform: translate(-50%, 0) scale(.2); opacity: 0; } 100% { transform: translate(-50%, 110px) scale(1.4); opacity: 1; } }
+.bl-letters { display: flex; gap: 6px; align-items: flex-end; justify-content: center; } .bl-l { opacity: .45; } .bl-l.on { opacity: 1; filter: drop-shadow(0 0 8px #facc15); }
+.bl-box { padding: 12px 14px; border-radius: 14px; background: #ffffff08; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.bl-box h4 { margin: 0; }
+.bl-rooms { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.bl-room { display: flex; flex-direction: column; align-items: center; padding: 8px 4px; border-radius: 10px; background: #f59e0b1a; border: 1px solid #f59e0b55; font-size: 13px; }
+.bl-room.taken { background: #ffffff08; border-color: var(--line); opacity: .75; } .bl-room.mine { border-color: #4ade80; background: #4ade8022; opacity: 1; }
+.bl-room.hot { box-shadow: 0 0 0 3px #facc15; background: #facc1544; }
+.bl-foods { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.bl-food { display: flex; flex-direction: column; align-items: center; padding: 8px 12px; border-radius: 12px; background: #facc1514; border: 1px solid #facc1544; min-width: 110px; }
+.bl-fe { font-size: 30px; }
+@media (max-width: 560px) { .bl-rooms { grid-template-columns: repeat(3, 1fr); } .wc-input { max-width: 170px; font-size: 17px; } }

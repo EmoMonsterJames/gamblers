@@ -12,6 +12,7 @@ import { Store } from "../core/store.js";
 import { LOC_BY_ID, ITEM_BY_ID } from "../data/catalog.js";
 import { KIDNAP_ROOM } from "../data/regions.js";
 import { CM_BY_ID, COMMENT_FEE, COMMUNITY_OK } from "../data/community.js";
+import { categoryOf } from "../data/races.js";
 import { S, log, name, alive, killPlayer, setLocation, noteRefuse } from "./season.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -22,7 +23,9 @@ const norm = v => String(v || "").trim().toLowerCase();
 export const isVip = pid => Store.results.some(r => r.playerId === +pid && r.rank != null && r.rank <= 10);
 export const isChampion = pid => Store.results.some(r => r.playerId === +pid && r.rank === 1);
 export const WHO_TEXT = { baby: "Age가 Baby인 플레이어", female: "성별이 Female인 플레이어", male: "성별이 Male인 플레이어", senior: "Age가 Senior인 플레이어",
-    lgbt: "Preference가 Straight가 아닌 플레이어", vip: "시즌 TOP 10 전적이 있는 플레이어", other: "종족이 Other인 플레이어" };
+    lgbt: "Preference가 Straight가 아닌 플레이어", vip: "시즌 TOP 10 전적이 있는 플레이어", other: "종족이 Other Animal · Other Shape · Bug · Fruit · Veggie · Flower · Others 카테고리인 플레이어" };
+// 👽 the race categories (data/races.js) that count as "Other" — every other category may not walk into the Other Casino
+export const OTHER_RACE_CATS = ["Other Animal", "Other Shape", "Bug", "Fruit", "Veggie", "Flower", "Others"];
 export function whoOk(pid, who) {
     const p = Store.player(pid);
     if (!p) return false;
@@ -33,7 +36,7 @@ export function whoOk(pid, who) {
         case "male": return genderLetter(p) === "M";
         case "lgbt": return !!norm(p.preference) && norm(p.preference) !== "straight";
         case "vip": return isVip(pid);
-        case "other": return ["other", "others"].includes(norm(p.ethnicity));
+        case "other": return OTHER_RACE_CATS.includes(categoryOf(p.ethnicity)); // 👽 Other Casino: only these race categories
     }
     return true;
 }

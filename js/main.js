@@ -23,6 +23,7 @@ import { fillEmptyBizCorners } from "./data/business.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
 import { lang, setLang, startI18n } from "./core/i18n.js";
 import { REGIONS, LOCATIONS } from "./data/catalog.js";
+import { installScrollFab } from "./ui/scrollFab.js";
 import "./data/life.js"; // 🍚 food items join the item list before any screen is drawn
 
 const ROUTES = {
@@ -63,6 +64,7 @@ function route() {
     document.getElementById("boot")?.remove();
     await startI18n([...REGIONS.map(r => [r.name, r.en]), ...LOCATIONS.map(l => [l.name, l.en])]);
     window.addEventListener("hashchange", route);
+    installScrollFab(); // ⬆️⬇️ admin pages: jump to the top / bottom
     // never tear down an open game (a slot bonus in progress): re-render once it is closed
     let authWait = null;
     document.addEventListener("auth", () => {

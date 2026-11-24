@@ -284,8 +284,9 @@ export function weatherTick(t) {
 
 // ================================================================ 🏨 lodging
 const lodgeKey = c => c.k;
+const BEE_LODGE = { id: "bee_hideout", name: "꿀벌 은신처", emoji: "🍯", color: "#f59e0b", rooms: [{ k: "room", label: "객실", n: 5, price: 0, pick: "random" }], reserve: true, entry: "free", fee: 0, bee: true };
 export function lodgeCfg(c) {
-    const T = c?.k === "owner_room" ? L.OWNER_ROOM : L.LODGES[c?.k];
+    const T = c?.k === "owner_room" ? L.OWNER_ROOM : c?.k === "bee_hideout" ? BEE_LODGE : L.LODGES[c?.k];
     if (!T) return null;
     return { ...T, ...c, k: c.k, name: c.name || T.name, entry: c.entry || T.entry, fee: c.fee ?? T.fee };
 }
@@ -308,6 +309,7 @@ export function stayOf(pid, locId) {
     const loc = LOC_BY_ID[locId];
     if (!loc) return null;
     const kinds = new Set(lodgesAt(loc, pid).map(lodgeKey));
+    if (loc.spell) kinds.add("bee_hideout"); // 🍯 Spelling Bee 라운지 꿀벌 은신처: a lodging on every Spelling Bee map (game/spellbee.js)
     if (!kinds.size) return null;
     return staysOf(pid).find(x => kinds.has(x.k)) || null;
 }

@@ -1,7 +1,7 @@
 // Admin: browse, edit, create and (de)activate players. The edit form has
 // dropdowns for the fixed profile fields and a player image generator.
 import { h } from "../core/util.js";
-import { toast, modal } from "../core/fx.js";
+import { toast, modal, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { COUNTRIES } from "../data/catalog.js";
 import { avatar, displayName } from "../ui/profile.js";
@@ -9,7 +9,7 @@ import { jobList, saveJobs } from "../data/jobs.js";
 import {
     buildAvatar, toDataUri, parseGen, DEFAULTS, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
     HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames, NO_IMAGE_URI, isNoImage,
-    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES
+    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES, BEARDS, MUSTACHES, SMILE_HAIRS
 } from "../ui/avatarGen.js";
 import { RACE_CATEGORIES, RACE_CAT, subsOf, categoryOf, drawRace, addCustomSub } from "../data/races.js";
 import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
@@ -29,6 +29,7 @@ const CHOICES = {
     job: [], // 💼 filled from the managed job list (jobList)
     ethnicity: ["Human", "Rabbit", "Bunny", "Bear", "Ant", "Smile", "Cloud", "Kalisto", "Devil", "Angel", "Ghost", "Invisible", "Jiangshi", "Donglee", "Triangle", "Square", "Rectangle", "Trapezoid"]
 };
+const isBaby = a => String(a || "").trim().toLowerCase() === "baby";
 const CUSTOM_OK = ["school", "ethnicity"]; // "직접 입력…" allowed
 function choices(k, current) {
     const used = Store.allPlayers.map(p => p[k]).filter(Boolean);
@@ -61,7 +62,12 @@ export function adminPlayersPage() {
     draw();
     return h("div.page.admin-players",
         h("div.row.between", h("h2.page-title", "🧑‍🤝‍🧑 플레이어 관리"),
-            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
+            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), Store.cloud ? h("button.btn.ghost", { title: "다른 관리자가 추가 · 수정한 플레이어 불러오기", onclick: async () => { if (await Store.refreshPlayers()) { draw(); toast("🔄 최신 플레이어 목록을 불러왔습니다", "ok"); } } }, "🔄 새로고침") : null, h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.ghost", { title: "모든 플레이어의 전담자를 DYLAN / JAMES 중 랜덤으로 다시 지정", onclick: async () => {
+                if (!(await confirmBox(`🎲 등록된 모든 플레이어 ${Store.allPlayers.length}명의 전담자를 DYLAN / JAMES 중 랜덤으로 다시 지정할까요?
+(성별 · 국가별로 반반씩 나눠 시즌마다 DYLAN 10명 · JAMES 10명, 각각 남자 5 · 여자 5를 뽑을 수 있게 합니다)
+지금의 전담자 지정은 덮어씌워집니다.`, "랜덤 지정", "취소"))) return;
+                if (await Store.randomizeHandlers()) { draw(); const c = k => Store.allPlayers.filter(p => p.handler === k).length; toast(`🎲 전담자 랜덤 지정 완료 — DYLAN ${c("DYLAN")}명 · JAMES ${c("JAMES")}명`, "ok", 4000); }
+            } }, "🎲 전담자 랜덤 지정"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
         h("p.muted", Store.cloud ? "변경 사항은 Supabase에 바로 저장됩니다." : "로컬 모드: 이 브라우저에만 저장됩니다."),
         h("div.row", search, offChk, noChk, h("small.muted", `전체 ${Store.allPlayers.length}명 · 활성 ${Store.players.length}명 · `), noCount),
         list);
@@ -90,7 +96,7 @@ function editPlayer(p, onSaved) {
     // image generator: on for new players, off for existing ones until asked for
     const saved = parseGen(v.profile_image);
     const dr = drawRace(v.ethnicity);
-    const gen = generatorPanel(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: dr.race, sub: dr.sub || "", raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) },
+    const gen = generatorPanel({ ...(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: dr.race, sub: dr.sub || "", raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) }), baby: isBaby(v.age_group) },
         isNew || !!saved, src => setImage(src), () => (c => !v.ethnicity || c.toLowerCase() === String(v.ethnicity).toLowerCase() ? c : `${c} › ${v.ethnicity}`)(categoryOf(v.ethnicity)));
 
     let raceCat = categoryOf(v.ethnicity);
@@ -148,30 +154,58 @@ function editPlayer(p, onSaved) {
             };
             const wrap = h("div.ap-dd", draw());
             el = wrap;
-        } else el = h("input.input", { value: v[k] ?? "", oninput: e => { v[k] = e.target.value; } });
+        } else el = h("input.input", { value: v[k] ?? "", oninput: e => { v[k] = e.target.value; if (k === "name_ko" || k === "player_name") dupHint(); } });
         return h("label.cf", h("small", label), el);
     });
     // profile → generator: gender and race follow the profile dropdowns
     function sync(k) {
         if (k === "gender" && (v.gender === "male" || v.gender === "female")) gen.set({ gender: v.gender });
         if (k === "ethnicity") { const d = drawRace(v.ethnicity); gen.set({ race: d.race, sub: d.sub || "", raceText: v.ethnicity || "" }); }
+        if (k === "age_group") gen.set({ baby: isBaby(v.age_group) }); // 👶 Baby → the picture is drawn smaller
     }
     const active = h("label.check", h("input", { type: "checkbox", checked: v.is_active !== false, onchange: e => { v.is_active = e.target.checked; } }), "활성 (시즌 선발 대상)");
+    // 🔍 한글 / 영문 이름 중복 체크 (warning only — the same name may still be registered)
+    const dupBox = h("div.ap-dup");
+    const dupes = () => {
+        const n = s => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+        const ko = n(v.name_ko), en = n(v.player_name);
+        return Store.allPlayers.filter(x => x.id !== v.id && ((ko && n(x.name_ko) === ko) || (en && n(x.player_name) === en)))
+            .map(x => ({ p: x, ko: !!ko && n(x.name_ko) === ko, en: !!en && n(x.player_name) === en }));
+    };
+    const dupText = d => `#${d.p.id} ${d.p.name_ko || "-"} / ${d.p.player_name || "-"} (${[d.ko && "한글 이름", d.en && "영문 이름"].filter(Boolean).join(" · ")} 같음${d.p.is_active === false ? " · 비활성" : ""})`;
+    function dupHint() {
+        const list = dupes();
+        dupBox.replaceChildren(...(list.length ? [h("b", `⚠️ 이름이 같은 플레이어 ${list.length}명`), ...list.map(d => h("small", dupText(d)))] : (v.name_ko || v.player_name) ? [h("small.ok", "✅ 같은 이름의 플레이어가 없습니다")] : []));
+        dupBox.classList.toggle("warn", list.length > 0);
+    }
+    dupHint();
+    const idTag = h("small.muted", isNew && Store.cloud ? `ID: 저장할 때 서버에서 비어 있는 번호로 자동 지정 (예상 #${v.id})` : `ID #${v.id}`);
+    let saving = false;
+    const saveBtn = h("button.btn.gold", { onclick: async () => {
+        if (saving) return;
+        if (!(v.name_ko || "").trim() && !(v.player_name || "").trim()) return toast("이름을 입력하세요", "warn");
+        if (!(v.ethnicity || "").trim()) return toast("종족(서브카테고리)을 입력하세요", "warn");
+        if (!v.profile_image) return toast("프로필 이미지를 지정하세요 (오른쪽 생성기를 켜면 자동 등록 · 또는 No Image)", "warn");
+        saving = true; saveBtn.disabled = true;
+        try {
+            // other admins may have added players while this form was open → check against the latest list
+            if (Store.cloud) { await Store.refreshPlayers(); dupHint(); }
+            const list = dupes();
+            if (list.length && !(await confirmBox(`⚠️ 이름이 같은 플레이어가 이미 있습니다:\n${list.map(dupText).join("\n")}\n\n그래도 ${isNew ? "등록" : "저장"}할까요?`, isNew ? "그래도 등록" : "그래도 저장", "취소"))) return;
+            await addCustomSub(raceCat, v.ethnicity); // a typed-in subcategory is offered next time
+            const id = await Store.savePlayer(v, { isNew });
+            if (id === false) return;
+            toast(isNew ? `플레이어를 추가했습니다 (#${id} · 이미지 포함)` : "저장했습니다", "ok");
+            m.close(); onSaved();
+        } finally { saving = false; saveBtn.disabled = false; }
+    } }, isNew ? "➕ 추가" : "💾 저장");
     const m = modal(h("div.ap-form.with-gen",
         h("div.ap-left",
-            h("div.ap-img", prev, h("div", h("small.muted", `ID #${v.id}`), imgSel, imgInput, h("label.check.ap-noimg", noChk, "🚫 No Image (나중에 이미지 주문)"))),
+            h("div.ap-img", prev, h("div", idTag, imgSel, imgInput, h("label.check.ap-noimg", noChk, "🚫 No Image (나중에 이미지 주문)"))),
             h("div.ap-grid", inputs),
+            dupBox,
             active,
-            h("div.row", h("button.btn.gold", { onclick: async () => {
-                if (!(v.name_ko || "").trim() && !(v.player_name || "").trim()) return toast("이름을 입력하세요", "warn");
-                if (!(v.ethnicity || "").trim()) return toast("종족(서브카테고리)을 입력하세요", "warn");
-                if (!v.profile_image) return toast("프로필 이미지를 지정하세요 (오른쪽 생성기를 켜면 자동 등록 · 또는 No Image)", "warn");
-                await addCustomSub(raceCat, v.ethnicity); // a typed-in subcategory is offered next time
-                const ok = await Store.savePlayer(v);
-                if (ok === false) return;
-                toast(isNew ? "플레이어를 추가했습니다 (이미지 포함)" : "저장했습니다", "ok");
-                m.close(); onSaved();
-            } }, isNew ? "➕ 추가" : "💾 저장"), h("button.btn.ghost", { onclick: () => m.close() }, "취소"))),
+            h("div.row", saveBtn, h("button.btn.ghost", { onclick: () => m.close() }, "취소"))),
         gen.el),
         { title: isNew ? "➕ 새 플레이어" : `✏️ ${displayName(p)}`, wide: true, cls: "xwide" });
     if (isNew || saved) gen.emit();
@@ -235,12 +269,22 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                     human ? L("인간 종류", sel("human", HUMAN_TYPES)) : null),
                 L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide"),
                 FUR_RACES.includes(o.race) ? L("피부 스타일", chk("curly", "🐑 곱슬 (곱슬털 외곽선)")) : null),
+            h("div.row.wrap", chk("baby", "👶 아기 크기 (연령대 Baby면 자동으로 켜짐)")),
             styles.length || bfly ? h("div.gen-sec", h("h5", "종족 스타일"), h("div.gen-grid", styles),
                 bfly ? L("나비 날개 색", swatches("wings", SKIN_COLORS.filter(c => c[0].startsWith("#"))), ".wide") : null) : null,
+            o.race === "smile" ? h("div.gen-sec", h("h5", "😊 가닥털 (머리 위 2~3가닥)"),
+                h("div.gen-grid",
+                    L(`가닥털 스타일 (${SMILE_HAIRS.length}종)`, sel("smileHair", SMILE_HAIRS, { none: "없음", num: true })),
+                    o.smileHair >= 0 ? L("가닥 수", sel("smileHairN", [[2, "2가닥"], [3, "3가닥"]])) : null),
+                o.smileHair >= 0 ? L("가닥털 색", swatches("smileHairColor", HAIR_COLORS.filter(c => c[0].startsWith("#"))), ".wide") : null) : null,
             human
                 ? h("div.gen-sec", h("h5", "머리"),
                     L("머리색", swatches("hair", HAIR_COLORS), ".wide"),
-                    h("div.gen-grid", L(`머리 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("hairStyle", HAIR_STYLES[g], { num: true }))))
+                    h("div.gen-grid", L(`머리 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("hairStyle", HAIR_STYLES[g], { num: true }))),
+                    g === "male" ? h("div.gen-grid",
+                        L(`🧔 턱수염 (${BEARDS.length}종)`, sel("beard", BEARDS, { none: "없음", num: true })),
+                        L(`👨 콧수염 (${MUSTACHES.length}종)`, sel("mustache", MUSTACHES, { none: "없음", num: true }))) : null,
+                    g === "male" && (o.beard >= 0 || o.mustache >= 0) ? L("수염 색 (기본 = 머리색)", swatches("beardColor", [["auto", "머리색"], ...HAIR_COLORS.filter(c => c[0].startsWith("#"))]), ".wide") : null)
                 : h("div.gen-sec", h("h5", "가발"),
                     h("div.gen-grid", L(`가발 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("wig", HAIR_STYLES[g], { none: "가발 없음", num: true }))),
                     o.wig >= 0 ? L("가발색", swatches("wigColor", HAIR_COLORS), ".wide") : null),
