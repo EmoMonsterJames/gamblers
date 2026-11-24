@@ -133,6 +133,7 @@ export const Store = {
         this.stash = L.stash || {};
         this.highlights = L.highlights || { list: [], seen: {} };
         this.season = L.season || null;
+        this.fillHandlers();
         this.seasonCount = L.seasonCount || 0;
         this.playerEdits = L.playerEdits || {};
         this.archive = L.archive || []; // finished seasons (local mode): { number, status, winnerId, round, roster, history, ps }
@@ -172,10 +173,10 @@ export const Store = {
             q("jackpot_hits"), sb.from("settings").select("*").neq("key", "emomon").then(r => { if (r.error) throw r.error; return r.data; })
         ]);
         if (players?.length) {
+            const stale = players.filter(p => p.handler); // read before setPlayers turns handler into the live season getter
             this.setPlayers(players);
-            // handler "BOTH" → split 50:50 into JAMES / DYLAN (saved once an admin is logged in)
-            const fixed = this.allPlayers.filter(p => p._handlerFixed);
-            if (fixed.length && this.user) for (const p of fixed) this.write(sb => sb.from("players").update({ handler: p.handler }).eq("id", p.id));
+            // 🧑‍💼 old stored handlers are cleared once (전담자 now only exists inside a running season)
+            if (stale.length && this.user) this.write(sb => sb.from("players").update({ handler: null }).in("id", stale.map(p => p.id)));
             for (const p of players) this.decor[p.id] = { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] };
         }
         this.hall = hall.map(r => ({ season: r.season_number, playerId: r.player_id, snapshot: r.snapshot, at: r.crowned_at })).sort((a, b) => b.season - a.season);
@@ -204,6 +205,7 @@ export const Store = {
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
+        this.fillHandlers();
         this.ensureJackpots();
         this.saveLocal();
     },
@@ -348,14 +350,24 @@ export const Store = {
     player(id) { return this.allPlayers.find(p => p.id === +id); },
     setPlayers(list) {
         this.allPlayers = [...list].sort((a, b) => a.id - b.id).map(p => { const img = playerImage(p); return img === p.profile_image ? p : { ...p, profile_image: img }; });
-        let n = 0;
-        this.allPlayers = this.allPlayers.map(p => {
-            const up = String(p.handler || "").trim().toUpperCase();
-            if (up === "BOTH") return { ...p, handler: n++ % 2 ? "DYLAN" : "JAMES", _handlerFixed: true };
-            if ((up === "JAMES" || up === "DYLAN") && p.handler !== up) return { ...p, handler: up, _handlerFixed: true };
-            return p;
-        });
+        // 🧑‍💼 전담자 is no longer stored on the player: it is drawn (D / J) when the player joins a season
+        // (season.handlers) and only exists while that season runs — p.handler reads it live.
+        for (const p of this.allPlayers) Object.defineProperty(p, "handler", { get() { const s = Store.season; return s && s.status !== "done" && s.handlers?.[this.id] || ""; }, set() {}, enumerable: true, configurable: true });
         this.players = this.allPlayers.filter(p => p.is_active !== false);
+    },
+    // a season started before 전담자 became per-season: draw D / J for its roster once (5 + 5 per gender)
+    fillHandlers() {
+        const s = this.season;
+        if (!s || s.status === "done" || !s.roster?.length || !this.allPlayers?.length) return;
+        s.handlers ||= {};
+        const miss = s.roster.filter(id => !s.handlers[id]);
+        if (!miss.length) return;
+        const g = id => String(this.player(id)?.gender || "").trim().toLowerCase() === "female" ? "F" : "M";
+        for (const sex of ["M", "F"]) {
+            const ids = miss.filter(id => g(id) === sex).sort(() => Math.random() - 0.5);
+            const cnt = k => s.roster.filter(id => s.handlers[id] === k && g(id) === sex).length;
+            for (const id of ids) { const d = cnt("DYLAN"), j = cnt("JAMES"); s.handlers[id] = d < j ? "DYLAN" : j < d ? "JAMES" : Math.random() < 0.5 ? "DYLAN" : "JAMES"; }
+        }
     },
     nextPlayerId() { return Math.max(0, ...this.allPlayers.map(p => p.id)) + 1; },
     // Admin: create or update a player (cloud: insert / update; local: kept in this browser)
@@ -365,7 +377,7 @@ export const Store = {
     async savePlayer(p, { isNew = false } = {}) {
         const rec = { ...p, id: +p.id };
         const cols = ["id", "login_id", "name_ko", "player_name", "profile_image", "country", "school", "job", "ethnicity", "age_group", "gender", "preference", "handler", "is_active"];
-        const rowOf = r => Object.fromEntries(cols.map(c => [c, r[c] ?? (c === "is_active" ? true : null)]));
+        const rowOf = r => Object.fromEntries(cols.map(c => [c, c === "handler" ? null : r[c] ?? (c === "is_active" ? true : null)]));
         if (this.cloud && isNew) {
             if (!this.user) { toast("관리자 로그인이 필요합니다", "warn"); return false; }
             await this.refreshPlayers(); // other admins' new players first (so the list and the next id are current)

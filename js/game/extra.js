@@ -13,7 +13,7 @@ import { LOC_BY_ID, ITEM_BY_ID } from "../data/catalog.js";
 import { KIDNAP_ROOM } from "../data/regions.js";
 import { CM_BY_ID, COMMENT_FEE, COMMUNITY_OK } from "../data/community.js";
 import { categoryOf } from "../data/races.js";
-import { S, log, name, alive, killPlayer, setLocation, noteRefuse } from "./season.js";
+import { S, log, name, alive, killPlayer, setLocation, noteRefuse, emitEvent } from "./season.js";
 
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const ps_ = pid => S()?.ps?.[pid];
@@ -347,6 +347,7 @@ export function arenaWin(pid, foeLabel) {
     ps.money += gold; ps.points += pts;
     log(`🏟️ ${name(pid)} 아레나 승리 vs ${foeLabel} → ${gold ? `+${gold.toLocaleString()}G` : `+${pts}P`}`);
     const t = S()?.turn; if (t?.pid === pid) t.stats.arenaWin = (t.stats.arenaWin || 0) + 1; // 🏟️ arena_win missions
+    emitEvent("emoWin", pid, { where: "arena" });
     Store.saveSeason(true);
     return { gold, pts };
 }

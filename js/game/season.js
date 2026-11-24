@@ -79,7 +79,7 @@ export function pickManyForSelection(pool, n) {
     return out;
 }
 // ---- quota draft: 3 per country (6 countries = 18) + 2 more from any of them = 20,
-// with exactly 10 male / 10 female and 10 JAMES / 10 DYLAN handlers — each handler gets 5 men + 5 women.
+// with exactly 10 male / 10 female. 🧑‍💼 전담자 (D / J) is drawn as each player joins (assignHandler): 5 men + 5 women each.
 // A full valid roster is drawn up front (s.plan, weighted like pickForSelection);
 // SPIN reveals its members one at a time in random order.
 export const SELECT_COUNTRIES = ["Emo World", "MJ World", "Foggy Nation", "Polynesia", "Ground Town", "Dung Town"];
@@ -103,7 +103,7 @@ export function selectionCounts(ids) {
 }
 export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 400) {
     const N = CONFIG.SEASON_SIZE, half = Math.floor(N / 2), quarter = Math.ceil(half / 2), need = N - fixed.length;
-    const elig = pool.filter(p => selCountry(p) && selGender(p) && selHandler(p));
+    const elig = pool.filter(p => selCountry(p) && selGender(p));
     if (need <= 0) return [];
     // weighted random order in one pass (key = u^(1/w)): same odds as pickForSelection
     const prev = prevSeasonPlayers();
@@ -113,15 +113,14 @@ export function buildSelectionPlan(fixed = [], pool = selectionPool(), tries = 4
         const order = elig.map(p => [Math.pow(Math.random(), 1 / wOf(p)), p]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
         const c = selectionCounts(fixed), picked = [];
         let vets = veteransIn(fixed);
-        const take = p => { picked.push(p.id); if (vet.has(p.id)) vets++; const k = selCountry(p), g = selGender(p), hd = selHandler(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; c.handler[hd] = (c.handler[hd] || 0) + 1; c.hg[hd + ":" + g] = (c.hg[hd + ":" + g] || 0) + 1; };
-        const hg = p => selHandler(p) + ":" + selGender(p); // 👥 handler × gender: 5 + 5 per handler
-        const fits = p => (c.gender[selGender(p)] || 0) < half && (c.handler[selHandler(p)] || 0) < half && (c.hg[hg(p)] || 0) < quarter && (vets < MAX_VETERANS || !vet.has(p.id));
+        const take = p => { picked.push(p.id); if (vet.has(p.id)) vets++; const k = selCountry(p), g = selGender(p); c.country[k] = (c.country[k] || 0) + 1; c.gender[g] = (c.gender[g] || 0) + 1; };
+        const fits = p => (c.gender[selGender(p)] || 0) < half && (vets < MAX_VETERANS || !vet.has(p.id));
         // 1) three from every country
         for (const p of order) if (picked.length < need && (c.country[selCountry(p)] || 0) < SELECT_PER_COUNTRY && fits(p)) take(p);
         if (SELECT_COUNTRIES.some(k => (c.country[k] || 0) < SELECT_PER_COUNTRY)) continue;
         // 2) the rest (2) from any of the six countries
         for (const p of order) if (picked.length < need && !picked.includes(p.id) && fits(p)) take(p);
-        if (picked.length === need && c.gender.male === half && c.gender.female === half && c.handler.JAMES === half && c.handler.DYLAN === half) return picked;
+        if (picked.length === need && c.gender.male === half && c.gender.female === half) return picked;
     }
     return null; // not enough players to meet every quota
 }
@@ -148,12 +147,23 @@ export function restSelection() {
     s.roster.splice(s.roster.length - out.length, out.length);
     return out;
 }
+// 🧑‍💼 전담자 D / J — drawn at random when a player joins, only for this season (season.handlers).
+// Kept balanced inside each gender, so 10 men + 10 women end up as 5 + 5 per handler.
+export function assignHandler(pid, s = S()) {
+    s.handlers ||= {};
+    if (s.handlers[pid]) return s.handlers[pid];
+    const g = selGender(Store.player(pid)) || "male";
+    const n = k => s.roster.filter(id => id !== +pid && s.handlers[id] === k && (selGender(Store.player(id)) || "male") === g).length;
+    const d = n("DYLAN"), j = n("JAMES");
+    return (s.handlers[pid] = d < j ? "DYLAN" : j < d ? "JAMES" : Math.random() < 0.5 ? "DYLAN" : "JAMES");
+}
 export function addToRoster(pid) {
     const s = S();
     if (s.roster.includes(pid) || s.roster.length >= CONFIG.SEASON_SIZE) return;
     s.roster.push(pid);
     s.ps[pid] = { money: CONFIG.START_MONEY, points: 0, hp: CONFIG.START_HP, food: FOOD_START, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null, use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 } };
-    log(`🎰 ${name(pid)} 참가 확정!`);
+    assignHandler(pid, s);
+    log(`🎰 ${name(pid)} 참가 확정! (전담 ${s.handlers[pid] === "DYLAN" ? "D" : "J"})`);
     // gold won outside a season (survival corner) comes along
     const w = Store.wallets?.[pid] || 0;
     if (w > 0) { s.ps[pid].money += w; delete Store.wallets[pid]; Store.saveWallets(); log(`👛 ${name(pid)} 시즌 밖에서 번 ${w.toLocaleString()}G 합류`); }
@@ -1502,6 +1512,7 @@ export function noteBattler(pid, won) {
     if (!ps) return;
     if (ps.battler?.round !== s.round) ps.battler = { round: s.round, won: 0, lost: 0 };
     ps.battler[won ? "won" : "lost"]++;
+    if (won) emitEvent("emoWin", pid, { where: "capture" });
     Store.saveSeason();
 }
 // pet / effect helped: what = "win" | "bonus"; counted on the player for the season

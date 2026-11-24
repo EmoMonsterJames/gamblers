@@ -608,17 +608,32 @@ export function rentShopView(pid, loc, { onChange = () => { } } = {}) {
             onChange(); draw();
             if (r.spin) spin(r.mon);
         }
+        // ⚔ a little weapon card: attribute · name · stars · power / accuracy / PP
+        const wCard = (w, nm, attr, extra = "") => h("div.rent-seg.rent-wcard" + extra, { style: { "--tc": E.colors?.[w?.attribute || attr] || "#888" } },
+            h("div.rent-wtop", typeChip(w?.attribute || attr), w ? stars(w.rarity || 1) : null),
+            h("b.rent-wname", "⚔ ", w?.name || nm),
+            w ? h("div.rent-wstats", h("span", `💥 ${w.power || 0}`), h("span", `🎯 ${w.accuracy ?? "-"}%`), h("span", `PP ${w.max_uses ?? E.cfg?.DEFAULT_WEAPON_USES ?? "-"}`)) : h("small.muted", "카탈로그에 없음"));
         async function spin(m) {
-            const list = RENT.rentCfg().weapons, segs = ["꽝", ...list.map(w => `${w[0]} (${w[1]})`)];
-            const reel = h("div.rent-reel", segs.map(s => h("div.rent-seg", s)));
-            const msg = h("p.center.muted", "🎡 돌아가는 중…");
-            const mm = modal(h("div.rent-spin", h("p.center", `${M.sp(m)?.name} 대여 — 무기 포함 룰렛 찬스!`), reel, msg), { title: "🎡 무기 포함 룰렛 찬스" });
+            const list = RENT.rentCfg().weapons;
+            const miss = h("div.rent-seg.rent-wcard.rent-miss", h("div.rent-wtop", h("span", "💨")), h("b.rent-wname", "꽝"), h("small.muted", "40%"));
+            const reel = h("div.rent-reel", miss, ...list.map(w => wCard(RENT.weaponByName(w[0]), w[0], w[1])));
+            const msg = h("div.center.muted", "🎡 돌아가는 중…");
+            const mm = modal(h("div.rent-spin", h("p.center", `${M.sp(m)?.name} 대여 — 무기 포함 룰렛 찬스! (무기 60% · 꽝 40%)`), reel, msg), { title: "🎡 무기 포함 룰렛 찬스", wide: true });
             const r = RENT.spinWeapon(pid, m.uid);
             if (!r.ok) { mm.close(); return toast(r.why, "warn"); }
-            const cells = [...reel.children];
-            const steps = segs.length * 3 + r.idx;
-            for (let i = 0; i <= steps; i++) { cells.forEach((c, j) => c.classList.toggle("on", j === i % segs.length)); Sound.tick?.(); await sleep(50 + i * 4); }
-            if (r.idx) { Sound.fanfare(); confetti(50, ["⚔️", "✨"]); put(msg, h("b", `🎉 ${r.name} 당첨! 대여한 몬스터에 무기가 포함됩니다`), r.weapon ? null : h("small.warn", " (EmoMon 카탈로그에 없는 무기라 실제로 배우지는 못했습니다)")); }
+            const cells = [...reel.children], n = cells.length;
+            const steps = n * 3 + r.idx;
+            for (let i = 0; i <= steps; i++) { cells.forEach((c, j) => c.classList.toggle("on", j === i % n)); Sound.tick?.(); await sleep(50 + i * 4); }
+            if (r.idx && r.swapped) {
+                Sound.fanfare(); confetti(30, ["🛡️", "✨"]);
+                put(msg, h("p", h("b", `🎉 ${r.name} 당첨! `), h("span.warn", `하지만 ${M.sp(m)?.name}은(는) 해당 무기를 배울 수 없습니다.`)),
+                    h("p", "대신에 모든 이모몬스터가 배울 수 있는 ", h("b", "Brace (Normal)"), "를 드립니다"),
+                    h("div.rent-won", wCard(r.won, r.name, ""), h("span.rent-arrow", "➜"), wCard(r.weapon, "Brace", "Normal", ".on")));
+            } else if (r.idx) {
+                Sound.fanfare(); confetti(50, ["⚔️", "✨"]);
+                put(msg, h("p", h("b", `🎉 ${r.name} 당첨! 대여한 몬스터에 무기가 포함됩니다`)), h("div.rent-won", wCard(r.weapon, r.name, "", ".on")),
+                    r.weapon ? null : h("small.warn", " (EmoMon 카탈로그에 없는 무기라 실제로 배우지는 못했습니다)"));
+            }
             else { Sound.lose(); put(msg, h("b", "꽝… 무기 없이 대여합니다")); }
             onChange(); draw();
         }

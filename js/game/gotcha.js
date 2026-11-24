@@ -15,7 +15,7 @@
 import { Store } from "../core/store.js";
 import { CATS, saleOf } from "../data/catalogAdmin.js";
 import { SHOPS, LOC_BY_ID } from "../data/catalog.js";
-import { S, log, name, noteRefuse } from "./season.js";
+import { S, log, name, noteRefuse, emitEvent } from "./season.js";
 import { cat, species, emoItem, EMO_ITEMS, LAB_ONLY, EMO, weaponPrice, traitPrice, monOn, weaponOn, traitOn } from "../emomon/data.js";
 import * as M from "../emomon/game.js";
 import { emoSlots } from "./extra.js";
@@ -181,6 +181,7 @@ export function recycleBlanks(pid) {
     delete ps.items.gotcha_blank;
     ps.money += gold;
     log(`♻️ ${name(pid)} 꽝 캡슐 ${n}개 수거 → +${gold.toLocaleString()}G`);
+    emitEvent("blank", pid, { n, gold }); // 🎯 사내 미션: 꽝캡슐 팔기
     Store.saveSeason(true);
     return { ok: true, n, gold };
 }

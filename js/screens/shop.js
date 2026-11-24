@@ -6,7 +6,7 @@ import { Store } from "../core/store.js";
 import { SHOPS, LOC_BY_ID, catalogEntry, WEAPON_BY_ID, isAttackWeapon, attackCount, PET_BY_ID, PETFX_BY_ID, SHOP_LIMIT, ITEMS, ITEM_BY_ID, REGION_ITEMS, ALPHABET, ALL_LETTERS, cardId } from "../data/catalog.js";
 import { CONFIG } from "../config.js";
 import { sleep } from "../core/util.js";
-import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft, shopLimit } from "../game/season.js";
+import { S, log, name, buysLeft, noteBuy, useLetterBox, npcBlocksLeft, shopLimit, emitEvent } from "../game/season.js";
 import { petView, weaponChip, framePreview } from "../ui/profile.js";
 import { particles } from "../core/fx.js";
 import { shopListing, discountItems } from "../data/catalogAdmin.js";
@@ -106,7 +106,7 @@ export function giveGoods(pid, cat, id) {
         case "weapon": ps.weapons.push(id); break;
         case "pet":
             if (ps.pet) { ps.items.pet_swap--; log(`🔁 ${name(pid)} 펫 교체: ${PET_BY_ID[ps.pet]?.name || ps.pet} → ${PET_BY_ID[id]?.name || id}`); }
-            ps.pet = id; break;
+            ps.pet = id; emitEvent("pet", pid, { id, special: PET_BY_ID[id]?.kind === "special" }); break;
         case "effect": ps.petEffect = id; break;
         case "frame": Store.setDecor(pid, { ownedFrames: [...d.ownedFrames, id], frame: id }); break;
         case "peffect": Store.setDecor(pid, { ownedEffects: [...d.ownedEffects, id], effect: id }); break;

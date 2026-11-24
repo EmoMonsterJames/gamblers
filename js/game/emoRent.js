@@ -5,14 +5,15 @@
 //     per round → a random monster of that grade joins the party, marked "대여중" (mon.rent)
 //   · 8 players or fewer left: every rental costs +10P per round on top · 6 or fewer: no rentals at all
 //   · renting at least 5 (일반) / 3 (프리미엄) / 2 (럭셔리) rounds → one spin of the weapon roulette
-//     (꽝 50% · 10 weapons 5% each) — a won weapon comes with the monster
+//     (꽝 40% · 10 weapons 6% each) — a won weapon comes with the monster;
+//     one the monster cannot learn is swapped for Brace (Normal), which every monster gets
 //   · when the rental runs out (round start after the last rented round) the monster is taken back
 //   · 📖 Dex: a rented species is listed as found, labelled "Rented"
 // Admin (🌍 지역·맵 관리 → a rent-shop map → 🏷️ 대여샵 관리): monsters per grade · prices · roulette.
 // Settings: Store.maps.emoRent = { tiers: [{ id, mons: [name | speciesId], gold, pts, minRounds }], weapons: [[name, type, pct]] }
 // =====================================================================
 import { Store } from "../core/store.js";
-import { S, log, name, alive, roundHooks } from "./season.js";
+import { S, log, name, alive, roundHooks, emitEvent } from "./season.js";
 import { emoSlots } from "./extra.js";
 import * as M from "../emomon/game.js";
 import { cat, species } from "../emomon/data.js";
@@ -27,8 +28,8 @@ export const RENT_TIERS = [
 ];
 // 🎡 weapon roulette: [weapon name, attribute, chance %] — whatever is left over is 꽝
 export const RENT_WEAPONS = [
-    ["Light Tap", "Normal", 5], ["Bubble", "Water", 5], ["Twinkle", "Fairy", 5], ["Sleepy Seed", "Grass", 5], ["Breeze", "Air", 5],
-    ["Energy Field", "Robot", 5], ["Ghost Wall", "Ghost", 5], ["Psy Dart", "Mind", 5], ["Snow Veil", "Ice", 5], ["Zap", "Electric", 5]
+    ["Light Tap", "Normal", 6], ["Bubble", "Water", 6], ["Twinkle", "Fairy", 6], ["Sleepy Seed", "Grass", 6], ["Breeze", "Air", 6],
+    ["Energy Field", "Robot", 6], ["Ghost Wall", "Ghost", 6], ["Psy Dart", "Mind", 6], ["Snow Veil", "Ice", 6], ["Zap", "Electric", 6]
 ];
 
 const low = s => String(s ?? "").trim().toLowerCase();
@@ -91,20 +92,25 @@ export function rent(pid, tierId, rounds, payWith = "gold", locId = null) {
     return { ok: true, mon, species: sp, price, spin: mon.rent.spin === "ready" };
 }
 
-// 🎡 the weapon roulette (once, only for a rental long enough for its grade) → { ok, idx, weapon|null }
-// idx: the roulette segment — 0 = 꽝, 1.. = RENT weapons in order
+// 🎡 the weapon roulette (once, only for a rental long enough for its grade) → { ok, idx, weapon|null, won, swapped }
+// idx: the roulette segment — 0 = 꽝, 1.. = RENT weapons in order. The admin's chances are scaled so all weapons
+// together come out 60% (꽝 40%). A weapon the monster cannot learn → Brace (Normal) instead.
+export const RENT_WEAPON_TOTAL = 60, RENT_FALLBACK = "Brace";
 export function spinWeapon(pid, uid) {
     const m = M.monByUid(pid, uid);
     if (!m?.rent || m.rent.spin !== "ready") return { ok: false, why: "룰렛 찬스가 없습니다" };
-    const list = rentCfg().weapons;
+    const list = rentCfg().weapons, sum = list.reduce((a, w) => a + (+w[2] || 0), 0) || 1;
     let x = Math.random() * 100, idx = 0;
-    for (let i = 0; i < list.length; i++) { x -= +list[i][2] || 0; if (x < 0) { idx = i + 1; break; } }
-    const w = idx ? weaponByName(list[idx - 1][0]) : null;
-    m.rent.spin = idx ? list[idx - 1][0] : "miss";
+    for (let i = 0; i < list.length; i++) { x -= (+list[i][2] || 0) * RENT_WEAPON_TOTAL / sum; if (x < 0) { idx = i + 1; break; } }
+    const won = idx ? weaponByName(list[idx - 1][0]) : null;
+    let w = won, swapped = false;
+    if (won && !M.canLearn(m, won)) { w = weaponByName(RENT_FALLBACK); swapped = true; }
+    m.rent.spin = idx ? (swapped ? RENT_FALLBACK : list[idx - 1][0]) : "miss";
     if (w && !(m.weapons || []).map(String).includes(String(w.id))) (m.weapons ||= []).push(w.id);
-    log(`🎡 ${name(pid)} 대여 무기 룰렛 → ${idx ? `${list[idx - 1][0]} (${list[idx - 1][1]})${w ? "" : " — 카탈로그에 없는 무기"}` : "꽝"}`);
+    log(`🎡 ${name(pid)} 대여 무기 룰렛 → ${idx ? `${list[idx - 1][0]} (${list[idx - 1][1]})${swapped ? ` — 배울 수 없어 ${RENT_FALLBACK} (Normal) 지급` : w ? "" : " — 카탈로그에 없는 무기"}` : "꽝"}`);
+    if (w) emitEvent("rentWeapon", pid, { weapon: w.name });
     Store.saveSeason(true);
-    return { ok: true, idx, name: idx ? list[idx - 1][0] : null, weapon: w };
+    return { ok: true, idx, name: idx ? list[idx - 1][0] : null, weapon: w, won, swapped };
 }
 export const roundsLeft = m => m?.rent ? Math.max(0, m.rent.until - (S()?.round || 0) + 1) : 0;
 

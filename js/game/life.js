@@ -12,7 +12,7 @@ import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
 import { LOC_BY_ID, ITEMS, ITEM_BY_ID } from "../data/catalog.js";
 import * as L from "../data/life.js";
-import { S, log, name, roundHooks, killPlayer, hpToll, bump, noteRefuse } from "./season.js";
+import { S, log, name, roundHooks, killPlayer, hpToll, bump, noteRefuse, emitEvent } from "./season.js";
 import { ownsTypes } from "./extra.js";
 import { activeBiz } from "./bank.js";
 
@@ -197,6 +197,7 @@ export function buyFood(pid, key, corner, it, { discount = 0 } = {}) {
     if (price) pay(ps, price);
     if (corner.pantry) u.pantry = (u.pantry || 0) + 1; else u.n = (u.n || 0) + 1;
     const r = eat(pid, f.id, `${corner.name}${price ? ` ${price.toLocaleString()}G` : " 무료"}`);
+    emitEvent("food", pid, { id: f.id, pantry: !!corner.pantry }); // 🎯 사내 미션: 푸드 코너 구입
     return { ...r, price };
 }
 

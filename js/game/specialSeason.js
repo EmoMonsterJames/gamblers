@@ -1,6 +1,6 @@
 // =====================================================================
 // ✨ 특수 시즌 — a season whose 20 players are drawn from one theme pool.
-// Every special season: 10 DYLAN / 10 JAMES. "(남/녀 각각 10명)" types also need 10 male / 10 female,
+// 전담자 D / J is drawn when each player joins. "(남/녀 각각 10명)" types also need 10 male / 10 female,
 // and the two-team types (Veterans vs. Newbies · Rich vs Poor) need 10 of each team.
 // The whole roster is drawn up front (an exact quota solver), so a type is only offered when
 // a full valid roster exists; SPIN in the selection stage then reveals it one player at a time.
@@ -15,7 +15,6 @@ const normJob = j => low(j).replace(/[^a-z0-9]/g, "").replace(/hygh/g, "hyhg"); 
 const gRaw = p => low(p?.gender);
 // same as season.js selGender: fluid / trans count as male for the 10 / 10 split
 const sGender = p => { const g = gRaw(p); return !g ? null : g === "female" ? "female" : "male"; };
-const sHandler = p => { const x = String(p?.handler || "").trim().toUpperCase(); return x === "JAMES" || x === "DYLAN" ? x : null; };
 const transCurious = p => /^trans?-?curious$/.test(low(p?.preference).replace(/\s+/g, "")); // "Trans-Curious" · "Tran-Curious"
 export const isLindaJones = p => +p?.id === 275 || /linda\s*jones|린다\s*존스/i.test(`${p?.player_name || ""} ${p?.name_ko || ""}`);
 
@@ -75,11 +74,11 @@ export const SPECIAL_BY_ID = Object.fromEntries(SPECIAL_SEASONS.map(t => [t.id, 
 // from each cell so that every quota is met, trying counts in random order (so every valid roster can come up).
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 export function candidates(t, players = Store.players) {
-    return players.filter(p => !p._test && sHandler(p) && (!t.mf || sGender(p)) && (!t.team || t.team(p)) && (!t.pool || t.pool(p)));
+    return players.filter(p => !p._test && (!t.mf || sGender(p)) && (!t.team || t.team(p)) && (!t.pool || t.pool(p)));
 }
 export function solveSpecial(t, players = Store.players) {
     const pool = candidates(t, players);
-    const dims = [["h", sHandler, ["JAMES", "DYLAN"]]];
+    const dims = []; // 🧑‍💼 전담자 is drawn per season on join (season.js assignHandler), not a quota here
     if (t.mf) dims.push(["g", sGender, ["male", "female"]]);
     if (t.team) dims.push(["t", t.team, t.teams]);
     const cells = new Map();
@@ -117,7 +116,7 @@ export function specialStatus(t) {
     const pool = candidates(t);
     const plan = pool.length >= N ? solveSpecial(t) : null;
     if (plan) return { ok: true, plan, pool: pool.length };
-    const need = [`DYLAN ${HALF} · JAMES ${HALF}`, t.mf ? `남 ${HALF} · 여 ${HALF}` : null, t.team ? t.teams.map(x => `${x} ${HALF}`).join(" · ") : null].filter(Boolean).join(" / ");
+    const need = [t.mf ? `남 ${HALF} · 여 ${HALF}` : null, t.team ? t.teams.map(x => `${x} ${HALF}`).join(" · ") : null].filter(Boolean).join(" / ");
     return { ok: false, plan: null, pool: pool.length, why: pool.length < N ? `대상 플레이어 ${pool.length}명 (20명 필요)` : `대상 ${pool.length}명이지만 인원 조건(${need})을 채울 수 없음` };
 }
 
@@ -149,7 +148,7 @@ export function specialQuota(s) {
     if (!t) return [];
     const ps = s.roster.map(id => Store.player(id)).filter(Boolean);
     const n = f => ps.filter(f).length;
-    const out = [["DYLAN", n(p => sHandler(p) === "DYLAN"), HALF], ["JAMES", n(p => sHandler(p) === "JAMES"), HALF]];
+    const out = [["DYLAN", n(p => s.handlers?.[p.id] === "DYLAN"), HALF], ["JAMES", n(p => s.handlers?.[p.id] === "JAMES"), HALF]];
     if (t.mf) out.push(["♂ 남자", n(p => sGender(p) === "male"), HALF], ["♀ 여자", n(p => sGender(p) === "female"), HALF]);
     if (t.team) for (const x of t.teams) out.push([x, s.roster.filter(id => s.special.tags?.[id] === x).length, HALF]);
     return out;

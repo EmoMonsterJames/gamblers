@@ -17,7 +17,7 @@ import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
 const FIELDS = [
     ["login_id", "로그인 ID"], ["name_ko", "이름 (한글)"], ["player_name", "영문 이름"],
     ["country", "국가"], ["school", "학교"], ["job", "직업"], ["ethnicity", "종족"],
-    ["age_group", "연령대"], ["gender", "성별"], ["preference", "성향"], ["handler", "전담자"]
+    ["age_group", "연령대"], ["gender", "성별"], ["preference", "성향"] // 🧑‍💼 전담자: drawn per season (D / J), not stored
 ];
 // dropdown fields: fixed choices + whatever values the players already use
 const CHOICES = {
@@ -62,12 +62,7 @@ export function adminPlayersPage() {
     draw();
     return h("div.page.admin-players",
         h("div.row.between", h("h2.page-title", "🧑‍🤝‍🧑 플레이어 관리"),
-            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), Store.cloud ? h("button.btn.ghost", { title: "다른 관리자가 추가 · 수정한 플레이어 불러오기", onclick: async () => { if (await Store.refreshPlayers()) { draw(); toast("🔄 최신 플레이어 목록을 불러왔습니다", "ok"); } } }, "🔄 새로고침") : null, h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.ghost", { title: "모든 플레이어의 전담자를 DYLAN / JAMES 중 랜덤으로 다시 지정", onclick: async () => {
-                if (!(await confirmBox(`🎲 등록된 모든 플레이어 ${Store.allPlayers.length}명의 전담자를 DYLAN / JAMES 중 랜덤으로 다시 지정할까요?
-(성별 · 국가별로 반반씩 나눠 시즌마다 DYLAN 10명 · JAMES 10명, 각각 남자 5 · 여자 5를 뽑을 수 있게 합니다)
-지금의 전담자 지정은 덮어씌워집니다.`, "랜덤 지정", "취소"))) return;
-                if (await Store.randomizeHandlers()) { draw(); const c = k => Store.allPlayers.filter(p => p.handler === k).length; toast(`🎲 전담자 랜덤 지정 완료 — DYLAN ${c("DYLAN")}명 · JAMES ${c("JAMES")}명`, "ok", 4000); }
-            } }, "🎲 전담자 랜덤 지정"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
+            h("div.row", h("a.btn.ghost", { href: "#/admin" }, "← 관리자"), Store.cloud ? h("button.btn.ghost", { title: "다른 관리자가 추가 · 수정한 플레이어 불러오기", onclick: async () => { if (await Store.refreshPlayers()) { draw(); toast("🔄 최신 플레이어 목록을 불러왔습니다", "ok"); } } }, "🔄 새로고침") : null, h("button.btn.ghost", { onclick: () => jobManager() }, "💼 직업 관리"), h("button.btn.gold", { onclick: () => editPlayer(null, draw) }, "➕ 새 플레이어"))),
         h("p.muted", Store.cloud ? "변경 사항은 Supabase에 바로 저장됩니다." : "로컬 모드: 이 브라우저에만 저장됩니다."),
         h("div.row", search, offChk, noChk, h("small.muted", `전체 ${Store.allPlayers.length}명 · 활성 ${Store.players.length}명 · `), noCount),
         list);

@@ -234,58 +234,67 @@ export const GRADE_ORDER = ["A+", "A", "B", "C", "D", "F"];
 // promoTop / promoAdd (max 3) · mgrTop / mgrPay: manager (salary fixed)
 export const APPLY_MAX = 5, APPLY_PER_SEASON = 2;
 export const COMPANIES = {
-    hyhg: { id: "hyhg", name: "HYHG Corp.", emoji: "🏙️", color: "#0ea5e9", cap: 20, perSeason: 1, fee: 5000, pay: 20000, pts: 3,
+    hyhg: { id: "hyhg", warnAvg: 15, name: "HYHG Corp.", emoji: "🏙️", color: "#0ea5e9", cap: 20, perSeason: 1, fee: 5000, pay: 20000, pts: 3,
         stages: ["score", "chance", "chance"], guarantee: "all", fireOver: 17, fullFire: 1, promoTop: 6, promoAdd: 5000, mgrTop: 2, mgrPay: 50000,
         gifts: [{ item: "flu_cure" }, { item: "hp_50" }, { item: "mission_pass" }], giftOne: true, pantry: true, hotelOff: 0.2,
         reqText: "이모몬스터 1마리 이상 · NPC 랜드 / Difficult Land 맵 3곳 이상 체험 · 지원료 5,000G (취소 불가)",
         perks: ["매 라운드 급여 20,000G + 3P", "입사선물: 감기치료제 / HP+50약 / 미션완료권 중 1개", "라운드당 HYHG Pantry 1회 무료 (입장 60%)", "호텔 일반 객실 · 스위트룸 20% 할인"],
-        promoText: "TOP 17 밖이면 해고 · TOP 6마다 호봉 +5,000G (최대 3번) · 👔 매니저 (50,000G)는 진급 신청으로" },
-    gm: { id: "gm", name: "General Motors", emoji: "🚗", color: "#2563eb", cap: 20, perSeason: 1, fee: 3000, pay: 15000, pts: 1,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 6마다 호봉 +5,000G (최대 3번) · 👔 매니저 (50,000G)는 진급 신청으로" },
+    gm: { id: "gm", warnAvg: 16, name: "General Motors", emoji: "🚗", color: "#2563eb", cap: 20, perSeason: 1, fee: 3000, pay: 15000, pts: 1,
         stages: ["chance", "chance", "chance"], guarantee: "all", fireOver: 15, fullFire: 1, promoTop: 10, promoAdd: 3000, mgrTop: 3, mgrPay: 35000,
         gifts: [{ emo: "ITEM003" }, { item: "hp_10" }, { emo: "EMO_HP10" }], giftOne: true, pantry: true,
         reqText: "카지노 랜드 1 · 2 맵 5곳 이상 체험 · 지원료 3,000G (취소 불가)",
         perks: ["매 라운드 급여 15,000G + 1P", "입사선물: Hyper Ball / HP+10약 / 이모몬스터 HP+10약 중 1개", "라운드당 HYHG Pantry 1회 무료 (입장 60%)"],
-        promoText: "TOP 15 밖이면 해고 · TOP 10마다 호봉 +3,000G (최대 3번) · 👔 매니저 (35,000G)는 진급 신청으로" },
-    arizal: { id: "arizal", name: "Arizal Tech", emoji: "🛰️", color: "#7c3aed", cap: 15, perSeason: 1, fee: 3000, pay: 12000, pts: 1,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +3,000G (최대 3번) · 👔 매니저 (35,000G)는 진급 신청으로" },
+    arizal: { id: "arizal", warnAvg: 16, name: "Arizal Tech", emoji: "🛰️", color: "#7c3aed", cap: 15, perSeason: 1, fee: 3000, pay: 12000, pts: 1,
         stages: ["chance", "test", "chance"], guarantee: "final2", fireOver: 13, fullFire: 1, promoTop: 10, promoAdd: 2500, mgrTop: 3, mgrPay: 30000,
         gifts: [{ gold: 5000 }], weaponOff: 0.01,
         reqText: "랜덤랜드 맵 3곳 이상 체험 · 지원료 3,000G (취소 불가)",
         perks: ["매 라운드 급여 12,000G + 1P", "입사선물: 상여금 5,000G", "모든 무기 상점 1% 추가 할인"],
-        promoText: "TOP 13 밖이면 해고 · TOP 10마다 호봉 +2,500G (최대 3번) · 👔 매니저 (30,000G)는 진급 신청으로" },
-    poly: { id: "poly", name: "Poly Tech", emoji: "🔺", color: "#f97316", cap: 15, perSeason: 1, fee: 3000, pay: 12000, pts: 1,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +2,500G (최대 3번) · 👔 매니저 (30,000G)는 진급 신청으로" },
+    poly: { id: "poly", warnAvg: 16, name: "Poly Tech", emoji: "🔺", color: "#f97316", cap: 15, perSeason: 1, fee: 3000, pay: 12000, pts: 1,
         stages: ["chance", "chance"], guarantee: "all", fireOver: 13, fullFire: 1, promoTop: 10, promoAdd: 2500, mgrTop: 3, mgrPay: 30000,
         gifts: [{ item: "food_shapecookie" }, { item: "pass_poly" }],
         reqText: "지원료 3,000G (취소 불가)",
         perks: ["매 라운드 급여 12,000G + 1P", "입사선물: 도형쿠키 + Polynesia Casino 맵권"],
-        promoText: "TOP 13 밖이면 해고 · TOP 10마다 호봉 +2,500G (최대 3번) · 👔 매니저 (30,000G)는 진급 신청으로" },
-    robot: { id: "robot", name: "Robot Call Center", emoji: "📞", color: "#64748b", cap: 30, perSeason: 2, fee: 1000, pay: 10000, pts: 0,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +2,500G (최대 3번) · 👔 매니저 (30,000G)는 진급 신청으로" },
+    robot: { id: "robot", warnAvg: 17, name: "Robot Call Center", emoji: "📞", color: "#64748b", cap: 30, perSeason: 2, fee: 1000, pay: 10000, pts: 0,
         stages: ["chance", "chance"], guarantee: "all", fireOver: 10, fullFire: 3, promoTop: 10, promoAdd: 1500, mgrTop: 6, mgrPay: 25000,
         gifts: [{ emo: "ITEM001", w: 30 }, { emo: "BALL_ROBOT", w: 10 }, { emo: "BALL_DUNG", w: 30 }, { emo: "BALL_REPEAT", w: 30 }], giftOne: true,
         reqText: "지원료 1,000G (취소 불가)",
         perks: ["매 라운드 급여 10,000G", "입사선물 (랜덤): 몬스터볼 / Robot 속성볼 (10%) / 똥볼 / Repeat Ball"],
-        promoText: "TOP 10 밖이면 해고 · TOP 10마다 호봉 +1,500G (최대 3번) · 👔 매니저 (25,000G)는 진급 신청으로" },
-    sparkle: { id: "sparkle", name: "Sparkling Cleaners", emoji: "🧽", color: "#22d3ee", cap: 30, perSeason: 2, fee: 0, pay: 8000, pts: 0,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +1,500G (최대 3번) · 👔 매니저 (25,000G)는 진급 신청으로" },
+    sparkle: { id: "sparkle", warnAvg: 17, name: "Sparkling Cleaners", emoji: "🧽", color: "#22d3ee", cap: 30, perSeason: 2, fee: 0, pay: 8000, pts: 0,
         stages: ["chance", "chance"], guarantee: "all", fireOver: 10, fullFire: 3, promoTop: 10, promoAdd: 1000, mgrTop: 6, mgrPay: 15000,
         gifts: [], reqText: "무료 지원 (취소 불가)",
         perks: ["매 라운드 급여 8,000G"],
-        promoText: "TOP 10 밖이면 해고 · TOP 10마다 호봉 +1,000G (최대 3번) · 👔 매니저 (15,000G)는 진급 신청으로" },
-    dungdung: { id: "dungdung", name: "Dung Dung's", emoji: "💩", color: "#a16207", cap: 30, perSeason: 2, fee: 0, pay: 5000, pts: 0,
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +1,000G (최대 3번) · 👔 매니저 (15,000G)는 진급 신청으로" },
+    dungdung: { id: "dungdung", warnAvg: 18, name: "Dung Dung's", emoji: "💩", color: "#a16207", cap: 30, perSeason: 2, fee: 0, pay: 5000, pts: 0,
         stages: ["chance", "chance"], guarantee: "all", fireOver: 10, fullFire: 3, promoTop: 10, promoAdd: 500, mgrTop: 6, mgrPay: 10000,
         gifts: [], reqText: "무료 지원 (취소 불가)",
         perks: ["매 라운드 급여 5,000G"],
-        promoText: "TOP 10 밖이면 해고 · TOP 10마다 호봉 +500G (최대 3번) · 👔 매니저 (10,000G)는 진급 신청으로" }
+        promoText: "⚠️ 경고 3회 → 해고 · TOP 10마다 호봉 +500G (최대 3번) · 👔 매니저 (10,000G)는 진급 신청으로" },
+    // 🤲 Voluntary Inc. — free, instant result (30 s wait), up to 4 hires a season (at least 2 from the applicants)
+    voluntary: { id: "voluntary", warnAvg: 19, name: "Voluntary Inc.", emoji: "🤲", color: "#16a34a", cap: 50, perSeason: 4, minPerSeason: 2, fee: 0, pay: 4000, pts: 0,
+        instant: true, waitSec: 30, applyMax: 2, stages: ["chance"], guarantee: null, promoTop: 0, promoAdd: 0, mgrTop: 0, mgrPay: 12000,
+        gifts: [], reqText: "무료 지원 (취소 불가) · 시즌당 최대 2회 지원 · 지원 후 30초 뒤 바로 결과 (대기 중 턴 종료 · 나가기 → 탈락)",
+        perks: ["Voluntary 1~4팀 Worker 4,000G · 부매니저 8,000G · 총괄매니저 12,000G", "HR · 회계 · 비서팀 사원 6,000G · 매니저 10,000G", "청소부 3,000G (진급 없음)"],
+        promoText: "⚠️ 경고 3회 → 해고 · 👔 Worker → 부매니저 → 총괄매니저 (진급 신청)" }
 };
 export const COMPANY_LIST = Object.values(COMPANIES);
 // 🗂️ org charts: under the 🤖 CEO, teams of 1 manager seat + staff seats (managers + staff = the company's 정원)
 //   kind: mgmt 경영 · hr HR · acct 회계 · sec 비서 · work (콜센터 / 청소부 / 똥쓸이 n팀)
-const TEAM = (id, name, emoji, staff, kind = id) => ({ id, name, emoji, staff, kind });
+const TEAM = (id, name, emoji, staff, kind = id, extra = {}) => ({ id, name, emoji, staff, kind, ...extra });
 const OFFICE = ([m, hr, ac, sec]) => [TEAM("mgmt", "경영팀", "📊", m), TEAM("hr", "HR팀", "🤝", hr), TEAM("acct", "회계팀", "🧮", ac), TEAM("sec", "비서팀", "💼", sec)];
 const WORKS = (base, name, emoji) => [1, 2, 3, 4].map(i => TEAM(`${base}${i}`, `${name} ${i}팀`, emoji, 5, "work")).concat([TEAM("hr", "HR팀", "🤝", 1), TEAM("acct", "회계팀", "🧮", 1), TEAM("sec", "비서팀", "💼", 1)]);
 export const ORG = {
     hyhg: OFFICE([4, 4, 4, 4]), gm: OFFICE([4, 4, 4, 4]), arizal: OFFICE([3, 3, 3, 2]), poly: OFFICE([3, 3, 3, 2]),
-    robot: WORKS("call", "로봇콜센터", "📞"), sparkle: WORKS("clean", "청소부", "🧽"), dungdung: WORKS("dung", "똥쓸이", "💩")
+    robot: WORKS("call", "로봇콜센터", "📞"), sparkle: WORKS("clean", "청소부", "🧽"), dungdung: WORKS("dung", "똥쓸이", "💩"),
+    // 🤲 Voluntary Inc.: 4 work teams (총괄매니저 1 · 부매니저 3 · Worker 7) + HR / 회계 / 비서 (매니저 1 · 사원 2) + 청소부 1 (no promotion)
+    voluntary: [1, 2, 3, 4].map(i => TEAM(`vol${i}`, `Voluntary ${i}팀`, "🤲", 7, "work", { subs: 3, staffLabel: "Voluntary Worker", mgrLabel: "총괄매니저" }))
+        .concat([TEAM("hr", "HR팀", "🤝", 2), TEAM("acct", "회계팀", "🧮", 2), TEAM("sec", "비서팀", "💼", 2), TEAM("clean", "청소부", "🧹", 1, "clean", { noMgr: true, noPromo: true, staffLabel: "청소부" })])
 };
-export const CEO_NAME = { hyhg: "HYHG-X1", gm: "GM-Bot 9000", arizal: "ARZ-Prime", poly: "Poly-Tron", robot: "Call-Bot Alpha", sparkle: "Sparkle-Bot", dungdung: "Dung-Bot Mk.II" };
+export const CEO_NAME = { hyhg: "HYHG-X1", gm: "GM-Bot 9000", arizal: "ARZ-Prime", poly: "Poly-Tron", robot: "Call-Bot Alpha", sparkle: "Sparkle-Bot", dungdung: "Dung-Bot Mk.II", voluntary: "Robot CEO" };
 // 🎯 in-company missions (one at a time, from the day of joining · deadline: before only 3 players are left in that season)
 export const CO_MISSIONS = [
     { id: "maxi", emoji: "💎", text: "SLOT 게임으로 MAXI 이상 잭팟 획득하기" },
@@ -294,8 +303,49 @@ export const CO_MISSIONS = [
     { id: "spell", emoji: "🐝", text: "스펠링비 완성하기" },
     { id: "dead2", emoji: "☠️", text: "DEAD LAND 지역 맵 아무 곳이나 2회 체험하고 살아남기", goal: 2 },
     { id: "bonus5", emoji: "🎁", text: "SLOT 게임에서 5회 스핀 안에 보너스 터뜨리기", spins: 5 },
-    { id: "big30k", emoji: "🤝", text: "SLOT 1,000G 베팅으로 30,000G 이상 벌기 + 도움주기 코너에서 {race} 종족 비시즌 참가자 도움주기", bet: 1000, win: 30000 }
+    { id: "big30k", emoji: "🤝", text: "SLOT 1,000G 베팅으로 30,000G 이상 벌기 + 도움주기 코너에서 {race} 종족 비시즌 참가자 도움주기", bet: 1000, win: 30000 },
+    { id: "blank5", emoji: "🥚", text: "꽝캡슐 최소 5개 이상 팔기 (♻️ 꽝 캡슐 수거)", goal: 5 },
+    { id: "arena2", emoji: "🏟️", text: "아레나에서 이모몬스터 배틀 최소 2번 이상 승리하기", goal: 2 },
+    { id: "spet", emoji: "🐾", text: "특수펫 구입하여 장착하기" },
+    { id: "f_kkomeal", emoji: "🍱", text: "푸드 코너에서 꼬밀 밀키트 구입하기", food: "kkomeal" },
+    { id: "f_energy", emoji: "⚡", text: "푸드 코너에서 에너지드링크 구입하기", food: "energydrink" },
+    { id: "f_burger", emoji: "🍔", text: "푸드 코너에서 버거샵 콤보세트 구입하기", food: "combo_burger" },
+    { id: "rentw", emoji: "🏷️", text: "이모몬스터 Rent Shop에서 이모몬스터를 \"무기와 함께\" 최소 1회 대여하기" },
+    { id: "casino5k", emoji: "🃏", text: "카지노게임 5회 안에 5,000G 이상 벌기 (카지노 손익 계산됨)", goal: 5000, plays: 5 },
+    { id: "casino40k", emoji: "💰", text: "카지노게임에서 10,000G 베팅으로 40,000G 이상 벌기 (손익 계산 안 됨)", bet: 10000, win: 40000 },
+    { id: "brands", emoji: "🎰", text: "모든 브랜드의 슬롯 게임을 최소 한 번씩 플레이하기" }
 ];
+// ⚠️ firing (every company): 3 warnings → fired at once.
+//   · a warning whenever a season ends with the player's average rank (seasons since joining) at warnAvg or worse
+//   · a warning for every failed in-company mission (MISSION_ROUNDS rounds of play to finish each one — rounds while
+//     eliminated / not playing don't count, the clock goes on when the player is back in a season)
+export const WARN_MAX = 3, MISSION_ROUNDS = 3;
+// 👔 promotion request: N missions done → 30% + bonuses (HR people with intimacy ≥ 10: +2% each). Never certain.
+//   types: owns a monster of one of these attributes → +typeAdd · types2 → +types2Add · otherAdd: any other monster
+//   bonus: job (career count ≥ n) · jp (slot jackpots of tier+ since joining ≥ n) · emoWin (arena / capture battles won since joining ≥ n)
+//          jobs (똥쓸이 or 카지노청소부 ≥ n → +20, ≥ small → +5)
+export const PROMO_BASE = 30, PROMO_HR_MIN = 10, PROMO_HR_ADD = 2;
+export const PROMO = {
+    hyhg: { need: 3, types: ["Mind", "Evil", "Fairy", "Space"], typeAdd: 20, bonus: { kind: "job", job: "secretary", n: 8, add: 20, label: "형용형근회사 비서" } },
+    gm: { need: 3, types: ["Robot", "Steel", "Power"], typeAdd: 20, bonus: { kind: "jp", tier: "MAXI", n: 2, add: 20, label: "입사 후 슬롯 MAXI 보너스" } },
+    arizal: { need: 3, types: ["Ghost", "Light", "Air", "Magic"], typeAdd: 20, bonus: { kind: "jp", tier: "MINOR", n: 6, add: 20, label: "입사 후 슬롯 MINOR 보너스" } },
+    poly: { need: 3, types: ["Fire", "Electric", "Abnormal", "Ice", "Grass", "Bug"], typeAdd: 20, bonus: { kind: "jp", tier: "MINI", n: 10, add: 20, label: "입사 후 슬롯 MINI 보너스" } },
+    robot: { need: 2, types: ["Robot", "Steel", "Power"], typeAdd: 20, types2: ["Water", "Fly", "Earth"], types2Add: 15, bonus: { kind: "emoWin", n: 2, add: 20, label: "입사 후 아레나 · Monster Capture 배틀 승리" } },
+    sparkle: { need: 2, types: ["Normal", "Abnormal"], typeAdd: 20, otherAdd: 10, bonus: { kind: "jobs", jobs: ["dungsweep", "cleaner"], n: 10, add: 20, small: 5, smallAdd: 5, label: "똥쓸이 · 카지노청소부" } },
+    dungdung: { need: 2, types: ["Grass", "Bug"], typeAdd: 20, otherAdd: 10, bonus: { kind: "emoWin", n: 2, add: 20, label: "입사 후 아레나 · Monster Capture 배틀 승리" } },
+    voluntary: { need: 2, types: ["Angel"], typeAdd: 20, bonus: { kind: "job", job: "volunteer", n: 8, add: 20, label: "봉사활동 알바" } }
+};
+// 💵 Voluntary Inc. pay by seat (other companies: C.pay · manager C.mgrPay)
+export const SEAT_PAY = { voluntary: { work: { staff: 4000, sub: 8000, manager: 12000 }, office: { staff: 6000, manager: 10000 }, clean: { staff: 3000 } } };
+export function seatPay(co, T, role) {
+    const t = SEAT_PAY[co];
+    if (!t || !T) return null;
+    const row = T.kind === "work" ? t.work : T.kind === "clean" ? t.clean : t.office;
+    return row?.[role] ?? row?.staff ?? null;
+}
+// 🤲 Voluntary Inc. application chance (%)
+export const VOL_GRADE = { "A+": 10, A: 8, B: 7, C: 6, D: 5 };
+export const VOL_JOBS = ["voluntary worker", "voluntary clerk", "voluntary work part-timer"];
 // 👔 promotion request: 1 month after joining (and 1 month after a failed try)
 export const PROMO_WAIT_DAYS = 30;
 export const STAGE_LABEL = (co, i) => co.stages.length === 2 ? ["1차 서류심사", "최종 인터뷰"][i] : co.stages[i] === "test" ? "2차 Arizal Tech Test" : ["1차 서류심사", "2차 인터뷰", "3차 최종 인터뷰"][i];

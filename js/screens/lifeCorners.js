@@ -355,7 +355,7 @@ export function weatherLayer(locId) {
 }
 
 // ================================================================ 🏢 employment corner
-const coCard = (C, body) => h("div.ep-co", { style: { "--co": C.color } }, h("div.ep-co-head", h("span.ep-logo", C.emoji), h("div", h("b", C.name), h("small", `정원 ${C.cap}명 · 시즌당 최대 ${C.perSeason}명 채용 · 지원자 최대 ${L.APPLY_MAX}명`))), body);
+const coCard = (C, body) => h("div.ep-co", { style: { "--co": C.color } }, h("div.ep-co-head", h("span.ep-logo", C.emoji), h("div", h("b", C.name), h("small", C.instant ? `정원 ${C.cap}명 · 시즌당 최대 ${C.perSeason}명 채용 (최소 ${C.minPerSeason}명) · 이번 시즌 ${EP.volHired()}/${C.perSeason}명` : `정원 ${C.cap}명 · 시즌당 최대 ${C.perSeason}명 채용 · 지원자 최대 ${L.APPLY_MAX}명`))), body);
 export function employView(pid, { turn = null, onChange = () => { } } = {}) {
     const wrap = h("div.ep-view");
     const render = () => {
@@ -371,14 +371,14 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
                 const staff = EP.staffOf(C.id);
                 return coCard(C, h("div.ep-co-body",
                     h("div.ep-req", h("small", "📋 지원자격"), h("span", C.reqText)),
-                    h("div.ep-steps", C.stages.map((k, i) => h("span.ep-step", L.STAGE_LABEL(C, i)))),
+                    h("div.ep-steps", C.instant ? h("span.ep-step", `⏱️ 지원 → ${C.waitSec}초 뒤 결과`) : C.stages.map((k, i) => h("span.ep-step", L.STAGE_LABEL(C, i)))),
                     h("ul.ep-perks", C.perks.map(x => h("li", x)), h("li.muted", C.promoText)),
                     h("div.ep-people", h("small", `🧑‍💼 진행 중인 지원자 ${prog.length}명${c ? ` (이번 시즌 ${c.list.length}/${L.APPLY_MAX}${c.started ? " · 심사 중" : ""})` : ""}`),
                         h("div.ep-faces", prog.length ? prog.map(a => h("span.ep-face" + (a.pid === +pid ? ".me" : ""), { title: `${nm(a.pid)} · S${a.season} · ${a.state === "offer" ? "최종 합격" : a.started ? L.STAGE_LABEL(C, Math.min(a.stage, C.stages.length - 1)) + " 진행 중" : "심사 대기"}` }, avatar(a.pid, 34, { effect: false }), h("small", a.state === "offer" ? "🎉" : a.started ? `${a.stage + 1}차` : "대기"))) : h("span.muted", "없음"))),
                     h("div.ep-people", h("small", `👔 직원 ${staff.length}/${C.cap}`), h("div.ep-faces", staff.slice(0, 12).map(x => h("span.ep-face", { title: `${nm(x.pid)}${x.manager ? " · 매니저" : ""}` }, avatar(x.pid, 28, { effect: false }), x.manager ? h("small", "👔") : null)), staff.length > 12 ? h("small", `+${staff.length - 12}`) : null)),
                     h("div.row", h("button.btn.ghost.small", { onclick: () => showOrg(C.id, pid) }, `🗂️ 조직도 보기 (CEO 🤖 ${L.CEO_NAME[C.id] || "Robot"})`)),
                     hrBox(C.id),
-                    h("div.row.end", mine.includes(C.id) ? h("span.ep-applied", "✅ 지원 완료") : h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, title: st.why || "", onclick: () => apply(C) }, st.ok ? `지원하기${C.fee ? ` (${fmt(C.fee)}G)` : " (무료)"}` : `🚫 ${st.why}`))));
+                    h("div.row.end", mine.includes(C.id) && !C.instant ? h("span.ep-applied", "✅ 지원 완료") : h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, title: st.why || "", onclick: () => apply(C) }, st.ok ? `지원하기${C.fee ? ` (${fmt(C.fee)}G)` : " (무료)"}${C.instant ? ` · ${C.applyMax - st.left + 1}/${C.applyMax}회째` : ""}` : `🚫 ${st.why}`))));
             })),
             notesBox(pid));
     };
@@ -387,16 +387,42 @@ export function employView(pid, { turn = null, onChange = () => { } } = {}) {
         if (!(await confirmBox(`${C.emoji} ${C.name}에 지원할까요?\n${C.fee ? `지원료 ${fmt(C.fee)}G — ` : ""}지원은 취소할 수 없습니다.`, "지원하기", "취소"))) return;
         const r = EP.applyTo(pid, C.id);
         if (!r.ok) return toast(r.why, "warn");
+        if (r.instant) { Sound.coin(); await volWait(pid, C); onChange(); render(); return; }
         Sound.coin(); toast(r.full ? `📨 지원 완료! 지원자 ${L.APPLY_MAX}명이 모여 심사가 시작됩니다 (다음 라운드에 1차 결과)` : `📨 지원 완료! (지원자 ${r.n}/${L.APPLY_MAX} — 다 차면 심사 시작)`, "ok", 4200);
         onChange(); render();
     }
     render();
     return wrap;
 }
+// 🤲 Voluntary Inc.: the 30-second wait for the result — closing this window (or ending the turn) before it = 탈락
+async function volWait(pid, C) {
+    const left = () => Math.max(0, Math.ceil(((EP.volPending(pid)?.until || 0) - Date.now()) / 1000));
+    const num = h("b.vol-sec", String(left())), bar = h("i"), body = h("div.vol-wait", avatar(pid, 84),
+        h("p", `${C.emoji} ${C.name} 서류 심사 중…`), num, h("div.vol-bar", bar),
+        h("p.muted.small", "⚠️ 결과가 나오기 전에 이 창을 닫거나 턴을 끝내면 탈락합니다"));
+    const m = modal(body, { title: `${C.emoji} ${C.name} 심사 결과 대기` });
+    let result = null;
+    await new Promise(res => {
+        const iv = setInterval(() => {
+            const s = left();
+            num.textContent = String(s); bar.style.width = `${100 - (s / C.waitSec) * 100}%`;
+            if (s <= 0) { clearInterval(iv); result = EP.volResolve(pid); res(); }
+        }, 250);
+        m.closed.then(() => { if (result) return; clearInterval(iv); result = EP.volResolve(pid, { abandon: true }); res(); });
+    });
+    if (!result) return;
+    if (result.left) { Sound.lose(); toast(`❌ ${C.name} 탈락 — 결과 발표 전에 자리를 떠났습니다`, "warn", 4000); return; }
+    result.pass ? (Sound.fanfare(), confetti(60, ["🤲", "🎉", "✨"])) : Sound.lose();
+    body.replaceChildren(avatar(pid, 84), h("h3", result.pass ? "🎉 최종 합격!" : "❌ 불합격"),
+        h("div.co-promo-parts", ...result.why.map(w => h("span", w)), h("b", `= ${result.chance}%`)),
+        h("p", result.pass ? "계좌 코드 4자리를 연동하면 입사합니다 (취업 코너의 '입사 결정하기')" : `심사 결과 ${result.roll} ≥ ${result.chance}`),
+        h("div.row.end", h("button.btn.gold", { onclick: () => m.close() }, "확인")));
+    await m.closed;
+}
 // 🧾 a company's HR record: who joined / was promoted / quit / was fired (and applied / passed), and when
-const HR_ICON = { apply: "📨", pass: "✅", fail: "❌", hire: "🎉", decline: "🙅", promo: "📈", promo_fail: "📉", quit: "🚪", fire: "📭", gift: "🎁", seat: "🗂️", mission: "🎯", mission_fail: "⌛" };
+const HR_ICON = { apply: "📨", pass: "✅", fail: "❌", hire: "🎉", decline: "🙅", promo: "📈", promo_fail: "📉", quit: "🚪", fire: "📭", gift: "🎁", seat: "🗂️", mission: "🎯", mission_fail: "⌛", warn: "⚠️" };
 const HR_FILTERS = [["staff", "👔 직원 기록"], ["all", "📋 전체"]];
-const HR_STAFF = new Set(["hire", "promo", "promo_fail", "quit", "fire", "gift", "seat", "mission"]);
+const HR_STAFF = new Set(["hire", "promo", "promo_fail", "quit", "fire", "gift", "seat", "mission", "mission_fail", "warn"]);
 export function hrBox(co, { open = false } = {}) {
     let mode = "staff";
     const body = h("div.ep-hr-body");
@@ -449,7 +475,7 @@ export function companyView(pid, { turn = null, onChange = () => { } } = {}) {
         const staff = EP.staffOf(C.id);
         wrap.replaceChildren(
             coCard(C, h("div.ep-co-body",
-                h("div.ep-badge-big", companyMark(pid, 44), h("div", h("b", `${nm(pid)} — ${EP.teamOf(pid) ? `${EP.teamOf(pid).emoji} ${EP.teamOf(pid).name} ` : ""}${x.manager ? "👔 매니저" : "사원"}${x.promos ? ` · 호봉 ${x.promos}/3` : ""}`), h("small.muted", `입사 ${new Date(x.at).toLocaleDateString()}${x.season ? ` (시즌 ${x.season})` : ""} · 급여 계좌 ${x.code}`))),
+                h("div.ep-badge-big", companyMark(pid, 44), h("div", h("b", `${nm(pid)} — ${EP.teamOf(pid) ? `${EP.teamOf(pid).emoji} ${EP.teamOf(pid).name} ` : ""}${EP.roleLabel(x)}${x.promos ? ` · 호봉 ${x.promos}/3` : ""}${x.warns ? ` · ⚠️ 경고 ${x.warns}/${L.WARN_MAX}` : ""}`), h("small.muted", `입사 ${new Date(x.at).toLocaleDateString()}${x.season ? ` (시즌 ${x.season})` : ""} · 급여 계좌 ${x.code}`))),
                 h("div.ep-pay", h("div", h("small", "라운드 급여"), h("b", `${fmt(x.pay)} G`)), C.pts ? h("div", h("small", "라운드 포인트"), h("b", `${C.pts} P`)) : null, h("div", h("small", "급여 입금"), h("b", `🏦 ${x.code}`))),
                 h("ul.ep-perks", C.perks.map(p => h("li", p)), h("li.muted", C.promoText)),
                 missionBox(pid),
@@ -474,52 +500,63 @@ export function companyView(pid, { turn = null, onChange = () => { } } = {}) {
     render();
     return wrap;
 }
-// 🗂️ a company's org chart: the robot CEO on top, then each team — manager seat + staff seats
+// 🗂️ a company's org chart: the robot CEO on top, then each team — manager seat (+ 부매니저 seats) + staff seats
 export function orgChartView(co, { me = null } = {}) {
     const C = L.COMPANIES[co], o = EP.orgChart(co);
-    const seat = (x, mgr) => x
-        ? h("span.org-seat" + (mgr ? ".mgr" : "") + (+x.pid === +me ? ".me" : ""), { title: `${nm(x.pid)}${mgr ? " · 매니저" : ""}` }, avatar(x.pid, mgr ? 34 : 28, { effect: false }), h("small", mgr ? `👔 ${nm(x.pid)}` : nm(x.pid)))
-        : h("span.org-seat.empty" + (mgr ? ".mgr" : ""), h("i", mgr ? "👔" : "🪑"), h("small", mgr ? "매니저 공석" : "공석"));
+    const seat = (x, kind, T) => {
+        const mgr = kind === "mgr", sub = kind === "sub", label = mgr ? (T.mgrLabel || "매니저") : sub ? "부매니저" : "";
+        return x
+            ? h("span.org-seat" + (mgr ? ".mgr" : sub ? ".sub" : "") + (+x.pid === +me ? ".me" : ""), { title: `${nm(x.pid)}${label ? " · " + label : ""}${x.warns ? ` · ⚠️ 경고 ${x.warns}` : ""}` }, avatar(x.pid, mgr ? 34 : sub ? 30 : 28, { effect: false }), h("small", mgr ? `👔 ${nm(x.pid)}` : sub ? `🎖️ ${nm(x.pid)}` : nm(x.pid)))
+            : h("span.org-seat.empty" + (mgr ? ".mgr" : sub ? ".sub" : ""), h("i", mgr ? "👔" : sub ? "🎖️" : "🪑"), h("small", label ? `${label} 공석` : "공석"));
+    };
     return h("div.org", { style: { "--co": C.color } },
         h("div.org-ceo", h("span.org-bot", "🤖"), h("div", h("small", `${C.emoji} ${C.name} CEO`), h("b", L.CEO_NAME[co] || "Robot CEO"))),
         h("div.org-line"),
         h("div.org-teams", o.teams.map(T => h("div.org-team" + (T.kind === "work" ? ".work" : ""),
-            h("div.org-team-head", h("b", `${T.emoji} ${T.name}`), h("small", `${T.members.length}/${T.staff}`)),
-            seat(T.manager, true),
-            h("div.org-staff", Array.from({ length: T.staff }, (_, i) => seat(T.members[i], false)))))),
+            h("div.org-team-head", h("b", `${T.emoji} ${T.name}`), h("small", `${T.members.length}/${T.staff}${T.subs ? ` · 부 ${T.subList.length}/${T.subs}` : ""}`)),
+            T.noMgr ? null : seat(T.manager, "mgr", T),
+            T.subs ? h("div.org-staff.org-subs", Array.from({ length: T.subs }, (_, i) => seat(T.subList[i], "sub", T))) : null,
+            h("div.org-staff", Array.from({ length: T.staff }, (_, i) => seat(T.members[i], "staff", T)))))),
         o.waiting.length ? h("p.muted.small", `🕓 배치 대기: ${o.waiting.map(x => nm(x.pid)).join(", ")}`) : null);
 }
 function showOrg(co, me) {
     const C = L.COMPANIES[co];
     modal(orgChartView(co, { me }), { title: `🗂️ ${C.emoji} ${C.name} 조직도`, wide: true });
 }
-// 🎯 my in-company mission + 👔 promotion request
+// 🎯 my in-company mission (3 rounds of play to finish it) + ⚠️ warnings + 👔 promotion request
 function missionBox(pid) {
-    const x = EP.employer(pid), m = x?.mission;
+    const x = EP.employer(pid), m = x?.mission, C = EP.companyOf(pid);
     if (!m) return null;
-    const st = { active: m.season == null ? "⏳ 다음 시즌 참가 때 시작" : `진행 중 · 기한: 시즌 ${m.season} 최종 ${EP.EMPLOY_FREEZE_AT}명이 남기 전까지`, done: "✅ 완료", fail: "⌛ 실패" }[m.state];
-    const prog = EP.missionProgress(m);
-    return h("div.co-mission.s-" + m.state, h("small", "🎯 사내 미션"), h("b", EP.missionText(m)), prog ? h("span.co-mission-prog", prog) : null,
-        h("small.muted", `${st} · 누적 완료 ${x.mdone || 0} · 실패 ${x.mfail || 0}`));
+    const left = EP.missionRoundsLeft(m);
+    const st = m.state === "active" ? `진행 중 · 남은 기한 ${left}라운드 (플레이한 라운드만 셉니다 · 탈락 중엔 멈춤)` : m.state === "done" ? "✅ 완료" : "⌛ 실패";
+    const prog = EP.missionProgress(m), avg = EP.avgSinceHire(pid);
+    return h("div",
+        h("div.co-warns" + ((x.warns || 0) >= 2 ? ".hot" : ""), h("b", `⚠️ 경고 ${x.warns || 0}/${L.WARN_MAX}`),
+            h("span", Array.from({ length: L.WARN_MAX }, (_, i) => h("i" + (i < (x.warns || 0) ? ".on" : ""), "⚠️"))),
+            h("small.muted", `입사 후 평균 ${avg != null ? avg.toFixed(1) + "위" : "기록 없음"} · 평균 ${C.warnAvg}위 이하 / 사내 미션 실패 → 경고 · ${L.WARN_MAX}회면 해고`)),
+        h("div.co-mission.s-" + m.state, h("small", "🎯 사내 미션"), h("b", EP.missionText(m)), prog ? h("span.co-mission-prog", prog) : null,
+            h("small.muted", `${st} · 누적 완료 ${x.mdone || 0} · 실패 ${x.mfail || 0}`)));
 }
 function promoBox(pid, rerender) {
     const x = EP.employer(pid);
-    if (!x || x.role === "manager") return null;
-    const st = EP.promoStatus(pid), ck = EP.promoCheck(pid);
+    if (!x || x.role === "manager" || EP.teamOf(pid)?.noPromo) return null;
+    const st = EP.promoStatus(pid), ck = EP.promoCheck(pid), to = ck.seat?.label || "매니저";
     return h("div.co-promo",
-        h("div.co-promo-head", h("b", "👔 진급 신청 (→ 매니저)"), h("small.muted", `예상 확률 ${ck.chance}%`)),
+        h("div.co-promo-head", h("b", `👔 진급 신청 (→ ${to})`), h("small.muted", `예상 확률 ${ck.chance}%`)),
         h("ul.co-promo-checks", ck.checks.map(c => h("li" + (c.ok ? ".ok" : ".no"), `${c.ok ? "✅" : "⬜"} ${c.label}`, h("small.muted", ` — ${c.text}`)))),
+        h("div.co-promo-parts", ck.parts.map(([k, v]) => h("span" + (v > 0 ? ".on" : ""), `${k} ${v >= 0 ? "+" : ""}${v}%`)), h("b", `= ${ck.chance}%`)),
+        h("p.muted.small", "진급은 확률 심사라 100% 보장되지 않습니다 · 불합격하면 사내 미션을 1회 더 성공해야 다시 신청할 수 있습니다"),
         h("div.row.end", h("button.btn" + (st.ok ? ".gold" : ".ghost"), { disabled: !st.ok, title: st.why || "", onclick: apply }, st.ok ? "📝 진급 신청하기" : `🔒 ${st.why}`)));
     async function apply() {
-        const C = EP.companyOf(pid), T = EP.teamOf(pid);
-        if (!(await confirmBox(`${C.emoji} ${C.name} ${T?.name || ""} 매니저 진급을 신청할까요?\n• 사내 미션 · HR팀 친밀도 · 기본 조건을 심사합니다 (예상 확률 ${ck.chance}%)\n• 불합격하면 1개월 뒤 다시 신청할 수 있습니다`, "신청하기", "취소"))) return;
+        const C = EP.companyOf(pid);
+        if (!(await confirmBox(`${C.emoji} ${C.name} ${to} 진급을 신청할까요?\n• 예상 확률 ${ck.chance}% (보장되지 않음)\n• 불합격하면 사내 미션을 1회 더 성공해야 다시 신청할 수 있습니다`, "신청하기", "취소"))) return;
         const r = EP.applyPromotion(pid);
         if (!r.ok) return toast(r.why, "warn");
         r.promoted ? (Sound.fanfare(), confetti(60, ["👔", "🎉", "✨"])) : Sound.lose();
-        modal(h("div.co-promo-result" + (r.promoted ? ".win" : ".lose"), avatar(pid, 96), h("h3", r.promoted ? `🎉 ${T.name} 매니저 진급!` : "📉 진급 불합격"),
+        modal(h("div.co-promo-result" + (r.promoted ? ".win" : ".lose"), avatar(pid, 96), h("h3", r.promoted ? `🎉 ${r.seat.label} 진급!` : "📉 진급 불합격"),
             h("ul.co-promo-checks", r.checks.map(c => h("li" + (c.ok ? ".ok" : ".no"), `${c.ok ? "✅" : "❌"} ${c.label}`, h("small.muted", ` — ${c.text}`)))),
-            h("div.co-promo-parts", r.parts.map(([k, v]) => h("span", `${k} ${v >= 0 ? "+" : ""}${v}`)), h("b", `= ${r.chance}%`)),
-            h("p", r.promoted ? `급여 ${fmt(C.mgrPay)}G (매니저)` : r.basic ? `심사 결과 ${r.roll} ≥ ${r.chance} — 1개월 뒤 다시 도전하세요` : "기본 조건을 채우지 못했습니다 — 1개월 뒤 다시 도전하세요")),
+            h("div.co-promo-parts", r.parts.map(([k, v]) => h("span", `${k} ${v >= 0 ? "+" : ""}${v}%`)), h("b", `= ${r.chance}%`)),
+            h("p", r.promoted ? `급여 ${fmt(EP.employer(pid)?.pay || 0)}G` : r.basic ? `심사 결과 ${r.roll} ≥ ${r.chance} — 사내 미션을 1회 더 성공하면 다시 도전할 수 있습니다` : "기본 조건을 채우지 못했습니다")),
             { title: `${C.emoji} ${C.name} 진급 심사 결과` });
         rerender();
     }
