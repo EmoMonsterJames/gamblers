@@ -1,56 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-<!-- #498 웁시데이지 — a bald baby doll: big round head, rosy cheeks, glossy doll eyes, blue dress with a white lace collar and hem -->
+<!-- #498 웁시데이지 — a creepy bald baby doll: tan vinyl head, narrowed glowing green eyes under a heavy frowning brow,
+     a small sulky mouth with ventriloquist-dummy jaw lines, a blue button dress with a white lace collar -->
 <defs>
-<radialGradient id="skin" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="#ffe9dc"/><stop offset="1" stop-color="#f4c6ad"/></radialGradient>
-<linearGradient id="dress" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb2ff"/><stop offset="1" stop-color="#3f74d6"/></linearGradient>
-<radialGradient id="iris" cx=".45" cy=".4" r=".6"><stop offset="0" stop-color="#8fd0ff"/><stop offset="1" stop-color="#2a5fae"/></radialGradient>
+<radialGradient id="skin" cx=".45" cy=".35" r=".75"><stop offset="0" stop-color="#f2c08c"/><stop offset=".6" stop-color="#d99a62"/><stop offset="1" stop-color="#a8683a"/></radialGradient>
+<linearGradient id="dress" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb6e8"/><stop offset="1" stop-color="#5a84c4"/></linearGradient>
+<radialGradient id="iris" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="#d9ff9a"/><stop offset=".45" stop-color="#3fd65a"/><stop offset="1" stop-color="#0e5a22"/></radialGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7dff8a" stop-opacity=".55"/><stop offset="1" stop-color="#7dff8a" stop-opacity="0"/></radialGradient>
 <clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath>
+<clipPath id="eL"><path d="M84 110 Q102 96 120 108 Q102 120 84 110Z"/></clipPath>
+<clipPath id="eR"><path d="M136 108 Q154 96 172 110 Q154 120 136 108Z"/></clipPath>
 </defs>
-<circle cx="128" cy="128" r="124" fill="#ffeef5"/>
+<circle cx="128" cy="128" r="124" fill="#efe9e4"/>
 <g clip-path="url(#cc)">
-<g fill="#ffd1e3" opacity=".7"><circle cx="40" cy="70" r="6"/><circle cx="214" cy="84" r="5"/><circle cx="30" cy="160" r="4"/><circle cx="226" cy="168" r="6"/></g>
-<!-- chubby arms -->
-<path d="M84 186 Q60 196 58 222" fill="none" stroke="#3a2a24" stroke-width="22" stroke-linecap="round"/>
-<path d="M84 186 Q60 196 58 222" fill="none" stroke="url(#skin)" stroke-width="16" stroke-linecap="round"/>
-<path d="M172 186 Q196 196 198 222" fill="none" stroke="#3a2a24" stroke-width="22" stroke-linecap="round"/>
-<path d="M172 186 Q196 196 198 222" fill="none" stroke="url(#skin)" stroke-width="16" stroke-linecap="round"/>
-<!-- blue dress (puff sleeves) -->
-<path d="M84 176 Q128 166 172 176 L196 262 H60Z" fill="url(#dress)" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
-<ellipse cx="80" cy="184" rx="16" ry="13" fill="url(#dress)" stroke="#3a2a24" stroke-width="3.5"/>
-<ellipse cx="176" cy="184" rx="16" ry="13" fill="url(#dress)" stroke="#3a2a24" stroke-width="3.5"/>
-<path d="M68 190 q12 6 24 0 M164 190 q12 6 24 0" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="3 3"/>
-<path d="M100 200 V262 M156 200 V262 M128 200 V262" stroke="#2f5fb8" stroke-width="2" opacity=".6"/>
-<!-- lace hem -->
-<path d="M56 246 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 q8 10 16 0 V262 H56Z" fill="#fff" stroke="#3a2a24" stroke-width="2.5"/>
-<g fill="#cfe0ff"><circle cx="64" cy="252" r="2"/><circle cx="96" cy="252" r="2"/><circle cx="128" cy="252" r="2"/><circle cx="160" cy="252" r="2"/><circle cx="192" cy="252" r="2"/></g>
+<!-- arms -->
+<path d="M84 190 Q60 200 58 226" fill="none" stroke="#3a2a24" stroke-width="22" stroke-linecap="round"/>
+<path d="M84 190 Q60 200 58 226" fill="none" stroke="url(#skin)" stroke-width="16" stroke-linecap="round"/>
+<path d="M172 190 Q196 200 198 226" fill="none" stroke="#3a2a24" stroke-width="22" stroke-linecap="round"/>
+<path d="M172 190 Q196 200 198 226" fill="none" stroke="url(#skin)" stroke-width="16" stroke-linecap="round"/>
+<!-- blue button dress -->
+<path d="M82 178 Q128 168 174 178 L198 262 H58Z" fill="url(#dress)" stroke="#3a2a24" stroke-width="4" stroke-linejoin="round"/>
+<ellipse cx="80" cy="186" rx="16" ry="13" fill="url(#dress)" stroke="#3a2a24" stroke-width="3.5"/>
+<ellipse cx="176" cy="186" rx="16" ry="13" fill="url(#dress)" stroke="#3a2a24" stroke-width="3.5"/>
+<path d="M96 206 q10 8 4 22 M160 206 q-10 8 -4 22 M110 236 q18 -6 36 0" fill="none" stroke="#4a70ad" stroke-width="2" opacity=".6"/>
+<g fill="#dfe6ee" stroke="#6b7684" stroke-width="2"><circle cx="128" cy="210" r="6.5"/><circle cx="128" cy="238" r="6.5"/></g>
+<g fill="#6b7684"><circle cx="126" cy="208" r="1.1"/><circle cx="130" cy="212" r="1.1"/><circle cx="126" cy="236" r="1.1"/><circle cx="130" cy="240" r="1.1"/></g>
 <!-- white lace collar -->
-<path d="M96 170 Q100 196 126 188 Q128 182 130 188 Q156 196 160 170 Q128 178 96 170Z" fill="#fff" stroke="#3a2a24" stroke-width="3"/>
-<path d="M102 176 q4 10 16 8 M154 176 q-4 10 -16 8" fill="none" stroke="#c9d8f5" stroke-width="2"/>
-<circle cx="128" cy="186" r="4.5" fill="#ff6fa3" stroke="#3a2a24" stroke-width="2"/>
-<!-- the big bald head -->
-<rect x="114" y="150" width="28" height="22" rx="8" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
-<ellipse cx="128" cy="104" rx="64" ry="62" fill="url(#skin)" stroke="#3a2a24" stroke-width="4"/>
+<path d="M90 176 q6 10 12 2 q6 10 12 2 q6 10 14 2 q8 10 14 -2 q6 10 12 -2 q6 10 12 -2 Q128 166 90 176Z" fill="#fff" stroke="#3a2a24" stroke-width="2.6" stroke-linejoin="round"/>
+<!-- neck + big bald head -->
+<rect x="112" y="152" width="32" height="22" rx="8" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
+<path d="M68 96 Q66 40 128 36 Q190 40 188 96 Q190 140 166 160 Q148 172 128 172 Q108 172 90 160 Q66 140 68 96Z" fill="url(#skin)" stroke="#3a2a24" stroke-width="4"/>
 <!-- ears -->
-<ellipse cx="64" cy="112" rx="9" ry="13" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
-<ellipse cx="192" cy="112" rx="9" ry="13" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
-<!-- bald scalp shine + a faint doll seam -->
-<ellipse cx="108" cy="62" rx="22" ry="11" fill="#fff" opacity=".55" transform="rotate(-18 108 62)"/>
-<path d="M128 44 q-3 6 0 10" fill="none" stroke="#e6a98d" stroke-width="2" stroke-linecap="round"/>
-<!-- glossy doll eyes with lashes -->
-<ellipse cx="102" cy="108" rx="16" ry="18" fill="#fff" stroke="#3a2a24" stroke-width="3"/>
-<ellipse cx="154" cy="108" rx="16" ry="18" fill="#fff" stroke="#3a2a24" stroke-width="3"/>
-<circle cx="103" cy="110" r="11" fill="url(#iris)"/><circle cx="155" cy="110" r="11" fill="url(#iris)"/>
-<circle cx="103" cy="111" r="5" fill="#14213d"/><circle cx="155" cy="111" r="5" fill="#14213d"/>
-<circle cx="99" cy="105" r="3.6" fill="#fff"/><circle cx="151" cy="105" r="3.6" fill="#fff"/>
-<circle cx="107" cy="115" r="1.6" fill="#fff"/><circle cx="159" cy="115" r="1.6" fill="#fff"/>
-<path d="M86 96 l-6 -5 M90 92 l-4 -7 M96 90 l-1 -7 M170 96 l6 -5 M166 92 l4 -7 M160 90 l1 -7" stroke="#3a2a24" stroke-width="2.4" stroke-linecap="round"/>
-<path d="M88 84 q14 -8 28 -2 M140 82 q14 -6 28 2" fill="none" stroke="#c9906f" stroke-width="2.4" stroke-linecap="round"/>
-<!-- tiny nose, rosy cheeks, small pink pout -->
-<path d="M124 126 q4 4 8 0" fill="none" stroke="#d9876a" stroke-width="2.4" stroke-linecap="round"/>
-<ellipse cx="84" cy="132" rx="14" ry="9" fill="#ff8fb1" opacity=".5"/>
-<ellipse cx="172" cy="132" rx="14" ry="9" fill="#ff8fb1" opacity=".5"/>
-<path d="M118 142 q5 -5 10 -1 q5 -4 10 1 q-5 8 -10 7 q-5 1 -10 -7Z" fill="#ff6f96" stroke="#3a2a24" stroke-width="2.2" stroke-linejoin="round"/>
-<path d="M124 143 q4 2 8 0" stroke="#fff" stroke-width="1.4" opacity=".7" stroke-linecap="round"/>
+<ellipse cx="66" cy="112" rx="9" ry="15" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
+<ellipse cx="190" cy="112" rx="9" ry="15" fill="url(#skin)" stroke="#3a2a24" stroke-width="3.5"/>
+<path d="M64 106 q4 6 0 12 M192 106 q-4 6 0 12" fill="none" stroke="#9a5e34" stroke-width="2"/>
+<!-- vinyl shine on the scalp -->
+<ellipse cx="108" cy="58" rx="22" ry="10" fill="#fff" opacity=".35" transform="rotate(-16 108 58)"/>
+<!-- heavy frowning brow ridge -->
+<path d="M80 96 Q100 84 122 100" fill="none" stroke="#a8683a" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+<path d="M176 96 Q156 84 134 100" fill="none" stroke="#a8683a" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+<path d="M120 88 q8 6 16 0" fill="none" stroke="#9a5e34" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M122 80 l2 10 M134 80 l-2 10" stroke="#9a5e34" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>
+<!-- narrowed glowing green eyes -->
+<ellipse cx="102" cy="108" rx="24" ry="14" fill="url(#glow)"/>
+<ellipse cx="154" cy="108" rx="24" ry="14" fill="url(#glow)"/>
+<path d="M84 110 Q102 96 120 108 Q102 120 84 110Z" fill="#0d2a12" stroke="#3a2a24" stroke-width="3"/>
+<path d="M136 108 Q154 96 172 110 Q154 120 136 108Z" fill="#0d2a12" stroke="#3a2a24" stroke-width="3"/>
+<g clip-path="url(#eL)"><circle cx="103" cy="110" r="10" fill="url(#iris)"/><ellipse cx="103" cy="110" rx="2" ry="5" fill="#062010"/><circle cx="99" cy="106" r="2" fill="#fff" opacity=".9"/></g>
+<g clip-path="url(#eR)"><circle cx="153" cy="110" r="10" fill="url(#iris)"/><ellipse cx="153" cy="110" rx="2" ry="5" fill="#062010"/><circle cx="149" cy="106" r="2" fill="#fff" opacity=".9"/></g>
+<!-- heavy upper lids pressing down (the glare) -->
+<path d="M82 109 Q100 92 122 106 Q102 101 82 109Z" fill="#c4834f" stroke="#3a2a24" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M174 109 Q156 92 134 106 Q154 101 174 109Z" fill="#c4834f" stroke="#3a2a24" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M88 120 q14 6 28 -2 M140 118 q14 8 28 2" fill="none" stroke="#9a5e34" stroke-width="2" stroke-linecap="round"/>
+<!-- nose -->
+<path d="M122 118 Q120 132 116 136 Q122 142 128 140 Q134 142 140 136 Q136 132 134 118" fill="#d39158" stroke="#9a5e34" stroke-width="2" stroke-linejoin="round"/>
+<path d="M118 136 q3 2 6 0 M132 136 q3 2 6 0" fill="none" stroke="#6b3a1c" stroke-width="2" stroke-linecap="round"/>
+<!-- cheek folds -->
+<path d="M106 128 Q102 142 108 152 M150 128 Q154 142 148 152" fill="none" stroke="#9a5e34" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
+<!-- small sulky downturned mouth -->
+<path d="M114 154 Q128 146 142 154" fill="none" stroke="#5a2a14" stroke-width="3.4" stroke-linecap="round"/>
+<path d="M117 152 Q128 148 139 152 Q128 151 117 152Z" fill="#8a3a2a"/>
+<!-- ventriloquist-dummy jaw lines + chin -->
+<path d="M114 154 L112 170 M142 154 L144 170" stroke="#5a2a14" stroke-width="2.6" stroke-linecap="round"/>
+<path d="M112 170 Q128 174 144 170" fill="none" stroke="#5a2a14" stroke-width="1.6" opacity=".55"/>
+<path d="M122 162 q6 4 12 0" fill="none" stroke="#9a5e34" stroke-width="1.8" stroke-linecap="round"/>
 </g>
 <circle cx="128" cy="128" r="124" fill="none" stroke="#3a2a24" stroke-width="4"/>
 </svg>
