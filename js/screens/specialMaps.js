@@ -24,6 +24,7 @@ import { avatar, displayName } from "../ui/profile.js";
 import { customNpc } from "./corners2.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import { pointManiaView } from "./pointMania.js";
+import { isSandbox, addTestBots } from "../game/sandbox.js";
 
 TR.setIntimacyFn(SO.intimacy);
 const S = () => G.S();
@@ -208,12 +209,39 @@ function loungeView(c) {
 
 // ---- gate end of turn: waiting popup / take-off (the 6th passenger sees everybody board)
 async function gateEnd(pid, loc) {
+    if (isSandbox() && !S().testSeason && TR.airportOpen()) await sandboxGateBots();
     const r = TR.gateTurnEnd(pid, loc.gate);
     if (!r) return;
     if (r.waited != null) {
         Sound.chime();
         await alertPop("🛫 게이트 대기", h("div.sm-wait", h("div.sm-wait-ico", "🧳"), h("p", h("b", "탑승객이 모두 도착할때까지 게이트에서 대기해주세요")), h("small", `탑승객 ${r.waited} / ${r.target}명 · 다음 라운드도 Gate ${loc.gate}에서 시작합니다`)), { ms: 3200 });
     } else if (r.depart) await boarding(r.depart);
+}
+// 🧪 map test: 5 test bots buy tickets and wait at the gates → the plane leaves with 6 · pick a normal flight or a crash
+async function sandboxGateBots() {
+    const a = TR.air(), bots = addTestBots();
+    const tickets = Object.values(TR.TICKETS).flat();
+    bots.forEach((id, i) => {
+        if (a.tickets[id] && a.waiting[id]) return;
+        const tk = pickOne(tickets), gate = +tk.id[1];
+        a.tickets[id] = { id: tk.id, gate, vip: !tk.free && i % 2 === 0, paid: tk.price || 0, pts: tk.pts || 0 };
+        a.waiting[id] = gate;
+        G.log(`🤖 ${G.name(id)} ${TR.ticketLabel(tk)} 티켓 구입 → Gate ${gate} 대기`);
+    });
+    const crash = await confirmBox("🧪 테스트: 테스트봇 5명이 티켓을 사서 게이트에 도착했습니다.\n탑승객 6명으로 비행기가 출발합니다.\n\n다음 라운드 비행에서 ✈️ 추락을 체험할까요?", "💥 추락 체험", "✈️ 정상 비행");
+    a.forceCrash = !!crash;
+    G.log(`🧪 테스트 비행: ${crash ? "💥 추락 체험" : "✈️ 정상 비행"}`);
+    Store.saveSeason(true);
+}
+// 🧪 map test: 5 test bots trapped on different floors (one always on 7F, so 🆘 구제 can be tried)
+function sandboxElevBots(pid) {
+    if (!isSandbox() || S().testSeason) return;
+    const bots = addTestBots().filter(id => !ps_(id)?.elev);
+    if (!bots.length) return;
+    const floors = ["elev_7", ...TR.FLOORS.filter(f => f !== "elev_7" && f !== "elev_1").sort(() => rnd() - 0.5)];
+    bots.forEach((id, i) => { ps_(id).elev = { floor: floors[i], since: S().round }; G.log(`🤖 ${G.name(id)} 엘리베이터 ${TR.floorLabel(floors[i])}에 갇힘`); });
+    Store.saveSeason(true);
+    toast("🧪 테스트봇 5명이 각 층에 갇혀 있습니다 (7층에도 1명 — 🆘 구제 가능)", "ok", 3500);
 }
 export async function boarding(pax) {
     const lane = h("div.sm-board-lane");
@@ -470,11 +498,12 @@ function rescueView(c) {
         floorMap(pid, c.loc.id),
         h("button.btn.gold.big", { disabled: !others.length, onclick: async () => {
             if (!(await confirmBox(`${fmt(TR.RESCUE_FEE)}G로 갇힌 플레이어 1명을 랜덤 구제할까요?`, "구제", "취소"))) return;
+            const floorAt = Object.fromEntries(TR.trappedOthers(pid).map(p => [p, ps_(p)?.elev?.floor || "elev_1"]));
             const r = TR.rescue(pid);
             if (!r.ok) return toast(r.why, "warn");
             const hold = Activity.hold();
             try {
-                const cards = Object.fromEntries(r.list.map(p => [p, h("div.sm-fate-p", pic(p, 64), h("small", nm(p)), h("small", TR.floorLabel(ps_(p)?.elev?.floor || "elev_1")))]));
+                const cards = Object.fromEntries(r.list.map(p => [p, h("div.sm-fate-p", pic(p, 64), h("small", nm(p)), h("small", TR.floorLabel(floorAt[p] || "elev_1")))]));
                 const cap = h("p.sm-fate-cap", "누가 구제될까…?");
                 const m = modal(h("div.sm-fate", h("div.sm-fate-grid", Object.values(cards)), cap), { title: "🆘 구제", closable: false, wide: true });
                 for (let k = 0; k < 18; k++) { Object.values(cards).forEach(x => x.classList.remove("hot")); const p = k >= 17 ? r.who : pickOne(r.list); cards[p].classList.add("hot"); Sound.tick(); await sleep(90 + k * 22); }
@@ -966,6 +995,7 @@ export async function arriveHook(s, loc) {
     if (loc.elevator) {
         if (!TR.elevatorOpen()) { const to = LOC_BY_ID[TR.elevatorRedirect("elevator")]; G.setLocation(to.id, { teleport: true }); toast(`🛗 엘리베이터 정원 초과! ${to.name}(으)로 이동합니다`, "warn", 3500); return to; }
         TR.enterElevator(pid, t);
+        sandboxElevBots(pid);
         Sound.boom();
         await alertPop("🛗 Elevator", h("div.sm-trapped", h("div.sm-elev-ico", "🛗"), h("h3", "엘리베이터에 갇혔습니다!"), h("p", "1층에서 시작합니다. 계기판으로 층을 옮겨 다니며 5분 안에 7층 출구를 찾으세요 (라운드당 이동 3회)."), h("p.muted", "탈출하지 못하면 다음 라운드도 그 층에서 시작합니다 · 최소 2분이 지나야 턴을 끝낼 수 있습니다")));
         return LOC_BY_ID[t.loc];

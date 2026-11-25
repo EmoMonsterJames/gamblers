@@ -254,3 +254,22 @@
 .gh-plane { position: absolute; top: 18%; left: 50%; font-size: 80px; transition: transform .7s; z-index: 2; }
 .gh-mask { position: absolute; top: 12%; right: 14%; font-size: 60px; animation: smBob 1s infinite; z-index: 3; }
 .gh-banner.b-sos { background: #b91c1c; color: #fff; animation: smBlink .5s steps(2) infinite; bottom: 60%; }
+
+/* 🗺️ region maps: ✈️ Airport (terminal + runway) · 🔄 Survival Land (hell) */
+.region-world.rw-airport::before { content: ""; position: absolute; left: 4%; right: 4%; top: 30%; height: 22%; z-index: 0; pointer-events: none; border-radius: 10px 10px 0 0;
+    background: repeating-linear-gradient(90deg, #0c4a6e 0 3%, #7dd3fc 3% 5.5%), #0c4a6e; box-shadow: inset 0 -6px 0 #1e293b, 0 8px 20px #0005; opacity: .55; }
+.region-world.rw-airport::after { content: ""; position: absolute; left: 0; right: 0; bottom: 10%; height: 16%; z-index: 0; pointer-events: none;
+    background: linear-gradient(180deg, transparent 46%, #f8fafc 46% 54%, transparent 54%) 0 0 / 70px 100% repeat-x, #1f2937;
+    box-shadow: 0 -4px 0 #facc15, 0 4px 0 #facc15; }
+.region-world.rw-airport .region-deco i { opacity: .7; }
+.region-world.rw-survival::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .55;
+    background:
+        linear-gradient(115deg, transparent 47%, #fb923c 48%, transparent 50%) 0 60% / 260px 140px,
+        linear-gradient(65deg, transparent 47%, #f97316 48.5%, transparent 50%) 90px 80% / 220px 160px,
+        radial-gradient(circle at 20% 85%, #fde04766 0 3%, transparent 8%), radial-gradient(circle at 75% 90%, #fde04766 0 4%, transparent 9%); }
+.region-world.rw-survival::after { content: "🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"; position: absolute; left: -2%; right: -2%; bottom: -6px; z-index: 1; pointer-events: none;
+    font-size: clamp(22px, 4vw, 44px); white-space: nowrap; overflow: hidden; letter-spacing: -6px; opacity: .85; filter: drop-shadow(0 -6px 12px #f97316);
+    animation: rwFlames 1.4s ease-in-out infinite alternate; transform-origin: bottom; }
+@keyframes rwFlames { to { transform: scaleY(1.18); opacity: 1; } }
+.region-world.rw-survival { border-color: #b91c1c; box-shadow: 0 0 30px #b91c1c88, var(--shadow); }
+.region-world.rw-survival .region-deco i { opacity: .75; filter: drop-shadow(0 0 8px #f97316); }

@@ -11,7 +11,7 @@ import { h, sleep, fmt } from "../core/util.js";
 import { Sound } from "../core/sound.js";
 import { confirmBox, confetti, modal, Activity, toast } from "../core/fx.js";
 import { Store } from "../core/store.js";
-import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry, LOC_BY_ID, npcPool, pickNpcMove, moveChance } from "../data/catalog.js";
+import { WEAPON_BY_ID, CAREERS, NPCS, CURSES, ALPHABET, NPC_ALIGN, npcAlign, PEDDLER_STOCK, ITEM_BY_ID, catalogEntry, LOC_BY_ID, LOCATIONS, npcPool, pickNpcMove, moveChance } from "../data/catalog.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import * as G from "../game/season.js";
 import { avatar, displayName } from "../ui/profile.js";
@@ -340,7 +340,15 @@ export async function peddlerShop(pid) {
 // ------------------------------------------------------------------ 👹 NPC info (map popup)
 const PET_STEAL = { fx: "펫 이펙트", pet: "펫", sfx: "스페셜 펫 이펙트", spet: "스페셜 펫" };
 const STEAL_ALL = { gold: "보유 골드 전부", points: "포인트 전부", items: "아이템 전부", bizGold: "Business Gold 전부", loanGold: "대출 골드 전부" };
-const moveText = m => m.bite ? `🦟 물기 — HP ${m.hp} (공격 화면 없이 펫 아래에 알림만)` : m.battle ? "⚔️ Battle — 대왕모기 (HP 100)와 배틀! 지면 바로 사망" : m.freeze ? `🧊 ${m.name || "Icy Breath"} — 화면 전체가 얼어붙어 ${m.freeze}초 동안 아무것도 못함 (시간은 계속 흐름)` : m.profileCopy ? `😈 ${m.name || "Profile Copy"} — 가짜 프로필이 ${m.profileCopy}초 동안 대신 플레이` : m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0])}G 강탈`
+// 🧩 map-only moves (2026-11 · screens/specialMaps.js)
+const CUSTOM_TEXT = {
+    hack: "💻 해킹 — Business Gold의 30~100% 강탈 (Business Bank 계좌가 없으면 효과 없음)",
+    dollCurse: "🪆 Doll Curse — 펫이 저주받은 'Evil Doll'로 바뀜 (슬롯 당첨 · 보너스 −20% · 🔁 펫 교체권으로만 해제)",
+    clownCurse: "🤡 Clown Curse — 'Self-Harm' 무기 강제 장착 (HP −10 · 명중 80% · 나를 공격 · 🗑️ 무기삭제권으로만 제거)",
+    hideKill: "🔪 Hide and Kill — 숨은 곳에서 발견되면 즉사! (쓰레기통 · 빈집 · 숲속 · 텐트 20% · 호숫가 · 지하실 10%)",
+    flyBite: "🪰 물기 — HP −2 (공격 화면 없이 알림만)"
+};
+const moveText = m => m.custom && CUSTOM_TEXT[m.custom] ? CUSTOM_TEXT[m.custom] : m.bite ? `🦟 물기 — HP ${m.hp} (공격 화면 없이 펫 아래에 알림만)` : m.battle ? "⚔️ Battle — 대왕모기 (HP 100)와 배틀! 지면 바로 사망" : m.freeze ? `🧊 ${m.name || "Icy Breath"} — 화면 전체가 얼어붙어 ${m.freeze}초 동안 아무것도 못함 (시간은 계속 흐름)` : m.profileCopy ? `😈 ${m.name || "Profile Copy"} — 가짜 프로필이 ${m.profileCopy}초 동안 대신 플레이` : m.hp && m.steal ? `💥 HP ${m.hp} + 💸 ${fmt(m.steal[0])}G 강탈`
     : m.breakWeapon ? "👾 Monster Magic! 무기 1개 파괴"
     : m.stealPet ? `😈 ${PET_STEAL[m.stealPet]} 훔치기 (없으면 효과 없음)`
     : m.disease ? (m.disease === "flu" ? "🤧 독감 감염 (라운드마다 HP −5)" : "🎗️ 암 감염 (라운드마다 HP −10)")
@@ -367,6 +375,9 @@ const moveText = m => m.bite ? `🦟 물기 — HP ${m.hp} (공격 화면 없이
     : m.donation ? "🙏 기부 강요 — 내 원래 골드에서 기부 (1,000G 이하: HP −60~즉사 · 10,000G 이하: HP −30~50 · 50,000G 이하: HP −10~30 · 그 이상: 축복)" : "?";
 // loc: the map · active: NPCs are out on this map this round (season only)
 export function npcInfo(loc, { active = null } = {}) {
+    // 🏕️ Campsite / 🛗 Elevator: the NPCs live in the hiding places / on the floors (sub rooms) — show them all, with where
+    const subKind = loc.campsite ? "campsite" : loc.elevator ? "elevator" : null;
+    if (subKind) return subNpcInfo(loc, subKind);
     const mapP = Math.round(G.npcMapChance(loc) * 100);
     const pct = x => (Math.round(x * 1000) / 10) + "%";
     modal(h("div.npc-info",
@@ -388,6 +399,22 @@ export function npcInfo(loc, { active = null } = {}) {
             h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / npcPool(loc).length)}`))),
             h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop || m.cureFlu || m.giftBox ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))),
             h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / npcPool(loc).length)} × 기술별 확률`))))),
+        { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
+}
+function subNpcInfo(loc, kind) {
+    const pct = x => (Math.round(x * 1000) / 10) + "%";
+    const rooms = LOCATIONS.filter(l => l.sub === kind && l.npc !== "never" && !l.off);
+    const where = new Map();
+    if (kind === "campsite") { const mk = NPCS.find(n => n.id === "masked_killer"); if (mk) where.set(mk, ["🏕️ 캠프장 전체 (숨은 곳마다 발견 확률이 다름)"]); }
+    for (const r of rooms) for (const n of npcPool(r)) { if (!where.has(n)) where.set(n, []); where.get(n).push(`${r.emoji} ${r.name.replace("엘리베이터 ", "")}`); }
+    modal(h("div.npc-info",
+        h("div.npc-info-head", h("ul.npc-rules",
+            kind === "campsite" ? h("li.npc-always", "🎭 Masked Killer가 캠프장을 돌아다닙니다 — 숨은 곳에서 발견되면 ", h("b", "바로 사망"), " (쓰레기통 · 빈집 · 숲속 · 텐트 20% · 호숫가 · 지하실 10%). 2명 이상 살해한 뒤에야 턴을 끝낼 수 있습니다.") : null,
+            h("li.npc-always", kind === "campsite" ? "🔦 숨은 곳마다 그곳에만 사는 NPC가 항상 나타납니다 (텐트에는 NPC 없음)." : "🛗 층마다 그 층에만 있는 NPC가 항상 나타납니다 (2층 · 4층 · 6층 · 9층 · 옥상)."),
+            h("li", "🎫 NPC 공격 Block 권(일반 상점)이 있으면 해로운 공격을 자동으로 막아 줍니다."))),
+        h("div.npc-cards", [...where].map(([n, places]) => h("div.npc-card", { style: { "--c": n.color } },
+            h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 📍 ${places.join(", ")}`))),
+            h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop || m.cureFlu || m.giftBox ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))))))),
         { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
 }
 

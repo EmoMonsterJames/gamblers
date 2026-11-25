@@ -851,7 +851,7 @@ export const NPCS = [
     // ---- map-only NPCs (2026-11 · mapOnly: they never wander anywhere else) — custom moves play out in screens/specialMaps.js
     // 💻 Cyber Town: hack = 30~100% of the Business Gold stolen (no Business Bank account → nothing)
     { id: "hacker", name: "Hacker", emoji: "👨‍💻", art: "💻", color: "#0e7490", align: "evil", mapOnly: true,
-      moves: [{ hp: -10 }, { steal: [5000, 5000] }, { steal: [10000, 10000] }, { custom: "hack", name: "해킹" }] },
+      moves: [{ hp: -10 }, { steal: [5000, 5000], rob: true }, { steal: [10000, 10000], rob: true }, { custom: "hack", name: "해킹" }] },
     // 🪆 Doll Factory: Doll Curse (pet → 🪆 Evil Doll) · Clown Curse (🔪 Self-Harm weapon forced in)
     { id: "evil_doll", name: "Evil Doll", emoji: "🪆", art: "🧷", color: "#7e22ce", align: "evil", mapOnly: true,
       moves: [{ custom: "dollCurse", name: "Doll Curse" }] },

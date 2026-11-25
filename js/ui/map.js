@@ -60,7 +60,11 @@ const REGION_BG = {
     emoland: { bg: "radial-gradient(circle at 50% 40%,#6ee7b7,#047857 60%,#022c22)", deco: ["🐾", "🔴", "🌲", "⚔️", "👾", "🔷"] },
     difficult: { bg: "linear-gradient(180deg,#94a3b8,#334155 60%,#0f172a)", deco: ["🧗", "⛓️", "🪤", "☢️", "🥶", "⏱️"] },
     npcland: { bg: "radial-gradient(circle at 50% 20%,#7c3aed,#2e1065 55%,#0b0214)", deco: ["👹", "💀", "🤖", "🐊", "🧳", "🐹"] },
-    combo: { bg: "linear-gradient(180deg,#7dd3fc 0 33%,#312e81 33% 66%,#0369a1 66%)", deco: ["🪽", "🧑‍🚀", "🤿", "🧩", "🏝️", "🌠"] }
+    combo: { bg: "linear-gradient(180deg,#7dd3fc 0 33%,#312e81 33% 66%,#0369a1 66%)", deco: ["🪽", "🧑‍🚀", "🤿", "🧩", "🏝️", "🌠"] },
+    // ✈️ an airport: sky · terminal · apron · runway (css/travel.css .rw-airport draws the terminal and runway)
+    airport: { bg: "linear-gradient(180deg,#38bdf8 0%,#bae6fd 52%,#94a3b8 52%,#64748b 100%)", deco: ["☁️", "✈️", "☁️", "🛫", "☁️", "🛬"] },
+    // 🔄 Survival Land: hell — lava glow, cracks and flames (css/travel.css .rw-survival)
+    survival: { bg: "radial-gradient(ellipse at 50% 115%,#fde047 0%,#f97316 14%,#b91c1c 34%,#450a0a 62%,#0a0000 100%)", deco: ["🔥", "😈", "🌋", "⛓️", "💀", "🔱"] }
 };
 const GEAR_ICON = { wings: "🪽", space_suit: "🧑‍🚀", oxygen: "🤿" };
 const reqLabel = r => !r ? null : [r.gear?.length ? r.gear.map(g => GEAR_ICON[g] || "🎒").join("") : null,

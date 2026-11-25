@@ -23,7 +23,7 @@ export function testPlayer(country = "Emo World") {
 
 export function startSandbox({ country, mission, money = 8000000, points = 2000, kit = true, startLoc = null } = {}) {
     if (!Store.sandbox) Store.sandbox = { real: Store.season };
-    Store.allPlayers = Store.allPlayers.filter(p => p.id !== TEST_PID);
+    Store.allPlayers = Store.allPlayers.filter(p => p.id !== TEST_PID && !BOT_IDS.includes(p.id));
     Store.allPlayers.push(testPlayer(country));
     const items = {};
     if (kit) {
@@ -48,6 +48,32 @@ export function startSandbox({ country, mission, money = 8000000, points = 2000,
     G.log("🧪 테스트 모드 시작 — 아무것도 저장되지 않습니다");
 }
 
+// 🤖 test bots: extra passengers / trapped people for the airport & elevator tests (they never play a turn)
+export const BOT_IDS = [999991, 999992, 999993, 999994, 999995];
+export const isBot = pid => BOT_IDS.includes(+pid);
+const botPlayer = (id, i) => ({
+    id, login_id: "", name_ko: `테스트봇 ${i + 1}`, player_name: `Test Bot ${i + 1}`,
+    profile_image: "images/players/test-bot.svg", country: "Emo World", school: "Test Univ.", job: "Bot",
+    ethnicity: "Robot", age_group: "Young Adult", gender: "male", preference: "Straight",
+    handler: "JAMES", is_active: false, _test: true, _bot: true
+});
+// add (or bring back) the 5 bots → their pids · only in the map test
+export function addTestBots() {
+    const s = Store.season;
+    if (!s?.sandbox || s.testSeason) return [];
+    BOT_IDS.forEach((id, i) => {
+        if (!Store.allPlayers.some(p => p.id === id)) Store.allPlayers.push(botPlayer(id, i));
+        if (!s.roster.includes(id)) s.roster.push(id);
+        const ps = s.ps[id];
+        if (!ps || ps.out) s.ps[id] = {
+            money: 100000, points: 100, hp: CONFIG.START_HP, pet: null, petEffect: null, weapons: [], items: {}, loanGold: 0, loan: null,
+            use: { slot: 0, casino: 0 }, extra: { slot: 0, casino: 0 }, out: false, outRound: null, rank: null, visited: [], _bot: true,
+            totals: { slotNet: 0, casinoNet: 0, points: 0, spins: 0, plays: 0 }
+        };
+    });
+    return [...BOT_IDS];
+}
+
 // after each test turn: straight into the next one (next "round": new NPC maps, shop limits reset)
 export function sandboxNextTurn() {
     const s = Store.season, ps = s.ps[TEST_PID];
@@ -55,6 +81,15 @@ export function sandboxNextTurn() {
     if (!(ps.hp > 0)) ps.hp = CONFIG.START_HP; // killed by the reaper: back to life
     ps.use = { slot: 0, casino: 0 };
     s.round++;
+    // 🤖 the bots "play" their trip legs along with the round (they are on the plane with the test player)
+    const dep = s.air?.departRound;
+    if (dep != null) for (const id of BOT_IDS) {
+        const tr = s.ps[id]?.trip;
+        if (!tr || tr.done || s.ps[id].out) continue;
+        if (tr.landedCrash) { tr.done = true; continue; }
+        tr.idx = Math.max(0, s.round - dep - 1);
+        if (tr.idx >= tr.legs.length) { tr.idx = tr.legs.length; tr.done = true; }
+    }
     s.turnIdx = 0; s.results = {}; s.turn = null; s.status = "turns";
 }
 

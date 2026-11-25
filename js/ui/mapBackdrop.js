@@ -29,7 +29,12 @@ const REGION_SCENE = {
     desert:     { sky: ["#f59e0b", "#7c2d12"], m: ["🌵", "🐪", "☀️", "🏜️", "🦂", "🌵"], fx: "heat" },
     emoland:    { sky: ["#065f46", "#021a12"], m: ["🐾", "⚪", "🌿", "🐾", "✨", "🍃"], fx: "sparkle" },
     difficult:  { sky: ["#334155", "#0b1120"], m: ["🧗", "🪨", "⛓️", "⏱️", "🥶", "🪤"], fx: "dust" },
-    kidnap:     { sky: ["#27272a", "#000000"], m: ["⛓️", "💣", "🧨", "🔒", "⛓️", "🕯️"], fx: "fog" }
+    kidnap:     { sky: ["#27272a", "#000000"], m: ["⛓️", "💣", "🧨", "🔒", "⛓️", "🕯️"], fx: "fog" },
+    airport:    { sky: ["#38bdf8", "#0c4a6e"], m: ["✈️", "🛫", "🧳", "🛂", "☁️", "🛬"], fx: "clouds" },
+    // 🔒 sub rooms (by the map they belong to): ✈️ the plane · 🛗 the elevator · 🏕️ the hiding places
+    sub_airport:  { sky: ["#7dd3fc", "#1e3a8a"], m: ["☁️", "✈️", "☁️", "🌤️", "🧳", "☁️"], fx: "clouds" },
+    sub_elevator: { sky: ["#57534e", "#0c0a09"], m: ["🛗", "🔢", "🚪", "⬆️", "⬇️", "🔔"], fx: "dust" },
+    sub_campsite: { sky: ["#14532d", "#020617"], m: ["🌲", "🏕️", "🔪", "🌕", "🔦", "🌲"], fx: "fog" }
 };
 // 🔄 Survival Land: one scene per map
 const MAP_SCENE = {
@@ -48,7 +53,7 @@ const cache = new Map();
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 // a 1200 × 800 SVG scene (tiled), seeded by the map id so it never changes between visits
 function sceneSvg(loc) {
-    const sc = MAP_SCENE[loc.id] || REGION_SCENE[loc.region] || REGION_SCENE.cl1;
+    const sc = MAP_SCENE[loc.id] || (loc.sub && REGION_SCENE["sub_" + loc.sub]) || REGION_SCENE[loc.region] || REGION_SCENE.cl1;
     let k = 0; const r = () => seed01(`${loc.id}#${k++}`);
     const W = 1200, H = 800, col = loc.color || "#888";
     const parts = [];

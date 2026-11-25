@@ -310,8 +310,10 @@ function decideFlight(pid) {
     const f = a.flights[s.round];
     if (f) return f;
     const odds = crashOdds();
-    const cand = passengers().filter(x => !ps_(x)?.out && (x === pid || (!playedThisRound(x) && tripOf(x)?.legs[tripOf(x).idx]?.k === "plane")));
-    const crash = !a.crashed && rnd() < odds.p;
+    // 🧪 map test: the bots never play — the crash happens in the test player's turn; "추락 체험" forces it
+    const test = s.sandbox && !s.testSeason;
+    const cand = test ? [pid] : passengers().filter(x => !ps_(x)?.out && (x === pid || (!playedThisRound(x) && tripOf(x)?.legs[tripOf(x).idx]?.k === "plane")));
+    const crash = !a.crashed && (test && a.forceCrash != null ? !!a.forceCrash : rnd() < odds.p);
     const fault = crash && rnd() < CRASH_FAULT / (odds.pw + CRASH_FAULT);
     a.flights[s.round] = { round: s.round, p: odds.p, wx: odds.w.id, crash, pid: crash ? pickOne(cand) : null, fault, at: rint(PLANE_SECONDS - 210, PLANE_SECONDS - 45) };
     Store.saveSeason();
