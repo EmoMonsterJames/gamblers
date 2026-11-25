@@ -56,6 +56,9 @@ export function applyCatalog() {
     const { edits = {}, custom = {} } = conf();
     for (const [cat, c] of Object.entries(CATS)) {
         const fresh = ORIGINAL[cat].map(e => structuredClone(e));
+        // entries registered by code after this module loaded (🔮 타로카드 · 🥠 포춘쿠키 …) are kept, not wiped
+        const known = new Set(fresh.map(e => e.id));
+        for (const e of c.list) if (!e.custom && !known.has(e.id)) { fresh.push(e); known.add(e.id); }
         for (const e of custom[cat] || []) fresh.push({ ...structuredClone(e), custom: true });
         for (const e of fresh) {
             const ed = edits[`${cat}:${e.id}`];

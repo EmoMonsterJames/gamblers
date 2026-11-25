@@ -27,8 +27,8 @@ export const COOKIE_WARNING = "포춘쿠키가 하는 덕담은 100%로 믿지�
 
 // ---- bag items
 for (const it of [
-    { id: "tarot_card", name: "타로카드", emoji: "🃏", fortune: true, desc: "🔮 Fortune Teller의 타로카드 — 인벤토리에서 사용하면 지금 상황에 맞는 질문 하나를 타로 카드 20장 중 한 장으로 점칩니다 (시즌당 1회 사용)." },
-    { id: "fortune_cookie", name: "포춘쿠키", emoji: "🥠", fortune: true, desc: "🔮 Fortune Teller의 포춘쿠키 — 사용하면 한 줄 메시지 + 식량 +20 · HP +10 (라운드당 1회 사용)." }
+    { id: "tarot_card", name: "타로카드", emoji: "🃏", fortune: true, desc: "🔮 Fortune Telling Shop의 타로카드 — 인벤토리에서 사용하면 지금 상황에 맞는 질문 하나를 타로 카드 20장 중 한 장으로 점칩니다 (시즌당 1회 사용)." },
+    { id: "fortune_cookie", name: "포춘쿠키", emoji: "🥠", fortune: true, desc: "🔮 Fortune Telling Shop의 포춘쿠키 — 사용하면 한 줄 메시지 + 식량 +20 · HP +10 (라운드당 1회 사용)." }
 ]) if (!ITEM_BY_ID[it.id]) { ITEMS.push(it); ITEM_BY_ID[it.id] = it; }
 
 // ---- the 35 maps with a 🔮 corner: maps with a shop, spread evenly over every region (fixed by map order)
@@ -253,7 +253,7 @@ export function buyFortune(pid, itemId) {
     if (wallet(ps) < price) return { ok: false, why: `골드 부족 (${price.toLocaleString()}G)` };
     payGold(ps, price);
     ps.items[itemId] = (ps.items[itemId] || 0) + 1;
-    G.log(`🔮 ${G.name(pid)} Fortune Teller에서 ${ITEM_BY_ID[itemId].name} 구입 (${price.toLocaleString()}G)`);
+    G.log(`🔮 ${G.name(pid)} Fortune Telling Shop에서 ${ITEM_BY_ID[itemId].name} 구입 (${price.toLocaleString()}G)`);
     Store.saveSeason(true);
     return { ok: true };
 }

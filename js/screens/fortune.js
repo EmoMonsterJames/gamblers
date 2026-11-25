@@ -1,6 +1,6 @@
 // =====================================================================
 // 🔮 Fortune Teller corner (state: game/fortune.js)
-//   fortuneView(c)                 — 🛒 상점 → 🔮 점보기 (sub-tabs: 🔮 점보기 · 🛒 Fortune Teller 상점)
+//   fortuneView(c)                 — 🛒 상점 → 🔮 점보기 (sub-tabs: 🔮 점보기 · 🛒 Fortune Telling Shop)
 //   fortuneInventory(pid, onChange) — 🎒 인벤토리: 🛂 여권 · 🃏 타로카드 · 🥠 포춘쿠키
 //   tarotModal(pid, onChange)      — the tarot spread (also from the EmoMon encounter)
 // =====================================================================
@@ -106,7 +106,7 @@ export function fortuneView(c) {
     const draw = () => {
         const bar = h("div.sub-tabs.ft-tabs",
             h("button.sub-tab" + (tab === "ask" ? ".on" : ""), { onclick: () => { tab = "ask"; draw(); } }, "🔮 점보기"),
-            h("button.sub-tab" + (tab === "shop" ? ".on" : ""), { onclick: () => { tab = "shop"; draw(); } }, "🛒 Fortune Teller"));
+            h("button.sub-tab" + (tab === "shop" ? ".on" : ""), { onclick: () => { tab = "shop"; draw(); } }, "🛒 Fortune Telling Shop"));
         wrap.replaceChildren(bar, tab === "ask" ? askPane(c) : shopPane(c));
     };
     draw();
@@ -168,7 +168,7 @@ function shopPane(c) {
                     } }, `${fmt(price)}G 구입`)));
         };
         wrap.replaceChildren(
-            h("div.ft-head", h("b", "🛒 Fortune Teller 상점"), h("small", `보유 ${fmt(ps.money)}G`)),
+            h("div.ft-head", h("b", "🛒 Fortune Telling Shop"), h("small", `보유 ${fmt(ps.money)}G`)),
             h("div.ft-goods",
                 card("tarot_card", FT.TAROT_PRICE, "시즌당 최대 1회 이용", h("small.muted", FT.tarotUsed(pid) ? "✅ 이번 시즌 타로를 이미 봤습니다" : "점보기보다 훨씬 신빙성 있는 답을 카드로 안내합니다")),
                 card("fortune_cookie", FT.COOKIE_PRICE, "라운드당 최대 1회 이용", h("small.muted", "식량 +20 · HP +10"))));
