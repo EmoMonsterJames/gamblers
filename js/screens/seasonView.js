@@ -815,7 +815,8 @@ function locationStage(s) {
     const groupMembers = {};
     const tabList = () => {
         const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv"));
-        l.splice(at, 0, ...SM.tabs(loc, t, pid), ...lifeTabs(),...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : []));
+        l.splice(at, 0, ...SM.tabs(loc, t, pid).filter(([k]) => k !== "x:pointmania"), ...lifeTabs(),...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : []));
+        if (loc.pointMania) l.splice(l.findIndex(([k]) => k === "games") + 1, 0, ["x:pointmania", "💎 Point Mania"]); // 🍀 right after 🎰 게임
         // one tab per id (a map whose admin-placed goods add a 🏷️ discount shop tab of its own would otherwise show it twice — both lit at once)
         const seen = new Set(), out = [];
         for (const k of Object.keys(groupMembers)) delete groupMembers[k];

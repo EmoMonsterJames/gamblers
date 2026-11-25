@@ -27,7 +27,7 @@ const payGold = (ps, g) => { const fromLoan = Math.min(ps.loanGold || 0, g); ps.
 export const GATES = ["gate1", "gate2", "gate3"];
 export const PAX_MAX = 6;            // the plane leaves with 6 passengers
 export const FILL_ROUNDS = 3;        // … gathered within the first 3 rounds (players are placed at the gates)
-export const VIP_FEE = 10000, CHANGE_FEE = 10000, UPGRADE_FEE = 12000;
+export const VIP_FEE = 12000, CHANGE_FEE = 10000, UPGRADE_FEE = 12000; // 👑 VIP: Gate 3 asks at the ticket counter · Gates 1·2 only through 🛎️ 공항 서비스
 export const PLANE_SECONDS = 300, PLANE_MIN_STAY = 120;
 const P = { k: "plane" }, stop = loc => ({ k: "stop", loc }), dest = loc => ({ k: "dest", loc });
 // a ticket: price (G) or pts (P) · legs: what each of the passenger's next turns is · free: the gate's default (no VIP)
@@ -86,6 +86,7 @@ export const LOUNGE = [
 // plane crash odds by the weather (+ 7% plane fault, whatever the weather)
 export const CRASH_WX = { sun: 0.05, rain: 0.08, storm: 0.25, snow: 0.10, blizzard: 0.30, heat: 0.06, hail: 0.12 };
 export const CRASH_FAULT = 0.07;
+export const CRASH_PER_PAX = 0.1, CRASH_CAP = 0.6; // +10% of the odds per passenger after the 1st · never above 60%
 // who survives a crash (Air monster owners: +10% to be spared — never a guarantee)
 export const CRASH_FATE = [
     { id: "all_dead", w: 10, label: "전원 바로 사망" },
@@ -302,8 +303,8 @@ export function crashOdds(locId = "plane") {
     const pw = CRASH_WX[w.id] ?? 0.08;
     const onboard = passengers().filter(inPlaneNow).length;
     const base = 1 - (1 - pw) * (1 - CRASH_FAULT);
-    const occ = 0.5 + 0.5 * Math.min(1, onboard / PAX_MAX); // 🧍 the fuller the plane, the likelier
-    return { w, pw, fault: CRASH_FAULT, onboard, p: Math.min(0.95, base * occ), base };
+    const occ = 1 + CRASH_PER_PAX * Math.max(0, Math.min(PAX_MAX, onboard) - 1); // 🧍 the fuller the plane, the likelier (6 on board = ×1.5) — never a sure crash
+    return { w, pw, fault: CRASH_FAULT, onboard, p: Math.min(CRASH_CAP, base * occ), base };
 }
 function decideFlight(pid) {
     const s = S(), a = air();
@@ -478,7 +479,7 @@ export const CAMP_SPOTS = {
     lake: { loc: "camp_lake", name: "호숫가", emoji: "🏞️", found: 0.10 },
     basement: { loc: "camp_basement", name: "지하실", emoji: "🕳️", found: 0.10 }
 };
-export const CAMP_MIN_KILLS = 2, CAMP_GOLD = [1000, 10000];
+export const CAMP_MIN_KILLS = 3, CAMP_GOLD = [1000, 10000]; // 🔪 3 campers dead (not counting the player) → the turn may end before the 5 minutes
 // the slasher's methods (Friday-the-13th style) — {n} = the camper, {p} = the place
 export const KILLS = [
     "{p}에 숨어 있다가 전기톱에 두 동강 남", "{p}에서 쫓기다가 마체테에 살해당함", "Off-Screen으로 살해당한 채 {p}에서 발견", "{p} 근처에서 전기드릴로 공격당해 사망",
@@ -501,8 +502,8 @@ export function campStart(t, spot, campers) {
     const keys = Object.keys(CAMP_SPOTS);
     for (const c of campers) c.spot = pickOne(keys);
     t.camp = { spot, campers, kills: [], found: false, foundAt: null, campIn: t.remaining, plan: [] };
-    // the slasher's schedule: 2~4 campers die at random moments (the first two before 4:00 of play) · the player's spot is checked once
-    const victims = shuffle(campers).slice(0, rint(CAMP_MIN_KILLS, Math.min(4, campers.length)));
+    // the slasher's schedule: 3~4 campers die at random moments (the first three within ~4:10 of play) · the player's spot is checked once
+    const victims = shuffle(campers).slice(0, rint(Math.min(CAMP_MIN_KILLS, campers.length), Math.min(4, campers.length)));
     let at = t.remaining - rint(30, 70);
     for (const [i, c] of victims.entries()) { t.camp.plan.push({ pid: c.pid, at: Math.max(20, at) }); at -= i < 1 ? rint(40, 80) : rint(50, 100); }
     if (rnd() < CAMP_SPOTS[spot].found) t.camp.foundAt = Math.max(15, t.remaining - rint(60, 260));
@@ -510,7 +511,8 @@ export function campStart(t, spot, campers) {
     Store.saveSeason();
     return t.camp;
 }
-export const campKillsLeft = t => Math.max(0, CAMP_MIN_KILLS - (t?.camp?.kills?.length || 0));
+export const campKillsNeed = t => Math.min(CAMP_MIN_KILLS, t?.camp?.campers?.length ?? CAMP_MIN_KILLS);
+export const campKillsLeft = t => Math.max(0, campKillsNeed(t) - (t?.camp?.kills?.length || 0));
 // survivors (campers + the player if alive) get 1,000~10,000G — campers keep theirs for a later season (wallet)
 export function campPayout(t, playerAlive) {
     const out = [];
@@ -562,22 +564,24 @@ export function halveIntimacy(a, b, label) {
 // ================================================================ 🪆 DOLL FACTORY curses · 🔪 Self-Harm
 export function dollCurse(pid) {
     const ps = ps_(pid);
-    const had = ps.pet;
+    // a pet → swapped for the Evil Doll · no pet → the Evil Doll is forced in
+    const had = ps.pet && ps.pet !== "evil_doll" ? ps.pet : null;
     ps.pet = "evil_doll";
-    G.log(`🪆 ${G.name(pid)} Doll Curse! 펫이 Evil Doll이 되었다${had && had !== "evil_doll" ? "" : ""}`);
+    G.log(`🪆 ${G.name(pid)} Doll Curse! ${had ? "펫이 Evil Doll로 바뀌었다" : "Evil Doll 펫이 강제로 들어왔다"}`);
     Store.saveSeason(true);
     return { had };
 }
+// 1 weapon → that one becomes Self-Harm · 2+ → a random one of them · none → Self-Harm is forced in
 export function clownCurse(pid) {
     const ps = ps_(pid);
     ps.weapons ||= [];
-    if (!ps.weapons.includes("self_harm")) {
-        // forced in — even over a full weapon bag (the newest weapon is pushed out)
-        if (ps.weapons.length >= 6) ps.weapons.pop();
-        ps.weapons.push("self_harm");
-    }
-    G.log(`🤡 ${G.name(pid)} Clown Curse! 🔪 Self-Harm 무기가 강제로 심어졌다`);
+    const others = ps.weapons.map((w, i) => [w, i]).filter(([w]) => w !== "self_harm");
+    let lost = null;
+    if (others.length) { const [w, i] = pickOne(others); lost = w; ps.weapons[i] = "self_harm"; }
+    else if (!ps.weapons.length) ps.weapons.push("self_harm");
+    G.log(`🤡 ${G.name(pid)} Clown Curse! ${lost ? `무기 ${lost} → 🔪 Self-Harm으로 바뀌었다` : "🔪 Self-Harm 무기가 강제로 들어왔다"}`);
     Store.saveSeason(true);
+    return { lost };
 }
 export const hasSelfHarm = pid => (ps_(pid)?.weapons || []).includes("self_harm");
 

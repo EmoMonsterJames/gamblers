@@ -400,7 +400,9 @@ export const MIN_STAY = { hell: 120, magma_town: 120, death_door: 120, dark_spac
 // 2026-11: a map may carry its own minStay (s) — 🛗 elevator floors count from entering the elevator, 🏕️ hiding places from the campsite
 export const minStayOf = loc => MIN_STAY[loc?.id] ?? loc?.minStay ?? 0;
 const stayBase = (loc, t) => (loc?.sub === "elevator" ? t.elevIn : loc?.sub === "campsite" ? t.camp?.campIn : null) ?? t.locIn ?? t.remaining;
-export const stayLockLeft = (loc, t) => { const m = minStayOf(loc); if (!m || !((t?.remaining ?? 0) > 0)) return 0; return Math.max(0, m - (stayBase(loc, t) - t.remaining)); };
+// 🧩 stay waivers from other modules: (loc, t) → true = the minimum stay does not apply (🏕️ Campsite keeps its own 5-minute / 3-kill lock)
+export const stayWaivers = [];
+export const stayLockLeft = (loc, t) => { const m = minStayOf(loc); if (!m || !((t?.remaining ?? 0) > 0) || stayWaivers.some(f => f(loc, t))) return 0; return Math.max(0, m - (stayBase(loc, t) - t.remaining)); };
 // ⛓️ kidnap room: locked for its first 3 minutes and until the escape was tried
 // 🧩 extra locks from other modules: (loc, t) → a text while the end is locked (🏕️ Campsite: the Masked Killer needs 2 kills first)
 export const extraLocks = [];

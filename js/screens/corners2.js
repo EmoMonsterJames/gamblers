@@ -343,8 +343,8 @@ const STEAL_ALL = { gold: "보유 골드 전부", points: "포인트 전부", it
 // 🧩 map-only moves (2026-11 · screens/specialMaps.js)
 const CUSTOM_TEXT = {
     hack: "💻 해킹 — Business Gold의 30~100% 강탈 (Business Bank 계좌가 없으면 효과 없음)",
-    dollCurse: "🪆 Doll Curse — 펫이 저주받은 'Evil Doll'로 바뀜 (슬롯 당첨 · 보너스 −20% · 🔁 펫 교체권으로만 해제)",
-    clownCurse: "🤡 Clown Curse — 'Self-Harm' 무기 강제 장착 (HP −10 · 명중 80% · 나를 공격 · 🗑️ 무기삭제권으로만 제거)",
+    dollCurse: "🪆 Doll Curse — 지금 펫을 저주받은 'Evil Doll'로 교체 (펫이 없으면 강제로 넣음 · 슬롯 당첨 · 보너스 20% 확률로 사라짐 · 🔁 펫 교체권으로만 해제)",
+    clownCurse: "🤡 Clown Curse — 무기 1개를 'Self-Harm'으로 교체 (1개면 그 무기 · 2개 이상이면 랜덤 1개 · 없으면 강제로 넣음 · HP −10 · 명중 80% · 나를 공격 · 🗑️ 무기삭제권으로만 제거)",
     hideKill: "🔪 Hide and Kill — 숨은 곳에서 발견되면 즉사! (쓰레기통 · 빈집 · 숲속 · 텐트 20% · 호숫가 · 지하실 10%)",
     flyBite: "🪰 물기 — HP −2 (공격 화면 없이 알림만)"
 };
@@ -398,7 +398,12 @@ export function npcInfo(loc, { active = null } = {}) {
         h("div.npc-cards", npcPool(loc).map(n => h("div.npc-card", { style: { "--c": n.color } },
             h("div.npc-card-head", h("span.npc-card-ico", n.emoji), h("div", h("b", n.name, " ", alignBadge(n)), h("small", `무기: ${n.art} · 등장 ${pct(1 / npcPool(loc).length)}`))),
             h("ul", n.moves.map(m => h("li" + (m.kill ? ".deadly" : m.give || m.hp > 0 || m.gift || m.hope || m.shop || m.cureFlu || m.giftBox ? ".good" : ""), h("span", moveText(m)), h("small", pct(moveChance(n, m)))))),
-            h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / npcPool(loc).length)} × 기술별 확률`))))),
+            h("small.muted", `습격 1회당 이 NPC의 기술 확률 = ${pct(1 / npcPool(loc).length)} × 기술별 확률`))),
+            // 🪆 Doll Factory: the jack-in-the-box doll (not a raid — it jumps out when the box has grown)
+            loc.dollFactory ? h("div.npc-card", { style: { "--c": "#7f1d1d" } },
+                h("div.npc-card-head", h("span.npc-card-ico", "🧸"), h("div", h("b", "Monster Doll ", alignBadge({ align: "evil", moves: [] })), h("small", "🎁 잭인더박스에서 튀어나옴 · 상자가 2~4분 동안 커지다가 터짐"))),
+                h("ul", ["💥 물어뜯기 — HP −20", "💥 할퀴기 — HP −30", "💥 짓밟기 — HP −50"].map(x => h("li", h("span", x), h("small", "25%"))), h("li.deadly", h("span", "💀 영혼 빼앗기 — 바로 사망"), h("small", "25%"))),
+                h("small.muted", "NPC 공격 Block 권으로 막을 수 없습니다")) : null)),
         { title: `👹 NPC 정보 · ${loc.emoji} ${loc.name}`, wide: true });
 }
 function subNpcInfo(loc, kind) {

@@ -42,7 +42,11 @@ export function mapAudio(loc) {
     clearInterval(mapWatch); // the play screen gone (another page / turn over): both stop
     mapWatch = setInterval(() => { if (!document.querySelector(".location")) { Sound.ambStop(); Sound.weather(null); clearInterval(mapWatch); } }, 1000);
 }
+// 🪆 Doll Factory · 🏕️ Campsite: their own spooky loop in every weather
+const FIXED_BGM = loc => loc.dollFactory ? "creepy_doll" : (loc.campsite || loc.sub === "campsite") ? "halloween_march" : null;
 export function survivalBgm(loc) {
+    const fixed = loc && FIXED_BGM(loc);
+    if (fixed) { Sound.amb("fx_" + fixed, Sound.songs?.[fixed], 0.16); return; }
     if (!loc || LF.weatherAt(loc.id).id !== "sun") { Sound.ambStop(); return; }
     if (!(loc.id in songs)) { const s = gameAudio({ id: "sv_" + loc.id, name: BGM_NAME[loc.id] || loc.name, icon: loc.emoji }).song; songs[loc.id] = typeof s === "object" ? s : null; }
     if (songs[loc.id]) Sound.amb("sv_" + loc.id, songs[loc.id], SURVIVAL_BGM_VOL);

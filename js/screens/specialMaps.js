@@ -11,16 +11,16 @@ import { Sound, tone, noise } from "../core/sound.js";
 import { toast, confetti, banner, confirmBox, modal, Activity } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { CONFIG } from "../config.js";
-import { LOC_BY_ID, ITEM_BY_ID, SHOPS, WEAPON_BY_ID } from "../data/catalog.js";
+import { LOC_BY_ID, ITEM_BY_ID, SHOPS, WEAPON_BY_ID, PET_BY_ID, NPCS } from "../data/catalog.js";
 import * as G from "../game/season.js";
 import * as TR from "../game/travel.js";
 import * as SO from "../game/social.js";
 import * as LF from "../game/life.js";
 import * as LD from "../data/life.js";
 import * as M from "../emomon/game.js";
-import { applyHarm, extraLocks } from "../game/extra.js";
+import { applyHarm, extraLocks, stayWaivers } from "../game/extra.js";
 import { account } from "../game/bank.js";
-import { avatar, displayName } from "../ui/profile.js";
+import { avatar, displayName, playerCard } from "../ui/profile.js";
 import { customNpc } from "./corners2.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import { pointManiaView } from "./pointMania.js";
@@ -37,6 +37,9 @@ const r100 = n => Math.round(n / 100) * 100;
 const wallet = ps => (ps?.money || 0) + (ps?.loanGold || 0);
 const payGold = (ps, g) => { const fromLoan = Math.min(ps.loanGold || 0, g); ps.loanGold = (ps.loanGold || 0) - fromLoan; ps.money -= g - fromLoan; };
 const pic = (pid, size = 56, extra = {}) => Store.player(pid) ? avatar(pid, size, { effect: false, ...extra }) : h("div.sm-nopic", "👤");
+// 👤 a clickable picture → the player's profile card
+const profPop = pid => Store.player(pid) && modal(playerCard(pid, ps_(pid) || null), { title: nm(pid), wide: true });
+const picBtn = (pid, size = 40, extra = {}) => h("button.sm-picbtn", { title: `${nm(pid)} — 프로필 보기`, onclick: e => { e.stopPropagation(); profPop(pid); } }, pic(pid, size, extra));
 const alertPop = (title, body, { ms = 0, cls = "", btn = "확인" } = {}) => new Promise(res => {
     const m = modal(h("div.sm-pop " + cls, body, ms ? null : h("div.row.center", h("button.btn.gold.big", { onclick: () => m.close() }, btn))), { title, closable: false });
     if (ms) setTimeout(() => m.close(), ms);
@@ -115,13 +118,13 @@ function ticketView(c) {
     const gate = loc.gate, wrap = h("div.sm-tickets");
     const render = () => {
         const mine = TR.ticketOf(pid);
-        let vip = false;
-        const vipBox = h("label.sm-vip", h("input", { type: "checkbox", onchange: e => { vip = e.target.checked; } }), ` 👑 VIP 1등석 (+${fmt(TR.VIP_FEE)}G · 무료 티켓 제외)`);
+        // 👑 VIP: Gate 3 (no 🛎️ 공항 서비스) asks right after the purchase · Gates 1·2 only through 🛎️ 공항 서비스
+        const vipNote = gate === 3 ? `👑 Gate 3에는 공항 서비스가 없어서 티켓을 살 때 VIP 1등석 (+${fmt(TR.VIP_FEE)}G) 추가 여부를 물어봅니다 (무료 티켓 제외)` : `👑 VIP 1등석 업그레이드는 🛎️ 공항 서비스에서만 가능합니다 (${fmt(TR.UPGRADE_FEE)}G)`;
         wrap.replaceChildren(
             h("div.sm-gatehead", h("b", `🛫 Airport Gate ${gate} · 티켓 카운터`), h("small", `탑승객 ${TR.waitingList().length} / ${TR.PAX_MAX}명 대기 중 · 티켓은 1번만 구입 (변경은 🛎️ 공항 서비스 · Gate 1·2)`)),
             mine ? h("div.sm-myticket", h("b", "🎫 내 티켓: "), TR.ticketLabel(mine.t), mine.vip ? h("span.sm-vipbadge", "👑 VIP") : null, " ", legIcons(mine.t.legs)) :
                 h("p.notice.warn", `⚠️ 티켓을 구입하지 않고 턴이 끝나면 무료 티켓 (${TR.ticketLabel(TR.defaultTicket(gate))})이 자동으로 적용됩니다.`),
-            mine ? null : vipBox,
+            mine ? null : h("p.muted.sm-vipnote", vipNote),
             h("div.sm-ticket-list", TR.TICKETS[gate].map(tk => {
                 const cost = TR.ticketPrice(tk);
                 const ok = !mine && TR.canBuyTicket(pid, tk).ok;
@@ -131,9 +134,12 @@ function ticketView(c) {
                     h("div.sm-t-legs", legIcons(tk.legs), h("small", ` 비행 ${tk.legs.filter(l => l.k === "plane").length}라운드`)),
                     h("div.sm-t-price", tk.free ? "무료 (기본 티켓)" : cost.pts ? `${cost.pts} P` : `${fmt(cost.gold)} G`),
                     h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: async () => {
-                        const v = vip && !tk.free;
-                        if (!(await confirmBox(`🎫 ${TR.ticketLabel(tk)}\n${TR.legsText(tk.legs)}\n가격: ${cost.pts ? `${cost.pts}P` : `${fmt(cost.gold)}G`}${v ? ` + VIP ${fmt(TR.VIP_FEE)}G` : ""}\n구입할까요? (1번만 구입 가능)`, "구입", "취소"))) return;
-                        if (v && wallet(ps) < cost.gold + TR.VIP_FEE) return toast("VIP 요금까지 낼 골드가 부족합니다", "warn");
+                        if (!(await confirmBox(`🎫 ${TR.ticketLabel(tk)}\n${TR.legsText(tk.legs)}\n가격: ${cost.pts ? `${cost.pts}P` : `${fmt(cost.gold)}G`}\n구입할까요? (1번만 구입 가능)`, "구입", "취소"))) return;
+                        let v = false;
+                        if (gate === 3 && !tk.free) {
+                            v = await confirmBox(`👑 VIP 1등석으로 하시겠어요?\n+${fmt(TR.VIP_FEE)}G 추가 (Gate 3에는 공항 서비스가 없어서 지금만 선택할 수 있습니다)\n\nVIP: 기내 모든 게임 · VIP 기내식 · 💆 VIP 스파`, `👑 VIP 추가 (+${fmt(TR.VIP_FEE)}G)`, "💺 이코노미로 구입");
+                            if (v && wallet(ps) < cost.gold + TR.VIP_FEE) { toast("VIP 요금까지 낼 골드가 부족해서 이코노미로 구입합니다", "warn"); v = false; }
+                        }
                         if (!TR.buyTicket(pid, tk.id, v)) return toast(TR.canBuyTicket(pid, tk).why || "구입할 수 없습니다", "warn");
                         Sound.cash(); toast(`🎫 티켓 구입 완료!${v ? " 👑 VIP 1등석" : ""}`, "ok"); c.refresh(); render();
                     } }, mine?.id === tk.id ? "보유" : "구입"));
@@ -146,7 +152,7 @@ function crashInfo() {
     return alertPop("ℹ️ 비행기 추락 확률", h("div.sm-info",
         h("table.sm-table", h("tr", h("th", "날씨"), h("th", "추락 확률")),
             Object.entries(TR.CRASH_WX).map(([w, p]) => h("tr", h("td", `${LD.WEATHERS?.[w]?.emoji || ""} ${{ sun: "해", rain: "비", storm: "폭우", snow: "눈", blizzard: "폭설", heat: "폭염", hail: "우박" }[w]}`), h("td", `${Math.round(p * 100)}%`)))),
-        h("p", `+ 날씨와 상관없는 비행기 결함 ${Math.round(TR.CRASH_FAULT * 100)}% · 탑승객이 많을수록 추락 확률이 높아집니다 (6명 탑승 = 100%, 1명 = 약 58%)`),
+        h("p", `+ 날씨와 상관없는 비행기 결함 ${Math.round(TR.CRASH_FAULT * 100)}% · 탑승객이 많을수록 추락 확률이 높아집니다: 2번째 탑승객부터 1명당 +${Math.round(TR.CRASH_PER_PAX * 100)}% (6명 탑승 = 확률 ×${(1 + TR.CRASH_PER_PAX * (TR.PAX_MAX - 1)).toFixed(1)}) · 최대 ${Math.round(TR.CRASH_CAP * 100)}% — 100% 추락은 없습니다`),
         h("table.sm-table", h("tr", h("th", "추락 시 결과"), h("th", "확률")), TR.CRASH_FATE.map(f => h("tr", h("td", f.label), h("td", `${f.w}%`)))),
         h("p", `🌪️ Air 타입 이모몬스터 보유: 생존 확률 +${Math.round(TR.AIR_BONUS * 100)}% · 생존자: HP 절반, 목적지 → 🏝️ Island (콤보랜드)`),
         h("p.muted", "사망 순서(순위): 다음 도착지가 경유지인 사람 → 최종 목적지인 사람 순, 같으면 도착 맵 번호가 낮은 사람 → 플레이 순서가 빠른 사람이 먼저(낮은 순위)")));
@@ -187,24 +193,36 @@ function serviceView(c) {
 }
 function loungeView(c) {
     const { pid } = c;
-    return h("div.sm-lounge",
-        h("p", `🛋️ 공항 라운지 — ${fmt(TR.LOUNGE_FEE)}G를 내면 아래 중 하나가 랜덤으로 나옵니다.`),
-        h("ul", TR.LOUNGE.map(l => h("li", `${l.emoji} ${l.name} — ${l.desc}`))),
-        h("button.btn.gold.big", { onclick: async () => {
+    // 🎴 picture cards (like the 직업 corner): the light runs over them and stops on one
+    const ART = { massage: ["💆", "🕯️"], food: ["🍱", "🥢"], drink: ["🥤", "🧊"], spa: ["🐾", "♨️"] };
+    const cards = TR.LOUNGE.map(l => h("div.sm-lcard.l-" + l.id,
+        h("div.sm-lcard-art", h("span.a", ART[l.id]?.[0] || l.emoji), h("span.b", ART[l.id]?.[1] || "✨")),
+        h("b", l.name), h("small", l.desc)));
+    const btn = h("button.btn.gold.big", { onclick: async () => {
             const r = TR.loungeTry(pid);
             if (!r.ok) return toast(r.why, "warn");
+            btn.disabled = true;
             const hold = Activity.hold();
             try {
-                Sound.tease(); await banner(`${r.pick.emoji} ${r.pick.name}`, 1300, "loc");
+                const at = TR.LOUNGE.indexOf(r.pick), steps = 18 + rint(0, 3) * 4;
+                const total = steps + ((at - steps % cards.length) + cards.length) % cards.length;
+                for (let k = 0; k <= total; k++) { cards.forEach(x => x.classList.remove("hot")); cards[k % cards.length].classList.add("hot"); Sound.tick(); await sleep(60 + Math.max(0, k - total + 8) * 45); }
+                cards.forEach(x => x.classList.remove("hot")); cards[at].classList.add("chosen");
+                Sound.tease(); await sleep(700);
+                await banner(`${r.pick.emoji} ${r.pick.name}`, 1300, "loc");
                 let line = "";
                 if (r.pick.id === "massage") line = `💆 시원하다! HP FULL (+${Math.round(r.hp)})`;
                 if (r.pick.id === "food") { const hp = heal(pid, 30); const f = LF.addFood(pid, 30); line = `🍱 HP +${Math.round(hp)} · 식량 +${f}`; }
                 if (r.pick.id === "drink") { const e = LF.eat(pid, r.food, "공항 라운지"); line = `${LD.FOOD_BY_ID?.[r.food]?.emoji || "🥤"} ${LD.FOOD_BY_ID?.[r.food]?.name || r.food}을(를) 마셨다! ${e.ok ? `식량 ${e.got >= 0 ? "+" : ""}${e.got}` : e.why}`; }
                 if (r.pick.id === "spa") { const list = M.mons(pid) || []; for (const m of list) m.hp = M.maxHp(m); line = list.length ? `🐾 이모몬스터 ${list.length}마리 모두 FULL HP!` : "🐾 이모몬스터가 없어서 아무 효과가 없었다…"; document.dispatchEvent(new Event("emo:change")); }
                 Store.saveSeason(true); Sound.coin(); toast(line, "ok", 3500);
-            } finally { hold(); }
+            } finally { hold(); btn.disabled = false; }
             c.refresh();
-        } }, `🛋️ 라운지 이용 (${fmt(TR.LOUNGE_FEE)}G)`));
+        } }, `🛋️ 라운지 이용 (${fmt(TR.LOUNGE_FEE)}G)`);
+    return h("div.sm-lounge",
+        h("div.sm-gatehead", h("b", "🛋️ 공항 라운지"), h("small", `${fmt(TR.LOUNGE_FEE)}G를 내면 아래 4가지 중 하나가 랜덤으로 정해집니다`)),
+        h("div.sm-lcards", cards),
+        h("div.row.center", btn));
 }
 
 // ---- gate end of turn: waiting popup / take-off (the 6th passenger sees everybody board)
@@ -310,16 +328,39 @@ function paxBar(pid) {
         h("b.sm-pax-h", "🧑‍✈️ 탑승객"),
         list.map(p => {
             const out = !!ps_(p)?.out, tr = TR.tripOf(p);
-            return h("div.sm-pax-p" + (out ? ".out" : "") + (p === pid ? ".me" : ""),
-                h("div.sm-pax-pic", pic(p, 40), out ? h("span.sm-x", "✖") : null, TR.isVip(p) ? h("span.sm-vipsign", "👑 VIP") : null),
+            const vip = TR.isVip(p);
+            return h("div.sm-pax-p" + (out ? ".out" : "") + (p === pid ? ".me" : "") + (vip ? ".vip" : ""),
+                h("div.sm-pax-top",
+                    // 👤 click → profile · 👑 next to the J/D handler badge
+                    h("div.sm-pax-pic", picBtn(p, 44), out ? h("span.sm-x", "✖") : null, vip ? h("span.sm-vipcrown", { title: "VIP 1등석" }, "👑") : null),
+                    h("button.sm-itin-btn", { title: "여정 보기", onclick: () => itineraryPop(p, tr?.legs, `Gate ${tr?.gate}${tr?.vip ? " · 👑 VIP" : ""}`) }, "🧾")),
                 h("small.sm-pax-n", nm(p)),
+                h("small.sm-seat" + (vip ? ".vip" : ""), vip ? "👑 VIP 1등석" : "💺 이코노미"),
                 h("small", `Gate ${tr?.gate || "?"} → ${TR.locName(TR.finalDest(p))}`),
-                out ? h("small.sm-out", "라운드 탈락") : null,
-                h("button.sm-itin-btn", { title: "여정 보기", onclick: () => itineraryPop(p, tr?.legs, `Gate ${tr?.gate}${tr?.vip ? " · 👑 VIP" : ""}`) }, "🧾"));
+                out ? h("small.sm-out", "라운드 탈락") : null);
         }));
 }
+// 🗣️ a cabin-crew announcement (the browser's Korean voice — silent when the sound is off or there is no voice)
+function speak(text) {
+    try {
+        if (Sound.muted || !window.speechSynthesis) return;
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ko-KR"; u.rate = 0.95; u.pitch = 1.15; u.volume = 0.9;
+        const v = speechSynthesis.getVoices().filter(x => /^ko/i.test(x.lang));
+        u.voice = v.find(x => /female|여|heami|sunhi|yuna|seoyeon/i.test(x.name)) || v[0] || null;
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch { }
+}
 // 🔥 the crash: SOS (6 s) → oxygen masks (15 s) → 쾅 → who survives (one by one)
+// (once only: the clock tick and the ⏹ 턴 종료 button can both start it)
+let crashBusy = false;
+const crashPending = (loc, pid) => { const f = TR.flightNow(); return !!(loc?.plane && f?.crash && !f.done && +f.pid === +pid); };
 async function crashSequence(c) {
+    if (crashBusy) return;
+    crashBusy = true;
+    try { await crashRun(c); } finally { crashBusy = false; }
+}
+async function crashRun(c) {
     const { pid, t } = c;
     const reason = TR.crashReason();
     const stage = document.querySelector(".location");
@@ -340,7 +381,7 @@ async function crashSequence(c) {
     const board = TR.onBoard();
     const cards = Object.fromEntries(board.map(p => [p, h("div.sm-fate-p" + (ps_(p)?.out ? ".out" : ""), pic(p, 64), h("small", nm(p)), h("b.sm-fate-mark", ps_(p)?.out ? "❌ 라운드 탈락" : "❔"))]));
     const cap = h("p.sm-fate-cap", "생존자를 확인하고 있습니다…");
-    const m = modal(h("div.sm-fate", h("div.sm-fate-grid", Object.values(cards)), cap, h("small.muted", `결과: ${fate.fate.label}`)), { title: "💥 비행기 추락 — 생존자 확인", closable: false, wide: true });
+    const m = modal(h("div.sm-fate", h("div.sm-fate-grid", Object.values(cards)), cap), { title: "💥 비행기 추락 — 생존자 확인", closable: false, wide: true }); // (no "결과:" line — the cards tell it)
     const live = board.filter(p => !ps_(p)?.out);
     const victims = TR.rankOrder(fate.victims);
     const spin = async target => {
@@ -381,35 +422,103 @@ async function crashSequence(c) {
 }
 
 // ================================================================ 🛗 ELEVATOR
-function floorMap(pid, here) {
-    return h("div.sm-floors", [...TR.FLOORS].reverse().map(f => {
-        const who = TR.elevOccupants().filter(p => (ps_(p)?.elev?.floor || "elev_1") === f);
-        return h("div.sm-floor" + (f === here ? ".here" : "") + (f === "elev_7" ? ".exit" : ""),
-            h("b.sm-floor-n", TR.floorLabel(f)), h("small.sm-floor-name", (LOC_BY_ID[f]?.name || "").replace("엘리베이터 ", "").replace(TR.floorLabel(f), "").trim()),
-            h("div.sm-floor-who", who.map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), { title: nm(p) }, pic(p, 28)))));
+// what each floor has (🛗 층별 안내 tiles) — corners · cautions (the always-NPCs are added from the map data)
+const FLOOR_GUIDE = {
+    elev_1: { scene: "🛋️", corners: ["💬 커뮤니티"], warn: ["🛗 엘리베이터가 처음 멈추는 층 (시작 층)"] },
+    elev_2: { scene: "🎰", corners: ["🎰 슬롯 · 🃏 카지노 랜덤 2개", "🙏 구걸"] },
+    elev_3: { scene: "🛍️", corners: ["🛗 특별상점 — 라운드 3회 (첫 번째만 직접 선택 · 나머지 2번은 랜덤)"] },
+    elev_4: { scene: "⚔️", corners: ["⚔️ 무기상점 — 라운드 1회"] },
+    elev_5: { scene: "🍱", corners: ["🍱 푸드 (미니 델리 · 떡귀 식당)"] },
+    elev_6: { scene: "🎫", corners: ["🎫 엘리베이터 상점 — 층권 (라운드 1회)"], warn: ["🎫 층권: 계기판에서 그 층으로 바로 이동 (이동 횟수 차감 없음)"] },
+    elev_7: { scene: "🚪", corners: ["🚪 탈출 — 바로 턴 종료 · 다음 라운드부터 정상 플레이", `🆘 구제 (${fmt(TR.RESCUE_FEE)}G) — 갇힌 사람 1명 랜덤 구제 · 친밀도 +20`], exit: true },
+    elev_8: { scene: "🐾", corners: ["🐾 이모몬스터 Capture"] },
+    elev_9: { scene: "🌊", corners: [], warn: ["🌊 침수된 층 — 🫧 산소통이 없으면 1분마다 HP −10"] },
+    elev_10: { scene: "🏦", corners: ["🏦 은행", "💰 돈벌기"] },
+    elev_roof: { scene: "🏙️", corners: ["🎰 슬롯 · 🃏 카지노 랜덤 2개"] }
+};
+const floorShort = f => (LOC_BY_ID[f]?.name || "").replace("엘리베이터 ", "").replace(TR.floorLabel(f), "").replace(/[()]/g, "").trim();
+const floorNo = f => f === "elev_roof" ? "R" : String(LOC_BY_ID[f]?.floor || "?");
+const floorWho = f => TR.elevOccupants().filter(p => (ps_(p)?.elev?.floor || "elev_1") === f);
+const npcNames = f => (LOC_BY_ID[f]?.npc === "always" ? LOC_BY_ID[f].npcList || [] : []).map(id => NPCS.find(n => n.id === id)).filter(Boolean);
+// 🛗 층별 안내: one tile per floor (corners · cautions · who is trapped there — click a picture for the profile)
+function floorGuide(pid, here) {
+    return h("div.sm-ev-guide", [...TR.FLOORS].map(f => {
+        const g = FLOOR_GUIDE[f] || { corners: [] }, npcs = npcNames(f), who = floorWho(f);
+        return h("div.sm-ev-tile" + (f === here ? ".here" : "") + (g.exit ? ".exit" : "") + (LOC_BY_ID[f]?.flooded ? ".flood" : ""),
+            h("div.sm-ev-tile-h", h("b.sm-ev-no", floorNo(f)), h("div", h("b", TR.floorLabel(f)), h("small", floorShort(f) || " ")), h("span.sm-ev-scene", g.scene || "🛗")),
+            g.corners.length ? h("ul.sm-ev-corners", g.corners.map(x => h("li", x))) : h("p.muted", "특별한 코너 없음"),
+            (g.warn?.length || npcs.length) ? h("ul.sm-ev-warn", (g.warn || []).map(x => h("li", "⚠️ ", x)), npcs.length ? h("li", "👹 NPC 항상 출몰: ", npcs.map(n => `${n.emoji} ${n.name}`).join(" · ")) : null) : null,
+            h("div.sm-ev-tile-who", who.length ? who.map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), picBtn(p, 30), h("small", p === pid ? "나" : nm(p)))) : h("small.muted", "갇힌 사람 없음")));
     }));
 }
+// (the 🆘 구제 corner: the floors and who is on each)
+function floorMap(pid, here) {
+    return h("div.sm-floors", [...TR.FLOORS].reverse().map(f => {
+        const who = floorWho(f);
+        return h("div.sm-floor" + (f === here ? ".here" : "") + (f === "elev_7" ? ".exit" : ""),
+            h("b.sm-floor-n", TR.floorLabel(f)), h("small.sm-floor-name", floorShort(f)),
+            h("div.sm-floor-who", who.map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), picBtn(p, 28)))));
+    }));
+}
+// 🛗 the cabin: floor lamps 1 ~ 옥상 on top · the doors (the floor behind them) · the button panel
+//   이동 → the button lights up, the doors close, the lamps roll and stop on a random floor … ding … the doors open there
 function panelView(c) {
     const { pid, t, loc } = c, ps = ps_(pid);
     const passes = TR.FLOOR_PASSES.filter(f => ps.items[f.id] > 0);
-    const go = async to => {
+    const lamps = Object.fromEntries(TR.FLOORS.map(f => [f, h("span.sm-ev-lamp" + (f === loc.id ? ".on" : "") + (f === "elev_7" ? ".exit" : ""), floorNo(f))]));
+    const viewOf = f => h("div.sm-ev-view" + (LOC_BY_ID[f]?.flooded ? ".flood" : "") + (f === "elev_7" ? ".exit" : ""),
+        h("span.sm-ev-view-ico", FLOOR_GUIDE[f]?.scene || "🛗"), h("b", TR.floorLabel(f)), h("small", floorShort(f)),
+        h("div.sm-ev-view-who", floorWho(f).map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), picBtn(p, 34)))));
+    let view = viewOf(loc.id);
+    const doors = h("div.sm-ev-doors", h("div.sm-ev-door.l"), h("div.sm-ev-door.r"));
+    const cabin = h("div.sm-ev-cabin", view, doors);
+    const digit = h("b.sm-ev-digit", floorNo(loc.id));
+    const left = TR.movesLeft(pid);
+    let moving = false;
+    const go = async (to, btn) => {
+        if (moving) return;
+        moving = true;
         const was = t.running; t.running = false;
-        Sound.click();
-        const ding = h("div.sm-elev-door", h("div.l"), h("div.r"), h("b", "🛗"));
-        document.body.append(ding);
-        await sleep(900); tone(1320, 0.25, "sine", 0.06); tone(990, 0.4, "sine", 0.06, 0.25);
-        const dest = TR.moveFloor(pid, to);
-        await sleep(700); ding.remove();
-        t.running = was;
-        if (!dest) return toast("이동 횟수를 모두 썼습니다", "warn");
-        toast(`🛗 ${TR.floorLabel(dest)} 도착!`, "ok");
+        const hold = Activity.hold();
+        try {
+            btn?.classList.add("lit"); Sound.click(); tone(660, 0.08, "sine", 0.04);
+            const from = loc.id;
+            const dest = TR.moveFloor(pid, to);
+            if (!dest) { btn?.classList.remove("lit"); toast("이동 횟수를 모두 썼습니다", "warn"); return; }
+            // 🚪 the doors close
+            await sleep(350); cabin.classList.add("closed"); noise(0.6, 0.03); await sleep(800);
+            // 💡 the lamps roll (random) or walk (a floor pass) to the floor
+            const order = TR.FLOORS, a = order.indexOf(from), b = order.indexOf(dest);
+            const steps = to ? Math.abs(b - a) : 12 + rint(0, 6);
+            let cur = from;
+            for (let k = 1; k <= steps; k++) {
+                cur = to ? order[a + Math.sign(b - a) * k] : (k === steps ? dest : pickOne(order.filter(f => f !== cur)));
+                Object.values(lamps).forEach(x => x.classList.remove("on")); lamps[cur].classList.add("on"); digit.textContent = floorNo(cur);
+                tone(220 + order.indexOf(cur) * 30, 0.12, "sine", 0.03); await sleep(to ? 260 : 110 + k * 12);
+            }
+            Object.values(lamps).forEach(x => x.classList.remove("on")); lamps[dest].classList.add("on"); digit.textContent = floorNo(dest);
+            // 🔔 ding → the doors open on the new floor
+            tone(1320, 0.25, "sine", 0.06); tone(990, 0.45, "sine", 0.06, 0.25);
+            const nv = viewOf(dest); view.replaceWith(nv); view = nv;
+            await sleep(500); cabin.classList.remove("closed"); await sleep(900);
+            toast(`🛗 ${TR.floorLabel(dest)} 도착!${dest === "elev_7" ? " 🚪 출구가 보인다!" : ""}`, "ok");
+        } finally { hold(); moving = false; if (S().turn === t) t.running = was || true; }
         c.render();
     };
-    return h("div.sm-panel",
-        h("div.sm-gatehead", h("b", `🛗 엘리베이터 계기판 — 지금 ${TR.floorLabel(loc.id)}`), h("small", `5분 안에 7층 출구로 탈출하세요! 탈출하지 못하면 다음 라운드도 이 층에서 시작합니다 · 남은 시간 ${fmtTime(t.remaining)}`)),
-        h("div.row.center", h("button.btn.gold.big", { disabled: TR.movesLeft(pid) <= 0, onclick: () => go(null) }, `🎲 이동 (랜덤 층) · 이번 라운드 ${TR.movesLeft(pid)} / ${TR.ELEV_MOVES}회`)),
-        passes.length ? h("div.sm-passes", h("b", "🎫 층권 사용 (이동 횟수 차감 없음): "), passes.map(f => h("button.btn.small.gold", { disabled: f.floor === loc.id, onclick: () => { ps.items[f.id]--; Store.saveSeason(true); go(f.floor); } }, `${TR.floorLabel(f.floor)} ×${ps.items[f.id]}`))) : null,
-        floorMap(pid, loc.id));
+    const moveBtn = h("button.sm-ev-btn.big" + (left <= 0 ? ".off" : ""), { disabled: left <= 0, title: "랜덤 층으로 이동", onclick: e => go(null, e.currentTarget) }, h("span", "🎲"), h("small", "이동"));
+    return h("div.sm-elevator",
+        h("div.sm-ev-top", h("div.sm-ev-lamps", TR.FLOORS.map(f => lamps[f]))),
+        h("div.sm-ev-body",
+            cabin,
+            h("div.sm-ev-panel",
+                h("div.sm-ev-screen", digit, h("small", "층")),
+                moveBtn,
+                h("div.sm-ev-moves", h("div", Array.from({ length: TR.ELEV_MOVES }, (_, i) => h("span" + (i < left ? ".on" : "")))), h("small", `이번 라운드 이동 ${left} / ${TR.ELEV_MOVES}회`)),
+                passes.length ? h("div.sm-ev-passes", h("small", "🎫 층권 (차감 없음)"), h("div.sm-ev-passbtns", passes.map(f => h("button.sm-ev-btn", { disabled: f.floor === loc.id, title: `${f.name} ×${ps.items[f.id]}`, onclick: e => { ps.items[f.id]--; Store.saveSeason(true); go(f.floor, e.currentTarget); } }, h("span", floorNo(f.floor)), h("small", `×${ps.items[f.id]}`))))) : null,
+                h("small.sm-ev-time", `⏱️ ${fmtTime(t.remaining)} · 5분 안에 7층 출구로!`))),
+        h("p.muted.sm-ev-note", "🛗 이동 버튼을 누르면 랜덤한 층으로 이동합니다. 탈출하지 못하면 다음 라운드도 지금 층에서 시작합니다 · 사진을 누르면 프로필을 볼 수 있습니다."),
+        h("h4.sm-ev-gh", "📋 층별 안내"),
+        floorGuide(pid, loc.id));
 }
 // 3F: 3 uses a round — the 1st is your pick, the next 2 are random
 const emoName = { ITEM002: "Super Ball", ITEM003: "Hyper Ball", EMO_HP50: "Monster HP +50" };
@@ -540,11 +649,22 @@ async function campsiteIntro(pid, t) {
     Store.saveSeason(true);
     return LOC_BY_ID[TR.CAMP_SPOTS[spot].loc];
 }
+// 🏕️ 캠퍼 현황: one tile per hiding place — who hides there (me included), who is dead
 function campView(c) {
-    const { t } = c, cp = t.camp;
+    const { pid, t } = c, cp = t.camp;
+    const need = TR.campKillsNeed(t), left = TR.campKillsLeft(t);
+    const people = [{ pid, spot: cp.spot, me: true, dead: !!ps_(pid)?.out }, ...cp.campers];
     return h("div.sm-campview",
-        h("div.sm-gatehead", h("b", `🏕️ ${TR.CAMP_SPOTS[cp.spot].emoji} ${TR.CAMP_SPOTS[cp.spot].name}에 숨어 있음`), h("small", `🔪 희생자 ${cp.kills.length}명 · Masked Killer가 ${TR.CAMP_MIN_KILLS}명 이상 죽여야 턴을 끝낼 수 있습니다 (또는 5분)`)),
-        h("div.sm-campers", cp.campers.map(x => h("div.sm-camper" + (x.dead ? ".dead" : ""), pic(x.pid, 56), h("small", nm(x.pid)), h("small", x.dead ? `☠️ ${x.how}` : "숨어 있음 🤫")))));
+        h("div.sm-gatehead", h("b", `🏕️ 캠퍼 현황 — 나는 ${TR.CAMP_SPOTS[cp.spot].emoji} ${TR.CAMP_SPOTS[cp.spot].name}에 숨어 있음`),
+            h("small", left > 0 ? `🔪 희생자 ${cp.kills.length} / ${need}명 · Masked Killer가 나를 제외한 캠퍼 ${need}명을 죽이면 5분이 지나지 않아도 턴을 끝낼 수 있습니다` : `🔓 희생자 ${cp.kills.length}명 — 이제 턴을 끝낼 수 있습니다 (턴이 끝나면 🩸 Body Count 발표)`)),
+        h("div.sm-camp-killbar", Array.from({ length: need }, (_, i) => h("span" + (i < cp.kills.length ? ".on" : ""), i < cp.kills.length ? "🩸" : "🔪"))),
+        h("div.sm-camp-board", Object.entries(TR.CAMP_SPOTS).map(([k, sp]) => {
+            const here = people.filter(x => x.spot === k);
+            return h("div.sm-camp-spot.s-" + k + (k === cp.spot ? ".mine" : "") + (here.some(x => x.dead) ? ".blood" : ""),
+                h("div.sm-camp-spot-h", h("span.sm-camp-spot-ico", sp.emoji), h("b", sp.name), h("small", `발견 ${Math.round(sp.found * 100)}%`)),
+                h("div.sm-camp-spot-who", here.length ? here.map(x => h("div.sm-camper" + (x.dead ? ".dead" : "") + (x.me ? ".me" : ""),
+                    picBtn(x.pid, 48), h("small", (x.me ? "🙋 " : "") + nm(x.pid)), h("small.st", x.dead ? `☠️ ${x.how || "사망"}` : x.me ? "나 · 숨어 있음" : "숨어 있음 🤫"))) : h("small.muted", "아무도 없음")));
+        })));
 }
 async function bodyCount(pid, t, playerDead, how = null) {
     const cp = t.camp; if (!cp || cp.counted) return;
@@ -560,8 +680,11 @@ async function bodyCount(pid, t, playerDead, how = null) {
         h("h4", "🩹 생존자"),
         h("div.sm-body-list", survivors.length ? survivors.map(s => h("div.sm-body-p.live", pic(s, 48), h("span", nm(s), s === pid ? " (플레이어)" : " (Camper)"), h("small", `+${fmt(pay.find(p => p.pid === s)?.gold || 0)}G`))) : h("p", "생존자가 없습니다…"))));
 }
-// 🧩 the end is locked until the Masked Killer has struck twice
-extraLocks.push((loc, t) => isSpot(loc) && t?.camp && !t.camp.found && TR.campKillsLeft(t) > 0 && (t.remaining ?? 0) > 0 ? `🔪 Masked Killer가 아직 ${TR.CAMP_MIN_KILLS}명을 죽이지 않았습니다… (남은 ${TR.campKillsLeft(t)}명) 숨어서 기다리세요` : null);
+// 🧩 the campsite end lock: 5 minutes in the hiding place — or sooner, once the Masked Killer has killed 3 campers (not counting me)
+const CAMP_STAY = 300;
+const campStayLeft = t => Math.max(0, CAMP_STAY - ((t.camp.campIn ?? t.remaining) - t.remaining));
+stayWaivers.push((loc, t) => isSpot(loc) && !!t?.camp);
+extraLocks.push((loc, t) => isSpot(loc) && t?.camp && !t.camp.found && TR.campKillsLeft(t) > 0 && (t.remaining ?? 0) > 0 && campStayLeft(t) > 0 ? `🔪 Masked Killer가 아직 캠퍼 ${TR.campKillsNeed(t)}명을 죽이지 않았습니다 (남은 ${TR.campKillsLeft(t)}명) — 숨어서 기다리거나 ${fmtTime(Math.ceil(campStayLeft(t)))} 뒤에 턴을 끝낼 수 있습니다` : null);
 
 // ================================================================ 💻 CYBER TOWN glitches
 const GLITCH_SKIP = ["games", "inv", "card", "emo:dex", "loan", "friends"];
@@ -571,9 +694,10 @@ function glitchCorner(id, c) {
     if (GLITCH_SKIP.includes(id) || id.startsWith("x:")) return null;
     // the corner flags stay only while this corner is glitched
     if (id === "community") t.glitchCom = false;
-    if (id.startsWith("shop:")) t.glitchShop = null;
+    // (🛒 a glitched shop price stays for the rest of the turn — a new glitch may change it to another glitch price, never back to normal)
     if (id === "food") t.glitchFood = null;
-    if (!TR.glitch()) return null;
+    const shopNote = () => h("div", h("p.notice.sm-glitch-note", `💻 상점 글리치 가격 유지 중: 모든 가격 ×${t.glitchShop} (원래 가격으로 돌아가지 않습니다)`), c.normal());
+    if (!TR.glitch()) return id.startsWith("shop:") && t.glitchShop ? shopNote() : null;
     const mult = +(1.5 + rnd() * 1.5).toFixed(2);
     switch (id) {
         case "community": t.glitchCom = true; glitchPop("커뮤니티 글리치! 코멘트 작성비가 5,000G로 · 하트가 취소 불가능한 싫어요로 바뀝니다"); return null;
@@ -584,7 +708,7 @@ function glitchCorner(id, c) {
         case "emo:capture": glitchPop("Capture 글리치! 몬스터가 튀어나와 공격합니다"); setTimeout(() => monsterAttack(c), 3100); return null;
         case "emo:hospital": glitchPop("Monster Hospital 글리치! 치료 시스템 오류"); return h("div.sm-glitch-box", h("b", "🏥 ERROR 500"), h("p", "치료 장비가 글리치에 걸려 이번에는 치료할 수 없습니다…"), h("button.btn.ghost", { onclick: () => { Sound.lose(); toast("❌ 치료 실패 — 글리치", "warn"); } }, "💉 치료 시도"));
     }
-    if (id.startsWith("shop:")) { t.glitchShop = mult; glitchPop(`상점 글리치! 모든 가격 ×${mult}`); return null; }
+    if (id.startsWith("shop:")) { const was = t.glitchShop; t.glitchShop = mult; glitchPop(was ? `상점 글리치! 가격이 다시 깨졌습니다 ×${was} → ×${mult}` : `상점 글리치! 모든 가격 ×${mult} (이번 턴 동안 계속)`); return shopNote(); }
     glitchPop("코너 글리치! 화면이 깨졌습니다");
     return h("div.sm-glitch-box", h("b", "💻 ERROR 404"), h("p", "이 코너가 글리치에 걸렸습니다. 다시 열어 보세요."), h("button.btn.small", { onclick: () => c.tabBody(id) }, "🔄 다시 열기"));
 }
@@ -812,15 +936,20 @@ customNpc.hack = async (pid, npc) => {
 customNpc.dollCurse = async (pid, npc) => {
     if (blocked(pid, npc)) return { blocked: true };
     const r = TR.dollCurse(pid);
-    await npcPop(pid, npc, `${npc.emoji} Evil Doll의 Doll Curse!`, `🪆 펫이 'Evil Doll'로 바뀌었다… 슬롯 당첨 · 보너스가 20% 확률로 사라집니다 (🔁 펫 교체권으로만 해제)${r.had && r.had !== "evil_doll" ? "" : ""}`, "🪆");
+    const was = r.had ? (PET_BY_ID[r.had]?.name || r.had) : null;
+    await npcPop(pid, npc, `${npc.emoji} Evil Doll의 Doll Curse!`, `🪆 ${was ? `펫 '${was}'이(가) 'Evil Doll'로 바뀌었다…` : "펫 자리에 'Evil Doll'이 강제로 들어왔다…"} 슬롯 당첨 · 보너스가 20% 확률로 사라집니다 (🔁 펫 교체권으로만 해제)`, "🪆");
     return { curse: "doll" };
 };
 customNpc.clownCurse = async (pid, npc) => {
     if (blocked(pid, npc)) return { blocked: true };
-    TR.clownCurse(pid);
-    await npcPop(pid, npc, `${npc.emoji} Clown Doll의 Clown Curse!`, "🔪 'Self-Harm' 무기가 강제로 심어졌다! 가끔 나 자신을 공격합니다 (HP −10 · 명중 80% · 🗑️ 무기삭제권으로만 제거)", "🤡");
+    const r = TR.clownCurse(pid);
+    const lost = r.lost ? (WEAPON_BY_ID[r.lost]?.name || r.lost) : null;
+    await npcPop(pid, npc, `${npc.emoji} Clown Doll의 Clown Curse!`, `🔪 ${lost ? `무기 '${lost}'이(가) 'Self-Harm'으로 바뀌었다!` : "'Self-Harm' 무기가 강제로 들어왔다!"} 가끔 나 자신을 공격합니다 (HP −10 · 명중 80% · 🗑️ 무기삭제권으로만 제거)`, "🤡");
     return { curse: "clown" };
 };
+// 🧸 the jack-in-the-box doll (Doll Factory)
+const MONSTER_DOLL = [{ name: "물어뜯기", hp: 20 }, { name: "할퀴기", hp: 30 }, { name: "짓밟기", hp: 50 }, { name: "영혼 빼앗기", kill: true }];
+const MONSTER_DOLL_NPC = { id: "monster_doll", name: "Monster Doll", emoji: "🧸", art: "🩸", color: "#7f1d1d" };
 customNpc.flyBite = async (pid, npc, move) => {
     const out = G.npcHit(pid, npc, move);
     if (out.blocked) toast(`🎫 Fly를 NPC Block 권으로 쫓아냈다 (남은 ${out.left}회)`, "ok", 2400);
@@ -832,11 +961,11 @@ customNpc.flyBite = async (pid, npc, move) => {
 export function head(loc, t, pid) {
     if (loc.plane) return paxBar(pid);
     if (isFloor(loc)) return h("div.sm-elevbar", h("b", `🛗 ${TR.floorLabel(loc.id)}`), h("small", ` · 갇힌 사람 ${TR.elevOccupants().length} / ${TR.ELEV_CAP} · 이동 ${TR.movesLeft(pid)}회 남음`),
-        h("div.sm-elevbar-who", TR.elevOccupants().map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), { title: `${nm(p)} · ${TR.floorLabel(ps_(p)?.elev?.floor || "elev_1")}` }, pic(p, 26), h("small", TR.floorLabel(ps_(p)?.elev?.floor || "elev_1"))))));
+        h("div.sm-elevbar-who", TR.elevOccupants().map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), { title: `${nm(p)} · ${TR.floorLabel(ps_(p)?.elev?.floor || "elev_1")}` }, picBtn(p, 26), h("small", TR.floorLabel(ps_(p)?.elev?.floor || "elev_1"))))));
     if (loc.gate) return h("div.sm-gatebar", h("b", `🛫 Gate ${loc.gate}`), h("small", ` · 탑승 대기 ${TR.waitingList().length} / ${TR.PAX_MAX}명`),
-        h("div.sm-elevbar-who", TR.waitingList().map(p => h("span.sm-fw", { title: `${nm(p)} · Gate ${TR.air().waiting[p]}` }, pic(p, 26), h("small", `G${TR.air().waiting[p]}`)))));
-    if (isSpot(loc) && t.camp) return h("div.sm-campbar", h("b", `🏕️ ${TR.CAMP_SPOTS[t.camp.spot].emoji} ${TR.CAMP_SPOTS[t.camp.spot].name}`), h("small", ` · 🔪 ${t.camp.kills.length}명 희생`),
-        h("div.sm-elevbar-who", t.camp.campers.map(x => h("span.sm-fw" + (x.dead ? ".dead" : ""), { title: nm(x.pid) }, pic(x.pid, 26)))));
+        h("div.sm-elevbar-who", TR.waitingList().map(p => h("span.sm-fw", { title: `${nm(p)} · Gate ${TR.air().waiting[p]}` }, picBtn(p, 26), h("small", `G${TR.air().waiting[p]}`)))));
+    if (isSpot(loc) && t.camp) return h("div.sm-campbar", h("b", `🏕️ ${TR.CAMP_SPOTS[t.camp.spot].emoji} ${TR.CAMP_SPOTS[t.camp.spot].name}`), h("small", ` · 🔪 ${t.camp.kills.length} / ${TR.campKillsNeed(t)}명 희생`),
+        h("div.sm-elevbar-who", [{ pid, spot: t.camp.spot, me: true }, ...t.camp.campers].map(x => h("span.sm-fw" + (x.dead ? ".dead" : "") + (x.me ? ".me" : ""), { title: `${nm(x.pid)} · ${TR.CAMP_SPOTS[x.spot]?.name || "?"}${x.dead ? " · ☠️" : ""}` }, picBtn(x.pid, 26), h("small", TR.CAMP_SPOTS[x.spot]?.emoji || "")))));
     return null;
 }
 export const rootCls = loc => [loc.plane ? "sm-plane" : "", isFloor(loc) ? "sm-elev" : "", loc.flooded ? "sm-flooded" : "", isSpot(loc) ? "sm-camp sm-spot-" + loc.spot : "", loc.dollFactory ? "sm-doll" : "", loc.glitch ? "sm-cyber" : "", loc.gate ? "sm-gate" : ""].filter(Boolean).join(" ");
@@ -876,7 +1005,14 @@ export function fx(loc, t, pid, c) {
         if (loc.plane) {
             if (TR.crashDue(t)) return pause(() => crashSequence(c));
             const p = odds?.p || 0.1;
-            if (rnd() < 0.06 + p * 0.4) { const el = rootEl(); el?.classList.add(p > 0.25 ? "sm-turb-hard" : "sm-turb"); noise(0.5, 0.03 + p * 0.1); later(() => el?.classList.remove("sm-turb", "sm-turb-hard"), 1200 + p * 2000); if (rnd() < 0.3) toast(p > 0.25 ? "⚠️ 심한 난기류! 좌석벨트를 매세요" : "🌀 난기류…", "info", 1800); }
+            // 🧑‍✈️ the cabin crew: "안전벨트를 착용해주세요" once around the middle of the flight
+            if (!t.beltCall && sec >= 45) { t.beltCall = true; beltCall(); }
+            if (rnd() < 0.06 + p * 0.4) {
+                const hard = p > 0.25, el = rootEl();
+                el?.classList.add(hard ? "sm-turb-hard" : "sm-turb"); noise(0.5, 0.03 + p * 0.1);
+                later(() => el?.classList.remove("sm-turb", "sm-turb-hard"), 1200 + p * 2000);
+                turbAlarm(hard); // 🔔 every shake: the seat-belt alarm at the bottom
+            }
         }
         if (loc.flooded && t.oxy9?.[loc.id] === "none" && sec % 60 === 0) {
             const r = applyHarm(pid, { hp: 10 }, "🌊 9층 물속 (산소 부족)"); Sound.splash(); toast("🫧 숨이 막힌다… HP −10", "warn", 2600);
@@ -886,6 +1022,21 @@ export function fx(loc, t, pid, c) {
         if (isSpot(loc) && t.camp) campTick();
         if (loc.glitch && rnd() < 0.04) { const el = rootEl(); el?.classList.add("sm-glitching"); tone(rint(80, 400), 0.15, "square", 0.03); later(() => el?.classList.remove("sm-glitching"), 400); }
     };
+    // ---- ✈️ the plane
+    function turbAlarm(hard) {
+        document.querySelectorAll(".sm-turb-alarm").forEach(e => e.remove());
+        const a = h("div.sm-turb-alarm" + (hard ? ".hard" : ""), h("span.sm-belt", "💺"), h("b", hard ? "⚠️ 심한 난기류 발생!" : "🌀 난기류 통과 중"), h("small", "좌석벨트 표시등이 켜졌습니다 — 자리에 앉아 좌석벨트를 매 주세요"));
+        document.body.append(a);
+        tone(1046, 0.18, "sine", 0.05); tone(784, 0.3, "sine", 0.05, 0.2); // 띵-동
+        later(() => a.remove(), 3200);
+    }
+    function beltCall() {
+        tone(1046, 0.25, "sine", 0.06); tone(784, 0.45, "sine", 0.06, 0.3);
+        const line = "승객 여러분, 안전벨트를 착용해주세요.";
+        const a = h("div.sm-turb-alarm.crew", h("span.sm-belt", "🧑‍✈️"), h("b", "📢 기내 안내방송"), h("small", `"${line}"`));
+        document.body.append(a); later(() => a.remove(), 5000);
+        later(() => speak(line), 800);
+    }
     // ---- 🪆 Doll Factory
     function dollTick() {
         if (rnd() < 1 / 25) { const fl = h("div.sm-thunder"); document.body.append(fl); noise(1.2, 0.18); tone(50, 0.9, "sine", 0.15); later(() => fl.remove(), 700); }
@@ -913,13 +1064,17 @@ export function fx(loc, t, pid, c) {
         later(() => d.classList.add("relight"), 6500);
         later(() => { d.remove(); document.removeEventListener("mousemove", mv); }, 9000);
     }
+    // 🧸 the jack-in-the-box: the Monster Doll jumps out — HP −20 · −30 · −50 · 바로 사망 (one of the four, same odds)
     async function clownPop() {
-        const clown = h("div.sm-clownpop", h("span.sm-cp-box", "📦"), h("span.sm-cp-clown", "🤡"));
+        const clown = h("div.sm-clownpop", h("span.sm-cp-box", "📦"), h("span.sm-cp-clown", "🧸"), h("b.sm-cp-name", "Monster Doll"));
         document.body.append(clown); tone(800, 0.2, "square", 0.06); await sleep(200); clown.classList.add("pop"); Sound.scream();
         await sleep(1200); clown.remove();
-        const r = applyHarm(pid, { hp: rint(10, 20) }, "🤡 잭인더박스 Clown Doll");
-        if (r.dead) return c.dead("🤡 잭인더박스에서 튀어나온 Clown Doll에게 사망");
-        toast(`🤡 잭인더박스! Clown Doll의 기습 — HP 남음 ${Math.round(r.hp)}`, "warn", 3200);
+        const mv = pickOne(MONSTER_DOLL);
+        await npcPop(pid, MONSTER_DOLL_NPC, "🧸 잭인더박스에서 Monster Doll이 튀어나왔다!", mv.kill ? "💀 바로 사망…" : `💥 ${mv.name} — HP −${mv.hp}`, mv.kill ? "💀" : "💥");
+        const r = applyHarm(pid, mv.kill ? { kill: true } : { hp: mv.hp }, "🧸 잭인더박스 Monster Doll");
+        if (r.dead) return c.dead("🧸 잭인더박스에서 튀어나온 Monster Doll에게 사망", { skipPopup: false });
+        if (r.shield) toast("🎭 보호 효과로 간신히 살아남았다! (HP 1)", "ok", 3200);
+        else toast(`🧸 Monster Doll의 ${mv.name}! HP −${mv.hp} (남은 HP ${Math.round(r.hp)})`, "warn", 3200);
         c.refresh();
     }
     // ---- 🏕️ Campsite
@@ -935,7 +1090,9 @@ export function fx(loc, t, pid, c) {
             Sound.scream();
             const a = h("div.sm-campalarm", pic(cm.pid, 44), h("b", `🔪 ${TR.CAMP_SPOTS[cm.spot].name}에 숨어있던 Camper ${nm(cm.pid)} 살해당함`), h("small", cm.how));
             document.body.append(a); later(() => a.remove(), 4500);
+            if (TR.campKillsLeft(t) === 0 && !cp.unlockSaid) { cp.unlockSaid = true; later(() => toast(`🔓 Masked Killer가 캠퍼 ${TR.campKillsNeed(t)}명을 죽였습니다 — 이제 턴을 끝낼 수 있습니다 (턴 종료 시 🩸 Body Count 발표)`, "ok", 4500), 1500); }
             c.refresh();
+            if (document.querySelector(".sm-campview")) c.tabBody("x:camp"); // the 캠퍼 현황 tile board, live
             return;
         }
         if (cp.foundAt != null && !cp.found && t.remaining <= cp.foundAt) { cp.found = true; return pause(caught); }
@@ -963,7 +1120,7 @@ export function fx(loc, t, pid, c) {
     return {
         hud,
         tick,
-        stop() { stopped = true; timers.forEach(clearTimeout); document.querySelectorAll(".sm-ghostdolls,.sm-blackout,.sm-shadow,.sm-creep,.sm-campalarm,.sm-mosq,.sm-thunder,.sm-sos").forEach(e => e.remove()); },
+        stop() { stopped = true; timers.forEach(clearTimeout); document.querySelectorAll(".sm-ghostdolls,.sm-blackout,.sm-shadow,.sm-creep,.sm-campalarm,.sm-mosq,.sm-thunder,.sm-sos,.sm-turb-alarm").forEach(e => e.remove()); },
         busy: () => busy
     };
 }
@@ -971,6 +1128,17 @@ export function fx(loc, t, pid, c) {
 // ================================================================ the end of a turn
 // before the "턴을 종료할까요?" question → false = stay
 export async function endCheck(loc, t, pid, c) {
+    // ✈️ this flight is going down: ending the turn does not get you off — the crash happens now
+    if (crashPending(loc, pid)) {
+        if (crashBusy) return false;
+        const was = t.running; t.running = false;
+        const hold = Activity.hold();
+        try {
+            await alertPop("⚠️ 기장 안내", h("div.sm-wait", h("div.sm-wait-ico", "🧑‍✈️"), h("p", h("b", "지금은 자리를 떠날 수 없습니다!")), h("small", "비행기에 이상이 생겼습니다… 좌석벨트를 매고 자리에 앉아 주세요")), { ms: 2600 });
+            await crashSequence(c);
+        } finally { hold(); if (S().turn === t && !ps_(pid)?.out) t.running = was || true; }
+        return false;
+    }
     if (loc.gate && TR.airportOpen() && !TR.ticketOf(pid)) {
         const ok = await confirmBox(`🎫 아직 티켓을 구입하지 않았습니다!\n지금 턴을 끝내면 Gate ${loc.gate} 무료 티켓 (${TR.ticketLabel(TR.defaultTicket(loc.gate))})이 자동으로 적용됩니다.\n그래도 턴을 끝낼까요?`, "그대로 종료", "티켓 사러 가기");
         if (!ok) { c.tabBody("x:ticket"); return false; }
@@ -985,7 +1153,7 @@ export async function beforeEnd(pid, loc, t) {
     if (isFloor(loc) && ps_(pid)?.elev) { ps_(pid).elev.floor = loc.id; Store.saveSeason(true); toast(`🛗 탈출하지 못했습니다 — 다음 라운드도 ${TR.floorLabel(loc.id)}에서 시작합니다`, "warn", 3500); }
 }
 // the end button's label while a module lock holds it
-export const lockLabel = (loc, t) => isSpot(loc) && t?.camp && TR.campKillsLeft(t) > 0 ? `🔒 턴 종료 (🔪 ${TR.campKillsLeft(t)}명 남음)` : null;
+export const lockLabel = (loc, t) => isSpot(loc) && t?.camp && !t.camp.found && TR.campKillsLeft(t) > 0 && campStayLeft(t) > 0 ? `🔒 턴 종료 (🔪 ${TR.campKillsLeft(t)}명 · ${fmtTime(Math.ceil(campStayLeft(t)))})` : null;
 
 // ================================================================ arrivals
 // a map just reached (roulette · pass · ticket landing) → the map actually played (🛗 into the elevator · 🏕️ into a hiding place)

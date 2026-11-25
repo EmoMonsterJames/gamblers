@@ -62,6 +62,38 @@ function kick(a, out, t, vol = 0.5) {
     o.connect(g).connect(out); o.start(t); o.stop(t + 0.25);
 }
 const SONGS = {
+    // 🪆 Doll Factory: a detuned, wobbling music box in A minor over a low drone + a slow heartbeat (70 BPM)
+    creepy_doll: {
+        bpm: 70, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            if (st === 0) bgmVoice(a, out, t, { freq: midi([33, 34, 33, 32][bar]), type: "sawtooth", dur: len * 16, vol: 0.05, cut: 320, cutEnd: 150, attack: 0.5 });
+            const MEL = { 0: 81, 2: 84, 4: 88, 6: 87, 8: 84, 12: 81, 16: 80, 18: 84, 20: 87, 22: 86, 24: 83, 28: 80, 32: 81, 34: 84, 36: 88, 38: 89, 40: 88, 42: 84, 44: 87, 48: 86, 50: 83, 52: 80, 54: 77, 56: 76, 60: 75 };
+            if (MEL[s]) {
+                const dt = -22 + Math.random() * 14; // the box is running down…
+                bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "sine", dur: len * 3.2, vol: 0.045, cut: 8000, cutEnd: 5000, detune: dt, attack: 0.002 });
+                bgmVoice(a, out, t, { freq: midi(MEL[s] + 12), type: "triangle", dur: len * 1.5, vol: 0.01, cut: 9000, cutEnd: 6000, detune: dt, attack: 0.002 });
+            }
+            if (st === 0 || st === 3) bgmVoice(a, out, t, { freq: 52, type: "triangle", dur: 0.22, vol: st ? 0.08 : 0.13, cut: 260, cutEnd: 90 }); // heartbeat
+            if (s === 30 && Math.random() < 0.6) bgmNoise(a, out, t, { dur: 0.7, vol: 0.018, hp: 2600 }); // a creak
+            if (s === 62 && Math.random() < 0.5) for (let i = 0; i < 4; i++) bgmVoice(a, out, t + i * 0.09, { freq: midi(96 - i * 2), type: "sine", dur: 0.12, vol: 0.012, cut: 9000, cutEnd: 7000 }); // a giggle
+        }
+    },
+    // 🏕️ Campsite: a Halloween pizzicato march in D minor (Dm – B♭ – Gm – A), organ stabs + a theremin-like line (108 BPM)
+    halloween_march: {
+        bpm: 108, steps: 64,
+        play(a, out, s, t, len) {
+            const bar = s >> 4, st = s % 16;
+            const ROOT = [38, 34, 31, 33][bar], CH = [[62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 61, 64]][bar];
+            if (st % 4 === 0) bgmVoice(a, out, t, { freq: midi(st % 8 === 0 ? ROOT : ROOT + 7), type: "triangle", dur: len * 1.4, vol: 0.16, cut: 900, cutEnd: 200 });
+            if (st === 2 || st === 6 || st === 10 || st === 14) for (const n of CH) bgmVoice(a, out, t, { freq: midi(n), type: "square", dur: len * 0.7, vol: 0.014, cut: 1800, cutEnd: 600 });
+            const MEL = { 0: 74, 3: 77, 6: 76, 8: 74, 12: 73, 16: 70, 19: 74, 22: 72, 24: 70, 32: 67, 35: 70, 38: 69, 40: 67, 44: 65, 48: 69, 50: 70, 52: 73, 56: 76, 60: 73 };
+            if (MEL[s]) for (const dt of [-14, 14]) bgmVoice(a, out, t, { freq: midi(MEL[s]), type: "sine", dur: len * 3.5, vol: 0.026, cut: 5000, cutEnd: 2400, detune: dt, attack: 0.06 });
+            if (st === 8) bgmNoise(a, out, t, { dur: 0.05, vol: 0.045, hp: 2500 }); // knock
+            if (s === 0 || s === 32) bgmVoice(a, out, t, { freq: midi(86), type: "sine", dur: len * 8, vol: 0.022, cut: 9000, cutEnd: 5000, attack: 0.002 }); // bell
+            if (s === 47 && Math.random() < 0.5) bgmNoise(a, out, t, { dur: 0.9, vol: 0.015, hp: 1800 }); // wind
+        }
+    },
     // Monkey Drop: brass-funk groove, E minor, 118 BPM, 2-bar loop + coin sparkles
     monkey_funk: {
         bpm: 118, steps: 32,
@@ -524,6 +556,7 @@ export const Sound = {
     },
     bgm: bgmStart, bgmStop,
     amb: ambStart, ambStop,
+    songs: SONGS,
     get ambPlaying() { return amb?.key || null; },
     get bgmPlaying() { return bgm?.name || null; },
     tick() { tone(880 + Math.random() * 200, 0.03, "square", 0.025); },
