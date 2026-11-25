@@ -71,3 +71,10 @@ Workers & Pages → Create → Pages → Connect to Git → 이 저장소 선택
 - **관리**: ⚙️ 지역·맵 관리의 각 맵 카드 아래 🌦️ 날씨(모두 랜덤 안내) · 🍚 푸드 코너(룰렛 안내 · 품목 · 가격) · 🏨 숙소 코너. 🔢 모든 맵에 번호(#1 …, Survival Land 마지막 맵이 마지막).
 - **은행**: 계좌 개설은 TOP 15 경력 · 🧾 대부기록 삭제권 (50,000G) · ④ 계좌 전용 상품 (3라운드마다 이자).
 - **취업 코너** (`game/employ.js`, 관리: 🏦 은행 관리 → 🏢 취업 탭): 7개 회사 · 지원자 5명이 차면 심사 시작 → 라운드마다 단계 결과를 그 플레이어 턴에 통보 · 최종 합격 → 계좌 코드 연동 후 입사 · 매 라운드 급여(계좌) · 시즌 종료 때 진급 / 매니저 / 해고. 기록(방문 맵 · 직업 횟수 · 브랜드 최고 WIN · 잭팟)은 `Store.bank.lifelog`에 쌓입니다 (이번 업데이트부터).
+
+## ✈️ 공항 · 🛗 엘리베이터 · 🏕️ 캠프장 외 신규 맵 (2026-11)
+- 상태: `js/game/travel.js` · 화면: `js/screens/specialMaps.js` · 💎 Point Mania: `js/screens/pointMania.js` · 스타일: `css/travel.css`
+- ☀️ Sunny Town (사막 · 항상 해) · 🍀 Good Luck Casino (판타지 · 전용 알바 5종 · 💎 Point Slots "Point Mania" — 포인트 베팅 1~5P, RTP 85%: 콘솔에서 `pmRtpSim(200000)`)
+- ✈️ Airport (Gate 1~3): 3라운드 안에 6명 배치 → 티켓 구입(미구입 시 게이트 무료 티켓) → 6명 모이면 이륙, 시즌 동안 폐쇄. 비행 라운드는 `plane` 서브 맵 (난기류 · 날씨별 추락 확률 · 사고 접수 코너)
+- 💻 Cyber Town (글리치 최대 70%) · 🛗 Elevator (서브 맵 `elev_*`, 최대 6명, 7층 출구) · 🪆 Doll Factory · 🏕️ Campsite (서브 맵 `camp_*`, Masked Killer 2명 이상 살해 후 턴 종료)
+- 맵 전용 NPC 동작(해킹 · 저주 · 파리)은 `corners2.customNpc` 에 등록됩니다

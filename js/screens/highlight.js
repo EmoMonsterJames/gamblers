@@ -38,7 +38,8 @@ export const HL_KINDS = {
     bunker: { sec: 15, emoji: "🔐", label: "Bunker Key 금고" },
     kidnap: { sec: 15, emoji: "⛓️", label: "납치 공간 탈출" },
     starve: { sec: 15, emoji: "🍽️", label: "굶주림으로 사망" },
-    arena: { sec: 15, emoji: "🏟️", label: "아레나 배틀" }
+    arena: { sec: 15, emoji: "🏟️", label: "아레나 배틀" },
+    plane_crash: { sec: 20, emoji: "✈️", label: "비행기 추락으로 인한 바로 사망" }
 };
 const nm = pid => displayName(Store.player(pid));
 const list = () => (Store.highlights?.list || []).filter(x => HL_KINDS[x.kind] && (x.pid == null || Store.player(x.pid)) && (x.a == null || Store.player(x.a)));
@@ -249,6 +250,22 @@ const SCENES = {
         st.append(h("div.gh-banner.b-dead", "☠️ 바로 사망"));
         T.cap(`☠️ ${x.why || "사망"}${x.rank ? ` · 최종 ${x.rank}위` : ""}`);
         await T.at(12); st.append(h("div.gh-grave", "🪦"));
+    },
+    // ✈️ 20 s: turbulence → SOS → oxygen masks → the plane goes down → 쾅
+    async plane_crash(st, x, T) {
+        const me = pic(x.pid, 110);
+        const plane = h("div.gh-plane", "✈️");
+        st.classList.add("gh-sky");
+        st.append(h("div.gh-place", "✈️ 비행기 안"), plane, me);
+        T.cap(`${nm(x.pid)} — 비행 중…`);
+        for (let k = 0; k < 5; k++) { await T.at(1 + k * 0.7); st.classList.toggle("gh-shake"); Sound.tick(); }
+        await T.at(5); st.append(h("div.gh-banner.b-sos", "🆘 SOS 비상! 비상!")); Sound.boom(); T.cap("🆘 비행기가 곧 추락합니다!");
+        await T.at(8); st.append(h("div.gh-mask", "😷")); T.cap("😷 산소마스크… 비행기가 추락중입니다");
+        for (let k = 0; k < 6; k++) { await T.at(9 + k * 0.8); Sound.heartbeat(); plane.style.transform = `rotate(${20 + k * 12}deg) translateY(${k * 14}px)`; }
+        await T.at(14); st.classList.add("gh-flash"); Sound.boom(); me.classList.add("dead");
+        st.append(h("div.gh-banner.b-dead", "💥 쾅!! ✈️ 비행기 추락으로 인한 바로 사망"));
+        T.cap(`☠️ ${nm(x.pid)} 비행기 추락으로 바로 사망${x.rank ? ` · 최종 ${x.rank}위` : ""}`);
+        await T.at(17); st.append(h("div.gh-grave", "🪦"));
     },
     // 🍽️ 15 s: the food gauge runs dry, the stomach growls, the HP drains → starved
     async starve(st, x, T) {

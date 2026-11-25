@@ -254,7 +254,9 @@ export const PETS = [
     { id: "glass_hamster", kind: "special", boost: 10, name: "볼 빵빵 투명 햄스터",       art: { a: "🐹", b: "🪙🪙", anim: "chew", bpos: "cheeks", ghost: true } },
     { id: "dove_trio",   kind: "special", boost: 15, name: "네잎클로버를 문 비둘기 3마리", art: { trio: "🕊️", b: "🍀", anim: "trio" } },
     { id: "red_eye_rabbit", kind: "special", boost: 15, name: "큰 동전을 쥔 빨간눈 토끼", art: { a: "🐇", b: "🪙", anim: "hug", bpos: "hug", redeye: true } },
-    { id: "money_dragon", kind: "special", boost: 15, name: "돈을 문 커다란 용",          art: { a: "🐉", b: "💰", anim: "dragon", bpos: "mouth" } }
+    { id: "money_dragon", kind: "special", boost: 15, name: "돈을 문 커다란 용",          art: { a: "🐉", b: "💰", anim: "dragon", bpos: "mouth" } },
+    // 🪆 Doll Factory curse (never sold — the Evil Doll NPC hands it out): −20% to win / trigger a bonus at slots · only a 🔁 펫 교체권 removes it
+    { id: "evil_doll",   kind: "cursed", boost: 0,  name: "Evil Doll (저주받은 인형)",   art: { a: "🪆", anim: "wobble" }, cursed: 0.2, hidden: true },
 ];
 
 // Pet effects. fx = particle preset used by ui/fx.js (see FX_PRESETS)
@@ -296,6 +298,11 @@ export const WEAPONS = [
     { id: "holo_ball",  name: "홀로그램볼",      emoji: "🔮", type: "attack", atk: 30, acc: 70, anim: "orb" },
     { id: "sleep_flute", name: "수면피리",       emoji: "🪈", type: "sleep",  atk: 0,  acc: 60, anim: "sleep" },
     { id: "coin_throw", name: "동전던지기",      emoji: "🪙", type: "attack", atk: 10, acc: 90, anim: "coin" },
+    // 🛗 Elevator 4F weapon shop (2026-11)
+    { id: "worm_throw", name: "지렁이던지기",    emoji: "🪱", type: "attack", atk: 10, acc: 85, anim: "coin", noShop: true },
+    { id: "devil_thunder", name: "악마의천둥번개", emoji: "🌩️", type: "attack", atk: 35, acc: 65, anim: "thunder", noShop: true },
+    // 🤡 Clown Curse (Doll Factory): forced into the bag — it attacks its OWN holder (HP −10 · 80%) · only a 🗑️ 무기삭제권 removes it
+    { id: "self_harm",  name: "Self-Harm",       emoji: "🔪", type: "attack", atk: 10, acc: 80, anim: "punch", selfHarm: true, hidden: true },
     // rare (point shop)
     { id: "thunder",    name: "번개 해머",       emoji: "⚡", type: "attack", atk: 40, acc: 65, anim: "thunder", rare: true },
     { id: "dragon_breath", name: "드래곤 브레스", emoji: "🐲", type: "attack", atk: 50, acc: 55, anim: "fire", rare: true },
@@ -499,7 +506,18 @@ export const SHOPS = {
     discount: { name: "디스카운트 상점", icon: "🏷️", cur: "G", list: [] }
 };
 // per-round purchase limits by shop (아이템 상점 5회 · 무기/펫·프레임/기타 1회)
-export const SHOP_LIMIT = { general: 5, weapon: 1, pet: 1, decor: 1, point: 1, pointgold: 1, discount: 1 };
+export const SHOP_LIMIT = { general: 5, weapon: 1, pet: 1, decor: 1, point: 1, pointgold: 1, discount: 1, elev_shop: 3, elev_weapon: 1 };
+// 🛗 Elevator 3F 특별상점 (3 uses a round: 1 pick + 2 random — screens/specialMaps.js) · 4F 무기상점 — prices editable like any shop
+SHOPS.elev_shop = { name: "엘리베이터 특별상점", icon: "🛗", cur: "G", list: [
+    { cat: "item", id: "hp_10", price: 10000 }, { cat: "item", id: "hp_50", price: 45000 }, { cat: "item", id: "final_shield", price: 100000 }, { cat: "item", id: "oxygen", price: 15000 },
+    { cat: "item", id: "umbrella_1", price: 3000 }, { cat: "item", id: "parasol_1", price: 3000 }, { cat: "item", id: "raincoat_1", price: 3000 }, { cat: "item", id: "random_letter", price: 15000 },
+    { cat: "emo", id: "ITEM003", price: 8000 }, { cat: "emo", id: "ITEM002", price: 4000 }, { cat: "emo", id: "EMO_HP50", price: 5000 },
+    { cat: "item", id: "food_bread", price: 2000 }, { cat: "item", id: "food_chicken", price: 5000 }, { cat: "item", id: "food_milk", price: 1500 }] };
+SHOPS.elev_weapon = { name: "엘리베이터 무기상점", icon: "⚔️", cur: "G", list: [
+    { cat: "weapon", id: "punch", price: 12000 }, { cat: "weapon", id: "coin_throw", price: 30000 }, { cat: "weapon", id: "spray", price: 35000 },
+    { cat: "weapon", id: "worm_throw", price: 20000 }, { cat: "weapon", id: "devil_thunder", price: 90000 }] };
+// (alt listings: these goods keep their own home shop — catalogAdmin BASE_SALE — the elevator only sells copies at these prices)
+for (const it of [...SHOPS.elev_shop.list, ...SHOPS.elev_weapon.list]) it.alt = true;
 export const SHOP_LIMIT_LABEL = { general: "아이템 상점", weapon: "무기 상점", pet: "펫 상점", decor: "프레임/효과 상점", point: "포인트 상점", pointgold: "포인트+골드 상점", discount: "디스카운트 상점" };
 
 // ---------------------------------------------------------------- new frames / frame effects
@@ -613,6 +631,15 @@ for (const [sid, lid] of Object.entries(REALM_HOME)) { const l = LOCATIONS.find(
 for (const [sid, lid] of Object.entries(WONDER_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
 // the 11 round-10 machines — js/slots/mythConfigs.js
 for (const [sid, lid] of Object.entries(MYTH_HOME)) { const l = LOCATIONS.find(x => x.id === lid); if (l && !l.slots.includes(sid)) l.slots.push(sid); }
+// 🔒 sub rooms with randGames: N existing slots + N existing casino games, drawn at random (elevator 2F / 옥상 · campsite hiding places)
+{
+    const allSlots = [...new Set(LOCATIONS.filter(l => !l.sub && !l.kidnap && l.region !== "survival").flatMap(l => l.slots))];
+    const allCasinos = [...new Set(LOCATIONS.filter(l => !l.sub && !l.kidnap && l.region !== "survival").flatMap(l => l.casino))];
+    const draw = (list, n) => { const a = [...list]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); };
+    for (const l of LOCATIONS) if (l.randGames) { l.slots = draw(allSlots, l.randGames); l.casino = draw(allCasinos, l.randGames); }
+    // ✈️ the plane: VIP 1등석 also gets N random machines + N random casino games (economy: only the plane's own two)
+    for (const l of LOCATIONS) if (l.vipGames) { const vs = draw(allSlots, l.vipGames), vc = draw(allCasinos, l.vipGames); l.vipOnly = [...vs, ...vc]; l.slots.push(...vs); l.casino.push(...vc); }
+}
 
 // earn corners: `earn: true` (old saves) = the classic four
 export const EARN_ALL = ["blood", "labor", "poop", "sell", "music", "survival", "guess"];
@@ -624,7 +651,7 @@ export const passIdOf = loc => loc.req?.pass || "pass_" + loc.id;
 // Sale: every pass is sold at exactly ONE other map's general shop (no duplicates),
 // each map sells at most 2 passes, spread over the regions; price 45,000~50,000 G.
 const passRnd = (() => { let h = 2166136261; for (const c of "gamblers-map-passes") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
-const passSellers = LOCATIONS.filter(l => l.shops.includes("general") && l.region !== "survival"); // 🔄 Survival Land shops sell only Survival Land passes
+const passSellers = LOCATIONS.filter(l => l.shops.includes("general") && l.region !== "survival" && !l.sub && !l.v2 && l.region !== "airport"); // 🔄 Survival Land shops sell only Survival Land passes
 const passLoad = {};
 // pass prices: the new regions 45,000G · ☠️ Dead Land 10,000G · 🧗 Difficult Land 35,000G · 👹 NPC Land 40,000G (💀 Death Casino 35,000G) · older maps 45,000~50,000G
 const NEW_PASS_REGIONS = ["restricted", "desert", "emoland"];
@@ -639,8 +666,8 @@ function passPrice(l) {
     if (NEW_PASS_REGIONS.includes(l.region)) return 45000;
     return null;
 }
-for (const l of LOCATIONS) {
-    if (l.kidnap) continue;
+for (const l of [...LOCATIONS.filter(x => !x.v2), ...LOCATIONS.filter(x => x.v2)]) { // 2026-11 maps (v2) last: the older maps keep their seeded sellers / prices
+    if (l.kidnap || l.sub || l.region === "airport") continue; // ✈️ airport gates + 🔒 sub rooms: no map pass
     const id = passIdOf(l);
     const ex = ITEMS.find(i => i.id === id);
     if (ex) { ex.name = `${l.name} 맵권`; ex.loc = l.id; }
@@ -673,7 +700,7 @@ export const isSurvivalPass = id => !!ITEM_BY_ID[id]?.survival;
 export const TURN_END_GOLD = 25000, TURN_END_PTS = 40, TURN_END_MAPS = 20;
 {
     const rnd = (() => { let h = 2166136261; for (const c of "gamblers-turn-end-pass") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
-    const pool = LOCATIONS.filter(l => !l.kidnap && l.region !== "survival" && (l.shops.includes("general") || l.shops.includes("point")));
+    const pool = LOCATIONS.filter(l => !l.kidnap && !l.sub && !l.v2 && l.region !== "survival" && (l.shops.includes("general") || l.shops.includes("point")));
     for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     const gold = [], pts = [];
     for (const l of pool.slice(0, TURN_END_MAPS)) {
@@ -697,7 +724,7 @@ export const WX_GEAR_MAPS = 20;
 {
     const rnd = (() => { let h = 2166136261; for (const c of "gamblers-weather-gear") { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; })();
     const pick = list => { const a = [...list]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, WX_GEAR_MAPS).map(l => l.id); };
-    const ok = l => !l.kidnap && l.region !== "survival";
+    const ok = l => !l.kidnap && !l.sub && !l.v2 && l.region !== "survival";
     const pts = pick(LOCATIONS.filter(l => ok(l) && l.shops.includes("point")));
     for (const [id, price] of [["umbrella", 300], ["raincoat", 500], ["parasol", 150]]) SHOPS.point.list.push({ cat: "item", id, price, locs: pts });
     // 🔑 투숙객교체권 10P: 20 other random point-shop maps (its own draw)
@@ -738,7 +765,7 @@ export const EMO_NO_CAPTURE_MAPS = ["sky_casino", "balloon", "celebrity", "cosmi
 // 🛒 Monster Shop corner (balls · potions · tickets · weapons · traits)
 export const EMO_SHOP_MAPS = ["dove", "winners", "spacetown", "lucky", "gamblers", "emo2", "eastern", "magic", "blackout", "ghost", "deepsea_casino", "ice", "random_casino", "highroller", "picky", "redblue", "evil_town", "island"];
 for (const l of LOCATIONS) {
-    if (!EMO_NO_CAPTURE_REGIONS.includes(l.region) && !EMO_NO_CAPTURE_MAPS.includes(l.id) && !l.kidnap && !l.bare) l.capture = true;
+    if (!EMO_NO_CAPTURE_REGIONS.includes(l.region) && !EMO_NO_CAPTURE_MAPS.includes(l.id) && !l.kidnap && !l.sub && !l.bare && !l.campsite && !l.elevator) l.capture = true;
     if (EMO_SHOP_MAPS.includes(l.id)) l.emoshop = true;
     if (EMO_HOSPITAL_MAPS.includes(l.id)) l.hospital = true;
     if (EMO_LAB_MAPS.includes(l.id)) l.lab = true;
@@ -748,7 +775,7 @@ for (const l of LOCATIONS) {
 export const EMO_RENT_COUNT = 25;
 {
     const hash = s => { let x = 2166136261; for (const ch of s + "#rent") x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; return x; };
-    LOCATIONS.filter(l => (l.capture || l.hospital || l.lab || l.emoshop) && !l.kidnap)
+    LOCATIONS.filter(l => (l.capture || l.hospital || l.lab || l.emoshop) && !l.kidnap && !l.sub && !l.v2)
         .sort((a, b) => hash(a.id) - hash(b.id)).slice(0, EMO_RENT_COUNT).forEach(l => { l.emorent = true; });
 }
 for (const id of BANK_MAPS) { const l = LOCATIONS.find(x => x.id === id); if (l) l.bank = true; }
@@ -820,7 +847,21 @@ export const NPCS = [
     { id: "santa", name: "산타크로스", emoji: "🎅", art: "🎁", color: "#dc2626", align: "good", arcticOnly: true,
       moves: [{ hp: 10 }, { give: [1000, 1000] }, { give: [2000, 2000] }, { hp: 20 }, { cureFlu: true }, { giftBox: true }] },
     { id: "terror_boss", name: "Terrorist Boss", emoji: "🦹", art: "🧨", color: "#18181b", align: "evil", kidnapOnly: true,
-      moves: [{ hp: -10 }, { hp: -20 }, { hp: -30 }, { kill: true }, { steal: [10000, 10000], rob: true }, { steal: [5000, 5000], rob: true }, { steal: [3000, 3000], rob: true }, { steal: [1000, 1000], rob: true }, { stealItem: true }] }
+      moves: [{ hp: -10 }, { hp: -20 }, { hp: -30 }, { kill: true }, { steal: [10000, 10000], rob: true }, { steal: [5000, 5000], rob: true }, { steal: [3000, 3000], rob: true }, { steal: [1000, 1000], rob: true }, { stealItem: true }] },
+    // ---- map-only NPCs (2026-11 · mapOnly: they never wander anywhere else) — custom moves play out in screens/specialMaps.js
+    // 💻 Cyber Town: hack = 30~100% of the Business Gold stolen (no Business Bank account → nothing)
+    { id: "hacker", name: "Hacker", emoji: "👨‍💻", art: "💻", color: "#0e7490", align: "evil", mapOnly: true,
+      moves: [{ hp: -10 }, { steal: [5000, 5000] }, { steal: [10000, 10000] }, { custom: "hack", name: "해킹" }] },
+    // 🪆 Doll Factory: Doll Curse (pet → 🪆 Evil Doll) · Clown Curse (🔪 Self-Harm weapon forced in)
+    { id: "evil_doll", name: "Evil Doll", emoji: "🪆", art: "🧷", color: "#7e22ce", align: "evil", mapOnly: true,
+      moves: [{ custom: "dollCurse", name: "Doll Curse" }] },
+    { id: "clown_doll", name: "Clown Doll", emoji: "🤡", art: "🎈", color: "#dc2626", align: "evil", mapOnly: true,
+      moves: [{ custom: "clownCurse", name: "Clown Curse" }] },
+    // 🏕️ Campsite: the Masked Killer hunts the hiding places (game/travel.js) · the Fly buzzes in the trash can (HP −2, a quiet alarm)
+    { id: "masked_killer", name: "Masked Killer", emoji: "🎭", art: "🔪", color: "#111827", align: "evil", mapOnly: true,
+      moves: [{ custom: "hideKill", name: "Hide and Kill", kill: true }] },
+    { id: "fly", name: "Fly", emoji: "🪰", art: "💩", color: "#4d7c0f", align: "evil", mapOnly: true,
+      moves: [{ hp: -2, custom: "flyBite", name: "윙윙" }] },
 ];
 // Dead Land maps (deadNpc): only these NPCs come — the four Dead Land NPCs + the reaper and the crocodile
 export const DEAD_NPC_IDS = ["space_monster", "reaper", "evil_kid", "death_hand", "croc", "beggar_family"];
@@ -839,7 +880,7 @@ export function npcPool(loc) {
     // ⛪ Foggy Church: only the Priest comes
     if (loc?.church) { const pr = NPCS.find(n => n.id === "priest"); if (pr) return [pr]; }
     if (loc?.deadNpc) return DEAD_NPC_IDS.map(id => NPCS.find(n => n.id === id)).filter(Boolean);
-    return NPCS.filter(n => !n.deadOnly && !n.kidnapOnly && !n.churchOnly && !n.survivalOnly && (!n.arcticOnly || loc?.region === "arctic"));
+    return NPCS.filter(n => !n.deadOnly && !n.mapOnly && !n.kidnapOnly && !n.churchOnly && !n.survivalOnly && (!n.arcticOnly || loc?.region === "arctic"));
 }
 // a move by its weight (w, default 1)
 export const moveChance = (npc, m) => (m.w ?? 1) / npc.moves.reduce((a, x) => a + (x.w ?? 1), 0);
@@ -850,7 +891,7 @@ export function pickNpcMove(npc) {
 }
 export const HOPE_MESSAGES = ["잘될거에요", "대박나세요", "우승할거에요"];
 // a move is "harmful" when it can hurt the player (NPC 공격 Block 권 blocks these)
-export const npcHarmful = m => !!(m.battle || m.freeze || m.profileCopy || m.sermon || m.donation || m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
+export const npcHarmful = m => !!(m.custom || m.battle || m.freeze || m.profileCopy || m.sermon || m.donation || m.stealItem || m.steal || (m.hp && m.hp < 0) || m.kill || m.nomove || m.copy || m.curse || m.breakWeapon || m.stealPet || m.disease || m.stealAll || m.stealMon || m.stealPts || m.kidnap);
 // evil = harmful moves only · good = helpful only · neutral = both (curses / idling count as neither)
 export function npcAlign(n) {
     if (n.align) return n.align;

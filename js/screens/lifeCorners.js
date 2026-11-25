@@ -341,7 +341,7 @@ export function weatherHud(t) {
         const w = LF.weatherAt(t.loc), sh = LF.sheltered(t.pid, t.loc), next = LF.weatherNextIn(t);
         el.className = "wx-badge wx-" + w.id + (sh ? " safe" : "");
         el.title = w.hp ? `${w.name}: 이 맵에서 1분마다 HP −${w.hp} (숙소에 머물면 무사) · 날씨는 라운드마다 랜덤` : "맑음 — 날씨 피해 없음";
-        el.replaceChildren(h("span", w.emoji), h("b", w.name), w.hp ? h("small", sh ? "🏨 숙소 보호 중" : `HP −${w.hp} · ${fmtTime(next ?? 0)}`) : null);
+        el.replaceChildren(h("span", w.emoji), h("b", w.name), w.hp ? h("small", LOC_BY_ID[t.loc]?.wxNoHarm ? "✈️ 기내 — 피해 없음" : sh ? "🏨 숙소 보호 중" : `HP −${w.hp} · ${fmtTime(next ?? 0)}`) : null);
     };
     update();
     return { el, update };

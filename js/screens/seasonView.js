@@ -28,7 +28,8 @@ import { spellStationsView } from "./spellStations.js";
 import { honorShopView } from "./honorShop.js";
 import { HSHOP, hshopKinds } from "../data/honorShop.js";
 import { locationShops } from "../data/catalogAdmin.js";
-import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo, diseaseBadge } from "./corners.js";
+import { earnView, begView, jobView, npcAttack, scheduleNpc, npcInfo, diseaseBadge, payout as jobPayout } from "./corners.js";
+import * as SM from "./specialMaps.js";
 import { battleView } from "./battle.js";
 import { honorView } from "./honor.js";
 import { HONOR_KINDS, honorKinds } from "../data/honor.js";
@@ -540,6 +541,9 @@ async function arrive(s, loc) {
     const pid = s.turn?.pid;
     if (!pid) return false;
     Sound.enter(); // 🔔 every map arrival chimes (draw, pass, ticket, fallback)
+    // 🛗 Elevator → trapped on 1F · 🏕️ Campsite → campers + a hiding place (screens/specialMaps.js)
+    loc = await SM.arriveHook(s, loc);
+    if (!s.turn || !loc) return false;
     // 🎡 Death Door reached by a map pass / random map ticket: the wheel still spins
     if (loc.deathWheel && s.turn.wheelAt !== loc.id) {
         s.turn.wheelAt = loc.id;
@@ -715,12 +719,13 @@ function locationStage(s) {
     // ⏳ Hell · Magma Town · Death Door · Dark Space · Death Casino: at least 2 min on the map first (game/extra.js MIN_STAY)
     const endBtn = loc.noEnd ? h("span.rv-noend", { title: "Survival Land의 모든 맵은 턴 종료가 불가능합니다 — 시간이 끝날 때까지 플레이" }, "🔒 턴 종료 불가") : h("button.btn.red.small", { onclick: async () => {
         if (endLocked(loc, t)) return toast(endLockText(loc, t), "warn", 3500);
+        if (!(await SM.endCheck(loc, t, pid, smc("end")))) return; // 🎫 a gate without a ticket: one more chance to buy
         if (await confirmBox("턴을 종료할까요?")) finishTurn();
     } }, "⏹ 턴 종료");
     const lockEnd = () => {
         if (loc.noEnd) return;
         const l = endLocked(loc, t); endBtn.classList.toggle("locked", l);
-        endBtn.textContent = !l ? "⏹ 턴 종료" : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(Math.ceil(Math.max(loc.endLock ? t.remaining - END_LOCK_LEFT : 0, stayLockLeft(loc, t))))} 후)`;
+        endBtn.textContent = !l ? "⏹ 턴 종료" : !(stayLockLeft(loc, t) > 0) && SM.lockLabel(loc, t) ? SM.lockLabel(loc, t) : loc.kidnap ? (kidnapLockLeft(t) > 0 && t.remaining > 0 ? `🔒 턴 종료 (${fmtTime(Math.ceil(kidnapLockLeft(t)))} 후)` : "🔒 탈출을 시도해야 턴 종료") : `🔒 턴 종료 (${fmtTime(Math.ceil(Math.max(loc.endLock ? t.remaining - END_LOCK_LEFT : 0, stayLockLeft(loc, t))))} 후)`;
     };
 
     // 🎰 / 🃏 game cards with 🆕 NEW · 🔥 HOT · 🔥 SUPER HOT badges (game/gameBadges.js)
@@ -732,13 +737,13 @@ function locationStage(s) {
     };
     function slotCards(kindLabel = null) {
         const ranks = GB.hotRanks("slot");
-        return loc.slots.filter(sid => SLOT_BY_ID[sid] && !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
+        return SM.gameFilter(loc, pid, loc.slots).filter(sid => SLOT_BY_ID[sid] && !SLOT_BY_ID[sid].off).map(sid => { const c = SLOT_BY_ID[sid]; return h("button.gcard.slot", { style: { "--bg": c.theme.bg, "--accent": c.theme.accent }, onclick: () => openGame("slot", sid) },
             gameBadges("slot", sid, ranks),
             h("div.gc-kind", kindLabel || (c.progressive === false ? "SLOT · CLASSIC" : "SLOT · PROGRESSIVE")), h("div.gc-name", c.name), h("div.gc-brand", c.brand || " "), h("div.gc-desc", shortDesc(c.desc))); });
     }
     function casinoCards(brand = "GAMBLERS CASINO") {
         const ranks = GB.hotRanks("casino");
-        return loc.casino.filter(cid => CASINO_BY_ID[cid] && !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
+        return SM.gameFilter(loc, pid, loc.casino).filter(cid => CASINO_BY_ID[cid] && !CASINO_BY_ID[cid].off).map(cid => { const g = CASINO_BY_ID[cid]; return h("button.gcard.casino", { onclick: () => openGame("casino", cid) },
             gameBadges("casino", cid, ranks),
             h("div.gc-kind", `CASINO · ${String(g.kind || "GAME").toUpperCase()}`), h("div.gc-name", h("span.gc-ico", g.icon), " ", g.name), h("div.gc-brand", brand), h("div.gc-desc", shortDesc(g.desc))); });
     }
@@ -757,6 +762,8 @@ function locationStage(s) {
                 ps.money += extra.bet; G.recordPlay(kind, extra.bet, win, points, { ...extra, game: gameId }); updateHud();
                 // casino games can drop an alphabet card too (slots show theirs on the reels)
                 if (kind === "casino" && Math.random() < CASINO_CARD_RATE) { const L = pick(ALPHABET); G.gainCard(pid, L); toast(`🔤 알파벳 카드 ${L} 획득!`, "ok"); }
+                // 💻 Cyber Town: 10% of spins glitch into a MINI / MINOR / MAXI jackpot
+                if (kind === "slot") { const gj = SM.slotGlitch(pid, gameId, extra.bet, SLOT_BY_ID[gameId]); if (gj) { Sound.jackpot(); toast(`💻 GLITCH JACKPOT! ${gj.tier} +${fmt(gj.amount)}G`, "ok", 5000); updateHud(); } }
             }
         },
         // slots: a letter on the reels → card (season play only)
@@ -808,7 +815,7 @@ function locationStage(s) {
     const groupMembers = {};
     const tabList = () => {
         const l = tabList0(), at = Math.max(0, l.findIndex(([k]) => k === "inv"));
-        l.splice(at, 0, ...lifeTabs(), ...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : []));
+        l.splice(at, 0, ...SM.tabs(loc, t, pid), ...lifeTabs(),...(SO.helpHere(loc) ? [["help", "🤝 도움주기"]] : []), ...(SO.friendsHere(loc) ? [["friends", "👫 내 친구"]] : []));
         // one tab per id (a map whose admin-placed goods add a 🏷️ discount shop tab of its own would otherwise show it twice — both lit at once)
         const seen = new Set(), out = [];
         for (const k of Object.keys(groupMembers)) delete groupMembers[k];
@@ -875,8 +882,21 @@ function locationStage(s) {
         if (loc.icy) content = iceWrap(loc, t, pid, id, content);
         body.replaceChildren(content);
     }
-    function cornerContent(id) {
+    // 🧩 the special maps' corners (screens/specialMaps.js) get this turn's handles
+    const smc = id => ({
+        pid, t, loc, tabBody,
+        refresh: () => { updateHud(); side.replaceChildren(sideCard()); },
+        render: () => { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; render(); },
+        finish: () => finishTurn(),
+        payout: jobPayout,
+        arrive,
+        dead: async (why, o = {}) => { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; if (!o.skipPopup) { Sound.boom(); await deathPopup(pid, why); } render(); },
+        normal: () => cornerContent(id, true)
+    });
+    function cornerContent(id, raw = false) {
         let content;
+        if (id.startsWith("x:")) return SM.corner(id, smc(id)) || h("p.notice", "코너가 없습니다");
+        if (!raw) { const o = SM.override(id, smc(id)); if (o) return o; }
         if (id === "games" && !loc.slots.length && !loc.casino.length) content = h("p.notice.center", loc.stuck ? "🧗 Stuck Casino: 게임이 하나도 없습니다… 시간이 끝날 때까지 갇혀 있어야 합니다." : "🫥 이 맵에는 게임이 없습니다.");
         else if (id === "kidnap") content = kidnapView(pid, {
             onChange: () => { updateHud(); side.replaceChildren(sideCard()); },
@@ -1021,7 +1041,10 @@ function locationStage(s) {
     // 🚫 no-pass maps (Hell · Sugar · Terror · Stuck · Jail · Cursed · Radioactive · kidnap room): no map passes here
     const passBtns = loc.noPass || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
     // 🍬 sugar · 🌑 dark · 🌋 magma
-    const fx = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+    const fx0 = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+    // ✈️ turbulence / crash · 🪆 Doll Factory · 🏕️ the slasher · 🌊 9F · 🔪 Self-Harm (screens/specialMaps.js)
+    const smfx = SM.fx(loc, t, pid, smc("fx"));
+    const fx = { hud: h("div.fx-wrap", fx0.hud, smfx.hud), tick() { fx0.tick(); smfx.tick(); }, stop() { fx0.stop(); smfx.stop(); } };
     if (survivalSide()) side.replaceChildren(sideCard()); // the statue exists only now
     // 🕹️ Arcade hooks (the arcade instance outlives re-renders of this screen)
     arcadeHooks = {
@@ -1041,7 +1064,7 @@ function locationStage(s) {
         onDead: () => { clearInterval(timer); fx.stop(); gameLayer?.remove(); gameLayer = null; arcadeInst?.stop(); arcadeInst = null; render(); },
         onChange: () => updateHud()
     };
-    tabBody(loc.kidnap ? "kidnap" : loc.arcade ? "arcade" : "games");
+    tabBody(loc.kidnap ? "kidnap" : loc.arcade ? "arcade" : SM.firstTab(loc) || "games");
 
     // NPC corner: 40~70% chance of 1~3 attacks at random moments of the turn
     const npcHere = G.npcActive(loc.id);
@@ -1049,6 +1072,7 @@ function locationStage(s) {
     let npcBusy = false;
     async function npcCheck() {
         if (npcBusy || t.arena || !t.npc?.length || t.remaining > t.npc[0]) return; // 🏟️ no NPCs during an arena battle
+        if (smfx.busy()) return; // ✈️ a crash / 🏕️ the slasher on screen
         if (loc.revival && activityBusy()) return; // 🔄 Survival Land: never on top of a quiz / roulette / popup
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return; // wait for the spin to finish
         // 🎭 / 🧊 an attack that falls while Profile Copy (or Icy Breath) is still on is dropped — no second copy, no extra time
@@ -1171,22 +1195,28 @@ function locationStage(s) {
             h("button.btn.gold.big", { onclick: () => m.close() }, "다음 ▶")), { title: `${displayName(Store.player(pid))} 턴 결과`, closable: false });
         met ? (Sound.fanfare(), confetti(60)) : Sound.lose();
         await m.closed;
+        await SM.beforeEnd(pid, loc, t); // 🛫 gate: wait / take-off · 🏕️ Slasher Body Count · 🛗 still trapped
         G.endTurn();
         render();
     }
 
     lockEnd();
-    return h("div.location" + (loc.cursed ? ".cursed" : "") + (loc.kidnap ? ".kidnapped" : "") + (loc.magma ? ".magma" : ""), { style: { "--loc": loc.color } },
+    const locEl = h("div.location" + (loc.cursed ? ".cursed" : "") + (loc.kidnap ? ".kidnapped" : "") + (loc.magma ? ".magma" : ""), { style: { "--loc": loc.color } },
         loc.kidnap ? null : weatherLayer(loc.id),
         fx.hud,
         h("div.loc-head",
             h("div.loc-name", h("span", loc.emoji), mapNo(loc.id) ? h("small.loc-no", { title: "맵 번호" }, `#${mapNo(loc.id)}`) : null, h("b", loc.name), npcHere ? h("span.npc-warn", { title: "이번 라운드에 이 맵에는 NPC가 출몰합니다 — 눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: true }) }, "⚠️ NPC 출몰", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")) : h("span.npc-safe", { title: "눌러서 NPC 정보 보기", onclick: () => npcInfo(loc, { active: false }) }, "🛡️ No NPC", h("i.npc-i", { "aria-label": "NPC 정보" }, "i")), diseaseBadge(loc), wx?.el),
             progEl,
             h("div.loc-timer", timeEl, h("div.row", pauseBtn, endBtn))),
+        SM.head(loc, t, pid),
         rev ? revivalBar(s, pid, () => { updateHud(); tabBody(currentTab); }) : null,
         ...(passBtns.length ? [h("div.pass-row.in-turn", h("b", "🎟️ 맵권으로 지금 이동:"), passBtns.map(it => h("button.btn.small.gold", { onclick: () => movePass(it.id), title: LOC_BY_ID[it.loc].region === "deadland" ? "☠️ Dead Land 맵권: 남은 시간 8분 이상일 때만" : "" }, `${LOC_BY_ID[it.loc].emoji} ${LOC_BY_ID[it.loc].name} ×${ps.items[it.id]}`, LOC_BY_ID[it.loc].region === "deadland" ? " ☠️8분+" : "")))] : []),
         hud,
         h("div.loc-wrap", side, h("div.loc-main", tabBar, body)));
+    const smCls = SM.rootCls(loc);
+    if (smCls) locEl.classList.add(...smCls.split(" "));
+    if (t.xArrive) setTimeout(() => { if (G.S()?.turn === t && document.body.contains(locEl)) SM.afterRender(s, smc("arrive")); }, 60); // ✈️ 🛫 🛗 the turn start left a popup behind
+    return locEl;
 }
 
 // ------------------------------------------------------------------ judge

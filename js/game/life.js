@@ -192,11 +192,13 @@ export function buyFood(pid, key, corner, it, { discount = 0 } = {}) {
     if (!doorOf(pid, key)?.in) return { ok: false, why: "먼저 입장하세요" };
     if (!cornerOpenTo(pid, corner)) return { ok: false, why: `${corner.name}은(는) ${corner.races.join(" · ")} 종족만 이용할 수 있습니다` };
     if (!L.canEatRace(f, Store.player(pid)?.ethnicity)) return { ok: false, why: `${f.name}은(는) ${f.races.join(" · ")} 종족만 먹을 수 있습니다` };
-    const price = Math.round(foodPrice(corner, it) * (1 - discount));
+    const gf = S()?.turn?.glitchFood; // 💻 Cyber Town glitch: ×1.5~3 prices, or the food gauge runs backwards
+    const price = Math.round(foodPrice(corner, it) * (1 - discount) * (gf?.mult || 1));
     if (wallet(ps) < price) return { ok: false, why: "골드가 부족합니다" };
     if (price) pay(ps, price);
     if (corner.pantry) u.pantry = (u.pantry || 0) + 1; else u.n = (u.n || 0) + 1;
     const r = eat(pid, f.id, `${corner.name}${price ? ` ${price.toLocaleString()}G` : " 무료"}`);
+    if (gf?.invert && r.ok && r.got) { const back = addFood(pid, -2 * r.got); r.got += back; r.food = foodOf(pid); r.glitch = true; log(`💻 ${name(pid)} 글리치! 식량 게이지가 거꾸로 (${r.got >= 0 ? "+" : ""}${r.got})`); }
     emitEvent("food", pid, { id: f.id, pantry: !!corner.pantry }); // 🎯 사내 미션: 푸드 코너 구입
     return { ...r, price };
 }
@@ -205,6 +207,8 @@ export function buyFood(pid, key, corner, it, { discount = 0 } = {}) {
 export function weatherAt(locId) {
     const loc = LOC_BY_ID[locId];
     if (!loc || loc.kidnap) return L.WEATHERS.sun;
+    if (loc.wxFixed && L.WEATHERS[loc.wxFixed]) return L.WEATHERS[loc.wxFixed]; // ☀️ Sunny Town: always sun
+    if (loc.indoor) return INDOOR; // 🛗 elevator floors · 🏕️ indoor hiding places: no weather
     // 🎲 every map is random now (WEATHER_ODDS: 해 10 · 비 10 · 폭우 20 · 눈 10 · 폭설 20 · 우박 20 · 폭염 10 %), drawn once per round
     const s = S();
     if (!s) return L.WEATHERS.sun;
@@ -215,6 +219,7 @@ export function weatherAt(locId) {
     }
     return L.WEATHERS[wx[locId].w] || L.WEATHERS.sun;
 }
+const INDOOR = { id: "indoor", name: "실내", emoji: "🏠", hp: 0 };
 export function drawWeather() {
     const odds = Object.entries(L.WEATHER_ODDS).filter(([id]) => L.WEATHERS[id]);
     let x = rnd() * odds.reduce((a, [, p]) => a + p, 0);
@@ -259,6 +264,7 @@ export function weatherTick(t) {
     life.mapSec = (life.mapSec || 0) + 1;
     const w = weatherAt(t.loc);
     const s = life.mapSec;
+    if (LOC_BY_ID[t.loc]?.wxNoHarm || w.id === "indoor") return null; // ✈️ the plane is its own shelter: weather shows, never hurts
     if (w.id === "sun") {
         if (life.sunFed || s < SMILE_SUN_SEC || !isSmile(t.pid) || sheltered(t.pid, t.loc)) return null;
         life.sunFed = true; // only once per turn: 8 minutes there is still just +5

@@ -226,12 +226,15 @@ const NPC_FX = { steal: "💸", give: "💰", hp: "💥", heal: "💖", curse: "
     breakWeapon: "🔨", stealPet: "🧸", disease: "🦠", stealAll: "🫳", stealMon: "🐾", stealPts: "💎", kidnap: "⛓️", cureFlu: "💚", giftBox: "🎁", stealItem: "🫳" };
 const alignBadge = n => { const a = NPC_ALIGN[npcAlign(n)]; return h("span.npc-align." + a.cls, a.label); };
 const NEW_KINDS = ["breakWeapon", "stealPet", "disease", "stealAll", "stealMon", "stealPts", "kidnap", "cureFlu", "giftBox", "stealItem"];
+// 🧩 map-only NPC moves with a screen of their own (screens/specialMaps.js: 💻 hack · 🪆 dollCurse · 🤡 clownCurse · 🪰 flyBite)
+export const customNpc = {};
 export async function npcAttack(pid) {
     // 💀 Death Casino: only the reaper · ☠️ Dead Land: only Dead Land NPCs · elsewhere: never the Dead Land ones
     const pool = npcPool(LOC_BY_ID[G.S().turn?.loc]);
     const npc = pool[Math.floor(Math.random() * pool.length)];
     const move = pickNpcMove(npc);
     if (npc.churchOnly) return priestVisit(pid, npc, move); // ⛪ 🔄 Foggy Church Priest has its own screen
+    if (move.custom && customNpc[move.custom]) return customNpc[move.custom](pid, npc, move);
     if (move.freeze || move.profileCopy) return specialNpcVisit(pid, npc, move); // 🧊 Ice Queen Icy Breath · 🎭 Fake Profile Profile Copy
     if (move.bite) return mosquitoBite(pid, npc, move);       // 🦟 a quiet bite: an alarm under the pet, no attack screen
     if (move.battle) return mosquitoBattle(pid, npc, move);   // 🦟 Monster Mosquito: a battle (lose = death)

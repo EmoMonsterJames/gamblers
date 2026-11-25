@@ -35,6 +35,8 @@ export const REGIONS = [
     { id: "desert",     name: "사막",           en: "DESERT",          emoji: "🏜️", color: "#f59e0b" },
     { id: "emoland",    name: "EmoMonster Land", en: "EMOMONSTER LAND", emoji: "🐾", color: "#34d399" },
     { id: "difficult",  name: "Difficult Land", en: "DIFFICULT LAND",  emoji: "🧗", color: "#64748b" },
+    // ✈️ Airport (2026-11): open until the plane takes off once per season (game/travel.js airportOpen)
+    { id: "airport",    name: "Airport",        en: "AIRPORT",         emoji: "✈️", color: "#0ea5e9", airport: true },
     // 🔄 패자부활전 only: hidden (off) in normal rounds — game/revival.js syncSurvivalLand() opens it while the revival runs
     { id: "survival",   name: "Survival Land",  en: "SURVIVAL LAND",   emoji: "🔄", color: "#14b8a6", revival: true, off: true }
 ];
@@ -127,6 +129,10 @@ export const NEW_MAPS = [
     { id: "poly2", region: "fantasy", name: "Polynesia Casino 2", emoji: "🌺", color: "#fb923c", x: 82, y: 76, shops: ["general", "pet", "weapon"], req: { country: "Polynesia", pass: "pass_poly2" },
       slot: { name: "Aloha Treasures", brand: "HYHG GAMING", tpl: "dragon", hi: ["🗿", "🌺", "🐢"], lo: ["🥥", "🍍"], wild: "🌋", sp: "👁️", bg: ["#ea580c", "#270a02"], acc: "#fb923c" },
       casino: { name: "Tiki Pick", kind: "pick", icon: "🗿", desc: "티키 5개 중 보물을 품은 티키는?", n: 5, closed: "🗿", prize: "💎", miss: "🥥" } },
+    // 🍀 Good Luck Casino: its own job corner (game/travel.js LUCK_JOBS) + 💎 Point Slots · Point Mania (screens/pointMania.js)
+    { id: "good_luck", v2: true, region: "fantasy", name: "Good Luck Casino", emoji: "🍀", color: "#22c55e", x: 40, y: 90, shops: ["general", "point", "pet"], job: true, luckJobs: true, pointMania: true,
+      slots: [sl("Lucky Clover Gold", "Rabbit-Gaming", "rabbit", "🍀 🧧 🐉", "🪙 🎋", "🌈", "🌕", "#166534", "#031a0a", "#4ade80")],
+      casinos: [cg("wheel", "Fortune Wheel", "🍀", "행운의 휠! 최대 x30"), cg("gacha", "Lucky Pouch Gacha", "🧧", "복주머니 캡슐 뽑기! 레전드 x50")] },
 
     // ------------------------------------------------ 스푸키 랜드
     { id: "ghost", region: "spooky", name: "Ghost Casino", emoji: "👻", color: "#e2e8f0", x: 20, y: 26, shops: ["general", "weapon"], req: { random: true, races: ["Ghost", "Invisible"] }, npc: true,
@@ -361,6 +367,13 @@ export const NEW_MAPS = [
       slots: [], casinos: [cg("wheel", "Magma Wheel", "🌋", "마그마 휠! 최대 x30"), cg("scratch", "Lava Scratch", "🔥", "용암 스크래치! 화산 3개 x40", { syms: ["🪨", "💨", "🔥", "♨️", "🌋"] })] },
     { id: "terror_casino", region: "deadland", name: "Terror Casino", emoji: "💣", color: "#57534e", x: 80, y: 70, shops: ["general"], npc: "always", npcOnly: "terrorist", noPass: true, endLock: true,
       slots: [], casinos: [cg("pick", "Bomb Defuse", "💣", "전선 4개 중 하나를 끊어라!", { n: 4, closed: "🧨", prize: "💰", miss: "💥" }), cg("dice", "Hostage Dice", "🎲", "인질의 주사위…")] },
+    // 🪆 Doll Factory: Evil Doll · Clown Doll only (always) · thunder, ghost dolls, blackouts, the jack-in-the-box (screens/specialMaps.js)
+    { id: "doll_factory", v2: true, region: "deadland", name: "Doll Factory", emoji: "🪆", color: "#7e22ce", x: 50, y: 88, shops: ["general", "weapon"], npc: "always", npcList: ["evil_doll", "clown_doll"], dollFactory: true, minStay: 300,
+      slots: [sl("Haunted Toybox", "IPEX", "ghost", "🪆 🧸 🎎", "🧵 🪡", "🤡", "📦", "#3b0764", "#0a0010", "#c084fc", "'Creepster', cursive")],
+      casinos: [cg("pick", "Which Doll?", "🪆", "인형 4개 중 웃지 않는 인형은?", { n: 4, closed: "🪆", prize: "💰", miss: "🤡" }), cg("scratch", "Stitch Scratch", "🧵", "바느질 스크래치! 삐에로 3개 x40", { syms: ["🧵", "🪡", "🧸", "🎎", "🤡"] })] },
+    // 🏕️ Campsite: 5 random off-season Campers · hide in one of 6 places · 🔪 Masked Killer · 🪰 Fly (screens/specialMaps.js)
+    { id: "campsite", v2: true, region: "deadland", name: "Campsite", emoji: "🏕️", color: "#166534", x: 16, y: 88, shops: [], npc: "never", campsite: true, minStay: 300, noPass: true, food: [], lodge: [],
+      slots: [], casinos: [] },
 
     // =========================================================== 🏜️ 사막
     { id: "desert_casino", region: "desert", name: "Desert Casino", emoji: "🏜️", color: "#f59e0b", x: 22, y: 30, shops: ["general", "weapon", "point"], job: true,
@@ -369,6 +382,9 @@ export const NEW_MAPS = [
       slots: [], casinos: [cg("pick", "Palm Pick", "🌴", "야자수 4그루 중 보물은?", { n: 4, closed: "🌴", prize: "💧", miss: "🦂" }), cg("plinko", "Water Drop Plinko", "💧", "물방울 플링코! 양 끝 x25")] },
     { id: "sand_castle", region: "desert", name: "Sand Castle", emoji: "🏰", color: "#fcd34d", x: 46, y: 70, shops: ["general", "point"],
       slots: [], casinos: [cg("scratch", "Pharaoh Scratch", "🔺", "파라오 스크래치! 피라미드 3개 x40", { syms: ["🦂", "🐪", "🏺", "👁️", "🔺"] }), cg("hilo", "Sphinx Hi-Lo", "🦁", "스핑크스 하이로우")] },
+    // ☀️ Sunny Town: the weather is ALWAYS sun (game/life.js weatherAt → wxFixed)
+    { id: "sunny_town", v2: true, region: "desert", name: "Sunny Town", emoji: "☀️", color: "#facc15", x: 82, y: 76, shops: ["general", "point", "decor"], wxFixed: "sun", job: true,
+      slots: [], casinos: [cg("wheel", "Sunshine Wheel", "☀️", "햇살 휠! 최대 x30"), cg("coinflip", "Sun & Moon Flip", "🌞", "해와 달 동전 던지기! x1.9")] },
 
     // =========================================================== 🐾 EmoMonster Land (EmoMon Capture everywhere)
     { id: "emo_casino", region: "emoland", name: "EmoMonster Casino", emoji: "🐾", color: "#34d399", x: 20, y: 26, shops: ["general", "pet"], capture: true, needMon: true,
@@ -395,6 +411,14 @@ export const NEW_MAPS = [
       slots: [], casinos: [cg("pick", "Frozen Coffin", "⚰️", "얼어붙은 관 3개 중 하나…", { n: 3, closed: "⚰️", prize: "💰", miss: "🥶" }), cg("wheel", "Blizzard Wheel", "❄️", "저주받은 눈보라 휠")] },
     { id: "radioactive", region: "difficult", name: "Radioactive Town", emoji: "☢️", color: "#84cc16", x: 50, y: 82, shops: ["general"], npc: "always", noPass: true, endLock: true, cancerChance: 0.3,
       slots: [], casinos: [cg("scratch", "Fallout Scratch", "☢️", "방사능 스크래치! 해골 3개 x40", { syms: ["🧪", "🦠", "☣️", "☢️", "💀"] }), cg("plinko", "Isotope Plinko", "⚛️", "동위원소 플링코! 양 끝 x25")] },
+    // 💻 Cyber Town: 👨‍💻 Hacker only (always) · every corner may GLITCH (up to 70%) — screens/specialMaps.js
+    { id: "cyber_town", v2: true, region: "difficult", name: "Cyber Town", emoji: "💻", color: "#22d3ee", x: 78, y: 84, shops: ["general", "weapon"], npc: "always", npcOnly: "hacker", glitch: true, minStay: 300,
+      community: true, job: true, highlight: true, help: true, hospital: true, food: [{ k: "burger_shop" }, { k: "supermarket" }],
+      slots: [sl("Glitch Matrix", "BLK", "pearl", "💻 🧬 📡", "💾 🔌", "👾", "🛰️", "#083344", "#020617", "#22d3ee")],
+      casinos: [cg("hilo", "Binary Hi-Lo", "💻", "0과 1의 하이로우! 맞히면 x1.9"), cg("plinko", "Packet Plinko", "📡", "데이터 패킷 플링코! 양 끝 x25")] },
+    // 🛗 Elevator: at most 6 trapped players · everybody starts on 1F · floors are their own rooms (sub maps elev_*)
+    { id: "elevator", v2: true, region: "difficult", name: "Elevator", emoji: "🛗", color: "#a8a29e", x: 50, y: 48, shops: [], npc: "never", elevator: true, noPass: true, food: [], lodge: [],
+      slots: [], casinos: [] },
 
     // =========================================================== 🔄 Survival Land (패자부활전 only — see game/revival.js)
     // revival: only reachable during the revival round · noEnd: the turn can never be ended by hand (only time up / death)
@@ -440,7 +464,44 @@ export const NEW_MAPS = [
     //             a giant mosquito egg grows under the pet → at 100 it hatches the 🦟 Monster Mosquito (battle — lose = death)
     { id: "mosquito_forest", region: "survival", name: "모기 숲", emoji: "🦟", color: "#4d7c0f", x: 50, y: 10, shops: ["general", "weapon"], npc: "always", npcList: ["tiny_mosquito"], revival: true, noEnd: true, mosquito: true, capture: true,
       slots: [sl("Bloodsucker Bayou", "IPEX", "ghost", "🦟 🩸 🌿", "🍃 🐸", "🌳", "🥚", "#14532d", "#020a04", "#84cc16")],
-      casinos: [cg("dice", "Swamp Dice", "🦟", "늪지 주사위! 6-6 이면 x30"), cg("pick", "Egg Hunt", "🥚", "알 4개 중 하나… 모기알 주의!", { n: 4, closed: "🥚", prize: "💰", miss: "🦟" })] }
+      casinos: [cg("dice", "Swamp Dice", "🦟", "늪지 주사위! 6-6 이면 x30"), cg("pick", "Egg Hunt", "🥚", "알 4개 중 하나… 모기알 주의!", { n: 4, closed: "🥚", prize: "💰", miss: "🦟" })] },
+
+    // =========================================================== ✈️ Airport (game/travel.js — open until the plane leaves, once per season)
+    //   every gate: 🎫 ticket counter · 📋 accident reports (+ gate 1/2: 🛎️ airport service · gate 3: 🛋️ lounge)
+    { id: "gate1", region: "airport", name: "Airport Gate 1", emoji: "🛫", color: "#0ea5e9", x: 22, y: 44, shops: ["general"], gate: 1, noPass: true, food: [{ k: "marshall" }, { k: "carrot_rest" }], lodge: [],
+      slots: [sl("Jet Set Jackpot", "CLOUD GAMING", "pearl", "✈️ 🧳 🛂", "🎫 🗺️", "🌍", "🛫", "#0c4a6e", "#020617", "#38bdf8")],
+      casinos: [cg("coinflip", "Boarding Flip", "🎫", "탑승권 동전 던지기! x1.9")] },
+    { id: "gate2", region: "airport", name: "Airport Gate 2", emoji: "🛬", color: "#38bdf8", x: 50, y: 28, shops: ["general"], gate: 2, noPass: true, food: [{ k: "mini_deli" }], lodge: [],
+      slots: [sl("Duty Free Fortune", "HYHG GAMING", "rabbit", "🛍️ 💼 🕶️", "🎫 🧳", "💎", "🛬", "#075985", "#020617", "#7dd3fc")],
+      casinos: [cg("dice", "Baggage Dice", "🧳", "수하물 주사위! 6-6 이면 x30")] },
+    { id: "gate3", region: "airport", name: "Airport Gate 3", emoji: "🛩️", color: "#0284c7", x: 78, y: 44, shops: ["general"], gate: 3, noPass: true, food: [], lodge: [],
+      slots: [sl("Runway Riches", "IPEX", "dragon", "🛩️ 🗼 🧭", "🎫 ☁️", "🌐", "👁️", "#0c4a6e", "#030712", "#0ea5e9")],
+      casinos: [cg("pick", "Lost & Found", "🧳", "가방 4개 중 내 가방은?", { n: 4, closed: "🧳", prize: "💰", miss: "🧦" })] },
+
+    // =========================================================== 🔒 sub rooms (region "sub" — never on a map / roulette; entered only by game/travel.js)
+    //   sub: the map they belong to · indoor: no weather · wxNoHarm: weather shown but never hurts (the plane)
+    { id: "plane", region: "sub", sub: "airport", minStay: 120, name: "비행기", emoji: "✈️", color: "#0ea5e9", x: 50, y: 50, shops: [], plane: true, vipGames: 3, capture: true, npc: true, npcList: ["peddler"], noPass: true, wxNoHarm: true, food: [], lodge: [],
+      slots: [sl("Sky High Jet", "AIRWAY GAMING", "pearl", "✈️ 🌤️ 🧳", "🥤 🎧", "👨‍✈️", "🛫", "#0369a1", "#020617", "#7dd3fc")],
+      casinos: [cg("wheel", "Turbulence Wheel", "🌀", "난기류 휠! 최대 x30")] },
+    // 🛗 the elevator floors (floor 11 = 옥상)
+    { id: "elev_1", region: "sub", sub: "elevator", minStay: 120, floor: 1, name: "엘리베이터 1층", emoji: "1️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, community: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_2", region: "sub", sub: "elevator", minStay: 120, floor: 2, name: "엘리베이터 2층", emoji: "2️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["beggar", "granny"], indoor: true, noPass: true, beg: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_3", region: "sub", sub: "elevator", minStay: 120, floor: 3, name: "엘리베이터 3층", emoji: "3️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, elevShop: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_4", region: "sub", sub: "elevator", minStay: 120, floor: 4, name: "엘리베이터 4층", emoji: "4️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai"], indoor: true, noPass: true, elevWeapons: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_5", region: "sub", sub: "elevator", minStay: 120, floor: 5, name: "엘리베이터 5층", emoji: "5️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, food: [{ k: "mini_deli" }, { k: "ddeogwi_rest" }], lodge: [], slots: [], casinos: [] },
+    { id: "elev_6", region: "sub", sub: "elevator", minStay: 120, floor: 6, name: "엘리베이터 6층", emoji: "6️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["wizard"], indoor: true, noPass: true, elevPassShop: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_7", region: "sub", sub: "elevator", minStay: 120, floor: 7, name: "엘리베이터 7층 (출구)", emoji: "7️⃣", color: "#22c55e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, elevExit: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_8", region: "sub", sub: "elevator", minStay: 120, floor: 8, name: "엘리베이터 8층", emoji: "8️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, capture: true, elevFinds: 3, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_9", region: "sub", sub: "elevator", minStay: 120, floor: 9, name: "엘리베이터 9층 (침수)", emoji: "9️⃣", color: "#0ea5e9", x: 50, y: 50, shops: [], npc: "always", npcList: ["croc"], indoor: true, noPass: true, flooded: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_10", region: "sub", sub: "elevator", minStay: 120, floor: 10, name: "엘리베이터 10층", emoji: "🔟", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, bank: true, earn: ["blood", "labor", "poop", "sell", "music", "survival", "guess"], food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_roof", region: "sub", sub: "elevator", minStay: 120, floor: 11, name: "엘리베이터 옥상", emoji: "🏙️", color: "#64748b", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai", "beggar", "granny"], noPass: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    // 🏕️ the Campsite hiding places (game/travel.js CAMP_SPOTS: the Masked Killer's chance to find whoever hides there)
+    { id: "camp_trash", region: "sub", sub: "campsite", minStay: 300, spot: "trash", name: "쓰레기통", emoji: "🗑️", color: "#4d7c0f", x: 50, y: 50, shops: [], npc: "always", npcList: ["fly"], indoor: true, noPass: true, beg: true, randGames: 2, food: [{ k: "ddong_mart" }], lodge: [], slots: [], casinos: [] },
+    { id: "camp_house", region: "sub", sub: "campsite", minStay: 300, spot: "house", name: "빈집", emoji: "🏚️", color: "#57534e", x: 50, y: 50, shops: [], npc: "always", npcList: ["granny"], indoor: true, noPass: true, highlight: true, community: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "camp_forest", region: "sub", sub: "campsite", minStay: 300, spot: "forest", name: "숲속", emoji: "🌲", color: "#166534", x: 50, y: 50, shops: [], npc: "always", npcList: ["tiny_mosquito"], noPass: true, capture: true, hospital: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "camp_lake", region: "sub", sub: "campsite", minStay: 300, spot: "lake", name: "호숫가", emoji: "🏞️", color: "#0369a1", x: 50, y: 50, shops: [], npc: "always", npcList: ["croc"], noPass: true, capture: true, needOxygen: true, randGames: 2, food: [{ k: "ddeogwi_rest" }], lodge: [], slots: [], casinos: [] },
+    { id: "camp_basement", region: "sub", sub: "campsite", minStay: 300, spot: "basement", name: "지하실", emoji: "🕳️", color: "#1c1917", x: 50, y: 50, shops: [], npc: "always", npcList: ["reaper"], indoor: true, noPass: true, capture: true, lab: true, emoshop: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "camp_tent", region: "sub", sub: "campsite", minStay: 300, spot: "tent", name: "텐트", emoji: "⛺", color: "#ca8a04", x: 50, y: 50, shops: ["general"], npc: "never", indoor: true, noPass: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] }
 ];
 // the room terrorists drag a kidnapped player into (not on any map — see game/extra.js)
 export const KIDNAP_ROOM = { id: "terror_room", region: "kidnap", name: "테러리스트 납치 공간", emoji: "⛓️", color: "#4b5563", x: 50, y: 50, shops: [], npc: "always", npcOnly: "terror_boss", kidnap: true, slots: [], casino: [] };

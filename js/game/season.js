@@ -18,6 +18,8 @@ import { mapNo } from "../data/mapAdmin.js";
 import { SPECIAL_BY_ID, makeTags } from "./specialSeason.js";
 // other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
 export const locationHooks = [], jobHooks = [], playHooks = [];
+// 2026-11 (game/travel.js): startHooks(pid, turn) → true when it placed the player (✈️ trip / 🛫 gate / 🛗 elevator) · enterChecks(pid, loc) → { ok:false, why } to refuse a map
+export const startHooks = [], enterChecks = [];
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
 // 📣 game events other rules listen to (game/employ.js in-company missions): "capture" · "spell" · "help" · "turnEnd"
 export const eventHooks = [];
@@ -662,7 +664,7 @@ export const npcActive = locId => locId === KIDNAP_ID || npcMaps().includes(locI
 // 🎫 NPC 공격 Block 권: charges left (opened tickets) + unopened tickets in the bag
 const BLOCK_ITEMS = () => ITEMS.filter(i => i.npcBlock).sort((a, b) => a.npcBlock - b.npcBlock);
 export const npcBlocksLeft = ps => (ps.npcBlock || 0) + BLOCK_ITEMS().reduce((a, i) => a + (ps.items[i.id] || 0) * i.npcBlock, 0);
-function useNpcBlock(ps) {
+export function useNpcBlock(ps) {
     if (!(ps.npcBlock > 0)) {
         const t = BLOCK_ITEMS().find(i => ps.items[i.id] > 0); // smallest ticket first
         if (!t) return false;
@@ -872,6 +874,7 @@ export function startTurn() {
     s.turn = { startPts: s.ps[pid]?.points || 0, pid, loc: null, region: null, remaining: RV.revivalTurns() ? RV.SURVIVAL_SECONDS : CONFIG.TURN_SECONDS, running: false, ticket: false, stats: { pid, slotNet: 0, casinoNet: 0, points: 0, bonus: 0, jackpot: null, spins: 0, plays: 0, slotWins: 0, five: 0, freeSpins: 0, beg: 0, job: 0, cardUsed: false, bonusAt: 0, brandWin: {}, betWin: {}, jobs: 0, locs: [], npc: [] } };
     // ⛓️ kidnapped: no roulette — straight back into the terrorists' room (10 minutes as usual)
     if (isKidnapped(pid)) { s.turn.loc = KIDNAP_ID; s.turn.region = "kidnap"; s.turn.running = true; s.turn.kidnapIn = s.turn.remaining; }
+    else if (!RV.revivalTurns()) for (const f of startHooks) { try { if (f(pid, s.turn)) break; } catch (e) { console.error(e); } }
     Store.saveSeason();
     return s.turn;
 }
@@ -906,6 +909,7 @@ export function canEnter(pid, loc) {
     if (loc.off) return { ok: false, why: "닫힘" };
     if (loc.crazy && !crazyTimeOk()) return { ok: false, why: "남은 시간 6분 30초 이상 필요" };
     if (loc.kidnap) return { ok: false, why: "갈 수 없는 곳" };
+    for (const f of enterChecks) { const r = f(pid, loc); if (r) return r; }
     // 🐾 EmoMonster Casino: monster owners only · 🔷 Type Casino: owners of this round's attribute only
     if (loc.needMon && !ownsMon(pid)) return { ok: false, why: "이모몬스터가 있어야 입장" };
     if (loc.typeGate && !ownsTypes(pid, typeGateTypes())) return { ok: false, why: `${typeGateType()} 속성 몬스터 보유자만` };
@@ -962,6 +966,7 @@ export function passNeeds(pid, loc) {
     if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
     if (RV.revivalTurns() && loc.region !== "survival") missing.push("🔄 패자부활전 중에는 Survival Land 맵으로만 이동할 수 있습니다");
     if (RV.survivalPassWait() > 0) missing.push(RV.survivalWaitText());
+    for (const f of enterChecks) { const r = f(pid, loc); if (r && !r.ok) missing.push(r.why); }
     const fee = r.freeTypes && ownsTypes(pid, r.freeTypes) ? 0 : (r.fee || 0), feePts = r.feePts || 0;
     if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
     if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
@@ -1503,7 +1508,9 @@ export function luckOf(pid) {
     if (pet) { win += pet.boost; if (pet.kind === "special") bonus += pet.boost; sources.push({ kind: "pet", id: pet.id, name: pet.name, emoji: pet.art?.a || "🐾", special: pet.kind === "special", boost: pet.boost }); }
     if (fx && pet) { win += fx.boost; if (fx.kind === "special") bonus += fx.boost; sources.push({ kind: "fx", id: fx.id, name: fx.name, emoji: "✨", special: fx.kind === "special", boost: fx.boost }); }
     win = Math.min(30, win); bonus = Math.min(30, bonus);
-    return { win: win / 100, bonus: bonus / 100, pct: win, bonusPct: bonus, pid, pet: ps.pet || null, petEffect: ps.petEffect || null, sources };
+    // 🪆 Evil Doll (Doll Factory curse): −20% to win / to trigger a bonus at slots (slots/engine.js spinWithLuck)
+    const curse = pet?.cursed || 0;
+    return { win: win / 100, bonus: bonus / 100, pct: win, bonusPct: bonus, pid, pet: ps.pet || null, petEffect: ps.petEffect || null, sources, ...(curse ? { curse } : {}) };
 }
 
 // EmoMon Battler fight this round (has:battler missions — safe only after a win and no loss)

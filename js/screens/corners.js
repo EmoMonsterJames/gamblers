@@ -151,7 +151,7 @@ function taskOverlay(content) {
     return ov;
 }
 
-async function payout(pid, gold, msg) {
+export async function payout(pid, gold, msg) {
     const num = h("b.pay-num", "+0 G");
     const ov = h("div.pay-ov", h("div.pay-box", h("div.pay-msg", msg), num));
     document.body.append(ov);

@@ -29,7 +29,8 @@ export function shopView(shopId, pid, locId, onChange) {
     const svBanned = it => it.cat === "item" && ITEM_BY_ID[it.id]?.npcBlock;
     // 🛰️ Arizal Tech employees: 1% more off in every weapon shop
     const off = shopId === "weapon" ? weaponDiscount(pid) : 0;
-    const costOf = it => { const c = priceOf(it, shop.cur); if (off && c.gold) c.gold = Math.round(c.gold * (1 - off)); return c; };
+    const gm = S()?.turn?.glitchShop || 1; // 💻 Cyber Town glitch: every price ×1.5~3
+    const costOf = it => { const c = priceOf(it, shop.cur); if (off && c.gold) c.gold = Math.round(c.gold * (1 - off)); if (gm !== 1) { c.gold = Math.round((c.gold || 0) * gm); c.pts = Math.round((c.pts || 0) * gm); } return c; };
     const list = () => (shopId === "discount" ? discountItems(locId, `${S().number}-${S().round}`) : shopListing(shopId, locId)).filter(it => (!RV.inRevival(pid) || it.id !== "map_random") && !(survival && svBanned(it)));
     const render = () => {
         const d = Store.getDecor(pid);

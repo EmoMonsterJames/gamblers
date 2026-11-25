@@ -68,8 +68,18 @@ export function react(pid, postId, kind) { // kind: "likes" | "dislikes" — pre
     const p = postById(postId);
     if (!p) return { ok: false, why: "코멘트를 찾을 수 없습니다" };
     if (same(p.pid, pid)) return { ok: false, why: "내 코멘트에는 누를 수 없습니다" };
+    // 💻 Cyber Town glitch: a heart turns into a dislike that can never be taken back
+    const glitched = !!S()?.turn?.glitchCom && kind === "likes";
+    if (glitched) kind = "dislikes";
     const other = kind === "likes" ? "dislikes" : "likes";
     p[kind] ||= []; p[other] ||= [];
+    if ([...p.likes, ...p.dislikes].some(r => same(r.pid, pid) && r.locked)) return { ok: false, why: "💻 글리치로 눌린 싫어요는 취소할 수 없습니다" };
+    if (glitched && !p[kind].some(r => same(r.pid, pid)) && !seasonReacts(pid, p.id)) {
+        p[other] = p[other].filter(r => !same(r.pid, pid));
+        p[kind].push({ pid: +pid, season: curSeason(), at: new Date().toISOString(), locked: true });
+        save();
+        return { ok: true, on: true, glitch: true };
+    }
     const had = p[kind].some(r => same(r.pid, pid));
     // a new press (not a take-back, not switching on this same comment) while another one stands this season → no
     if (!had && seasonReacts(pid, p.id)) return { ok: false, why: "하트 · 싫어요는 시즌당 1회만 누를 수 있습니다 (다른 코멘트에 누른 것을 취소하면 다시 누를 수 있어요)" };
@@ -248,6 +258,8 @@ export function intimacy(aId, bId) {
         if ((p.likes || []).some(x => same(x.pid, mine))) add(`💖 ${name(mine)}이(가) ${name(p.pid)}의 코멘트에 하트 (시즌 ${p.season})`, 1);
         if ((p.dislikes || []).some(x => same(x.pid, mine))) add(`👎 ${name(mine)}이(가) ${name(p.pid)}의 코멘트에 싫어요 (시즌 ${p.season})`, -1);
     }
+    // 2026-11 adjustments (🛗 elevator rescue +20 · 💻 Cyber Town gold grabs: halved) — game/travel.js adjustIntimacy
+    for (const x of C().intimacyAdj || []) if ((same(x.a, aId) && same(x.b, bId)) || (same(x.a, bId) && same(x.b, aId))) add(`${x.label}${x.season != null ? ` (시즌 ${x.season})` : ""}`, x.pts);
     const na = a.country, nb = b.country;
     if (na !== nb && [na, nb].includes("Emo World") && [na, nb].includes("Dung Town")) add("🚩 Emo World ↔ Dung Town 국적", -1);
     if (na !== nb && [na, nb].includes("Foggy Nation") && [na, nb].includes("Ground Town")) add("🌫️ Foggy Nation ↔ Ground Town 국적", 1);

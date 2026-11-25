@@ -371,7 +371,8 @@ export function writePost(pid, text, style = {}) {
     text = String(text || "").trim().slice(0, 200);
     if (!text) return { ok: false, why: "코멘트를 입력하세요" };
     if (postedThisSeason(pid)) return { ok: false, why: "이번 시즌에는 이미 코멘트를 남겼습니다 (시즌당 1회)" };
-    if (ps.money < COMMENT_FEE) return { ok: false, why: `골드가 부족합니다 (${COMMENT_FEE}G)` };
+    const fee = s.turn?.glitchCom ? 5000 : COMMENT_FEE; // 💻 Cyber Town glitch: the post costs 5,000G
+    if (ps.money < fee) return { ok: false, why: `골드가 부족합니다 (${fee}G)` };
     const used = {};
     for (const [k, id] of Object.entries(style)) {
         if (!id) continue;
@@ -379,7 +380,7 @@ export function writePost(pid, text, style = {}) {
         used[k] = CM_BY_ID[id].ref;
     }
     for (const id of Object.values(style)) if (id) ps.items[id]--;
-    ps.money -= COMMENT_FEE;
+    ps.money -= fee;
     ps.cmPosted = s.number;
     const post = { id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pid: +pid, season: s.number, text, style: used, at: new Date().toISOString() };
     (Store.community ||= { posts: [] }).posts = [post, ...(Store.community.posts || [])].slice(0, 2000);
@@ -396,10 +397,16 @@ export const noPassHere = () => !!locOfTurn()?.noPass;
 export const END_LOCK_LEFT = 300;
 // ⏳ Dead Land Hell · Magma Town · Death Door · Dark Space + NPC Land Death Casino: at least 2 minutes on the map before the turn can end
 export const MIN_STAY = { hell: 120, magma_town: 120, death_door: 120, dark_space: 120, death_casino: 120 };
-export const stayLockLeft = (loc, t) => { const m = MIN_STAY[loc?.id]; if (!m || !((t?.remaining ?? 0) > 0)) return 0; return Math.max(0, m - ((t.locIn ?? t.remaining) - t.remaining)); };
+// 2026-11: a map may carry its own minStay (s) — 🛗 elevator floors count from entering the elevator, 🏕️ hiding places from the campsite
+export const minStayOf = loc => MIN_STAY[loc?.id] ?? loc?.minStay ?? 0;
+const stayBase = (loc, t) => (loc?.sub === "elevator" ? t.elevIn : loc?.sub === "campsite" ? t.camp?.campIn : null) ?? t.locIn ?? t.remaining;
+export const stayLockLeft = (loc, t) => { const m = minStayOf(loc); if (!m || !((t?.remaining ?? 0) > 0)) return 0; return Math.max(0, m - (stayBase(loc, t) - t.remaining)); };
 // ⛓️ kidnap room: locked for its first 3 minutes and until the escape was tried
-export const endLocked = (loc, t) => loc?.kidnap ? (kidnapLockLeft(t) > 0 && (t?.remaining ?? 0) > 0) || !t?.escapeTried : (!!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) || stayLockLeft(loc, t) > 0;
-export const endLockText = (loc, t) => !loc?.kidnap ? (stayLockLeft(loc, t) > 0 && !(loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) ? `⏳ 이 맵에서는 들어온 뒤 최소 ${MIN_STAY[loc.id] / 60}분이 지나야 턴을 끝낼 수 있습니다 (${Math.ceil(stayLockLeft(loc, t))}초 남음)` : `🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`)
+// 🧩 extra locks from other modules: (loc, t) → a text while the end is locked (🏕️ Campsite: the Masked Killer needs 2 kills first)
+export const extraLocks = [];
+const extraLock = (loc, t) => { for (const f of extraLocks) { const r = f(loc, t); if (r) return r; } return null; };
+export const endLocked = (loc, t) => loc?.kidnap ? (kidnapLockLeft(t) > 0 && (t?.remaining ?? 0) > 0) || !t?.escapeTried : (!!loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) || stayLockLeft(loc, t) > 0 || !!extraLock(loc, t);
+export const endLockText = (loc, t) => !loc?.kidnap ? (!(stayLockLeft(loc, t) > 0) && !(loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) && extraLock(loc, t) ? extraLock(loc, t) : stayLockLeft(loc, t) > 0 && !(loc?.endLock && (t?.remaining ?? 0) > END_LOCK_LEFT) ? `⏳ 이 맵에서는 들어온 뒤 최소 ${minStayOf(loc) / 60}분이 지나야 턴을 끝낼 수 있습니다 (${Math.ceil(stayLockLeft(loc, t))}초 남음)` : `🔒 이 맵에서는 남은 시간이 ${END_LOCK_LEFT / 60}분 이하일 때만 턴을 끝낼 수 있습니다`)
     : !t?.escapeTried ? "⛓️ 탈출을 반드시 시도해야 턴을 끝낼 수 있습니다" : `⛓️ 납치 공간에서는 3분 동안 턴을 끝낼 수 없습니다 (${Math.ceil(kidnapLockLeft(t))}초 남음)`;
 
 // ---------------------------------------------------------------- 📣 홍보하기 · 인기 투표 (persistent, Store.community.promo)

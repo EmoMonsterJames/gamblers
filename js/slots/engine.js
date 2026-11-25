@@ -1144,6 +1144,10 @@ export function spinWithLuck(cfg, ctx) {
     // a bonus that came from the pet-raised probability (boost = 1 + luck.bonus):
     // the pet's share of it is luck.bonus / (1 + luck.bonus) — label only, no payout change
     if (!r.lucky && r.bonus && luck.bonus > 0 && rand() < luck.bonus / (1 + luck.bonus)) r.lucky = "bonus";
+    // 🪆 Evil Doll curse: a win / bonus is taken back (re-rolled into a dead spin) — luck.curse of the time
+    if (luck.curse > 0 && (r.total > 0 || r.bonus) && rand() < luck.curse) {
+        for (let k = 0; k < 60; k++) { const r2 = spin(cfg, { ...ctx, luck: {} }); if (!r2.total && !r2.bonus) { r = r2; r.cursed = true; break; } }
+    }
     return r;
 }
 
