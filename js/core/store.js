@@ -73,7 +73,7 @@ export const PLAYER_EXTRAS = {
 };
 // 🚫 "No Image" (admin → 플레이어 관리) wins over the hand-drawn pictures too
 // 📦 ordered pictures that have been delivered: these players were saved as "No Image" while waiting, their art wins now
-const ART_DELIVERED = new Set([440, 441, 442, 443, 444, 445, 446, 447, 448, 450, 451, 452, 453, 454]);
+const ART_DELIVERED = new Set([440, 441, 442, 443, 444, 445, 446, 447, 448, 450, 451, 452, 453, 454, 498, 512]);
 const playerImage = p => isNoImage(p.profile_image) && !ART_DELIVERED.has(p.id) ? p.profile_image : ART_DELIVERED.has(p.id) && isNoImage(p.profile_image) ? PLAYER_ART[p.id] : PLAYER_ART[p.id] && (!p.profile_image || String(p.profile_image).startsWith("data:")) ? PLAYER_ART[p.id] : freshAvatar(p.profile_image, p.ethnicity, { ...(PLAYER_EXTRAS[p.id] || {}), baby: String(p.age_group || "").trim().toLowerCase() === "baby" }); // 👶 Baby players are drawn smaller
 
 const LS = "gamblers.v1";
