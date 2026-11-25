@@ -417,7 +417,7 @@ export const NEW_MAPS = [
       slots: [sl("Glitch Matrix", "BLK", "pearl", "💻 🧬 📡", "💾 🔌", "👾", "🛰️", "#083344", "#020617", "#22d3ee")],
       casinos: [cg("hilo", "Binary Hi-Lo", "💻", "0과 1의 하이로우! 맞히면 x1.9"), cg("plinko", "Packet Plinko", "📡", "데이터 패킷 플링코! 양 끝 x25")] },
     // 🛗 Elevator: at most 6 trapped players · everybody starts on 1F · floors are their own rooms (sub maps elev_*)
-    { id: "elevator", v2: true, region: "difficult", name: "Elevator", emoji: "🛗", color: "#a8a29e", x: 50, y: 48, shops: [], npc: "never", elevator: true, noPass: true, food: [], lodge: [],
+    { id: "elevator", v2: true, region: "difficult", name: "Elevator", emoji: "🛗", color: "#a8a29e", x: 50, y: 48, shops: [], npc: "never", elevator: true, food: [], lodge: [],
       slots: [], casinos: [] },
 
     // =========================================================== 🔄 Survival Land (패자부활전 only — see game/revival.js)
@@ -468,13 +468,13 @@ export const NEW_MAPS = [
 
     // =========================================================== ✈️ Airport (game/travel.js — open until the plane leaves, once per season)
     //   every gate: 🎫 ticket counter · 📋 accident reports (+ gate 1/2: 🛎️ airport service · gate 3: 🛋️ lounge)
-    { id: "gate1", region: "airport", name: "Airport Gate 1", emoji: "🛫", color: "#0ea5e9", x: 22, y: 44, shops: ["general"], gate: 1, noPass: true, food: [{ k: "marshall" }, { k: "carrot_rest" }], lodge: [],
+    { id: "gate1", region: "airport", name: "Airport Gate 1", emoji: "🛫", color: "#0ea5e9", x: 22, y: 44, shops: ["general"], gate: 1, noPass: true, npcList: ["beggar", "granny", "peddler"], food: [{ k: "marshall" }, { k: "carrot_rest" }], lodge: [],
       slots: [sl("Jet Set Jackpot", "CLOUD GAMING", "pearl", "✈️ 🧳 🛂", "🎫 🗺️", "🌍", "🛫", "#0c4a6e", "#020617", "#38bdf8")],
       casinos: [cg("coinflip", "Boarding Flip", "🎫", "탑승권 동전 던지기! x1.9")] },
-    { id: "gate2", region: "airport", name: "Airport Gate 2", emoji: "🛬", color: "#38bdf8", x: 50, y: 28, shops: ["general"], gate: 2, noPass: true, food: [{ k: "mini_deli" }], lodge: [],
+    { id: "gate2", region: "airport", name: "Airport Gate 2", emoji: "🛬", color: "#38bdf8", x: 50, y: 28, shops: ["general"], gate: 2, noPass: true, npcList: ["beggar", "granny", "peddler"], food: [{ k: "mini_deli" }], lodge: [],
       slots: [sl("Duty Free Fortune", "HYHG GAMING", "rabbit", "🛍️ 💼 🕶️", "🎫 🧳", "💎", "🛬", "#075985", "#020617", "#7dd3fc")],
       casinos: [cg("dice", "Baggage Dice", "🧳", "수하물 주사위! 6-6 이면 x30")] },
-    { id: "gate3", region: "airport", name: "Airport Gate 3", emoji: "🛩️", color: "#0284c7", x: 78, y: 44, shops: ["general"], gate: 3, noPass: true, food: [], lodge: [],
+    { id: "gate3", region: "airport", name: "Airport Gate 3", emoji: "🛩️", color: "#0284c7", x: 78, y: 44, shops: ["general"], gate: 3, noPass: true, npcList: ["beggar", "granny", "peddler"], food: [], lodge: [],
       slots: [sl("Runway Riches", "IPEX", "dragon", "🛩️ 🗼 🧭", "🎫 ☁️", "🌐", "👁️", "#0c4a6e", "#030712", "#0ea5e9")],
       casinos: [cg("pick", "Lost & Found", "🧳", "가방 4개 중 내 가방은?", { n: 4, closed: "🧳", prize: "💰", miss: "🧦" })] },
 
@@ -484,17 +484,17 @@ export const NEW_MAPS = [
       slots: [sl("Sky High Jet", "AIRWAY GAMING", "pearl", "✈️ 🌤️ 🧳", "🥤 🎧", "👨‍✈️", "🛫", "#0369a1", "#020617", "#7dd3fc")],
       casinos: [cg("wheel", "Turbulence Wheel", "🌀", "난기류 휠! 최대 x30")] },
     // 🛗 the elevator floors (floor 11 = 옥상)
-    { id: "elev_1", region: "sub", sub: "elevator", minStay: 120, floor: 1, name: "엘리베이터 1층", emoji: "1️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, community: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_2", region: "sub", sub: "elevator", minStay: 120, floor: 2, name: "엘리베이터 2층", emoji: "2️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["beggar", "granny"], indoor: true, noPass: true, beg: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_3", region: "sub", sub: "elevator", minStay: 120, floor: 3, name: "엘리베이터 3층", emoji: "3️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, elevShop: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_4", region: "sub", sub: "elevator", minStay: 120, floor: 4, name: "엘리베이터 4층", emoji: "4️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai"], indoor: true, noPass: true, elevWeapons: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_5", region: "sub", sub: "elevator", minStay: 120, floor: 5, name: "엘리베이터 5층", emoji: "5️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, food: [{ k: "mini_deli" }, { k: "ddeogwi_rest" }], lodge: [], slots: [], casinos: [] },
-    { id: "elev_6", region: "sub", sub: "elevator", minStay: 120, floor: 6, name: "엘리베이터 6층", emoji: "6️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["wizard"], indoor: true, noPass: true, elevPassShop: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_7", region: "sub", sub: "elevator", minStay: 120, floor: 7, name: "엘리베이터 7층 (출구)", emoji: "7️⃣", color: "#22c55e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, elevExit: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_8", region: "sub", sub: "elevator", minStay: 120, floor: 8, name: "엘리베이터 8층", emoji: "8️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, capture: true, elevFinds: 3, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_9", region: "sub", sub: "elevator", minStay: 120, floor: 9, name: "엘리베이터 9층 (침수)", emoji: "9️⃣", color: "#0ea5e9", x: 50, y: 50, shops: [], npc: "always", npcList: ["croc"], indoor: true, noPass: true, flooded: true, food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_10", region: "sub", sub: "elevator", minStay: 120, floor: 10, name: "엘리베이터 10층", emoji: "🔟", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, noPass: true, bank: true, earn: ["blood", "labor", "poop", "sell", "music", "survival", "guess"], food: [], lodge: [], slots: [], casinos: [] },
-    { id: "elev_roof", region: "sub", sub: "elevator", minStay: 120, floor: 11, name: "엘리베이터 옥상", emoji: "🏙️", color: "#64748b", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai", "beggar", "granny"], noPass: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_1", region: "sub", sub: "elevator", minStay: 120, floor: 1, name: "엘리베이터 1층", emoji: "1️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, community: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_2", region: "sub", sub: "elevator", minStay: 120, floor: 2, name: "엘리베이터 2층", emoji: "2️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["beggar", "granny"], indoor: true, beg: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_3", region: "sub", sub: "elevator", minStay: 120, floor: 3, name: "엘리베이터 3층", emoji: "3️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, elevShop: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_4", region: "sub", sub: "elevator", minStay: 120, floor: 4, name: "엘리베이터 4층", emoji: "4️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai"], indoor: true, elevWeapons: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_5", region: "sub", sub: "elevator", minStay: 120, floor: 5, name: "엘리베이터 5층", emoji: "5️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, food: [{ k: "mini_deli" }, { k: "ddeogwi_rest" }], lodge: [], slots: [], casinos: [] },
+    { id: "elev_6", region: "sub", sub: "elevator", minStay: 120, floor: 6, name: "엘리베이터 6층", emoji: "6️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "always", npcList: ["wizard"], indoor: true, elevPassShop: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_7", region: "sub", sub: "elevator", minStay: 120, floor: 7, name: "엘리베이터 7층 (출구)", emoji: "7️⃣", color: "#22c55e", x: 50, y: 50, shops: [], npc: "never", indoor: true, elevExit: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_8", region: "sub", sub: "elevator", minStay: 120, floor: 8, name: "엘리베이터 8층", emoji: "8️⃣", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, capture: true, elevFinds: 3, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_9", region: "sub", sub: "elevator", minStay: 120, floor: 9, name: "엘리베이터 9층 (침수)", emoji: "9️⃣", color: "#0ea5e9", x: 50, y: 50, shops: [], npc: "always", npcList: ["croc"], indoor: true, flooded: true, food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_10", region: "sub", sub: "elevator", minStay: 120, floor: 10, name: "엘리베이터 10층", emoji: "🔟", color: "#a8a29e", x: 50, y: 50, shops: [], npc: "never", indoor: true, bank: true, earn: ["blood", "labor", "poop", "sell", "music", "survival", "guess"], food: [], lodge: [], slots: [], casinos: [] },
+    { id: "elev_roof", region: "sub", sub: "elevator", minStay: 120, floor: 11, name: "엘리베이터 옥상", emoji: "🏙️", color: "#64748b", x: 50, y: 50, shops: [], npc: "always", npcList: ["samurai", "beggar", "granny"], randGames: 2, food: [], lodge: [], slots: [], casinos: [] },
     // 🏕️ the Campsite hiding places (game/travel.js CAMP_SPOTS: the Masked Killer's chance to find whoever hides there)
     { id: "camp_trash", region: "sub", sub: "campsite", minStay: 300, spot: "trash", name: "쓰레기통", emoji: "🗑️", color: "#4d7c0f", x: 50, y: 50, shops: [], npc: "always", npcList: ["fly"], indoor: true, noPass: true, beg: true, randGames: 2, food: [{ k: "ddong_mart" }], lodge: [], slots: [], casinos: [] },
     { id: "camp_house", region: "sub", sub: "campsite", minStay: 300, spot: "house", name: "빈집", emoji: "🏚️", color: "#57534e", x: 50, y: 50, shops: [], npc: "always", npcList: ["granny"], indoor: true, noPass: true, highlight: true, community: true, randGames: 2, food: [], lodge: [], slots: [], casinos: [] },

@@ -196,7 +196,9 @@ export const DEFAULTS = {
     // 👶 baby (age group Baby): the whole figure drawn smaller · 🧔 human men: beard / mustache · 😊 Smile: 가닥털 (2~3 hair strands)
     baby: false, beard: -1, mustache: -1, beardColor: "", smileHair: -1, smileHairN: 3, smileHairColor: "#1c1a1e",
     // 😀 expression (20 · ui/avatarExtra.js EXPRESSIONS, −1 = random by seed) · 👙 season "swim" = swimwear / lingerie
-    expr: -1
+    expr: -1,
+    // 🏋️ 체형 (body type): "" 일반 · skinny 스키니 · chubby · fat 과체중 · muscle 근육질
+    bt: ""
 };
 // 🚫 No Image: a plain placeholder (still carries its options so the generator can reopen it)
 export function noImageSvg(meta = "") {
@@ -487,7 +489,11 @@ export function buildAvatar(opts = {}) {
     const body = humanoid ? null : prodP ? AR.PRODUCE_BODY[prodP.shape] || AR.PRODUCE_BODY.round : shapeBody(race.id);
     const headY = race.id === "giraffe" ? 58 : 74; // 🦒 long neck: the head sits higher
     const ff = humanoid ? [128, headY, 1] : body.ff, hf = humanoid ? [128, headY, 1] : body.hf;
-    const grp = (fr, inner) => inner ? `<g transform="translate(${fr[0]} ${fr[1]}) scale(${fr[2]})">${inner}</g>` : "";
+    // 🏋️ body type: [body width, face width, arm, leg] (shape races: the whole figure is widened / narrowed)
+    const BT = { skinny: [.68, .87, 6, 8], chubby: [1.18, 1.1, 13, 14], fat: [1.42, 1.22, 15, 16], muscle: [1.26, 1.02, 16, 15] }[o.bt] || null;
+    const FX = humanoid && BT ? BT[1] : 1;
+    if (!humanoid && BT) out.push(`<g transform="translate(128 0) scale(${{ skinny: .74, chubby: 1.12, fat: 1.28, muscle: 1.14 }[o.bt]} 1) translate(-128 0)">`);
+    const grp = (fr, inner) => inner ? `<g transform="translate(${fr[0]} ${fr[1]}) scale(${+(fr[2] * FX).toFixed(3)} ${fr[2]})">${inner}</g>` : "";
 
     // ---- head gear pieces (computed first; drawn in layers)
     K = 1 / hf[2];
@@ -553,12 +559,13 @@ export function buildAvatar(opts = {}) {
         // 🐑 curly fur: arms, legs, neck and hands get the wavy edge + curl texture too
         const limb = (d, w) => fur ? `<path d="${d}" fill="none" stroke="${line}" stroke-width="${w + 9}" stroke-dasharray="0 6.5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${limbC}" stroke-width="${w + 5}" stroke-dasharray="0 6.5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${limbC}" stroke-width="${w + 2}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="url(#fzp)" stroke-width="${w + 2}" stroke-linecap="round"/>` : limb0(d, w);
         const blob = shape => fur ? woolEdge(shape.replace("FILL", "WOOL"), limbC, line, 3, 6) : blob0(shape);
-        const armW = swim ? swimArm(swim) : 10;
+        const armW = swim ? swimArm(swim) + (BT ? BT[2] - 10 : 0) : BT ? BT[2] : 10;
         const T = fit.top, B = fit.bot, tc = fit.tc, bc = fit.bc, tcd = shade(tc, lum(tc) < 0.25 ? 0.3 : -0.25), bcd = shade(bc, lum(bc) < 0.25 ? 0.3 : -0.25);
         const dR = vary.pose === 1 ? ARM_H.RW : ARM_H.R, dL = ARM_H.L;
         const handR = vary.pose === 1 ? [191, 89] : [174, 174];
         // legs + shoes
-        out.push(limb("M116 176L114 226", 12) + limb("M140 176L142 226", 12));
+        if (BT && !inv) out.push(`<g transform="translate(128 0) scale(${BT[0]} 1) translate(-128 0)">`);
+        out.push(limb("M116 176L114 226", BT ? BT[3] : 12) + limb("M140 176L142 226", BT ? BT[3] : 12));
         const shoe = SHOES[season] || SHOES.spring;
         out.push(season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
             : season === "summer" ? `<ellipse cx="110" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><ellipse cx="146" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><path d="M104 231l10 -6M152 231l-10 -6" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`
@@ -588,7 +595,7 @@ export function buildAvatar(opts = {}) {
             out.push([wing, mx(wing)].map(d => `<path d="${d}" fill="${skinG}" ${S(3.5, line)}/>`).join("") + [-1, 1].map(s => `<path d="M${128 + s * 30} 140Q${128 + s * 46} 156 ${128 + s * 56} 176M${128 + s * 26} 154Q${128 + s * 38} 168 ${128 + s * 44} 184" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.25)}" stroke-width="2" stroke-linecap="round"/>`).join(""));
         } else out.push(limb(dL, armW) + limb(dR, armW));
         const slc = T.slc ? "#f7f7f5" : tc;
-        const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${T.puff ? 22 : 19}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${T.puff ? 17 : 14}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
+        const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
         if (race.id !== "bird") out.push(sleeve(dL) + sleeve(dR));
         // neck + torso (🦒 giraffe: a long spotted neck)
         if (race.id === "giraffe") out.push(blob(`<rect x="117" y="${headY + 22}" width="22" height="${122 - headY - 22}" rx="6" FILL/>`) + [[123, headY + 34], [133, headY + 46], [122, headY + 56]].map(([x, y]) => `<path d="M${x} ${y}m-4 0l4 -4l4 4l-4 4Z" fill="#c07a2a"/>`).join(""));
@@ -627,6 +634,21 @@ export function buildAvatar(opts = {}) {
         // 🦂 scorpion: pincers on both hands
         if (bugP?.arms === "claws") out.push([[82, 174], handR].map(([x, y]) => `<path d="M${x - 2} ${y + 4}C${x - 16} ${y - 2} ${x - 12} ${y - 20} ${x} ${y - 18}L${x - 2} ${y - 10}C${x - 6} ${y - 10} ${x - 6} ${y - 2} ${x} ${y}ZM${x + 2} ${y + 4}C${x + 16} ${y - 2} ${x + 12} ${y - 20} ${x + 2} ${y - 18}L${x + 3} ${y - 10}C${x + 7} ${y - 8} ${x + 6} ${y - 2} ${x + 1} ${y}Z" fill="${skinG}" ${S(3, line)}/>`).join(""));
         if (o.leprosy) out.push(spots(R, [[82, 174, 5], [handR[0], handR[1], 5], [114, 208, 5], [142, 212, 5]], 1));
+        // 🏋️ body type: belly / muscles drawn on the torso, then the whole body squeezed or widened around the centre line
+        if (BT && !inv) {
+            const sk = rainbow ? OUT : shade(skin, -0.3), on = swim ? sk : tcd;
+            if (o.bt === "fat" || o.bt === "chubby") {
+                const big = o.bt === "fat";
+                out.push(`<path d="M${big ? 100 : 106} ${big ? 150 : 156}Q128 ${big ? 186 : 176} ${big ? 156 : 150} ${big ? 150 : 156}" fill="none" stroke="${on}" stroke-width="2.4" stroke-linecap="round"/>` +
+                    (big ? `<path d="M99 134Q106 140 102 146M157 134Q150 140 154 146" fill="none" stroke="${on}" stroke-width="2" stroke-linecap="round"/><circle cx="128" cy="166" r="1.8" fill="${on}"/>` : ""));
+            }
+            if (o.bt === "muscle") out.push(`<path d="M106 136Q117 144 127 136M129 136Q139 144 150 136M128 128V164" fill="none" stroke="${on}" stroke-width="2.2" stroke-linecap="round"/>` +
+                [148, 156].map(y => `<path d="M118 ${y}H126M130 ${y}H138" stroke="${on}" stroke-width="2" stroke-linecap="round"/>`).join("") +
+                `<path d="M89 140q-6 8 -2 16M167 140q6 8 2 16" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.28)}" stroke-width="2" stroke-linecap="round"/>`);
+            if (o.bt === "skinny") out.push(`<path d="M114 128q14 4 28 0M116 136q12 3 24 0" fill="none" stroke="${on}" stroke-width="1.4" stroke-linecap="round" opacity=".7"/>`);
+            out.push("</g>");
+            wrist = [f1(128 + (wrist[0] - 128) * BT[0]), wrist[1]];
+        }
         neckAt = T.neck === "turtle" && !T.open ? null : [128, 118];
     } else {
         // ---- shape body: the body is the head; arms / legs are stuck on
@@ -799,6 +821,15 @@ export function buildAvatar(opts = {}) {
     if (XP?.extra) feat.push(XP.extra); // 💧 tears · sweat · 💢 · zz · ✨ …
     if (o.leprosy) feat.push(spots(R, [[-20, -18, 8], [14, -24, 7], [24, 2, 7], [-26, 6, 6], [-8, 24, 6], [12, 22, 7], [2, -6, 5], [-30, -6, 4], [30, -14, 4]], K));
     face.push(`<g${fo}>${feat.join("")}</g>`);
+    // 🏋️ body type on the face: puffy cheeks + double chin (chubby / fat) · hollow cheeks (skinny) · square jaw (muscle)
+    if (humanoid && BT && !inv && race.id !== "cloud") {
+        const fs = rainbow ? OUT : shade(skin, -0.22);
+        if (o.bt === "chubby" || o.bt === "fat") face.push(`<ellipse cx="-25" cy="15" rx="9" ry="6" fill="#ff8a8a" opacity=".22"/><ellipse cx="25" cy="15" rx="9" ry="6" fill="#ff8a8a" opacity=".22"/>` +
+            `<path d="M-15 ${o.bt === "fat" ? 37 : 36}Q0 ${o.bt === "fat" ? 47 : 42} 15 ${o.bt === "fat" ? 37 : 36}" fill="none" stroke="${fs}" stroke-width="2.4" stroke-linecap="round"/>` +
+            (o.bt === "fat" ? `<path d="M-33 20q4 10 12 14M33 20q-4 10 -12 14" fill="none" stroke="${fs}" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>` : ""));
+        if (o.bt === "skinny") face.push(`<path d="M-27 4Q-23 16 -17 22M27 4Q23 16 17 22" fill="none" stroke="${fs}" stroke-width="2" stroke-linecap="round" opacity=".75"/><path d="M-22 -2q6 3 11 0M11 -2q6 3 11 0" fill="none" stroke="${fs}" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>`);
+        if (o.bt === "muscle") face.push(`<path d="M-30 18L-20 32M30 18L20 32" fill="none" stroke="${fs}" stroke-width="2" stroke-linecap="round" opacity=".6"/>`);
+    }
     out.push(grp(ff, face.join("")));
     K = 1 / hf[2];
     out.push(grp(hf, (hatSpec ? `<clipPath id="hc"><path d="M-80 -19H80V80H-80Z"/></clipPath>` : "") + hp.front));
@@ -828,7 +859,7 @@ export function buildAvatar(opts = {}) {
     // 🎀 Ms. Pacman: a big bow on the head and a beauty mark
     if (body?.pac && female) out.push(`<g transform="translate(118 50) scale(1.3)"><path d="M0 0L-24 -14L-24 14Z M0 0L24 -14L24 14Z" fill="#ff4f7a" ${S(3)}/><circle r="6" fill="#cc3f61" ${S(3)}/></g><circle cx="148" cy="138" r="3" fill="#2a1a1e"/>`);
     K = 1;
-    if (humanoid) out.push("</g>");
+    if (humanoid || BT) out.push("</g>");
     out.push(extrasFront(o)); // LUX logo on the clothes · cheek fluff
     if (o.baby) out.push("</g>");
     if (typedLabel) out.push(`<text x="128" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#00000055">${esc(String(typedLabel).slice(0, 20))}</text>`);

@@ -12,6 +12,7 @@ import * as G from "./season.js";
 import { weatherAt } from "./life.js";
 import { ownsTypes } from "./extra.js";
 import { mapNo } from "../data/mapAdmin.js";
+import { hasPassport } from "./passport.js";
 
 const S = () => Store.season;
 const ps_ = pid => S()?.ps?.[pid];
@@ -27,7 +28,7 @@ const payGold = (ps, g) => { const fromLoan = Math.min(ps.loanGold || 0, g); ps.
 export const GATES = ["gate1", "gate2", "gate3"];
 export const PAX_MAX = 6;            // the plane leaves with 6 passengers
 export const FILL_ROUNDS = 3;        // … gathered within the first 3 rounds (players are placed at the gates)
-export const VIP_FEE = 12000, CHANGE_FEE = 10000, UPGRADE_FEE = 12000; // 👑 VIP: Gate 3 asks at the ticket counter · Gates 1·2 only through 🛎️ 공항 서비스
+export const VIP_FEE = 12000, CHANGE_FEE = 10000, UPGRADE_FEE = 12000; // 👑 VIP 1등석: every gate, only through 🛎️ 공항 서비스 (seat upgrade)
 export const PLANE_SECONDS = 300, PLANE_MIN_STAY = 120;
 const P = { k: "plane" }, stop = loc => ({ k: "stop", loc }), dest = loc => ({ k: "dest", loc });
 // a ticket: price (G) or pts (P) · legs: what each of the passenger's next turns is · free: the gate's default (no VIP)
@@ -146,6 +147,7 @@ export function airRoundStart(s) {
 // ---- tickets
 export function canBuyTicket(pid, t) {
     const ps = ps_(pid), c = ticketPrice(t);
+    if (!hasPassport(pid)) return { ok: false, why: "🛂 여권이 없습니다 — 🛎️ 공항 서비스에서 여권부터 발급받으세요 (무료)", passport: true };
     if (air()?.tickets?.[pid]) return { ok: false, why: "이미 티켓을 구입했습니다 (변경은 🛎️ 공항 서비스)" };
     if (c.pts && ps.points < c.pts) return { ok: false, why: `포인트 부족 (${c.pts}P)` };
     if (c.gold && wallet(ps) < c.gold) return { ok: false, why: `골드 부족 (${c.gold.toLocaleString()}G)` };

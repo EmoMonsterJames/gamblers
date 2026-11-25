@@ -20,6 +20,12 @@ import { SPECIAL_BY_ID, makeTags } from "./specialSeason.js";
 export const locationHooks = [], jobHooks = [], playHooks = [];
 // 2026-11 (game/travel.js): startHooks(pid, turn) → true when it placed the player (✈️ trip / 🛫 gate / 🛗 elevator) · enterChecks(pid, loc) → { ok:false, why } to refuse a map
 export const startHooks = [], enterChecks = [];
+// 🛂 game/passport.js: passChecks(pid, loc) → "why" when a map pass may not be used there (visa) · passUseHooks(pid, loc) when a pass is used up for that map
+export const passChecks = [], passUseHooks = [];
+const passWhy = (pid, loc) => { for (const f of passChecks) { try { const w = f(pid, loc); if (w) return w; } catch (e) { console.error(e); } } return null; };
+const passUsed = (pid, loc) => runHooks(passUseHooks, pid, loc);
+// 🚫 map passes are never used FROM these maps: ✈️ the whole Airport (gates + the plane) · a map marked noPass · 🛗 the Elevator is open to them
+export const passLockedAt = locId => { const l = LOC_BY_ID[locId]; if (!l) return false; if (l.region === "airport" || l.sub === "airport") return true; if (l.elevator || l.sub === "elevator") return false; return !!l.noPass; };
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
 // 📣 game events other rules listen to (game/employ.js in-company missions): "capture" · "spell" · "help" · "turnEnd"
 export const eventHooks = [];
@@ -648,6 +654,7 @@ export const NPC_FAR_REGIONS = ["sky", "deepsea", "space"];
 export function npcMapChance(loc) {
     if (!loc || loc.npc === "never") return 0;
     if (loc.npc === "always") return 1;
+    if (loc.gate) return 0.4; // ✈️ Airport Gate 1~3: 40% · 거지 · 할머니 · 보따리상인만 (regions.js npcList)
     const far = NPC_FAR_REGIONS.includes(loc.region);
     return loc.npc ? (far ? 0.4 : 0.6) : (far ? 0.25 : 0.4);
 }
@@ -919,7 +926,7 @@ export function canEnter(pid, loc) {
     if (r.who) {
         if (whoOk(pid, r.who)) return { ok: true };
         const pass = passIdOf(loc);
-        if ((ps.items[pass] || 0) > 0) return { ok: true, pass };
+        if ((ps.items[pass] || 0) > 0) { const vz = passWhy(pid, loc); return vz ? { ok: false, why: vz } : { ok: true, pass }; }
         return { ok: false, why: `${WHO_TEXT[r.who] || r.who} 전용 (맵권으로 입장)` };
     }
     // 🌲 EmoMonster Forest: Bug / Grass monster owners walk in free
@@ -934,7 +941,7 @@ export function canEnter(pid, loc) {
     if (r.country) {
         if (p.country === r.country) return out;
         const pass = r.pass || passIdOf(loc);
-        if ((ps.items[pass] || 0) > 0) return { ...out, pass };
+        if ((ps.items[pass] || 0) > 0) { const vz = passWhy(pid, loc); return vz ? { ok: false, why: vz } : { ...out, pass }; }
         return { ok: false, why: `${r.country} 국적 전용` };
     }
     if (r.fee) {
@@ -963,10 +970,11 @@ export function passNeeds(pid, loc) {
     if (r.points != null && ps.points < r.points) missing.push(`포인트가 부족합니다 (${r.points}P 이상 필요) → 포인트부터 모으세요`);
     if (loc.needMon && !ownsMon(pid)) missing.push("이모몬스터가 없습니다 → EmoMon Capture에서 몬스터부터 잡으세요");
     if (loc.typeGate && !ownsTypes(pid, typeGateTypes())) missing.push(`이번 라운드 Type Casino는 ${typeGateTypes().join(" · ")} 속성 중 하나의 몬스터 보유자만 들어갈 수 있습니다`);
-    if (S().turn?.loc && LOC_BY_ID[S().turn.loc]?.noPass) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
+    if (S().turn?.loc && passLockedAt(S().turn.loc)) missing.push("🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다");
     if (RV.revivalTurns() && loc.region !== "survival") missing.push("🔄 패자부활전 중에는 Survival Land 맵으로만 이동할 수 있습니다");
     if (RV.survivalPassWait() > 0) missing.push(RV.survivalWaitText());
     for (const f of enterChecks) { const r = f(pid, loc); if (r && !r.ok) missing.push(r.why); }
+    { const vz = passWhy(pid, loc); if (vz) missing.push(vz); } // 🛂 a closed map also needs its visa
     const fee = r.freeTypes && ownsTypes(pid, r.freeTypes) ? 0 : (r.fee || 0), feePts = r.feePts || 0;
     if (fee && playMoney(pid) < fee) missing.push(`골드가 부족합니다 (입장료 ${fee.toLocaleString()}G) → 골드부터 모으세요`);
     if (feePts && ps.points < feePts) missing.push(`포인트가 부족합니다 (입장료 ${feePts}P) → 포인트부터 모으세요`);
@@ -1048,7 +1056,7 @@ export function setLocation(locId, { teleport = false } = {}) {
     t.region ||= loc.region;
     if (!teleport) {
         const ce = canEnter(t.pid, loc);
-        if (ce.pass) { ps.items[ce.pass]--; log(`🎟️ ${name(t.pid)} 출입권 사용`); }
+        if (ce.pass) { ps.items[ce.pass]--; log(`🎟️ ${name(t.pid)} 출입권 사용`); passUsed(t.pid, loc); }
         if (ce.ok && !ce.short) payEntry(t.pid, { gear: ce.gear, fee: ce.fee, feePts: ce.feePts });
     }
     if (!(ps.visited ||= []).includes(locId)) ps.visited.push(locId);
@@ -1071,18 +1079,22 @@ export const passesOf = pid => Object.entries(S().ps[pid].items).filter(([k, n])
 export const DEAD_PASS_MIN = 480;
 export const deadPassBlocked = itemId => { const l = LOC_BY_ID[ITEM_BY_ID[itemId]?.loc]; return l?.region === "deadland" && (S()?.turn?.remaining ?? 0) < DEAD_PASS_MIN; };
 export const DEAD_PASS_TEXT = "☠️ Dead Land 지역 맵권은 플레이 시간이 8분 이상 남았을 때만 사용할 수 있습니다";
+// 🛗 a map pass used inside the Elevator: the player walks out of it (the seat may go to someone else next round)
+function leaveElevator(ps, pid) { if (!ps?.elev) return; ps.elev = null; log(`🛗 ${name(pid)} 맵권으로 엘리베이터 탈출!`); }
 export function usePassTeleport(itemId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     const it = ITEM_BY_ID[itemId];
     if (!it?.loc || !(ps.items[itemId] > 0)) return false;
     if (deadPassBlocked(itemId)) return false;
     if (RV.revivalPassBlock(itemId)) return false;
-    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return false;
+    if (t.loc && passLockedAt(t.loc)) return false;
     const need = passNeeds(t.pid, LOC_BY_ID[it.loc]);
     if (!need.ok) return false;
     ps.items[itemId]--;
     payEntry(t.pid, need);
     log(`🎟️ ${name(t.pid)} ${it.name} 사용 → 순간이동!`);
+    passUsed(t.pid, LOC_BY_ID[it.loc]);
+    leaveElevator(ps, t.pid);
     if (t.loc) { t.region = LOC_BY_ID[it.loc].region; t.npc = null; } // moving mid-turn: new region, the new map rolls its own NPC visits
     setLocation(it.loc, { teleport: true });
     return true;
@@ -1115,7 +1127,7 @@ export const randomFreePool = (pid, exclude = null) => randomMapPool(pid).filter
 export function drawRandomMap() {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     if (!(ps.items.map_random > 0)) return null;
-    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return null;
+    if (t.loc && passLockedAt(t.loc)) return null;
     const pool = randomMapPool(t.pid);
     if (!pool.length) return null;
     const loc = pool[Math.floor(Math.random() * pool.length)];
@@ -1129,12 +1141,14 @@ export function drawFreeRandomMap(exclude) {
 export function useRandomMap(locId) {
     const s = S(), t = s.turn, ps = s.ps[t.pid];
     if (!(ps.items.map_random > 0)) return null;
-    if (t.loc && LOC_BY_ID[t.loc]?.noPass) return null;
+    if (t.loc && passLockedAt(t.loc)) return null;
     const loc = locId ? LOC_BY_ID[locId] : drawRandomMap()?.loc;
     if (!loc || !randomMapPool(t.pid).some(l => l.id === loc.id)) return null;
     ps.items.map_random--;
     payEntry(t.pid, passNeeds(t.pid, loc));
     log(`🗺️ ${name(t.pid)} 랜덤 맵권 사용 → ${loc.name}!${identityLocked(loc) && !canEnter(t.pid, loc).ok ? " (전용 맵 입장)" : ""}`);
+    passUsed(t.pid, loc);
+    leaveElevator(ps, t.pid);
     t.region = loc.region; t.npc = null;
     setLocation(loc.id, { teleport: true });
     return loc;

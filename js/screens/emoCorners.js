@@ -18,6 +18,8 @@ import { monPic, typeChip, stars, itemIcon, partyPanel, monDetail, arena, arenaS
 import { E } from "../emomon/engine.js";
 import { priceLabel, canPay, pay } from "./shop.js";
 import { displayName } from "../ui/profile.js";
+import * as FT from "../game/fortune.js";
+import { tarotModal } from "./fortune.js";
 
 // every EmoMon view waits for the EmoMonster scripts + the synced catalog
 export async function emoBoot() {
@@ -62,6 +64,7 @@ export async function emoFight(pid, foe, { title, foeLabel, foeMon }) {
 
 // ================================================================ 🔍 CAPTURE
 export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = null } = {}) {
+    FT.setWild(pid, null); // a fresh Capture corner: no wild monster on screen yet
     return lazy(() => {
         const ps = G.S().ps[pid];
         const cfg = captureConfig(loc);
@@ -165,7 +168,11 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                 const full = M.mons(pid).length >= emoSlots(pid);
                 put(box.querySelector(".emo-balls"), ...(own.length ? own.map(b => h("button.emo-ball", { onclick: () => throwIt(b) }, itemIcon(b, 30), h("b", b.name), h("small", `×${M.bagN(pid, b.id)} · ${M.catchChance(wild.sid, b.id, wild)}%`))) : [h("p.notice.warn.small", "볼이 없습니다! 🛒 Monster Shop 코너가 있는 맵에서 볼을 사세요.")]),
                     full ? h("p.notice.warn.small", `몬스터가 이미 ${emoSlots(pid)}마리입니다 — 잡으면 몬스터 Release 권으로 1마리를 놓아 주어야 데려올 수 있습니다.`) : null);
-                put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"));
+                // 🃏 the wild monster is on screen with balls in the bag → the tarot can be asked about it (game/fortune.js)
+                FT.setWild(pid, wild, () => { const mine = EMO_ITEMS.filter(b => b.kind === "ball" && M.bagN(pid, b.id) > 0); return { balls: mine.reduce((a, b) => a + M.bagN(pid, b.id), 0), best: Math.max(0, ...mine.map(b => M.catchChance(wild.sid, b.id, wild))) }; });
+                const ps = G.S().ps[pid];
+                put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { FT.setWild(pid, null); toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"),
+                    ps?.items?.tarot_card > 0 && !FT.tarotUsed(pid) && own.length ? h("button.btn.ghost", { title: "이 이모몬스터를 잡을 수 있을지 타로카드로 물어봅니다", onclick: () => tarotModal(pid, onChange) }, "🃏 타로카드로 점치기") : null);
             };
             async function throwIt(b) {
                 const done = Activity.hold();
@@ -181,12 +188,13 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                 if (r.caught) {
                     Sound.fanfare(); confetti(60);
                     msg.textContent = `🎉 ${s.name} 포획 성공!`;
+                    FT.setWild(pid, null);
                     await keep(wild);
                     draw(); onChange();
                     return;
                 }
                 Sound.lose();
-                if (Math.random() < 0.3) { msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: () => { put(stage); draw(); } }, "확인")); return; }
+                if (Math.random() < 0.3) { FT.setWild(pid, null); msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: () => { put(stage); draw(); } }, "확인")); return; }
                 msg.textContent = `볼에서 빠져나왔다! 다시 던져 보세요.`;
                 balls();
             }

@@ -25,6 +25,9 @@ import { customNpc } from "./corners2.js";
 import { canPay, pay, priceLabel, checkGoods, giveGoods, art as shopArt, desc as shopDesc } from "./shop.js";
 import { pointManiaView } from "./pointMania.js";
 import { isSandbox, addTestBots } from "../game/sandbox.js";
+import { passportSection, visaShop } from "./passport.js";
+import { dollSvg, apparitionSvg, DOLL_KINDS } from "../ui/dollArt.js";
+import { hasPassport } from "../game/passport.js";
 
 TR.setIntimacyFn(SO.intimacy);
 const S = () => G.S();
@@ -56,7 +59,8 @@ export function tabs(loc, t, pid) {
     const out = [];
     if (loc.gate) {
         out.push(["x:ticket", "🎫 티켓 카운터"], ["x:reports", "📋 사고 접수"]);
-        if (loc.gate === 3) out.push(["x:lounge", "🛋️ 공항 라운지"]); else out.push(["x:service", "🛎️ 공항 서비스"]);
+        out.push(["x:service", "🛎️ 공항 서비스"]);
+        if (loc.gate === 3) out.push(["x:lounge", "🛋️ 공항 라운지"]);
     }
     if (loc.plane) { out.push(["x:planefood", "🥤 기내식"]); if (TR.isVip(pid)) out.push(["x:spa", "💆 VIP 스파"]); }
     if (isFloor(loc)) {
@@ -118,30 +122,34 @@ function ticketView(c) {
     const gate = loc.gate, wrap = h("div.sm-tickets");
     const render = () => {
         const mine = TR.ticketOf(pid);
-        // 👑 VIP: Gate 3 (no 🛎️ 공항 서비스) asks right after the purchase · Gates 1·2 only through 🛎️ 공항 서비스
-        const vipNote = gate === 3 ? `👑 Gate 3에는 공항 서비스가 없어서 티켓을 살 때 VIP 1등석 (+${fmt(TR.VIP_FEE)}G) 추가 여부를 물어봅니다 (무료 티켓 제외)` : `👑 VIP 1등석 업그레이드는 🛎️ 공항 서비스에서만 가능합니다 (${fmt(TR.UPGRADE_FEE)}G)`;
+        // 👑 VIP 1등석: every gate, only through 🛎️ 공항 서비스 (좌석 업그레이드) — the ticket counter sells economy seats
+        const vipNote = `👑 VIP 1등석 업그레이드는 🛎️ 공항 서비스에서만 가능합니다 (${fmt(TR.UPGRADE_FEE)}G)`;
+        const noPP = !hasPassport(pid);
         wrap.replaceChildren(
-            h("div.sm-gatehead", h("b", `🛫 Airport Gate ${gate} · 티켓 카운터`), h("small", `탑승객 ${TR.waitingList().length} / ${TR.PAX_MAX}명 대기 중 · 티켓은 1번만 구입 (변경은 🛎️ 공항 서비스 · Gate 1·2)`)),
+            h("div.sm-gatehead", h("b", `🛫 Airport Gate ${gate} · 티켓 카운터`), h("small", `탑승객 ${TR.waitingList().length} / ${TR.PAX_MAX}명 대기 중 · 티켓은 1번만 구입 (변경 · 좌석 업그레이드는 🛎️ 공항 서비스)`)),
+            !mine && noPP ? h("div.notice.warn.sm-ppwarn", h("b", "🛂 여권이 없습니다!"), " 티켓을 사려면 먼저 🛎️ 공항 서비스에서 여권을 발급받으세요 (무료). ",
+                h("button.btn.small.gold", { onclick: () => c.tabBody("x:service") }, "🛎️ 여권 발급하러 가기")) : null,
             mine ? h("div.sm-myticket", h("b", "🎫 내 티켓: "), TR.ticketLabel(mine.t), mine.vip ? h("span.sm-vipbadge", "👑 VIP") : null, " ", legIcons(mine.t.legs)) :
                 h("p.notice.warn", `⚠️ 티켓을 구입하지 않고 턴이 끝나면 무료 티켓 (${TR.ticketLabel(TR.defaultTicket(gate))})이 자동으로 적용됩니다.`),
             mine ? null : h("p.muted.sm-vipnote", vipNote),
             h("div.sm-ticket-list", TR.TICKETS[gate].map(tk => {
                 const cost = TR.ticketPrice(tk);
-                const ok = !mine && TR.canBuyTicket(pid, tk).ok;
+                const ok = !mine && (TR.canBuyTicket(pid, tk).ok || noPP); // no passport: the button still answers (→ 여권부터)
                 return h("div.sm-ticket" + (tk.free ? ".free" : "") + (mine?.id === tk.id ? ".mine" : ""),
                     h("div.sm-t-to", LOC_BY_ID[tk.to]?.emoji || "📍", " ", h("b", LOC_BY_ID[tk.to]?.name || tk.to), h("small.sm-kind", TR.ticketKind(tk))),
                     tk.via ? h("small", `경유: ${TR.locName(tk.via)}`) : null,
                     h("div.sm-t-legs", legIcons(tk.legs), h("small", ` 비행 ${tk.legs.filter(l => l.k === "plane").length}라운드`)),
                     h("div.sm-t-price", tk.free ? "무료 (기본 티켓)" : cost.pts ? `${cost.pts} P` : `${fmt(cost.gold)} G`),
                     h("button.btn.small" + (ok ? ".gold" : ".ghost"), { disabled: !ok, onclick: async () => {
-                        if (!(await confirmBox(`🎫 ${TR.ticketLabel(tk)}\n${TR.legsText(tk.legs)}\n가격: ${cost.pts ? `${cost.pts}P` : `${fmt(cost.gold)}G`}\n구입할까요? (1번만 구입 가능)`, "구입", "취소"))) return;
-                        let v = false;
-                        if (gate === 3 && !tk.free) {
-                            v = await confirmBox(`👑 VIP 1등석으로 하시겠어요?\n+${fmt(TR.VIP_FEE)}G 추가 (Gate 3에는 공항 서비스가 없어서 지금만 선택할 수 있습니다)\n\nVIP: 기내 모든 게임 · VIP 기내식 · 💆 VIP 스파`, `👑 VIP 추가 (+${fmt(TR.VIP_FEE)}G)`, "💺 이코노미로 구입");
-                            if (v && wallet(ps) < cost.gold + TR.VIP_FEE) { toast("VIP 요금까지 낼 골드가 부족해서 이코노미로 구입합니다", "warn"); v = false; }
+                        // 🛂 every ticket buyer is checked for a passport first
+                        if (!hasPassport(pid)) {
+                            Sound.lose();
+                            if (await confirmBox("🛂 여권이 없습니다!\n티켓을 사려면 먼저 여권을 발급받아야 합니다.\n🛎️ 공항 서비스에서 무료로 발급받을 수 있습니다.", "🛎️ 여권 발급하러 가기", "닫기")) c.tabBody("x:service");
+                            return;
                         }
-                        if (!TR.buyTicket(pid, tk.id, v)) return toast(TR.canBuyTicket(pid, tk).why || "구입할 수 없습니다", "warn");
-                        Sound.cash(); toast(`🎫 티켓 구입 완료!${v ? " 👑 VIP 1등석" : ""}`, "ok"); c.refresh(); render();
+                        if (!(await confirmBox(`🎫 ${TR.ticketLabel(tk)}\n${TR.legsText(tk.legs)}\n가격: ${cost.pts ? `${cost.pts}P` : `${fmt(cost.gold)}G`}\n구입할까요? (1번만 구입 가능 · 👑 VIP 좌석 업그레이드는 🛎️ 공항 서비스)`, "구입", "취소"))) return;
+                        if (!TR.buyTicket(pid, tk.id, false)) return toast(TR.canBuyTicket(pid, tk).why || "구입할 수 없습니다", "warn");
+                        Sound.cash(); toast("🎫 티켓 구입 완료!", "ok"); c.refresh(); render();
                     } }, mine?.id === tk.id ? "보유" : "구입"));
             })));
     };
@@ -171,8 +179,12 @@ function serviceView(c) {
     const { pid, loc } = c, wrap = h("div.sm-service");
     const render = () => {
         const mine = TR.ticketOf(pid);
-        if (!mine) { wrap.replaceChildren(h("p.notice", "🛎️ 먼저 🎫 티켓 카운터에서 티켓을 구입하세요.")); return; }
+        const onCh = () => { c.refresh(); render(); };
+        // 🛂 여권 발급 + 🏆 모든 맵 방문 보상 · 🛂 비자 센터 — always open; 🔁 ticket change / 👑 seat upgrade need a ticket
+        const pass = [h("div.sm-gatehead", h("b", `🛎️ 공항 서비스 · Gate ${loc.gate}`), h("small", "여권 · 비자 · 티켓 변경 · 좌석 업그레이드")), passportSection(pid, onCh), visaShop(pid, onCh)];
+        if (!mine) { wrap.replaceChildren(...pass, h("h4", "🎫 티켓 변경 · 👑 좌석 업그레이드"), h("p.notice", "🛎️ 먼저 🎫 티켓 카운터에서 티켓을 구입하세요.")); return; }
         wrap.replaceChildren(
+            ...pass,
             h("div.sm-myticket", h("b", "🎫 내 티켓: "), TR.ticketLabel(mine.t), mine.vip ? h("span.sm-vipbadge", "👑 VIP") : null),
             h("h4", `🔁 티켓 변경 (변경료 ${fmt(TR.CHANGE_FEE)}G + 새 티켓 가격 · 기존 티켓 환불 없음)`),
             h("div.sm-ticket-list.compact", TR.TICKETS[loc.gate].filter(tk => tk.id !== mine.id).map(tk => {
@@ -1043,17 +1055,40 @@ export function fx(loc, t, pid, c) {
         if (rnd() < 1 / 30) laugh();
         if (rnd() < 1 / 35) ghostDolls();
         if (rnd() < 1 / 70) blackout();
+        // 👻 the apparition: at most once a minute (and not in the first 30s)
+        if (sec > 30 && sec - lastApp > 60 && rnd() < 1 / 75) { lastApp = sec; apparition(); }
         // the box grows on its own (≈ 2~4 min) → the Clown Doll jumps out
         boxGrow += 1 + rnd();
         box.style.setProperty("--s", (1 + boxGrow / 60).toFixed(2));
         if (boxGrow > 60 + rint(0, 120) && rnd() < 0.08) { boxGrow = 0; box.style.setProperty("--s", 1); pause(clownPop); }
     }
     const laugh = () => { for (let i = 0; i < 5; i++) tone(500 + rnd() * 300, 0.15, "triangle", 0.04, i * 0.17, -200); toast("🪆 히히히히…", "info", 1500); };
+    // 🪆 ghosts + creepy dolls pop out — each stays 20 s unless it is clicked away (screen limit 14)
+    let lastApp = -999;
     function ghostDolls() {
-        const g = h("div.sm-ghostdolls", Array.from({ length: rint(3, 6) }, () => h("span", { style: { left: rint(5, 85) + "%", top: rint(10, 75) + "%" } }, pickOne(["🪆", "🧸", "🎎", "👻"]))));
-        document.body.append(g); tone(220, 0.6, "sawtooth", 0.03, 0, -100);
-        g.onclick = () => g.remove();
-        later(() => g.remove(), 3000);
+        if (document.querySelector(".sm-apparition")) return;
+        let layer = document.querySelector(".sm-ghostdolls");
+        if (!layer) { layer = h("div.sm-ghostdolls"); document.body.append(layer); }
+        const room = Math.max(0, 14 - layer.children.length);
+        const n = Math.min(room, rint(2, 4));
+        for (let k = 0; k < n; k++) {
+            const kind = pickOne(DOLL_KINDS);
+            const d = h("button.sm-gdoll.k-" + kind, { type: "button", title: "클릭하면 사라집니다", style: { left: rint(2, 84) + "%", top: rint(8, 68) + "%", "--rot": rint(-14, 14) + "deg", "--sz": rint(90, 150) + "px", "--dl": (k * 0.25) + "s" },
+                html: dollSvg(kind), onclick: e => { e.stopPropagation(); d.classList.add("gone"); setTimeout(() => d.remove(), 350); tone(160, 0.25, "sine", 0.03, 0, -80); } });
+            layer.append(d);
+            later(() => { d.classList.add("gone"); setTimeout(() => d.remove(), 600); }, 20000);
+        }
+        tone(220, 0.6, "sawtooth", 0.03, 0, -100);
+    }
+    // 👻 the apparition: a doll ghost slowly, faintly fills the whole screen and fades away (the dolls on screen vanish)
+    function apparition() {
+        document.querySelectorAll(".sm-ghostdolls").forEach(e => e.remove());
+        document.querySelectorAll(".sm-apparition").forEach(e => e.remove());
+        const a = h("div.sm-apparition", { html: apparitionSvg() });
+        document.body.append(a);
+        for (let i = 0; i < 4; i++) tone(90 + i * 7, 2.2, "sine", 0.035, i * 0.6, -30);
+        noise(3, 0.025);
+        later(() => a.remove(), 11000);
     }
     function blackout() {
         const d = h("div.sm-blackout");
@@ -1120,7 +1155,7 @@ export function fx(loc, t, pid, c) {
     return {
         hud,
         tick,
-        stop() { stopped = true; timers.forEach(clearTimeout); document.querySelectorAll(".sm-ghostdolls,.sm-blackout,.sm-shadow,.sm-creep,.sm-campalarm,.sm-mosq,.sm-thunder,.sm-sos,.sm-turb-alarm").forEach(e => e.remove()); },
+        stop() { stopped = true; timers.forEach(clearTimeout); document.querySelectorAll(".sm-ghostdolls,.sm-apparition,.sm-blackout,.sm-shadow,.sm-creep,.sm-campalarm,.sm-mosq,.sm-thunder,.sm-sos,.sm-turb-alarm").forEach(e => e.remove()); },
         busy: () => busy
     };
 }

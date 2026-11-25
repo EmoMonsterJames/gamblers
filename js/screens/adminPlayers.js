@@ -263,6 +263,7 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                 h("p.muted.gen-race", `🧬 종족: ${raceLabel()} — 왼쪽 프로필의 종족을 따라 기본 형태가 정해집니다`),
                 h("div.gen-grid",
                     L("성별", sel("gender", [["male", "남자"], ["female", "여자"]])),
+                    L("체형", sel("bt", [["", "일반"], ["skinny", "스키니 (아주 마름)"], ["chubby", "Chubby (통통)"], ["fat", "과체중 (뚱뚱)"], ["muscle", "근육질"]])),
                     ["other", "animal", "shape"].includes(o.race) ? L("종족 이름 (그림 아래 표시)", h("input.input", { value: o.raceText || "", placeholder: "예: Wolf", onchange: e => change("raceText", e.target.value) })) : null,
                     human ? L("인간 종류", sel("human", HUMAN_TYPES)) : null),
                 L(black ? "피부색 — 흑인은 자동으로 검은색" : o.race === "flower" ? "꽃잎 색" : "피부색", swatches("skin", SKIN_COLORS, black), ".wide"),

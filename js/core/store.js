@@ -59,14 +59,17 @@ export const PLAYER_ART = {
     451: "images/players/kepi_red.svg",             // 케피 — red pig
     452: "images/players/ettie.svg",                // 에띠
     453: "images/players/mos.svg",                  // 모스
-    454: "images/players/shiro.svg"                 // 흰둥이 — white curly puppy
+    454: "images/players/shiro.svg",                // 흰둥이 — white curly puppy
+    498: "images/players/oopsy_daisy.svg",          // 웁시데이지 — bald baby doll in a blue dress
+    512: "images/players/siamese_jiangshi.svg"      // 샴강시 — two jiangshi faces on one body (hat · talisman)
 };
 // 🎨 extras added on top of a generated picture (generator options — see extrasBack / extrasFront in ui/avatarGen.js)
 export const PLAYER_EXTRAS = {
     274: { eyeColor: "#8fd3ff" },                                                         // 파란눈동자세모 — light blue eyes
     280: { tail: "#ff9ec4", cheekFluff: true },  // 다람쥐토끼 — white cheek fluff + a big pink squirrel tail
     283: { logo: "LUX" },                         // 깜지 — LUX logo on the clothes
-    286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" }                     // 꽃나비 — big red butterfly wings
+    286: { wings: "#e11d2e", antennae: "#3a2a24", ribbon: "#ff4f8b" },                    // 꽃나비 — big red butterfly wings
+    499: { bt: "fat" }                            // 만두덩이 — 과체중 체형
 };
 // 🚫 "No Image" (admin → 플레이어 관리) wins over the hand-drawn pictures too
 // 📦 ordered pictures that have been delivered: these players were saved as "No Image" while waiting, their art wins now

@@ -155,9 +155,25 @@
 .location.sm-doll { background: radial-gradient(ellipse at top, #3b0764, #0a0010 70%) !important; }
 .sm-thunder { position: fixed; inset: 0; z-index: 7500; pointer-events: none; background: #fff; animation: smThunder .7s steps(4) forwards; }
 @keyframes smThunder { 0% { opacity: .9; } 25% { opacity: 0; } 50% { opacity: .7; } 100% { opacity: 0; } }
-.sm-ghostdolls { position: fixed; inset: 0; z-index: 7600; cursor: pointer; background: #0a001099; }
-.sm-ghostdolls span { position: absolute; font-size: 110px; animation: smGhost 3s ease-out forwards; filter: drop-shadow(0 0 18px #c084fc); }
-@keyframes smGhost { 0% { transform: scale(.2); opacity: 0; } 15% { transform: scale(1.1); opacity: 1; } 80% { opacity: .9; } 100% { transform: scale(1.4); opacity: 0; } }
+.sm-ghostdolls { position: fixed; inset: 0; z-index: 7600; pointer-events: none; }
+.sm-gdoll { position: absolute; width: var(--sz, 120px); height: calc(var(--sz, 120px) * 1.33); padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; rotate: var(--rot, 0deg); filter: drop-shadow(0 0 16px #a78bfa99) drop-shadow(0 10px 18px #000c); animation: smDollIn .9s cubic-bezier(.2, 1.6, .4, 1) var(--dl, 0s) both, smDollSway 3.4s ease-in-out calc(var(--dl, 0s) + .9s) infinite; }
+.sm-gdoll svg { width: 100%; height: 100%; display: block; }
+.sm-gdoll.k-ghost { opacity: .78; filter: drop-shadow(0 0 22px #e2e8f0cc); animation: smDollIn 1.4s ease-out var(--dl, 0s) both, smGhostFloat 4s ease-in-out infinite; }
+.sm-gdoll.k-redeye .dl-glow { animation: smRedGlow 1.6s ease-in-out infinite; }
+.sm-gdoll .dl-eye { transform-box: fill-box; transform-origin: center; animation: smDollStare 5s ease-in-out infinite; }
+.sm-gdoll:hover { filter: drop-shadow(0 0 22px #ff3b5c) drop-shadow(0 10px 18px #000c); }
+.sm-gdoll.gone { animation: smDollOut .45s ease-in forwards !important; pointer-events: none; }
+@keyframes smDollIn { 0% { transform: translateY(60px) scale(.2); opacity: 0; } 60% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes smDollSway { 50% { transform: translateY(-6px) rotate(3deg); } }
+@keyframes smGhostFloat { 50% { transform: translateY(-14px); opacity: .55; } }
+@keyframes smDollStare { 0%, 40%, 100% { transform: translate(0, 0); } 50%, 70% { transform: translate(1.4px, .6px); } 80% { transform: translate(-1.4px, .4px); } }
+@keyframes smRedGlow { 50% { opacity: .55; } }
+@keyframes smDollOut { to { transform: scale(.3) translateY(30px); opacity: 0; filter: blur(4px); } }
+/* 👻 the apparition: a faint giant doll-ghost slowly fills the whole screen, then fades away */
+.sm-apparition { position: fixed; inset: 0; z-index: 7650; pointer-events: none; display: grid; place-items: center; background: radial-gradient(circle, #0000 30%, #000a 100%); animation: smAppBg 11s ease-in-out forwards; }
+.sm-apparition svg { width: 140vmax; height: 105vmax; max-width: none; opacity: 0; filter: blur(2px) grayscale(.3); mix-blend-mode: screen; animation: smApp 11s ease-in-out forwards; }
+@keyframes smApp { 0% { opacity: 0; transform: scale(.55); filter: blur(14px); } 35% { opacity: .42; transform: scale(.92); filter: blur(3px); } 55% { opacity: .5; transform: scale(1); filter: blur(1.5px); } 62% { opacity: .3; transform: scale(1.01) translateX(-6px); } 66% { opacity: .5; transform: scale(1.01); } 100% { opacity: 0; transform: scale(1.12); filter: blur(10px); } }
+@keyframes smAppBg { 0%, 100% { opacity: 0; } 40%, 65% { opacity: 1; } }
 .sm-blackout { position: fixed; inset: 0; z-index: 7700; pointer-events: none; --x: 50vw; --y: 50vh; background: radial-gradient(circle 110px at var(--x) var(--y), transparent 0, #000 100%); transition: opacity 2.4s; }
 .sm-blackout.flicker { animation: smFlicker .9s steps(6); }
 @keyframes smFlicker { 0%, 30%, 60% { opacity: 1; } 15%, 45%, 75% { opacity: .1; } }

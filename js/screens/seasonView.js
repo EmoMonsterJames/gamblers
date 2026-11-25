@@ -24,6 +24,8 @@ import { worldMap, regionMap } from "../ui/map.js";
 import { openCasino } from "./casino.js";
 import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
+import { fortuneView, fortuneInventory } from "./fortune.js";
+import { fortuneHere } from "../game/fortune.js";
 import { spellStationsView } from "./spellStations.js";
 import { honorShopView } from "./honorShop.js";
 import { HSHOP, hshopKinds } from "../data/honorShop.js";
@@ -805,7 +807,7 @@ function locationStage(s) {
     //    🛒 상점 (every shop + 🏷️ 할인 상점 + 🏬 백화점) · 🏅 Honorarium (TOP 10 / 6 / 3 / Winners) ·
     //    🐾 EmoMonster (Capture · Hospital · Lab · Monster Shop · Gotcha — not the Dex) · 💰 Money (직업 · 구걸 · 취업 · 돈벌기 · 로또 · Highlight · 도움주기)
     const GROUPS = [
-        ["grp:shop", "🛒 상점", k => k.startsWith("shop:") || k === "dept"],
+        ["grp:shop", "🛒 상점", k => k.startsWith("shop:") || k === "dept" || k === "x:fortune"],
         ["grp:honor", "🏅 Honorarium", k => k.startsWith("honor:")],
         ["grp:emo", "🐾 EmoMonster", k => ["emo:capture", "emo:hospital", "emo:lab", "emo:shop", "emo:rent", "gotcha"].includes(k)],
         ["grp:money", "💰 Money", k => ["job", "beg", "employ", "company", "earn", "lotto", "highlight", "help"].includes(k)]
@@ -834,6 +836,7 @@ function locationStage(s) {
     const isOn = k => currentTab === k || (currentTab === groupOf(k) && subPick[currentTab] === k);
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
+        ...(fortuneHere(loc) && !rev ? [["x:fortune", "🔮 점보기"]] : []), // 🔮 35 maps: under 🛒 상점
         ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.region === "survival" ? [] : hshopKinds(loc).map(k => ["honor:shop_" + k, `${HSHOP[k].emoji} ${HSHOP[k].name}`])), // 🏅 TOP N 전용 상점
@@ -841,7 +844,7 @@ function locationStage(s) {
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ...(loc.emorent ? [["emo:rent", "🏷️ 이모몬스터 Rent Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
         ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
-    const invWrap = el => h("div", rev ? revivalInvView(pid) : null, extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), lifeInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); }), el, emoInventory(pid, emoChanged));
+    const invWrap = el => h("div", rev ? revivalInvView(pid) : null, fortuneInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === "inv") tabBody("inv"); }), extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), lifeInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
     const tabBar = h("div.tabs");
     const body = h("div.tab-body");
@@ -896,6 +899,7 @@ function locationStage(s) {
     });
     function cornerContent(id, raw = false) {
         let content;
+        if (id === "x:fortune") return fortuneView(smc(id));
         if (id.startsWith("x:")) return SM.corner(id, smc(id)) || h("p.notice", "코너가 없습니다");
         if (!raw) { const o = SM.override(id, smc(id)); if (o) return o; }
         if (id === "games" && !loc.slots.length && !loc.casino.length) content = h("p.notice.center", loc.stuck ? "🧗 Stuck Casino: 게임이 하나도 없습니다… 시간이 끝날 때까지 갇혀 있어야 합니다." : "🫥 이 맵에는 게임이 없습니다.");
@@ -1008,6 +1012,7 @@ function locationStage(s) {
         const it = ITEM_BY_ID[itemId], to = LOC_BY_ID[it?.loc];
         if (!to || moving || to.id === loc.id) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
         if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (RV.revivalPassBlock(itemId)) return toast(RV.revivalPassBlock(itemId), "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
@@ -1026,6 +1031,7 @@ function locationStage(s) {
     async function moveRandom() {
         if (moving) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
+        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
         if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
         if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.\n${RANDOM_MAP_ASK.split("\n").slice(1).join("\n")}`, "이동하기", "취소"))) return;
@@ -1040,7 +1046,7 @@ function locationStage(s) {
         render();
     }
     // 🚫 no-pass maps (Hell · Sugar · Terror · Stuck · Jail · Cursed · Radioactive · kidnap room): no map passes here
-    const passBtns = loc.noPass || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
+    const passBtns = G.passLockedAt(loc.id) || loc.kidnap ? [] : G.passesOf(pid).filter(it => it.loc !== loc.id);
     // 🍬 sugar · 🌑 dark · 🌋 magma
     const fx0 = mapEffects(loc, t, pid, { root, onDead: () => { clearInterval(timer); gameLayer?.remove(); gameLayer = null; render(); }, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
     // ✈️ turbulence / crash · 🪆 Doll Factory · 🏕️ the slasher · 🌊 9F · 🔪 Self-Harm (screens/specialMaps.js)
