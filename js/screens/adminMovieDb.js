@@ -59,15 +59,11 @@ export function adminMovieDbPage() {
         const out = h("div.mdb-out");
         const run = () => {
             const s = q.trim().toLowerCase(), movies = allMovies();
-            const hit = movies.filter(m => !s || m.en.toLowerCase().includes(s) || m.ko.toLowerCase().includes(s) || brandName(m.brand).toLowerCase().includes(s) || m.cast.some(c => actorName(c).toLowerCase().includes(s)));
-            const actors = new Map();
-            for (const m of movies) for (const c of m.cast) if (c.pid != null && (!s || actorName(c).toLowerCase().includes(s))) actors.set(c.pid, actorName(c));
-            put(out,
-                actors.size ? h("div.mdb-actors", h("b", `🎭 배우 ${actors.size}명 `), [...actors].sort((a, b) => a[1].localeCompare(b[1], "ko")).map(([pid, n]) => link(n, { k: "actor", pid }, ".chip"))) : null,
-                !hit.length ? h("p.notice", "검색 결과가 없습니다.") : hit.map(card));
+            const hit = movies.filter(m => m.en.toLowerCase().includes(s) || m.ko.toLowerCase().includes(s) || brandName(m.brand).toLowerCase().includes(s) || m.cast.some(c => actorName(c).toLowerCase().includes(s)));
+            put(out, !s ? h("p.muted.small", "검색어를 입력하면 영화가 나옵니다.") : !hit.length ? h("p.notice", "검색 결과가 없습니다.") : hit.map(card));
         };
         const inp = h("input.input", { value: q, placeholder: "영어 원제 · 한글 출시명 · 배우 · 영화사 검색 (예: Fortune Swindlers / 복덩이 사기단 / 짱구)", oninput: e => { q = e.target.value; run(); } });
-        const browse = h("div.mdb-browse", Object.entries(FACETS).map(([k, [label]]) => link(`${label}별 보기`, { k: "list", facet: k }, ".chip")));
+        const browse = h("div.mdb-browse", Object.entries(FACETS).map(([k, [label]]) => link(`${label}별 보기`, { k: "list", facet: k }, ".sq")));
         run();
         return [inp, browse, out];
     }
@@ -117,7 +113,7 @@ export function adminMovieDbPage() {
     draw();
     return h("div.page.admin-mdb",
         h("h2.page-title", "🎞️ 영화DB"),
-        h("p.muted.small", "지금까지 만든 모든 영화를 검색합니다. 영화사 · 제작국가 · 장르 · 등급 · 희귀도 · 작품성 · 출연 배우를 누르면 모아진 정보를 볼 수 있습니다."),
-        h("p", h("a.btn.ghost.small", { href: "#/admin" }, "← 관리자 페이지"), " ", h("a.btn.ghost.small", { href: "#/admin-vhs" }, "🎬 영화 · 비디오 표지 생성기")),
+        h("p.muted.small", "영화를 검색합니다 (검색어를 입력해야 결과가 나옵니다). 영화사 · 제작국가 · 장르 · 등급 · 희귀도 · 작품성 · 출연 배우를 누르면 모아진 정보를 볼 수 있습니다."),
+        h("p", h("a.btn.ghost.small", { href: "#/admin" }, "← 관리자 페이지")),
         body);
 }

@@ -110,29 +110,6 @@
 .vp-credits { display: grid; gap: 2px; font-size: 13px; color: #d4d4d8; animation: vhsCredits 6s linear forwards; }
 @keyframes vhsCredits { from { transform: translateY(60px); } to { transform: translateY(-40px); } }
 
-/* admin generator */
-.vg-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 16px; align-items: start; }
-.vg-side, .vg-preview { min-width: 0; } .vg-preview .vhs-box { justify-content: flex-start; }
-@media (max-width: 1250px) { .vg-wrap { grid-template-columns: 1fr; } .vg-side { position: static; order: -1; } }
-.vg-form { display: grid; gap: 8px; }
-.vg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
-.vg-grid label, .vg-form > label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
-.vg-cast-row, .vg-scene { display: grid; gap: 4px; padding: 6px; border-radius: 8px; background: #ffffff0a; }
-.vg-cast-row { grid-template-columns: 1.4fr 1.2fr .9fr auto auto auto; align-items: center; }
-.vg-scene textarea { min-height: 70px; font-family: inherit; }
-.vg-side { position: sticky; top: 10px; display: grid; gap: 10px; }
-.vg-list { display: grid; gap: 4px; }
-.vg-list-row { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: #ffffff0a; }
-.vg-list-row b { flex: 1; }
-@media (max-width: 600px) {
-    .vg-cast-row { grid-template-columns: 1fr 1fr; }
-}
-.vg-gallery { display: grid; gap: 14px; margin-top: 24px; }
-.vg-video { display: grid; gap: 6px; padding: 10px; border-radius: 12px; background: #ffffff08; border: 1px solid #ffffff1a; }
-.vg-video-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.vg-video .vhs-box { justify-content: flex-start; }
-.vg-help small { line-height: 1.6; }
-@media (max-width: 1250px) { .vg-side { position: static; } }
 
 /* 🎞️ admin · 영화DB */
 .admin-mdb .mdb-body { display: grid; gap: 12px; }
@@ -161,3 +138,6 @@
 .mdb-films { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mdb-films td { padding: 5px 8px; border-bottom: 1px solid #ffffff14; vertical-align: top; }
 .mdb-films td:first-child { white-space: nowrap; width: 1%; }
+.mdb-browse { gap: 6px; }
+.mdb-link.sq { display: inline-block; padding: 7px 14px; border-radius: 6px; border: 1px solid #ffffff33; background: #ffffff10; color: #e2e8f0; font-weight: 700; font-size: 13px; }
+.mdb-link.sq:hover { background: #fde68a22; border-color: #fde68a; color: #fde68a; }

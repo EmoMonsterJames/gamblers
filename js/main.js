@@ -18,7 +18,6 @@ import { adminSimPage, adminTestPage } from "./screens/adminSim.js";
 import { adminResourcesPage } from "./screens/adminResources.js";
 import { adminBankPage } from "./screens/adminBank.js";
 import { adminEmoPage } from "./screens/adminEmo.js";
-import { adminVhsPage } from "./screens/adminVhs.js";
 import { adminMovieDbPage } from "./screens/adminMovieDb.js";
 import { rankingPage } from "./screens/ranking.js";
 import { applyMaps } from "./data/mapAdmin.js";
@@ -33,7 +32,7 @@ const ROUTES = {
     "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "ranking": rankingPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-stats": adminStatsPage, "admin-games": adminGamesPage,
-    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage, "admin-vhs": adminVhsPage, "admin-moviedb": adminMovieDbPage
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage, "admin-moviedb": adminMovieDbPage
 };
 
 function nav(active) {

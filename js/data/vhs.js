@@ -296,7 +296,7 @@ const helloBaby = () => {
             { ko: "완전에로년덩이", pid: P("완전에로년덩이"), role: DG2, part: "extra", nude: true },
             { ko: "메르베쟈토토", pid: P("메르베쟈토토"), role: DG3, part: "extra", nude: true },
             { ko: "언니야개미", pid: P("언니야개미"), role: SG1, part: "extra", nude: true },
-            { ko: "미니마니모", pid: P("미니마니모"), role: SG2, part: "extra", nude: true }
+            { ko: "미니마니모", pid: P("미니마니모"), role: SG2, part: "extra" }
         ],
         plot: "아리따운 시골 처녀가 도시에 상경하면서 벌어지는 화끈하고 재미난 사건들.",
         tagline: "",
@@ -311,7 +311,7 @@ const helloBaby = () => {
             // 뒷표지: the shower scene (steam · every chest under a mosaic)
             back: { layout: "still1", stills: [
                 { bg: "shower", fx: "steam", mosaic: true, cap: "여자샤워실의 비밀 수다",
-                    who: [{ r: SG1, expr: "annoyed", pose: "point", nude: true }, { r: VICKY, expr: "shy", nude: true }, { r: ANGELA, expr: "excited", pose: "both", nude: true }, { r: SG2, expr: "scared", pose: "shrug", nude: true }] }
+                    who: [{ r: SG1, expr: "annoyed", pose: "point", nude: true }, { r: VICKY, expr: "shy", nude: true }, { r: ANGELA, expr: "excited", pose: "both", nude: true }, { r: SG2, expr: "scared", pose: "shrug" }] }
             ] }
         },
         script: [
@@ -370,8 +370,8 @@ const helloBaby = () => {
                     [JANE, "어머, 너 시골에서 왔다며? 옷차림이 왜 이러니? 촌스러워~", { expr: "roll", pose: "point", act: "stomp", to: VICKY, set: { [VICKY]: { expr: "cry", act: "shake" } } }],
                     [VICKY, "흑…", { expr: "cry", hold: "book" }],
                     [ANGELA, "너무하잖아, Jane!", { expr: "angry", pose: "point", to: JANE, act: "stomp" }]] },
-            // Scene 4 · 여자샤워실 — 김이 모락모락, 모두 상반신 노출
-            { k: "scene", n: 4, place: "여자샤워실", music: "bubbly", sec: 16, bg: "shower", fx: "steam", who: [SG1, VICKY, ANGELA, SG2], nude: [SG1, VICKY, ANGELA, SG2], props: ["🚿", "🧼", "🚿"],
+            // Scene 4 · 여자샤워실 — 김이 모락모락, 상반신 노출 (미니마니모는 노출 없음)
+            { k: "scene", n: 4, place: "여자샤워실", music: "bubbly", sec: 16, bg: "shower", fx: "steam", who: [SG1, VICKY, ANGELA, SG2], nude: [SG1, VICKY, ANGELA], props: ["🚿", "🧼", "🚿"],
                 cast: { [VICKY]: { expr: "shy" }, [SG2]: { expr: "happy" } },
                 lines: [
                     [VICKY, "Angela… 사실 나 Tim한테 관심이 생겼어.", { expr: "shy", to: ANGELA }],
