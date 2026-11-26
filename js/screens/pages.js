@@ -198,8 +198,5 @@ export function adminPage() {
         h("div.admin-card", h("h3", "사운드"), h("button.btn.ghost", { onclick: e => { const m = Sound.toggle(); e.target.textContent = m ? "🔇 꺼짐" : "🔊 켜짐"; } }, Sound.muted ? "🔇 꺼짐" : "🔊 켜짐")),
         h("div.admin-card", h("h3", "시즌"),
             Store.season ? h("button.btn.red", { onclick: async () => { if (await confirmBox(`진행 중인 시즌 ${Store.season.number}을(를) 중단하고 삭제할까요? (되돌릴 수 없음)`)) { Store.season.status = "done"; Store.season.aborted = true; stashSeason(Store.season); await Store.pushSeason(); Store.endSeasonLocal(); toast("시즌을 중단했습니다", "ok"); location.hash = "#/"; } } }, "진행 중인 시즌 중단") : h("p.muted", "진행 중인 시즌 없음"),
-            !Store.cloud ? h("button.btn.ghost", { onclick: async () => { if (await confirmBox("이 브라우저의 모든 로컬 데이터(시즌·전적·명예의 전당·잭팟)를 지울까요?")) Store.resetAllLocal(); } }, "로컬 데이터 초기화") : null),
-        h("div.admin-card", h("h3", "프로그레시브 잭팟 현황"),
-            h("table.jp-table", h("tr", h("th", "게임"), h("th", "MAJOR"), h("th", "GRAND")),
-                SLOTS.filter(c => c.progressive !== false).map(c => h("tr", h("td", c.name), h("td", fmt(Store.pool(c.id).MAJOR)), h("td", fmt(Store.pool(c.id).GRAND)))))));
+            !Store.cloud ? h("button.btn.ghost", { onclick: async () => { if (await confirmBox("이 브라우저의 모든 로컬 데이터(시즌·전적·명예의 전당·잭팟)를 지울까요?")) Store.resetAllLocal(); } }, "로컬 데이터 초기화") : null));
 }
