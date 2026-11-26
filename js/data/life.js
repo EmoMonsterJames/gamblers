@@ -101,7 +101,7 @@ export const FOOD_HOME_WHEEL = [SEG("free", 50), SEG("paid", 20, 1000), SEG("no"
 export const FOOD_HOME_COUNTRY = { sol_rest: "Emo World", ddeogwi_rest: "Dung Town", juice_shop: "Foggy Nation", cookie_shop: "Polynesia", antnoodle_rest: "Ground Town", carrot_rest: "MJ World" };
 // 🧬 food corners open to everyone (any country · any race) — except these
 export const FOOD_CORNER_RACES = { sunshine_shop: ["Smile"] };
-export const sameCountry = (a, b) => String(a || "").toLowerCase().replace(/[^a-z]/g, "") === String(b || "").toLowerCase().replace(/[^a-z]/g, "");
+export const sameCountry = (a, b) => { const k = x => String(x || "").toLowerCase().replace(/naturalized/, "").replace(/[^a-z]/g, ""); return k(a) === k(b); }; // "X (Naturalized)" = X
 export const cornerRaceOk = (k, ethnicity) => !FOOD_CORNER_RACES[k] || FOOD_CORNER_RACES[k].some(r => norm(r) === norm(ethnicity));
 // entry (inner corners only now): "free" | "paid" (fee) | "random" (60% in / 40% refused)
 export const ENTRY_KINDS = { free: "무료 입장", paid: "유료 입장", random: "랜덤 입장 (60% 허용)" };

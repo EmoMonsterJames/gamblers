@@ -4,6 +4,7 @@ import { h } from "../core/util.js";
 import { toast, modal, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { COUNTRIES } from "../data/catalog.js";
+import { COUNTRY_CHOICES, residencyOf, setResidency, sameNation } from "../game/nation.js";
 import { avatar, displayName } from "../ui/profile.js";
 import { jobList, saveJobs } from "../data/jobs.js";
 import {
@@ -21,7 +22,7 @@ const FIELDS = [
 ];
 // dropdown fields: fixed choices + whatever values the players already use
 const CHOICES = {
-    country: COUNTRIES,
+    country: COUNTRY_CHOICES, // + "X (Naturalized)" = 귀화 시민권자 (treated like X)
     age_group: ["Baby", "Young Adult", "Adult", "Middle-Aged", "Senior"],
     gender: ["male", "female", "trans", "fluid"],
     preference: ["Straight", "Gay", "Bi", "Bi-Curious", "Tran-Curious"],
@@ -152,11 +153,23 @@ function editPlayer(p, onSaved) {
         } else el = h("input.input", { value: v[k] ?? "", oninput: e => { v[k] = e.target.value; if (k === "name_ko" || k === "player_name") dupHint(); } });
         return h("label.cf", h("small", label), el);
     });
+    // 🪪 영주권자 corner (right after 국가): which countries this player holds permanent residency in
+    const resSet = new Set(isNew ? [] : residencyOf(v.id));
+    const resBox = h("div.ap-res");
+    const drawRes = () => resBox.replaceChildren(...COUNTRIES.map(c => {
+        const own = sameNation(v.country, c);
+        return h("label.ap-res-c" + (resSet.has(c) ? ".on" : "") + (own ? ".own" : ""), { title: own ? "본인 국적 (영주권 필요 없음)" : "" },
+            h("input", { type: "checkbox", checked: resSet.has(c) && !own, disabled: own, onchange: e => { e.target.checked ? resSet.add(c) : resSet.delete(c); drawRes(); } }), c);
+    }));
+    drawRes();
+    const resField = h("div.cf.ap-res-f", h("small", "🪪 영주권자 (해당 국가 맵 입장 가능 · 그 국가 출신과 친밀도 +1)"), resBox);
+    inputs.splice(FIELDS.findIndex(([k]) => k === "country") + 1, 0, resField);
     // profile → generator: gender and race follow the profile dropdowns
     function sync(k) {
         if (k === "gender" && (v.gender === "male" || v.gender === "female")) gen.set({ gender: v.gender });
         if (k === "ethnicity") { const d = drawRace(v.ethnicity); gen.set({ race: d.race, sub: d.sub || "", raceText: v.ethnicity || "" }); }
         if (k === "age_group") gen.set({ baby: isBaby(v.age_group) }); // 👶 Baby → the picture is drawn smaller
+        if (k === "country") drawRes();
     }
     const active = h("label.check", h("input", { type: "checkbox", checked: v.is_active !== false, onchange: e => { v.is_active = e.target.checked; } }), "활성 (시즌 선발 대상)");
     // 🔍 한글 / 영문 이름 중복 체크 (warning only — the same name may still be registered)
@@ -190,6 +203,7 @@ function editPlayer(p, onSaved) {
             await addCustomSub(raceCat, v.ethnicity); // a typed-in subcategory is offered next time
             const id = await Store.savePlayer(v, { isNew });
             if (id === false) return;
+            await setResidency(id, [...resSet].filter(c => !sameNation(v.country, c))); // 🪪 영주권 (settings row "residency")
             toast(isNew ? `플레이어를 추가했습니다 (#${id} · 이미지 포함)` : "저장했습니다", "ok");
             m.close(); onSaved();
         } finally { saving = false; saveBtn.disabled = false; }

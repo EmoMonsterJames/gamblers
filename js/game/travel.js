@@ -190,8 +190,12 @@ export function upgradeSeat(pid) {
     Store.saveSeason(true);
     return { ok: true };
 }
+// 🛋️ / 🛎️ one lounge visit and one in-flight service per round
+export const loungeUsed = pid => air()?.loungeAt?.[pid] === S()?.round;
+export const planeServiceUsed = pid => air()?.planeSvcAt?.[pid] === S()?.round;
 export function loungeTry(pid) {
     const ps = ps_(pid), a = air();
+    if (loungeUsed(pid)) return { ok: false, why: "공항 라운지는 라운드당 1회만 이용할 수 있습니다" };
     if (wallet(ps) < LOUNGE_FEE) return { ok: false, why: `골드 부족 (${LOUNGE_FEE.toLocaleString()}G)` };
     payGold(ps, LOUNGE_FEE);
     const pick = pickOne(LOUNGE);
@@ -199,7 +203,34 @@ export function loungeTry(pid) {
     if (pick.id === "massage") { out.hp = Math.max(0, 100 - ps.hp); ps.hp = Math.max(ps.hp, 100); }
     if (pick.id === "drink") out.food = pickOne(pick.foods);
     a.lounge[pid] = (a.lounge[pid] || 0) + 1;
+    (a.loungeAt ||= {})[pid] = S()?.round;
     G.log(`🛋️ ${G.name(pid)} 공항 라운지 (${LOUNGE_FEE.toLocaleString()}G) → ${pick.emoji} ${pick.name}`);
+    Store.saveSeason(true);
+    return out;
+}
+
+// 🛎️ in-flight service (on the plane, like the lounge): one random card per round
+//   economy 3,000G · 👑 VIP 1등석 free
+export const PLANE_SVC_FEE = 3000;
+export const PLANE_SVC = [
+    { id: "meal", emoji: "🍱", name: "기내식", desc: "이코노미: 빵 · VIP: 꼬롱살 · 미니닭고기 · 솔잎국수 중 하나", foods: ["bread"], vipFoods: ["kkorong", "minichicken", "pinenoodle"] },
+    { id: "drink", emoji: "🥤", name: "기내 음료", desc: "물 · 콜라 · 에너지드링크 · 우유 중 하나", foods: ["water", "cola", "energydrink", "milk"] },
+    { id: "spa", emoji: "💆", name: "기내 스파", desc: "HP +10~30 (VIP: HP FULL)" },
+    { id: "dessert", emoji: "🍦", name: "기내 디저트", desc: "아이스크림 + HP +10" }
+];
+export function planeServiceTry(pid) {
+    const ps = ps_(pid), a = air(), vip = isVip(pid);
+    if (planeServiceUsed(pid)) return { ok: false, why: "기내 서비스는 라운드당 1회만 이용할 수 있습니다" };
+    const fee = vip ? 0 : PLANE_SVC_FEE;
+    if (wallet(ps) < fee) return { ok: false, why: `골드 부족 (${fee.toLocaleString()}G)` };
+    if (fee) payGold(ps, fee);
+    const pick = pickOne(PLANE_SVC);
+    const out = { ok: true, pick, vip };
+    if (pick.id === "meal") out.food = pickOne(vip ? pick.vipFoods : pick.foods);
+    if (pick.id === "drink") out.food = pickOne(pick.foods);
+    if (pick.id === "dessert") out.food = "icecream";
+    (a.planeSvcAt ||= {})[pid] = S()?.round;
+    G.log(`🛎️ ${G.name(pid)} 기내 서비스${fee ? ` (${fee.toLocaleString()}G)` : " (VIP 무료)"} → ${pick.emoji} ${pick.name}`);
     Store.saveSeason(true);
     return out;
 }

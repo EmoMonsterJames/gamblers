@@ -62,7 +62,7 @@ export function tabs(loc, t, pid) {
         out.push(["x:service", "🛎️ 공항 서비스"]);
         if (loc.gate === 3) out.push(["x:lounge", "🛋️ 공항 라운지"]);
     }
-    if (loc.plane) { out.push(["x:planefood", "🥤 기내식"]); if (TR.isVip(pid)) out.push(["x:spa", "💆 VIP 스파"]); }
+    if (loc.plane) out.push(["x:planesvc", "🛎️ 기내 서비스"]);
     if (isFloor(loc)) {
         out.unshift(["x:panel", "🛗 계기판"]);
         if (loc.elevShop) out.push(["x:elevshop", "🛗 특별상점"]);
@@ -92,8 +92,7 @@ export function corner(id, c) {
         case "x:reports": return reportsView();
         case "x:service": return serviceView(c);
         case "x:lounge": return loungeView(c);
-        case "x:planefood": return planeFoodView(c);
-        case "x:spa": return spaView(c);
+        case "x:planesvc": return planeServiceView(c);
         case "x:panel": return panelView(c);
         case "x:elevshop": return elevShopView(c);
         case "x:elevweapons": return elevWeaponView(c);
@@ -203,24 +202,28 @@ function serviceView(c) {
     render();
     return wrap;
 }
+// 🎴 picture cards (like the 직업 corner): the light runs over them and stops on the picked one
+async function rollCards(cards, at) {
+    const steps = 18 + rint(0, 3) * 4;
+    const total = steps + ((at - steps % cards.length) + cards.length) % cards.length;
+    for (let k = 0; k <= total; k++) { cards.forEach(x => x.classList.remove("hot")); cards[k % cards.length].classList.add("hot"); Sound.tick(); await sleep(60 + Math.max(0, k - total + 8) * 45); }
+    cards.forEach(x => x.classList.remove("hot")); cards[at].classList.add("chosen");
+    Sound.tease(); await sleep(700);
+}
+const svcCards = (list, ART) => list.map(l => h("div.sm-lcard.l-" + l.id,
+    h("div.sm-lcard-art", h("span.a", ART[l.id]?.[0] || l.emoji), h("span.b", ART[l.id]?.[1] || "✨")),
+    h("b", l.name), h("small", l.desc)));
 function loungeView(c) {
     const { pid } = c;
-    // 🎴 picture cards (like the 직업 corner): the light runs over them and stops on one
-    const ART = { massage: ["💆", "🕯️"], food: ["🍱", "🥢"], drink: ["🥤", "🧊"], spa: ["🐾", "♨️"] };
-    const cards = TR.LOUNGE.map(l => h("div.sm-lcard.l-" + l.id,
-        h("div.sm-lcard-art", h("span.a", ART[l.id]?.[0] || l.emoji), h("span.b", ART[l.id]?.[1] || "✨")),
-        h("b", l.name), h("small", l.desc)));
-    const btn = h("button.btn.gold.big", { onclick: async () => {
+    const cards = svcCards(TR.LOUNGE, { massage: ["💆", "🕯️"], food: ["🍱", "🥢"], drink: ["🥤", "🧊"], spa: ["🐾", "♨️"] });
+    const used = TR.loungeUsed(pid);
+    const btn = h("button.btn.gold.big", { disabled: used, onclick: async () => {
             const r = TR.loungeTry(pid);
             if (!r.ok) return toast(r.why, "warn");
             btn.disabled = true;
             const hold = Activity.hold();
             try {
-                const at = TR.LOUNGE.indexOf(r.pick), steps = 18 + rint(0, 3) * 4;
-                const total = steps + ((at - steps % cards.length) + cards.length) % cards.length;
-                for (let k = 0; k <= total; k++) { cards.forEach(x => x.classList.remove("hot")); cards[k % cards.length].classList.add("hot"); Sound.tick(); await sleep(60 + Math.max(0, k - total + 8) * 45); }
-                cards.forEach(x => x.classList.remove("hot")); cards[at].classList.add("chosen");
-                Sound.tease(); await sleep(700);
+                await rollCards(cards, TR.LOUNGE.indexOf(r.pick));
                 await banner(`${r.pick.emoji} ${r.pick.name}`, 1300, "loc");
                 let line = "";
                 if (r.pick.id === "massage") line = `💆 시원하다! HP FULL (+${Math.round(r.hp)})`;
@@ -228,11 +231,11 @@ function loungeView(c) {
                 if (r.pick.id === "drink") { const e = LF.eat(pid, r.food, "공항 라운지"); line = `${LD.FOOD_BY_ID?.[r.food]?.emoji || "🥤"} ${LD.FOOD_BY_ID?.[r.food]?.name || r.food}을(를) 마셨다! ${e.ok ? `식량 ${e.got >= 0 ? "+" : ""}${e.got}` : e.why}`; }
                 if (r.pick.id === "spa") { const list = M.mons(pid) || []; for (const m of list) m.hp = M.maxHp(m); line = list.length ? `🐾 이모몬스터 ${list.length}마리 모두 FULL HP!` : "🐾 이모몬스터가 없어서 아무 효과가 없었다…"; document.dispatchEvent(new Event("emo:change")); }
                 Store.saveSeason(true); Sound.coin(); toast(line, "ok", 3500);
-            } finally { hold(); btn.disabled = false; }
+            } finally { hold(); }
             c.refresh();
-        } }, `🛋️ 라운지 이용 (${fmt(TR.LOUNGE_FEE)}G)`);
+        } }, used ? "✅ 이번 라운드 라운지 이용 완료" : `🛋️ 라운지 이용 (${fmt(TR.LOUNGE_FEE)}G)`);
     return h("div.sm-lounge",
-        h("div.sm-gatehead", h("b", "🛋️ 공항 라운지"), h("small", `${fmt(TR.LOUNGE_FEE)}G를 내면 아래 4가지 중 하나가 랜덤으로 정해집니다`)),
+        h("div.sm-gatehead", h("b", "🛋️ 공항 라운지"), h("small", `${fmt(TR.LOUNGE_FEE)}G를 내면 아래 4가지 중 하나가 랜덤으로 정해집니다 · 라운드당 1회`)),
         h("div.sm-lcards", cards),
         h("div.row.center", btn));
 }
@@ -295,43 +298,31 @@ export async function boarding(pax) {
 }
 
 // ================================================================ ✈️ THE PLANE
-function planeFoodView(c) {
-    const { pid, t } = c, vip = TR.isVip(pid), ps = ps_(pid);
-    const wrap = h("div.sm-planefood");
-    const got = (t.planeFood ||= {});
-    const eatNow = (fid, how) => { const r = LF.eat(pid, fid, how); if (!r.ok) return toast(r.why, "warn"); Sound.coin(); toast(`${LD.FOOD_BY_ID?.[fid]?.emoji || "🍽️"} ${LD.FOOD_BY_ID?.[fid]?.name || fid} — 식량 ${r.got >= 0 ? "+" : ""}${r.got}${r.hp ? ` · HP +${Math.round(r.hp)}` : ""}`, "ok"); Store.saveSeason(); c.refresh(); render(); };
-    const render = () => wrap.replaceChildren(
-        h("div.sm-gatehead", h("b", vip ? "👑 VIP 1등석 기내식" : "🥤 이코노미 기내식")),
-        h("div.sm-food-row",
-            h("button.btn" + (got.water ? ".ghost" : ".gold"), { disabled: got.water, onclick: () => { got.water = true; eatNow("water", "기내 무료"); } }, got.water ? "💧 물 (받음)" : "💧 무료 물 받기"),
-            vip ? h("button.btn" + (got.ice ? ".ghost" : ".gold"), { disabled: got.ice, onclick: () => { got.ice = true; eatNow("icecream", "VIP 무료"); } }, got.ice ? "🍦 아이스크림 (받음)" : "🍦 무료 아이스크림 받기") : null,
-            h("button.btn.gold", { onclick: () => {
-                if (wallet(ps) < 3000) return toast("골드가 부족합니다 (3,000G)", "warn");
-                payGold(ps, 3000);
-                eatNow(vip ? pickOne(["kkorong", "minichicken", "pinenoodle"]) : "bread", "기내식 3,000G");
-            } }, vip ? "🍱 VIP 기내식 랜덤 (꼬롱살 · 미니닭고기 · 솔잎국수) 3,000G" : "🍞 빵 3,000G")));
-    render();
-    return wrap;
-}
-function spaView(c) {
-    const { pid, t } = c;
-    if (t.planeSpa) return h("p.notice", "💆 이번 비행에서 이미 VIP 스파를 이용했습니다.");
-    const btn = h("button.btn.gold.big", { onclick: async () => {
-        btn.disabled = true;
-        const hold = Activity.hold();
-        const was = t.running;
-        try {
-            const count = h("b.sm-count", "10");
-            const m = modal(h("div.sm-spa", h("div.sm-spa-ico", "💆"), h("p", "VIP 스파에서 휴식 중…"), count), { title: "💆 VIP 스파", closable: false });
-            for (let i = 10; i > 0; i--) { count.textContent = i; Sound.click(); await sleep(1000); }
-            m.close();
-            t.planeSpa = true;
-            const hp = heal(pid, rint(10, 30));
-            Store.saveSeason(true); Sound.bonus(); toast(`💆 개운하다! HP +${Math.round(hp)}`, "ok");
-        } finally { hold(); t.running = was; }
-        c.refresh(); c.tabBody("x:spa");
-    } }, "💆 VIP 스파 이용 (10초 · HP +10~30)");
-    return h("div.sm-spa-corner", h("p", "👑 VIP 1등석 전용 스파 — 10초 동안 쉬면 HP가 10~30 회복됩니다 (비행당 1회)."), btn);
+// 🛎️ in-flight service: 기내식 · 음료 · 스파 · 디저트 picture cards (like the lounge) — one per round
+function planeServiceView(c) {
+    const { pid } = c, vip = TR.isVip(pid);
+    const cards = svcCards(TR.PLANE_SVC, { meal: [vip ? "🍱" : "🍞", "✈️"], drink: ["🥤", "🧊"], spa: ["💆", "🌸"], dessert: ["🍦", "⭐"] });
+    const used = TR.planeServiceUsed(pid);
+    const btn = h("button.btn.gold.big", { disabled: used, onclick: async () => {
+            const r = TR.planeServiceTry(pid);
+            if (!r.ok) return toast(r.why, "warn");
+            btn.disabled = true;
+            const hold = Activity.hold();
+            try {
+                await rollCards(cards, TR.PLANE_SVC.indexOf(r.pick));
+                await banner(`${r.pick.emoji} ${r.pick.name}`, 1300, "loc");
+                let line = "";
+                if (r.food) { const e = LF.eat(pid, r.food, "기내 서비스"); line = `${LD.FOOD_BY_ID?.[r.food]?.emoji || "🍽️"} ${LD.FOOD_BY_ID?.[r.food]?.name || r.food}! ${e.ok ? `식량 ${e.got >= 0 ? "+" : ""}${e.got}${e.hp ? ` · HP +${Math.round(e.hp)}` : ""}` : e.why}`; }
+                if (r.pick.id === "dessert") { const hp = heal(pid, 10); line += ` · HP +${Math.round(hp)}`; }
+                if (r.pick.id === "spa") { const hp = heal(pid, r.vip ? 100 : rint(10, 30)); line = `💆 개운하다! HP +${Math.round(hp)}`; }
+                Store.saveSeason(true); Sound.coin(); toast(line, "ok", 3500);
+            } finally { hold(); }
+            c.refresh();
+        } }, used ? "✅ 이번 라운드 기내 서비스 이용 완료" : vip ? "🛎️ 기내 서비스 받기 (👑 VIP 무료)" : `🛎️ 기내 서비스 받기 (${fmt(TR.PLANE_SVC_FEE)}G)`);
+    return h("div.sm-lounge.sm-plane-svc",
+        h("div.sm-gatehead", h("b", vip ? "👑 VIP 1등석 기내 서비스" : "🛎️ 이코노미 기내 서비스"), h("small", `승무원이 아래 4가지 중 하나를 랜덤으로 가져다 줍니다 · 라운드당 1회${vip ? "" : ` · ${fmt(TR.PLANE_SVC_FEE)}G`}`)),
+        h("div.sm-lcards", cards),
+        h("div.row.center", btn));
 }
 // header: the passengers (name · gate · final destination · itinerary)
 function paxBar(pid) {

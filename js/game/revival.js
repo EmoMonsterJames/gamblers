@@ -32,6 +32,8 @@ import * as G from "./season.js";
 export const REVIVAL_AT = 10;            // the 10th player out starts it
 export const REVIVAL_GOLD = 200000;      // revival gold (never kept)
 export const REVIVAL_TEXT = "10명의 플레이어가 탈락하여 패자부활전을 진행합니다. 행운의 주인공은 누가될까요?";
+// several players out at once (e.g. a plane crash: 9 → 11 or 12 out) — every eliminated player joins, still 1 survivor
+export const revivalText = () => { const n = rv()?.pids?.length || outCount(); return n > REVIVAL_AT ? `${n}명의 플레이어가 탈락하여 (동시 탈락 포함) 탈락자 전원이 패자부활전을 진행합니다. 최종 생존자는 단 1명! 행운의 주인공은 누가될까요?` : REVIVAL_TEXT; };
 export const RESET_NOTE = "🔄 패자부활전: 시즌 중에 이미 쓴 코너 입장 · 시도 횟수가 모두 리셋되었습니다 (예: 🎬 Highlight 다시 감상 가능, 🐝 Spelling Bee 다시 도전 가능). 패자부활전이 끝나면 원래대로 돌아갑니다.";
 export const SHOP_NOTE = "🔄 패자부활전 골드로 산 아이템 · 무기 · 펫 · 몬스터 용품은 패자부활전 동안만 갖고 있다가 패자부활전이 끝나면 모두 사라집니다 (별도 인벤토리).";
 

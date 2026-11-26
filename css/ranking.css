@@ -1,0 +1,18 @@
+/* 📊 랭킹 */
+.ranking .rk-tabs { flex-wrap: wrap; margin: 10px 0; }
+.rk-genres { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.rk-genres:empty { display: none; }
+.rk-chip { background: var(--panel); border: 1px solid #ffffff22; color: inherit; border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+.rk-chip.on { background: var(--gold); color: #221800; border-color: var(--gold); font-weight: 700; }
+.rk-board { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-width: 760px; }
+.rk-row { display: grid; grid-template-columns: 44px 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 14px; background: var(--panel); border: 1px solid #ffffff14; border-radius: 14px; }
+.rk-row.rk-p1 { border-color: var(--gold); background: linear-gradient(90deg, #3b2a00, var(--panel)); box-shadow: 0 0 18px #ffcc3333; }
+.rk-row.rk-p2 { border-color: #c9d1dc; }
+.rk-row.rk-p3 { border-color: #cd7f32; }
+.rk-place { font-size: 22px; font-weight: 800; text-align: center; }
+.rk-name, .rk-score { display: flex; flex-direction: column; min-width: 0; }
+.rk-name b, .rk-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rk-name small, .rk-score small { opacity: .65; font-size: 12px; }
+.rk-score { text-align: right; }
+.rk-score b { color: var(--gold); }
+@media (max-width: 560px) { .rk-row { grid-template-columns: 32px 40px minmax(0, 1fr); } .rk-score { grid-column: 2 / -1; text-align: left; } }

@@ -156,8 +156,9 @@
 .ep-test { display: grid; gap: 4px; padding: 8px 10px; border-radius: 12px; background: #2e1065; border: 1px solid #a78bfa; text-align: center; margin: 6px 0; }
 .ep-test small { font-size: 11px; color: #ddd6fe; } .ep-test-run { font-weight: 900; color: #fde68a; }
 .ep-notes summary { cursor: pointer; font-weight: 800; }
-.ep-note { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 10px; background: #0e0819; border-left: 3px solid #64748b; font-size: 13px; margin-top: 6px; }
-.ep-note.pass { border-left-color: #22c55e; } .ep-note.fail { border-left-color: #ef4444; } .ep-note.offer { border-left-color: var(--gold); background: #2a1d00; } .ep-note.test { border-left-color: #a78bfa; }
+.ep-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: baseline; width: 100%; box-sizing: border-box; line-height: 1.5; word-break: keep-all; overflow-wrap: anywhere; padding: 6px 10px; border-radius: 10px; background: #0e0819; border-left: 3px solid #64748b; font-size: 13px; margin-top: 6px; }
+.ep-note > small { white-space: nowrap; }
+.ep-note.k-pass { border-left-color: #22c55e; } .ep-note.k-fail { border-left-color: #ef4444; } .ep-note.k-offer { border-left-color: var(--gold); background: #2a1d00; } .ep-note.k-test { border-left-color: #a78bfa; }
 .ep-turn { display: grid; gap: 8px; justify-items: center; text-align: left; } .ep-turn .ep-note { width: 100%; }
 .ep-pick { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .ep-pick-btn { display: grid; justify-items: center; gap: 4px; padding: 10px 14px; border-radius: 14px; border: 2px solid var(--line); background: #0e0819; color: var(--text); cursor: pointer; min-width: 130px; }

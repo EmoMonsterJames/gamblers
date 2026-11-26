@@ -16,6 +16,7 @@ import { infect, cure, kidnap, isKidnapped, KIDNAP_ID, diseaseTick, whoOk, WHO_T
 import { FOOD_START } from "../data/life.js";
 import { mapNo } from "../data/mapAdmin.js";
 import { SPECIAL_BY_ID, makeTags } from "./specialSeason.js";
+import { belongsTo, sameNation } from "./nation.js";
 // other modules (game/employ.js) watch what happens during play: a map visited · a job done · a slot spin / casino play
 export const locationHooks = [], jobHooks = [], playHooks = [];
 // 2026-11 (game/travel.js): startHooks(pid, turn) → true when it placed the player (✈️ trip / 🛫 gate / 🛗 elevator) · enterChecks(pid, loc) → { ok:false, why } to refuse a map
@@ -92,7 +93,7 @@ export function pickManyForSelection(pool, n) {
 // SPIN reveals its members one at a time in random order.
 export const SELECT_COUNTRIES = ["Emo World", "MJ World", "Foggy Nation", "Polynesia", "Ground Town", "Dung Town"];
 export const SELECT_PER_COUNTRY = 3;
-const normC = c => String(c || "").toLowerCase().replace(/[^a-z]/g, "").replace(/^emworld$/, "emoworld");
+const normC = c => String(c || "").toLowerCase().replace(/naturalized/, "").replace(/[^a-z]/g, "").replace(/^emworld$/, "emoworld"); // "X (Naturalized)" counts as X
 export const selCountry = p => SELECT_COUNTRIES.find(c => normC(c) === normC(p?.country)) || null;
 // fluid / trans (any gender other than female) count as male for the 10 / 10 split
 export const selGender = p => { const g = String(p?.gender || "").trim().toLowerCase(); return !g ? null : g === "female" ? "female" : "male"; };
@@ -939,7 +940,7 @@ export function canEnter(pid, loc) {
     }
     if (r.points != null) return ps.points >= r.points ? out : { ok: false, why: `${r.points}P 이상 필요` };
     if (r.country) {
-        if (p.country === r.country) return out;
+        if (belongsTo(p, r.country)) return out; // citizen · naturalized · 🪪 영주권자
         const pass = r.pass || passIdOf(loc);
         if ((ps.items[pass] || 0) > 0) { const vz = passWhy(pid, loc); return vz ? { ok: false, why: vz } : { ...out, pass }; }
         return { ok: false, why: `${r.country} 국적 전용` };
@@ -1265,7 +1266,7 @@ export function missionMet(m, st) {
         case "brand_win": return (st.brandWin?.[brandKey(m.brand)] || 0) >= m.v;
         case "bet_win": return betBest(m, st) >= m.v;
         case "job_done": return (st.jobs || 0) >= (m.v || 1);
-        case "home_map": { const c = Store.player(st.pid)?.country; return !!c && (st.locs || []).some(id => LOC_BY_ID[id]?.req?.country === c); }
+        case "home_map": { const c = Store.player(st.pid)?.country; return !!c && (st.locs || []).some(id => sameNation(LOC_BY_ID[id]?.req?.country, c)); }
         case "region_map": return (st.locs || []).some(id => m.regions.includes(LOC_BY_ID[id]?.region));
         case "npc_hit": return (st.npc || []).some(x => x.npc === m.npc && x[m.what]);
         case "cm_post": return st.pid != null && S()?.ps?.[st.pid]?.cmPosted === S()?.number;

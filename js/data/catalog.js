@@ -740,6 +740,28 @@ export const WX_GEAR_MAPS = 20;
       SHOPS.general.list.push({ cat: "item", id: "final_shield", price: 100000, get locs() { return shieldLocs(); } }); }
     for (const [id, price] of [["umbrella_1", 4000], ["raincoat_1", 8000], ["parasol_1", 2000]]) SHOPS.discount.list.push({ cat: "item", id, price }); // which 20 discount maps: wxGearDiscountMaps() in catalogAdmin.js (the admin can move discount shops)
 }
+// 📼 VHS 등급 이용권 (밤띠 … HYHG띠, 100G … 800G): 일반 상점, each ticket on its own seeded third of the general-shop maps
+// (every map of every region gets a mix) — used to look at / buy / watch a video above the player's age (game/vhs.js)
+export const VHS_PASSES = [
+    ["bam", "밤띠", "🟫"], ["red", "빨간띠", "🟥"], ["water", "물띠", "🟦"], ["fire", "불띠", "🔥"],
+    ["flower", "꽃띠", "🌸"], ["emo", "이모띠", "💜"], ["emobu", "이모부띠", "🖤"], ["hyhg", "HYHG띠", "👑"]
+];
+{
+    VHS_PASSES.forEach(([k, name, emoji], i) => {
+        const id = "vhs_pass_" + k;
+        if (!ITEMS.some(x => x.id === id)) ITEMS.push({ id, name: `VHS ${name} 이용권`, emoji: "📼", vhsPass: k, desc: `${emoji} ${name} 등급 비디오를 연령 제한 없이 볼 수 있는 1회용 이용권 — 비디오 가게에서 표지를 확인하기 전 · 영화관에서 감상하기 전에 사용됩니다.` });
+        let cache = null;
+        const locs = () => {
+            const pool = LOCATIONS.filter(l => !l.kidnap && !l.sub && !l.off && (l.shops || []).includes("general")), key = pool.map(l => l.id).join(",");
+            if (cache?.key === key) return cache.locs;
+            let hh = 2166136261; for (const c of "gamblers-vhs-pass-" + k) { hh ^= c.charCodeAt(0); hh = Math.imul(hh, 16777619); }
+            const r = () => { hh ^= hh << 13; hh ^= hh >>> 17; hh ^= hh << 5; return ((hh >>> 0) % 100000) / 100000; };
+            cache = { key, locs: pool.filter(() => r() < 0.34).map(l => l.id) };
+            return cache.locs;
+        };
+        SHOPS.general.list.push({ cat: "item", id, price: (i + 1) * 100, get locs() { return locs(); } });
+    });
+}
 // 🐝 Spelling Bee corner: one map in each of these (randomly chosen) regions
 // 🏬 백화점 corner (screens/dept.js) — admin can move it in 🌍 지역·맵 관리
 export const DEPT_MAPS = ["riches", "goldbar", "diamond_casino", "lgbt_nation", "combo_town", "terror_casino", "magma_town", "death_door", "hurry_town", "radioactive"];

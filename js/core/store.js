@@ -102,6 +102,8 @@ export const Store = {
     community: { posts: [] }, // 💬 community board (persistent across seasons): { posts: [{ id, pid, season, text, style, at }] }
     stash: {},       // 🎒 every player's belongings carried between seasons: { <pid>: { season, items, pet, petEffect, weapons, emo, lotto } } (game/season.js)
     highlights: { list: [], seen: {} }, // 🎬 Gamblers Highlight replays (screens/highlight.js) + who watched in which season
+    residency: {},  // 🪪 영주권: { pid: [country, …] } (settings key "residency")
+    vhs: { own: {}, movies: [] }, // 📼 동행 VHS: { own: { pid: [{ id, at, season }] }, movies: [admin-made movies] } (settings key "vhs")
     lotto: {},       // 🎟️ lotto corner (persistent across seasons): see game/lotto.js
     gameplays: { counts: {}, seasons: [] }, // 🔥 all-time plays per game of finished seasons ("slot:<id>" / "casino:<id>": n) — Hot badges (game/gameBadges.js)
     emokeep: {},     // 🏟️ every player's last battle monster (persistent) — arena opponents outside the season
@@ -135,6 +137,8 @@ export const Store = {
         this.lotto = L.lotto || {};
         this.stash = L.stash || {};
         this.highlights = L.highlights || { list: [], seen: {} };
+        this.residency = L.residency || {};
+        this.vhs = L.vhs || { own: {}, movies: [] };
         this.season = L.season || null;
         this.fillHandlers();
         this.seasonCount = L.seasonCount || 0;
@@ -205,6 +209,8 @@ export const Store = {
         this.lotto = settings.find(r => r.key === "lotto")?.value || {};
         this.stash = settings.find(r => r.key === "stash")?.value || {};
         this.highlights = settings.find(r => r.key === "highlights")?.value || { list: [], seen: {} };
+        this.residency = settings.find(r => r.key === "residency")?.value || {};
+        this.vhs = settings.find(r => r.key === "vhs")?.value || { own: {}, movies: [] };
         const s = seasons?.[0];
         this.seasonCount = s?.number || 0;
         this.season = s && s.status !== "done" ? { ...s.state, dbId: s.id } : null;
@@ -216,7 +222,7 @@ export const Store = {
     saveLocal() {
         if (this.sandbox) return; // test mode (game/sandbox.js): nothing is saved
         try {
-            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, lotto: this.lotto, stash: this.stash, highlights: this.highlights, gameplays: this.gameplays, playerEdits: this.playerEdits, archive: this.archive }));
+            localStorage.setItem(LS, JSON.stringify({ decor: this.decor, hall: this.hall, results: this.results, jackpots: this.jackpots, machines: this.machines, season: this.season, seasonCount: this.seasonCount, jpLog: this.jpLog.slice(-500), catalog: this.catalog, games: this.games, maps: this.maps, wallets: this.wallets, bank: this.bank, emodex: this.emodex, community: this.community, emokeep: this.emokeep, lotto: this.lotto, stash: this.stash, highlights: this.highlights, residency: this.residency, vhs: this.vhs, gameplays: this.gameplays, playerEdits: this.playerEdits, archive: this.archive }));
         } catch (e) { console.warn(e); }
     },
 
@@ -293,6 +299,12 @@ export const Store = {
         if (this.sandbox) return;
         this.saveLocal();
         await this.write(sb => sb.from("settings").upsert({ key: "community", value: this.community, updated_at: new Date().toISOString() }));
+    },
+    // 🪪 영주권 · 📼 VHS (settings rows, same as the other keys)
+    async saveKey(key) {
+        if (this.sandbox) return;
+        this.saveLocal();
+        await this.write(sb => sb.from("settings").upsert({ key, value: this[key], updated_at: new Date().toISOString() }));
     },
     async saveStash() {
         if (this.sandbox) return;

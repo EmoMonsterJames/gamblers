@@ -40,7 +40,7 @@ export async function revivalPopup(s) {
     const m = modal(h("div.rv-pop",
         h("div.rv-pop-ico", "🔄"),
         h("h2", "패자부활전"),
-        h("p.rv-pop-text", RV.REVIVAL_TEXT),
+        h("p.rv-pop-text", RV.revivalText()),
         h("div.rv-pop-row", (s.revival?.pids || []).map(pid => h("div.rv-pop-p", avatar(pid, 54, { effect: false }), h("small", `${s.ps[pid]?.rank ?? "?"}위`)))),
         h("button.btn.gold.big", { onclick: () => m.close() }, "확인")), { title: "🔄 패자부활전", closable: false, cls: "rv-modal" });
     confetti(60, ["🔄", "✨", "🍀"]);
@@ -58,7 +58,7 @@ export function revivalIntroStage(s, rerender) {
         rerender();
     } }, "🔄 패자부활전 진행하기");
     return h("div.rv-stage.rv-intro",
-        h("div.rv-hero", h("div.rv-hero-ico", "🔄"), h("div", h("h2", "패자부활전"), h("p", RV.REVIVAL_TEXT))),
+        h("div.rv-hero", h("div.rv-hero-ico", "🔄"), h("div", h("h2", "패자부활전"), h("p", RV.revivalText()))),
         h("div.rv-lineup", R.pids.map(pid => h("div.rv-lp", avatar(pid, 72, { effect: false }), h("b", nm(pid)), h("small", `💀 ${s.ps[pid]?.rank ?? "?"}위`)))),
         h("ul.rv-rules", RULES.map(t => h("li", t))),
         h("div.rv-maps", survivalMaps().map(l => h("span.rv-map", { style: { "--c": l.color } }, l.emoji, " ", l.name))),

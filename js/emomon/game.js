@@ -497,18 +497,18 @@ export const LAB_EVOS = [
     { id: "lab161", from: 161, item: "MIX_MONSTER_EYEBALL", chance: 100, to: [162, 164] },
     { id: "lab162", from: 162, item: "MAT_MAGIC_ORB", chance: 100, to: [163] },
     { id: "lab164", from: 164, item: "MAT_MIND_ORB", chance: 100, to: [165] },
-    { id: "fuse200", fuse: [193, 194, 195, 196, 197, 198, 199], item: "MAT_MONSTER_DNA", chance: 100, to: [200] },
-    { id: "fuse217", fuse: [213, 214, 215, 216], item: "MAT_MONSTER_DNA", chance: 100, to: [217] }
+    { id: "fuse200", fuse: [193, 194, 195, 196, 197, 198, 199], item: null, chance: 100, to: [200] },
+    { id: "fuse217", fuse: [213, 214, 215, 216], item: null, chance: 100, to: [217] }
 ];
 const nm = id => species(id)?.name || "#" + id;
 export const labEvoRules = () => LAB_EVOS.map(r => ({ ...r,
-    text: r.fuse ? `${r.fuse.map(i => "#" + i).join(" · ")} 모두 보유 + ${emoItem(r.item)?.name || r.item} → #${r.to[0]} ${nm(r.to[0])} (합체 — 재료 몬스터는 사라집니다)`
+    text: r.fuse ? `${r.fuse.map(i => `#${i} ${nm(i)}`).join(" · ")} 모두 보유${r.item ? ` + ${emoItem(r.item)?.name || r.item}` : ""} → #${r.to[0]} ${nm(r.to[0])} (합체 — 재료 몬스터는 사라집니다)`
         : `${emoItem(r.item)?.name || r.item} → ${r.to.map(t => `#${t} ${nm(t)}`).join(" 또는 ")}${r.to.length > 1 ? ` (각 ${Math.round(100 / r.to.length)}%)` : ""}${r.chance < 100 ? ` · 성공 확률 ${r.chance}%` : ""}` }));
 // which special Lab evolutions this player can try right now (monster / item check)
 export function labEvoOptions(pid) {
     const list = mons(pid);
     return labEvoRules().map(r => {
-        const have = bagN(pid, r.item) > 0;
+        const have = !r.item || bagN(pid, r.item) > 0;
         if (r.fuse) {
             const got = r.fuse.map(id => list.find(m => +m.sid === id) || null);
             return { r, mons: got.filter(Boolean), missing: r.fuse.filter((id, i) => !got[i]), have, ok: have && got.every(Boolean) };
@@ -523,7 +523,7 @@ export function labEvolve(pid, rid, u = null) {
     if (!o) return { ok: false, why: "이 진화를 찾을 수 없습니다" };
     if (!o.have) return { ok: false, why: `${emoItem(o.r.item)?.name || o.r.item}이(가) 필요합니다` };
     if (!o.ok) return { ok: false, why: `필요한 몬스터가 없습니다: ${o.missing.map(i => "#" + i).join(", ")}` };
-    useItem(pid, o.r.item);
+    if (o.r.item) useItem(pid, o.r.item);
     if (Math.random() * 100 >= o.r.chance) { log(`🔬 ${name(pid)} 특수 진화 실패 (${o.r.id})`); Store.saveSeason(true); return { ok: true, failed: true }; }
     const to = o.r.to[Math.floor(Math.random() * o.r.to.length)];
     if (o.r.fuse) {

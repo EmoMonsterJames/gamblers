@@ -1,0 +1,217 @@
+/* ================================================================ 📼 동행 · VHS Collection · 영화DB · 🎬 영화관 */
+.vhs-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.vhs-head .big { font-size: 40px; }
+.vhs-head h3 { margin: 0; }
+
+/* ---- brand logos */
+.vb-logo { display: grid; place-items: center; flex: none; background: var(--bc); color: var(--bi); font-weight: 900; font-family: 'Lilita One', 'Arial Black', sans-serif; letter-spacing: -.02em; border: 2px solid #0006; box-shadow: inset 0 0 0 2px #fff4; line-height: 1; overflow: hidden; }
+.vb-logo span { padding: 0 2px; white-space: nowrap; }
+.vb-logo.sh-circle, .vb-logo.sh-heart, .vb-logo.sh-swirl, .vb-logo.sh-lips { border-radius: 50%; }
+.vb-logo.sh-crown { border-radius: 4px 4px 12px 12px; clip-path: polygon(0 18%, 20% 0, 50% 16%, 80% 0, 100% 18%, 100% 100%, 0 100%); }
+.vb-logo.sh-star { clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.vb-logo.sh-ghost { border-radius: 50% 50% 18% 18%; }
+.vb-logo.sh-tri { clip-path: polygon(50% 0, 100% 100%, 0 100%); align-items: end; padding-bottom: 8%; }
+.vb-logo.sh-wave { border-radius: 40% 10% 40% 10%; }
+.vb-logo.sh-bolt { transform: skewX(-12deg); border-radius: 4px; }
+.vb-logo.sh-ant { border-radius: 40%; }
+.vb-logo.sh-rgb { background: linear-gradient(90deg, #ef4444 0 33%, #22c55e 33% 66%, #3b82f6 66%); color: #fff; }
+
+/* ---- faces on the covers / in the film */
+.vc-face { position: relative; border-radius: 50%; overflow: visible; flex: none; }
+.vc-face > img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; background: #ffffff22; filter: drop-shadow(0 4px 6px #0007); }
+.vc-noimg { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: #0004; font-size: 60%; }
+.vc-mood { position: absolute; right: -4px; top: -4px; font-style: normal; font-size: 40%; filter: drop-shadow(0 1px 2px #000); }
+.vc-mood.joy { left: -4px; right: auto; }
+.vc-gun { position: absolute; left: -24%; bottom: 8%; font-style: normal; font-size: 55%; transform: scaleX(-1) rotate(-15deg); filter: drop-shadow(0 2px 2px #000); }
+.vc-face.nude > img { filter: blur(1px) contrast(.9); }
+.vc-censor { position: absolute; inset: 30% -6% 18%; display: grid; place-items: center; font-style: normal; font: 900 9px/1 sans-serif; letter-spacing: .08em; color: #fff; text-shadow: 0 0 2px #000;
+    background: repeating-conic-gradient(#d4a373 0 25%, #a16207 0 50%) 0 0 / 8px 8px; opacity: .97; border-radius: 3px; }
+
+/* ---- 중간표지 (spine) */
+.vhs-spine { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-rows: auto 1fr auto auto auto auto; justify-items: center; gap: 4px; width: 74px; height: 300px; padding: 6px 4px;
+    background: linear-gradient(180deg, #fff 0 8%, var(--sc) 8% 92%, #111 92%); border-radius: 4px; color: #fff; box-shadow: inset -6px 0 10px #0005, inset 3px 0 0 #fff4, 0 6px 12px #0008; text-align: center; transition: transform .15s; }
+.vhs-spine:hover { transform: translateY(-8px) rotate(-1deg); }
+.vhs-spine .vs-top { display: grid; justify-items: center; gap: 2px; }
+.vhs-spine .vs-top small { font-size: 8px; color: #111; font-weight: 800; max-width: 66px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.vs-title { writing-mode: vertical-rl; font: 900 22px/1 'Jua', 'Black Han Sans', sans-serif; text-shadow: 2px 2px 0 #0008; overflow: hidden; max-height: 150px; }
+.vs-en { font-size: 7px; letter-spacing: .05em; opacity: .85; max-width: 66px; }
+.vs-scene { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 6px; background: #0004; }
+.vs-scene span { position: absolute; right: -2px; bottom: -4px; font-size: 16px; }
+.vs-vhs { font: 900 11px/1 'Arial Black', sans-serif; padding: 2px 6px; border: 2px solid #fff; border-radius: 3px; background: #000; }
+.vs-stars { font-size: 9px; color: #fde047; }
+.vhs-spine.small { width: 46px; height: 190px; grid-template-rows: auto 1fr auto auto auto; }
+.vhs-spine.small .vs-title { font-size: 15px; max-height: 110px; }
+.vhs-spine.f-comic .vs-title, .vf-title.f-comic b, .vp-ko.f-comic { font-family: 'Jua', 'Gaegu', 'Comic Sans MS', sans-serif; color: #fde047; -webkit-text-stroke: 1px #7c2d12; }
+.vhs-spine.f-neon .vs-title, .vf-title.f-neon b, .vp-ko.f-neon { color: #fff; text-shadow: 0 0 6px #f0f, 0 0 14px #0ff; }
+.vhs-spine.f-brush .vs-title, .vf-title.f-brush b, .vp-ko.f-brush { font-family: 'Nanum Brush Script', 'Black Han Sans', serif; color: #fee2e2; }
+.bw, .vhs-spine.bw, .vhs-front.bw, .vhs-back.bw { filter: grayscale(1) contrast(1.1); }
+
+/* ---- 앞표지 */
+.vhs-front, .vhs-back { position: relative; width: 230px; height: 300px; border-radius: 4px; overflow: hidden; color: #fff; display: grid; box-shadow: 0 6px 14px #0008; }
+.vhs-front { grid-template-rows: auto 1fr auto auto auto; background: radial-gradient(circle at 50% 30%, #fff3 0, transparent 60%), var(--fb); }
+.vf-head { display: flex; justify-content: space-between; align-items: center; padding: 6px; gap: 6px; }
+.vf-head small { font-size: 9px; text-shadow: 0 1px 2px #000; text-align: right; }
+.vf-art { position: relative; display: grid; place-items: center; overflow: hidden; }
+.vf-art.va-duo { background: linear-gradient(180deg, #7dd3fc 0, #38bdf8 60%, #0ea5e9); }
+.vf-backrow { position: absolute; top: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; opacity: .92; }
+.vf-mainrow { position: relative; display: flex; justify-content: center; align-items: end; gap: 4px; margin-top: 30px; }
+.vc-face.throw::after { content: "💸"; position: absolute; top: -14px; font-size: 22px; left: 50%; animation: vhsToss 1.6s ease-in-out infinite; }
+@keyframes vhsToss { 0%, 100% { transform: translate(-50%, 0) rotate(-10deg); } 50% { transform: translate(-50%, -10px) rotate(10deg); } }
+.vf-rain i, .vp-fx i { position: absolute; top: -20px; left: var(--x); font-style: normal; font-size: 16px; animation: vhsRain 2.4s linear var(--d) infinite; }
+@keyframes vhsRain { to { transform: translateY(320px) rotate(260deg); } }
+.vf-art.va-collage { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 2px; }
+.vf-art.va-collage .vc-face { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.vf-art.va-poster { background: radial-gradient(circle, #fff5 0, transparent 65%); }
+.vf-small { display: flex; gap: 4px; justify-content: center; }
+.vf-art.va-hero, .vf-art.va-poster { grid-template-rows: 1fr auto; }
+.vf-title { padding: 2px 8px; text-align: center; }
+.vf-title b { display: block; font: 900 28px/1.05 'Black Han Sans', 'Jua', sans-serif; text-shadow: 2px 2px 0 #000, 0 0 10px #0008; }
+.vf-title small { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+.vf-tag { margin: 0 8px 4px; padding: 3px 6px; font-size: 10px; font-weight: 800; text-align: center; color: #fde047; background: #0007; border-radius: 4px; }
+.vc-band { padding: 3px; text-align: center; font-size: 10px; font-weight: 900; border-top: 2px solid #0005; }
+
+/* ---- 뒷표지 */
+.vhs-back { grid-template-rows: auto auto 1fr auto; background: linear-gradient(180deg, #111827, var(--fb)); padding: 6px; gap: 4px; }
+.vb-stills { display: grid; gap: 3px; grid-template-columns: 1fr 1fr; }
+.vb-stills.n1 { grid-template-columns: 1fr; } .vb-stills.n3 > :first-child { grid-column: 1 / -1; }
+.vb-still { position: relative; height: 54px; border-radius: 3px; overflow: hidden; display: grid; place-items: end center; border: 1px solid #fff5; }
+.vb-still-row { display: flex; gap: 2px; padding-bottom: 2px; }
+.vb-prop { position: absolute; left: 4px; top: 2px; font-size: 16px; }
+.vb-plot { margin: 0; font-size: 10px; line-height: 1.35; background: #0006; padding: 4px 6px; border-radius: 3px; }
+.vb-info { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1px 6px; font-size: 9px; align-content: start; }
+.vb-info dt { color: #fde68a; font-weight: 800; } .vb-info dd { margin: 0; }
+.vb-foot { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2px 6px; font-size: 10px; }
+.vb-foot .vc-band { grid-column: 1 / -1; }
+
+/* scene backgrounds (back-cover stills + the film) */
+.bg-street { background: linear-gradient(180deg, #93c5fd 0 55%, #64748b 55% 75%, #334155 75%); }
+.bg-bank { background: linear-gradient(180deg, #fef3c7 0 60%, #a16207 60%); }
+.bg-hideout { background: radial-gradient(circle at 50% 10%, #f472b688, transparent 50%), linear-gradient(180deg, #1e1b4b, #0f0a1e); }
+.bg-taxi { background: linear-gradient(180deg, #fde047 0 18%, #1f2937 18% 70%, #4b5563 70%); }
+.bg-home { background: linear-gradient(180deg, #fde68a 0 65%, #92400e 65%); }
+.bg-forest { background: linear-gradient(180deg, #86efac 0 40%, #15803d 40% 80%, #14532d 80%); }
+.bg-space { background: radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 2px) 0 0 / 40px 40px, linear-gradient(180deg, #020617, #312e81); }
+.bg-castle { background: linear-gradient(180deg, #c4b5fd 0 55%, #57534e 55%); }
+.bg-beach { background: linear-gradient(180deg, #7dd3fc 0 50%, #0ea5e9 50% 65%, #fde68a 65%); }
+.bg-night { background: radial-gradient(circle at 80% 20%, #fef9c3 0 14px, transparent 16px), linear-gradient(180deg, #020617, #1e293b); }
+.bg-stage { background: radial-gradient(ellipse at 50% 0, #fde04799, transparent 60%), linear-gradient(180deg, #7f1d1d 0 70%, #451a03 70%); }
+.bg-office { background: linear-gradient(180deg, #e2e8f0 0 62%, #64748b 62%); }
+
+/* ---- 진열대 / 수납장 */
+.vhs-shelf { display: flex; flex-wrap: wrap; gap: 6px; align-items: end; padding: 12px 12px 14px; border-radius: 6px; background: linear-gradient(180deg, #3b2416, #2a170d); border-bottom: 10px solid #6b4226; box-shadow: inset 0 10px 20px #0008; min-height: 60px; }
+.vhs-cabinet { display: grid; gap: 10px; padding: 10px; border-radius: 10px; background: #1c1209; border: 3px solid #6b4226; }
+.vhs-cab-row { display: grid; gap: 4px; }
+.vhs-cab-label { font-weight: 900; color: #fde68a; }
+
+/* ---- 동행 map */
+.vhs-map-scroll { overflow-x: auto; padding: 4px 0 8px; }
+.vhs-map { position: relative; width: 100%; min-width: 560px; margin: 10px auto; border-radius: 16px; background: radial-gradient(circle at 30% 30%, #1e3a5f, #0b1324); border: 2px solid #ffffff22; }
+.vhs-map-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vm-road { fill: none; stroke: #fde68a88; stroke-width: 4; stroke-dasharray: 8 6; }
+.vm-sec { fill: #fde68a; font: 800 12px sans-serif; text-anchor: middle; }
+.vm-node { all: unset; box-sizing: border-box; position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 1px; min-width: 90px; max-width: 120px; padding: 5px 7px; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(180deg, #7c3aed, #4c1d95); border: 2px solid #c4b5fd; text-align: center; box-shadow: 0 4px 10px #0008; }
+.vm-node b { font-size: 11px; line-height: 1.15; } .vm-node small { font-size: 10px; color: #fde68a; }
+.vm-node:hover:not([disabled]) { filter: brightness(1.2); transform: translate(-50%, -50%) scale(1.05); }
+.vm-node[disabled] { cursor: default; opacity: .75; }
+.vm-node.here { opacity: 1; border-color: var(--gold); box-shadow: 0 0 0 3px #facc1566, 0 4px 10px #0008; }
+.vm-ico { position: absolute; top: -10px; right: -8px; font-style: normal; font-size: 16px; }
+.vm-start, .vm-pin { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; }
+.vm-start img { width: 34px; height: 34px; border-radius: 50%; background: #fff2; border: 2px solid #fff; }
+.vm-start small { font-size: 10px; font-weight: 800; }
+.vm-pin { transition: left .55s ease, top .55s ease; transform: translate(-50%, -110%); z-index: 3; pointer-events: none; }
+.vm-pin img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--gold); background: #000a; }
+.vm-pin i { font-style: normal; font-size: 22px; margin-top: -8px; }
+.vhs-legend { display: grid; gap: 4px; }
+.vl-row { display: grid; gap: 1px; padding: 4px 8px; border-radius: 8px; background: #ffffff0a; } .vl-row small { color: var(--muted); }
+.vhs-door { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 10px 14px; border-radius: 14px; background: linear-gradient(90deg, #3b0764, #1e1b4b); border: 1px solid #a78bfa; }
+.vhs-door > div:nth-child(2) { display: grid; gap: 2px; flex: 1; min-width: 180px; } .vhs-door small { color: #ddd6fe; }
+.vhs-door .big { font-size: 34px; }
+.vhs-shop-sign { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; padding: 10px 14px; margin-bottom: 8px; border-radius: 10px; background: linear-gradient(90deg, #be185d, #7c3aed); box-shadow: 0 0 18px #f472b655; }
+.vhs-shop-sign span { font-size: 26px; } .vhs-shop-sign b { font: 900 22px/1 'Lilita One', sans-serif; } .vhs-shop-sign small { opacity: .9; }
+
+/* ---- pulled-out box: 뒷표지 | 중간 | 앞표지 */
+.vhs-box { display: flex; gap: 2px; justify-content: center; align-items: stretch; overflow-x: auto; padding: 6px 0; }
+.vhs-box .vhs-spine { cursor: default; } .vhs-box .vhs-spine:hover { transform: none; }
+.vhs-pull { display: grid; gap: 10px; }
+.vhs-pull-info { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.vhs-look { display: grid; gap: 10px; justify-items: center; }
+.vhs-flip { perspective: 800px; } .vhs-flip.turn > * { animation: vhsTurn .45s ease; }
+@keyframes vhsTurn { from { transform: rotateY(90deg); } to { transform: rotateY(0); } }
+
+/* ---- 영화DB */
+.vhs-db { display: grid; gap: 10px; }
+.vhs-db-card { padding: 10px 14px; border-radius: 12px; background: #ffffff0b; border: 1px solid #ffffff1f; }
+.vhs-db-card h4 { margin: 0 0 6px; } .vhs-db-card h4 small { color: var(--muted); font-weight: 600; }
+.vhs-db-card dl { display: grid; grid-template-columns: 110px 1fr; gap: 3px 10px; margin: 0; font-size: 13px; }
+.vhs-db-card dt { color: #fde68a; font-weight: 800; } .vhs-db-card dd { margin: 0; } .vhs-db-card dd.st { color: #facc15; letter-spacing: .1em; }
+.vhs-db-card ul { margin: 0; padding-left: 16px; }
+
+/* ---- 🎬 cinema */
+.vhs-player-deck { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 12px; margin-bottom: 10px; border-radius: 12px; background: linear-gradient(180deg, #27272a, #09090b); border: 2px solid #52525b; }
+.vhs-slot { display: grid; place-items: center; min-width: 180px; height: 70px; border-radius: 6px; background: #000; border: 3px inset #3f3f46; color: #71717a; font-size: 12px; overflow: hidden; }
+.vhs-slot.in .vhs-spine { transform: rotate(90deg); }
+.vhs-pay { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.vhs-pay .big { font-size: 48px; } .vhs-pay-amt { font: 900 30px 'Lilita One', sans-serif; color: #fde047; }
+.vhs-pay-list { display: grid; gap: 4px; width: 100%; max-height: 300px; overflow: auto; }
+.vhs-pay-row { display: grid; grid-template-columns: auto auto 1fr auto; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 8px; background: #ffffff0b; text-align: left; }
+.vhs-pay-row small { color: var(--muted); }
+
+/* the film */
+.modal.vhs-modal.theater { background: #000; }
+.vhs-theater { display: grid; gap: 8px; }
+.modal.vhs-modal.theater { width: min(900px, 96vw); max-width: 96vw; }
+.vhs-screen { position: relative; width: 100%; max-width: 860px; aspect-ratio: 16 / 9; margin: 0 auto; overflow: hidden; border-radius: 6px; background: #000; color: #fff; box-shadow: 0 0 40px #000; }
+.vhs-screen.bw { filter: grayscale(1) contrast(1.15); }
+.vhs-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, #ffffff08 0 2px, transparent 2px 4px); mix-blend-mode: screen; }
+.vhs-progress { height: 4px; border-radius: 2px; background: #27272a; } .vhs-progress i { display: block; height: 100%; width: 0; background: #ef4444; transition: width .1s linear; }
+.vp-brand, .vp-title, .vp-cast, .vp-end { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
+.vp-brand { animation: vhsZoom 3.5s ease forwards; } .vp-brand b { font: 900 30px 'Lilita One', sans-serif; } .vp-brand small { letter-spacing: .4em; opacity: .7; }
+@keyframes vhsZoom { from { transform: scale(.6); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.05); } }
+.vp-title { background: radial-gradient(circle, #1e3a8a, #000 70%); }
+.vp-title.s-comic { background: repeating-conic-gradient(#facc15 0 10deg, #f97316 10deg 20deg); }
+.vp-en { font: 900 clamp(28px, 6vw, 64px)/1 'Lilita One', 'Arial Black', sans-serif; color: #fff; text-shadow: 4px 4px 0 #000; animation: vhsBounce .9s ease infinite alternate; }
+.vp-ko { font: 900 clamp(26px, 5vw, 56px)/1 'Black Han Sans', 'Jua', sans-serif; opacity: 0; transform: rotate(-720deg) scale(.1); transition: transform 1.6s cubic-bezier(.2, 1.4, .4, 1), opacity .4s; text-shadow: 3px 3px 0 #000; }
+.vp-ko.show { opacity: 1; transform: rotate(-4deg) scale(1); }
+@keyframes vhsBounce { from { transform: translateY(-4px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
+.vp-cast { background: linear-gradient(135deg, #7c2d12, #000); }
+.vp-cast-card { display: grid; justify-items: center; gap: 4px; animation: vhsPop .35s ease; }
+.vp-cast-card b { font-size: 28px; } .vp-cast-card small { font-size: 18px; color: #fde68a; } .vp-cast-card i { font-style: normal; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #ef4444; }
+@keyframes vhsPop { from { transform: scale(.4) rotate(-10deg); opacity: 0; } }
+.vp-scene { position: absolute; inset: 0; }
+.vp-props { position: absolute; top: 8%; left: 0; right: 0; display: flex; justify-content: space-around; font-size: clamp(26px, 5vw, 48px); }
+.vp-props span { animation: vhsBounce 1.4s ease infinite alternate; }
+.vp-actors { position: absolute; left: 0; right: 0; bottom: 18%; display: flex; justify-content: center; align-items: end; gap: 3%; }
+.vp-actor { display: grid; justify-items: center; transition: transform .25s; }
+.vp-actor small { font-size: 12px; padding: 1px 6px; border-radius: 6px; background: #0008; }
+.vp-actor.talk { transform: translateY(-10px) scale(1.08); } .vp-actor.talk .vc-face { animation: vhsTalk .25s ease infinite alternate; }
+@keyframes vhsTalk { to { transform: scaleY(1.04) rotate(2deg); } }
+.vp-scene.chase .vp-actor { animation: vhsRun .6s ease infinite alternate; }
+@keyframes vhsRun { from { transform: translateX(-12px); } to { transform: translateX(12px); } }
+.vp-actor.nude .vc-censor { inset: 30% -10% 10%; font-size: 13px; }
+.vp-sub { position: absolute; left: 6%; right: 6%; bottom: 4%; text-align: center; font-size: clamp(14px, 2.2vw, 20px); font-weight: 800; text-shadow: 0 2px 3px #000, 0 0 6px #000; }
+.vp-sub b { color: #fde047; }
+.vp-fx { position: absolute; inset: 0; pointer-events: none; }
+.vp-end { background: #000; } .vp-end > b { font: 900 clamp(34px, 7vw, 72px) 'Lilita One', serif; animation: vhsZoom 2.5s ease forwards; }
+.vp-credits { display: grid; gap: 2px; font-size: 13px; color: #d4d4d8; animation: vhsCredits 6s linear forwards; }
+@keyframes vhsCredits { from { transform: translateY(60px); } to { transform: translateY(-40px); } }
+
+/* admin generator */
+.vg-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 16px; align-items: start; }
+.vg-side, .vg-preview { min-width: 0; } .vg-preview .vhs-box { justify-content: flex-start; }
+@media (max-width: 1250px) { .vg-wrap { grid-template-columns: 1fr; } .vg-side { position: static; order: -1; } }
+.vg-form { display: grid; gap: 8px; }
+.vg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.vg-grid label, .vg-form > label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.vg-cast-row, .vg-scene { display: grid; gap: 4px; padding: 6px; border-radius: 8px; background: #ffffff0a; }
+.vg-cast-row { grid-template-columns: 1.4fr 1.2fr .9fr auto auto auto; align-items: center; }
+.vg-scene textarea { min-height: 70px; font-family: inherit; }
+.vg-side { position: sticky; top: 10px; display: grid; gap: 10px; }
+.vg-list { display: grid; gap: 4px; }
+.vg-list-row { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: #ffffff0a; }
+.vg-list-row b { flex: 1; }
+@media (max-width: 600px) {
+    .vhs-front, .vhs-back { width: 190px; height: 270px; }
+    .vhs-spine { width: 62px; height: 270px; }
+    .vg-cast-row { grid-template-columns: 1fr 1fr; }
+}

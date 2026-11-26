@@ -26,6 +26,7 @@ import { openSlot } from "./slot.js";
 import { shopView, inventoryView } from "./shop.js";
 import { fortuneView, fortuneInventory } from "./fortune.js";
 import { fortuneHere } from "../game/fortune.js";
+import { donghaengView, collectionView, movieDbView, cinemaView } from "./vhs.js";
 import { spellStationsView } from "./spellStations.js";
 import { honorShopView } from "./honorShop.js";
 import { HSHOP, hshopKinds } from "../data/honorShop.js";
@@ -810,7 +811,8 @@ function locationStage(s) {
         ["grp:shop", "🛒 상점", k => k.startsWith("shop:") || k === "dept" || k === "x:fortune"],
         ["grp:honor", "🏅 Honorarium", k => k.startsWith("honor:")],
         ["grp:emo", "🐾 EmoMonster", k => ["emo:capture", "emo:hospital", "emo:lab", "emo:shop", "emo:rent", "gotcha"].includes(k)],
-        ["grp:money", "💰 Money", k => ["job", "beg", "employ", "company", "earn", "lotto", "highlight", "help"].includes(k)]
+        ["grp:money", "💰 Money", k => ["job", "beg", "employ", "company", "earn", "cinema", "lotto", "highlight", "help"].includes(k)],
+        ["grp:vhs", "📼 동행", k => ["vhs", "vhscol", "moviedb"].includes(k)] // 📼 every map: VHS shops · my VHS Collection · 영화DB
     ];
     // (the arcade keeps its found corners as plain tabs: they pause the arcade clock by tab id)
     const groupOf = k => loc.arcade || loc.kidnap ? null : GROUPS.find(g => g[2](k))?.[0] || null;
@@ -837,12 +839,12 @@ function locationStage(s) {
     const tabList0 = () => loc.kidnap ? [["kidnap", "⛓️ 납치 공간"], ["inv", "🎒 인벤토리"], ["card", "🪪 프로필"]] : loc.arcade ? arcadeTabs() : [["games", "🎰 게임"], ...(loc.community ? [["community", "💬 커뮤니티"]] : []), ...(loc.arena ? [["arena", "🏟️ 아레나"]] : []), ...locationShops(loc).map(sid => ["shop:" + sid, SHOPS[sid].icon + " " + SHOPS[sid].name]),
         ...(loc.discount ? [["shop:discount", "🏷️ 할인 상점"]] : []),
         ...(fortuneHere(loc) && !rev ? [["x:fortune", "🔮 점보기"]] : []), // 🔮 35 maps: under 🛒 상점
-        ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
+        ...(earnKinds(loc).length ? [["earn", "💪 돈벌기"], ["cinema", "🎬 영화관"]] : []), ...(loc.job ? [["job", "💼 직업"]] : []), ...(loc.beg ? [["beg", "🥺 구걸"]] : []), ...(loc.spell ? [["spell", "🐝 Spelling Bee"]] : []),
         ...honorKinds(loc).map(k => ["honor:" + k, `${HONOR_KINDS[k].emoji} ${HONOR_KINDS[k].name}`]),
         ...(loc.region === "survival" ? [] : hshopKinds(loc).map(k => ["honor:shop_" + k, `${HSHOP[k].emoji} ${HSHOP[k].name}`])), // 🏅 TOP N 전용 상점
         ...(loc.bank ? [["bank", "🏦 Business Bank"]] : []), ...(bizHubHere(loc) ? [["bizhub", "🏪 Self-Business"]] : []), ...bizTabs(loc),
         ...(loc.capture ? [["emo:capture", "🔍 EmoMon Capture"]] : []), ...(loc.hospital ? [["emo:hospital", "🏥 Monster Hospital"]] : []), ...(loc.lab ? [["emo:lab", "🧪 Monster Lab"]] : []), ...(loc.emoshop ? [["emo:shop", "🛒 Monster Shop"]] : []), ...(loc.emorent ? [["emo:rent", "🏷️ 이모몬스터 Rent Shop"]] : []), ["emo:dex", "📖 EmoMon Dex"],
-        ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
+        ...(loc.lotto ? [["lotto", "🎟️ 로또"]] : []), ...(loc.highlight ? [["highlight", "🎬 Highlight"]] : []), ...(loc.dept ? [["dept", "🏬 백화점"]] : []), ...(loc.gotcha ? [["gotcha", "🎰 Monster Gotcha"]] : []), ...(rev ? [] : [["vhs", "📼 동행"], ["vhscol", "📚 VHS Collection"], ["moviedb", "🎞️ 영화DB"]]), ["inv", "🎒 인벤토리"], ...(rev ? [] : [["loan", ps.loan ? "🏦 대출 상환" : "🏦 대출"]]), ["card", "🪪 프로필"]];
     const emoChanged = () => { updateHud(); side.replaceChildren(sideCard()); document.dispatchEvent(new Event("emo:change")); };
     const invWrap = el => h("div", rev ? revivalInvView(pid) : null, fortuneInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); if (currentTab === "inv") tabBody("inv"); }), extraInventory(pid, () => { emoChanged(); if (currentTab === "inv") tabBody("inv"); }), lifeInventory(pid, () => { updateHud(); side.replaceChildren(sideCard()); }), el, emoInventory(pid, emoChanged));
     let currentTab = "games";
@@ -957,6 +959,10 @@ function locationStage(s) {
             }
         }));
         else if (id === "loan") content = loanView(pid, () => { updateHud(); tabBody("loan"); });
+        else if (id === "cinema") content = cinemaView(pid, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "vhs") content = donghaengView(pid, loc, { turn: t, onChange: () => { updateHud(); side.replaceChildren(sideCard()); } });
+        else if (id === "vhscol") content = collectionView(pid, { onWatch: earnKinds(loc).length ? () => tabBody("cinema") : null });
+        else if (id === "moviedb") content = movieDbView(pid);
         else if (id === "earn") content = earnView(pid, () => { updateHud(); side.replaceChildren(sideCard()); tabBody("earn"); }, { loc, turn: t, updateHud });
         else if (id === "job") content = jobView(pid, t, () => { updateHud(); tabBody("job"); if (t.remaining <= 0) timeUp(); });
         else if (id === "beg") content = begView(pid, () => { updateHud(); tabBody("beg"); });

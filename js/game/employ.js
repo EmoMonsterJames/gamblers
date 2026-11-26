@@ -23,6 +23,7 @@ import * as L from "../data/life.js";
 import { S, log, name, roundHooks, seasonEndHooks, locationHooks, jobHooks, playHooks, eventHooks, alive } from "./season.js";
 import { friendsOf, helps, intimacy, RELS } from "./social.js";
 import { emoItem, TYPE_LIST } from "../emomon/data.js";
+import { sameNation } from "./nation.js";
 import { toast } from "../core/fx.js";
 import { B, account, accountByCode, activeBiz } from "./bank.js";
 import { ownsTypes } from "./extra.js";
@@ -301,11 +302,11 @@ export function stageChance(pid, co, i) {
         if (i === 2) { p = 30; p += add(10, "TOP 6 기록", rank <= 6); p += add(10, "MAXI 이상 잭팟 기록", jp >= JACKPOT_RANK.MAXI); p += add(10, "공격 무기 2개 이상", attackCount(ps.weapons || []) >= 2); }
     }
     if (co === "arizal") {
-        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(5, "Dung Town 출신", Store.player(pid)?.country === "Dung Town"); p += add(20, "Mind / Light / Evil 이모몬스터", hasTypes(pid, ["Mind", "Light", "Evil"])); }
+        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(5, "Dung Town 출신", sameNation(Store.player(pid)?.country, "Dung Town")); p += add(20, "Mind / Light / Evil 이모몬스터", hasTypes(pid, ["Mind", "Light", "Evil"])); }
         if (i === 2) { p = 40; p += add(10, "TOP 10 기록", rank <= 10); p += add(10, "MINOR 이상 잭팟 기록", jp >= JACKPOT_RANK.MINOR); p += add(5, "프레임 착용", !!d.frame); p += add(5, "프레임 효과 착용", !!d.effect); }
     }
     if (co === "poly") {
-        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(10, "Polynesia Casino 1 / 2 체험", visitedAny(pid, ["poly", "poly2"])); p += add(5, "Polynesia 출신", Store.player(pid)?.country === "Polynesia"); p += add(10, "Bug / Grass / Earth 이모몬스터", hasTypes(pid, ["Bug", "Grass", "Earth"])); }
+        if (i === 0) { p = 50; p += add(gradeBonus(g, 20, 10, 5), `학교 ${g}등급`); p += add(10, "Polynesia Casino 1 / 2 체험", visitedAny(pid, ["poly", "poly2"])); p += add(5, "Polynesia 출신", sameNation(Store.player(pid)?.country, "Polynesia")); p += add(10, "Bug / Grass / Earth 이모몬스터", hasTypes(pid, ["Bug", "Grass", "Earth"])); }
         if (i === 1) { p = 40; p += add(10, "TOP 10 기록", rank <= 10); p += add(10, "MINI 이상 잭팟 기록", jp >= JACKPOT_RANK.MINI); p += add(10, "펫 착용", !!ps.pet); p += add(10, "펫 효과 착용", !!ps.petEffect); }
     }
     if (co === "robot") {

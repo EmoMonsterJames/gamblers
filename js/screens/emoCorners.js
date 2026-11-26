@@ -64,7 +64,7 @@ export async function emoFight(pid, foe, { title, foeLabel, foeMon }) {
 
 // ================================================================ 🔍 CAPTURE
 export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = null } = {}) {
-    FT.setWild(pid, null); // a fresh Capture corner: no wild monster on screen yet
+    if (!turn?.emoWild?.[loc.id]) FT.setWild(pid, null); // a fresh Capture corner: no wild monster on screen yet (a kept one comes back below)
     return lazy(() => {
         const ps = G.S().ps[pid];
         const cfg = captureConfig(loc);
@@ -155,7 +155,10 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             else { Sound.miss(); put(stage, h("div.emo-found", h("div.big", "🍃"), h("b", "아무것도 없었다…"))); }
         }
         // wild monster: throw balls / run
+        const forget = () => { if (turn.emoWild) delete turn.emoWild[loc.id]; Store.saveSeason(); };
         function encounter(wild, lead = null) {
+            (turn.emoWild ||= {})[loc.id] = wild; // 🐾 stays on screen when the player leaves the tab and comes back
+            Store.saveSeason();
             draw();
             const s = species(wild.sid);
             const msg = h("p.emo-enc-msg", `야생의 ${s.name}이(가) 나타났다!`);
@@ -171,7 +174,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                 // 🃏 the wild monster is on screen with balls in the bag → the tarot can be asked about it (game/fortune.js)
                 FT.setWild(pid, wild, () => { const mine = EMO_ITEMS.filter(b => b.kind === "ball" && M.bagN(pid, b.id) > 0); return { balls: mine.reduce((a, b) => a + M.bagN(pid, b.id), 0), best: Math.max(0, ...mine.map(b => M.catchChance(wild.sid, b.id, wild))) }; });
                 const ps = G.S().ps[pid];
-                put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { FT.setWild(pid, null); toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"),
+                put(box.querySelector(".row"), h("button.btn.ghost", { onclick: () => { forget(); FT.setWild(pid, null); toast("🏃 도망쳤습니다", "info"); if (onLeave) onLeave(); else draw(); } }, "🏃 도망가기"),
                     ps?.items?.tarot_card > 0 && !FT.tarotUsed(pid) && own.length ? h("button.btn.ghost", { title: "이 이모몬스터를 잡을 수 있을지 타로카드로 물어봅니다", onclick: () => tarotModal(pid, onChange) }, "🃏 타로카드로 점치기") : null);
             };
             async function throwIt(b) {
@@ -188,13 +191,13 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
                 if (r.caught) {
                     Sound.fanfare(); confetti(60);
                     msg.textContent = `🎉 ${s.name} 포획 성공!`;
-                    FT.setWild(pid, null);
+                    forget(); FT.setWild(pid, null);
                     await keep(wild);
                     draw(); onChange();
                     return;
                 }
                 Sound.lose();
-                if (Math.random() < 0.3) { FT.setWild(pid, null); msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: () => { put(stage); draw(); } }, "확인")); return; }
+                if (Math.random() < 0.3) { forget(); FT.setWild(pid, null); msg.textContent = `💨 ${s.name}이(가) 도망쳤다…`; put(box.querySelector(".emo-balls"), ); put(box.querySelector(".row"), h("button.btn.gold", { onclick: () => { put(stage); draw(); } }, "확인")); return; }
                 msg.textContent = `볼에서 빠져나왔다! 다시 던져 보세요.`;
                 balls();
             }
@@ -254,6 +257,7 @@ export function captureView(pid, loc, { turn, onChange = () => { }, onLeave = nu
             onChange(); draw();
         }
         draw();
+        if (turn.emoWild?.[loc.id]) encounter(turn.emoWild[loc.id], h("p.muted.small", "🐾 아까 만난 이모몬스터가 아직 기다리고 있습니다"));
         return wrap;
     });
 }
@@ -345,11 +349,13 @@ export function labView(pid, { loc = null, onChange = () => { } } = {}) {
         function labSpecials() {
             const opts = M.labEvoOptions(pid);
             if (!opts.length) return null;
-            return h("div.emo-lab-special", h("h4", "🔬 특수 진화 · 합체"),
-                ...opts.map(o => h("div.emo-evo-row", h("div", h("b", o.r.text), h("div.small", need(o.r.item), o.missing.length ? h("small.muted", ` · 필요한 몬스터: ${o.missing.map(i => `#${i} ${species(i)?.name || ""}`).join(", ")}`) : null)),
+            return h("div.emo-lab-special", h("h4", "🔬 특수 진화 · 합체"), ...opts.map(labRow));
+        }
+        function labRow(o) {
+            return h("div.emo-evo-row", h("div", h("b", o.r.text), h("div.small", o.r.item ? need(o.r.item) : h("span.emo-need.ok", "아이템 필요 없음"), o.missing.length ? h("small.muted", ` · 필요한 몬스터: ${o.missing.map(i => `#${i} ${species(i)?.name || ""}`).join(", ")}`) : null)),
                     h("button.btn.gold", { disabled: !o.ok, onclick: async () => {
                         if (!(await confirmBox(`${o.r.text}
-${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?`, "진화", "취소"))) return;
+${o.r.item ? `${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. ` : ""}진행할까요?`, "진화", "취소"))) return;
                         const from = species(o.r.from ?? o.r.fuse?.[0]);
                         const r = M.labEvolve(pid, o.r.id);
                         if (!r.ok) return toast(r.why, "warn", 3500);
@@ -357,7 +363,7 @@ ${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?
                         await evolutionShow(from, r.failed ? null : (r.to?.id != null ? r.to : species(r.to)));
                         done();
                         onChange(); draw();
-                    } }, o.r.fuse ? "🧬 합체!" : "🔬 진화!"))));
+                    } }, o.r.fuse ? "🧬 합체!" : "🔬 진화!"));
         }
         function evoTab() {
             const list = M.mons(pid);
@@ -458,9 +464,13 @@ ${emoItem(o.r.item)?.name || o.r.item} 1개가 사용됩니다. 진행할까요?
                     m.traits.length ? [trOld, h("button.btn.gold", { disabled: !tOpts.length || !ready("trait"), onclick: () => traitAct(true) }, "🔁 이 특성을 바꾸기")] : null));
             // special evolution
             const sp = M.evoOptions(pid, m).filter(o => o.special), dex = M.dexOf(pid);
+            // 🧬 Gamblers Lab evolutions / fusions this monster takes part in (Elementy → Akasha, Prisma-Arch → ROYGBIV, Malmaggot → Beelzebaphomet)
+            const labOpts = M.labEvoOptions(pid).filter(o => o.r.fuse ? o.r.fuse.includes(+m.sid) : o.r.from === +m.sid);
             const specialCard = h("div.emo-exp", h("h4", "🌟 몬스터 특수 진화"), h("p.small.muted", `특수한 몬스터는 이 코너에서만 진화합니다 (${fmt(X.special.pts)}P + 진화 조건)`),
                 sp.length ? sp.map(o => h("div.emo-evo-opt", h("span.emo-arrow", "→"), dex[o.to.id] ? monPic(o.to, 48) : h("div.emo-q", "??"), h("b", dex[o.to.id] ? o.to.name : "??"), evoNeeds(o),
-                    h("button.btn.gold", { disabled: !o.ok, onclick: () => doEvolve(m, o) }, "🌟 특수 진화!"))) : h("small.muted", `${s.name}은(는) 특수 진화가 없습니다`));
+                    h("button.btn.gold", { disabled: !o.ok, onclick: () => doEvolve(m, o) }, "🌟 특수 진화!"))) : null,
+                labOpts.map(labRow),
+                !sp.length && !labOpts.length ? h("small.muted", `${s.name}은(는) 특수 진화가 없습니다`) : null);
             return h("div",
                 h("p.muted.small", "🔬 실험실: 각 실험에는 ⚗️ 조합으로 만든 Breaker가 필요합니다. 실험할 몬스터를 고르세요."),
                 h("div.emo-exp-mons", ...list.map(x => h("button.emo-exp-mon" + (x.uid === m.uid ? ".on" : ""), { onclick: () => { expMon = x.uid; draw(); } }, monPic(M.sp(x), 36), h("b", M.sp(x).name)))),

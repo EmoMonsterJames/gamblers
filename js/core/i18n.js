@@ -11,7 +11,7 @@ export const lang = () => { try { return localStorage.getItem(KEY) === "en" ? "e
 export function setLang(l) { try { localStorage.setItem(KEY, l); } catch { /* private mode */ } location.reload(); }
 
 const EXACT = {
-    "시즌": "Season", "플레이어": "Players", "지도": "Map", "슬롯도감": "Slot Dex", "명예의 전당": "Hall of Fame", "시즌 요약": "Season Summary",
+    "시즌": "Season", "플레이어": "Players", "지도": "Map", "슬롯도감": "Slot Dex", "명예의 전당": "Hall of Fame", "랭킹": "Ranking", "시즌 요약": "Season Summary",
     "연습실": "Practice", "방법": "How to Play", "☁ 저장중": "☁ Saving", "☁ 읽기전용": "☁ Read-only", "💾 로컬": "💾 Local",
     "확인": "OK", "취소": "Cancel", "닫기": "Close", "구매": "Buy", "사용": "Use", "작성": "Post", "진화": "Evolve", "이동하기": "Move",
     "⏸ 일시정지": "⏸ Pause", "▶ 재개": "▶ Resume", "⏹ 턴 종료": "⏹ End Turn", "턴을 종료할까요?": "End this turn?",

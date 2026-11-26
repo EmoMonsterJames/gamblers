@@ -18,6 +18,8 @@ import { adminSimPage, adminTestPage } from "./screens/adminSim.js";
 import { adminResourcesPage } from "./screens/adminResources.js";
 import { adminBankPage } from "./screens/adminBank.js";
 import { adminEmoPage } from "./screens/adminEmo.js";
+import { adminVhsPage } from "./screens/adminVhs.js";
+import { rankingPage } from "./screens/ranking.js";
 import { applyMaps } from "./data/mapAdmin.js";
 import { fillEmptyBizCorners } from "./data/business.js";
 import { seasonSummaryPage } from "./screens/seasonSummary.js";
@@ -27,17 +29,17 @@ import { installScrollFab } from "./ui/scrollFab.js";
 import "./data/life.js"; // 🍚 food items join the item list before any screen is drawn
 
 const ROUTES = {
-    "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "summary": seasonSummaryPage,
+    "": homePage, "season": seasonScreen, "players": playersPage, "hall": hallPage, "ranking": rankingPage, "summary": seasonSummaryPage,
     "map": mapPage, "practice": practicePage, "guide": guidePage, "admin": adminPage,
     "admin-catalog": adminCatalogPage, "slotgen": slotGenPage, "admin-players": adminPlayersPage, "admin-stats": adminStatsPage, "admin-games": adminGamesPage,
-    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage
+    "slotdex": slotdexPage, "admin-maps": adminMapsPage, "admin-sim": adminSimPage, "admin-test": adminTestPage, "admin-resources": adminResourcesPage, "admin-bank": adminBankPage, "admin-emo": adminEmoPage, "admin-vhs": adminVhsPage
 };
 
 function nav(active) {
     const link = (id, label) => h("a" + (active === id ? ".on" : ""), { href: "#/" + id }, label);
     return h("nav.topnav",
         h("a.brand", { href: "#/" }, h("span", "🎰"), "GAMBLERS"),
-        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("summary", "시즌 요약"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
+        h("div.links", link("season", "시즌"), link("players", "플레이어"), link("map", "지도"), link("slotdex", "슬롯도감"), link("hall", "명예의 전당"), link("ranking", "랭킹"), link("summary", "시즌 요약"), link("practice", "연습실"), link("guide", "방법"), link("admin", "⚙️")),
         h("div.navright",
             h("span.mode" + (Store.cloud ? (Store.user ? ".cloud" : ".ro") : ".local"), Store.cloud ? (Store.user ? "☁ 저장중" : "☁ 읽기전용") : "💾 로컬"),
             h("button.icon-btn.lang-toggle", { "data-no-i18n": "", onclick: () => setLang(lang() === "en" ? "ko" : "en"), title: "Language / 언어" }, lang() === "en" ? "🌐 KO" : "🌐 EN"),

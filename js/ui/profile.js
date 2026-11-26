@@ -8,6 +8,7 @@ import { CONFIG } from "../config.js";
 import { frameDeco } from "./frames.js";
 import { FOOD_START, FOOD_MAX } from "../data/life.js";
 import { specialBadges } from "../game/specialSeason.js";
+import { residencyOf } from "../game/nation.js";
 
 // 🦠 every disease a player can have (game/extra.js DISEASES — kept here too so the picture never needs the season rules)
 export const DISEASE_ICON = { flu: { emoji: "🤧", name: "독감" }, cancer: { emoji: "🎗️", name: "암" } };
@@ -106,7 +107,7 @@ export function playerCard(pid, ps = null, { compact = false } = {}) {
     const pet = ps?.pet ? PET_BY_ID[ps.pet] : null;
     const pfx = ps?.petEffect ? PETFX_BY_ID[ps.petEffect] : null;
     const info = [
-        ["국가", p.country], ["학교", p.school], ["직업", p.job], ["종족", p.ethnicity],
+        ["국가", p.country], ["영주권", residencyOf(p).join(", ")], ["학교", p.school], ["직업", p.job], ["종족", p.ethnicity],
         ["연령대", p.age_group], ["성별", p.gender], ["성향", p.preference], ["전담자", p.handler]
     ].filter(x => x[1]);
     const hpPct = ps ? Math.max(0, ps.hp) / CONFIG.START_HP * 100 : 100;

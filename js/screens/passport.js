@@ -11,6 +11,7 @@ import { toast, confetti, confirmBox, modal } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { LOC_BY_ID } from "../data/catalog.js";
 import * as PP from "../game/passport.js";
+import { residencyOf } from "../game/nation.js";
 import { avatar, displayName } from "../ui/profile.js";
 
 const nm = pid => displayName(Store.player(pid));
@@ -116,6 +117,7 @@ function pagesFor(pid) {
                 h("dt", "성명 / Name"), h("dd", nm(pid)),
                 h("dt", "영문 / Given name"), h("dd", p?.player_name || "-"),
                 h("dt", "국가 / Nationality"), h("dd", p?.country || "-"),
+                residencyOf(pid).length ? [h("dt", "영주권 / PR"), h("dd", residencyOf(pid).join(", "))] : null,
                 h("dt", "성별 / Sex"), h("dd", genderKo(p?.gender)),
                 h("dt", "종족 / Race"), h("dd", p?.ethnicity || "-"),
                 h("dt", "연령대 / Age group"), h("dd", p?.age_group || "-"),

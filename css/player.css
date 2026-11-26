@@ -24,4 +24,9 @@
     font-size:24px;
 
     color:#ffd700;
-}
+}/* 🪪 영주권자 (admin player form) */
+.ap-res-f { grid-column: 1 / -1; }
+.ap-res { display: flex; flex-wrap: wrap; gap: 6px; }
+.ap-res-c { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; border: 1px solid #ffffff2a; background: #ffffff0d; font-size: 12px; cursor: pointer; }
+.ap-res-c.on { border-color: var(--gold); background: #facc1522; color: #fde68a; }
+.ap-res-c.own { opacity: .45; cursor: default; }

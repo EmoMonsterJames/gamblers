@@ -11,6 +11,7 @@ import { Store } from "../core/store.js";
 import { LOCATIONS, LOC_BY_ID, REGIONS } from "../data/catalog.js";
 import * as G from "./season.js";
 import { whoOk } from "./extra.js";
+import { belongsTo } from "./nation.js";
 
 const S = () => Store.season;
 const ps_ = pid => S()?.ps?.[pid];
@@ -63,7 +64,7 @@ export function buyVisa(pid, visaId) {
 export function needsVisa(pid, loc) {
     const r = loc?.req;
     if (!r || !VISA_BY_LOC[loc.id]) return false;
-    if (r.country) return Store.player(pid)?.country !== r.country;
+    if (r.country) return !belongsTo(pid, r.country); // citizen · naturalized · 🪪 영주권자 need no visa
     if (r.who) return !whoOk(pid, r.who);
     return false;
 }

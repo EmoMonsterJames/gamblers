@@ -35,6 +35,7 @@ export function homePage() {
             h("a.hcard", { href: "#/players" }, h("span", "🧑‍🤝‍🧑"), h("b", "플레이어"), h("small", `${Store.players.length}명 등록`)),
             h("a.hcard", { href: "#/map" }, h("span", "🗺️"), h("b", "월드 맵"), h("small", `카지노 ${LOCATIONS.length}곳`)),
             h("a.hcard", { href: "#/hall" }, h("span", "🏆"), h("b", "명예의 전당"), h("small", champ ? `최근 우승: ${champ.snapshot?.name || displayName(Store.player(champ.playerId))}` : "아직 우승자 없음")),
+            h("a.hcard", { href: "#/ranking" }, h("span", "📊"), h("b", "랭킹"), h("small", "전적 · 이모몬스터 · 비디오 Top 10")),
             h("a.hcard", { href: "#/guide" }, h("span", "📖"), h("b", "게임 방법"), h("small", "미션 · 펫 · 무기 · 상점")),
             h("a.hcard", { href: "#/admin" }, h("span", "⚙️"), h("b", "관리자"), h("small", Store.cloud ? (Store.user ? "클라우드 저장 중" : "로그인 필요") : "로컬 모드"))));
 }
@@ -185,6 +186,7 @@ export function adminPage() {
         h("div.admin-card", h("h3", "🎰 슬롯·카지노게임 관리"), h("p.muted", "슬롯머신의 RTP(배당 배율)·보너스 확률 조정, 보너스 삭제, RTP 시뮬레이션, 카지노게임 RTP·노출 여부·최대 당첨금을 관리합니다."), h("a.btn.gold", { href: "#/admin-games" }, "관리하기")),
         h("div.admin-card", h("h3", "🌍 지역·맵 관리"), h("p.muted", "지역·맵 켜기/끄기, 이름·입장 조건·소속 지역 변경, 맵별 슬롯/카지노 게임 배치와 코너(직업·구걸·할인·NPC·돈벌기)를 관리합니다."), h("a.btn.gold", { href: "#/admin-maps" }, "관리하기")),
         h("div.admin-card", h("h3", "🏦 은행 · Self-Business 관리"), h("p.muted", "Business Bank 계좌(코드·Business Gold), 대기 중인 송금, 지금까지 개설된 비즈니스(소유자·위치·매출)를 관리합니다."), h("a.btn.gold", { href: "#/admin-bank" }, "관리하기")),
+        h("div.admin-card", h("h3", "🎬 영화 · 비디오 표지 생성기"), h("p.muted", "📼 동행 VHS 가게에서 파는 영화를 만듭니다: 제목 · 영화사 · 장르 · 등급 · 출연 배우(플레이어) · 앞/중간/뒷표지 · 영화관에서 재생되는 장면과 자막."), h("a.btn.gold", { href: "#/admin-vhs" }, "만들기")),
         h("div.admin-card", h("h3", "🐾 몬스터 관리 (EmoMon)"), h("p.muted", "몬스터 생성기, 몬스터 · 무기 · 속성 · 특성 · 몬스터 아이템 관리, 맵별 Capture 설정, EmoMonster 데이터 가져오기."), h("a.btn.gold", { href: "#/admin-emo" }, "관리하기")),
         h("div.admin-card", h("h3", "📊 리소스 대시보드"), h("p.muted", "Supabase DB·GitHub 저장소·Cloudflare Pages 한도·브라우저 사용량을 한도 대비로 점검하고, 가장 부하가 큰 지표와 과부하 여부를 보여줍니다."), h("a.btn.gold", { href: "#/admin-resources" }, "점검하기")),
         h("div.admin-card", h("h3", "🧪 맵 시뮬레이션"), h("p.muted", "테스트 플레이어로 지역·맵·상점·코너·NPC·미션을 실제처럼 체험합니다. 🔄 Survival Land(패자부활전) 맵도 체험할 수 있습니다. 테스트 중에는 아무것도 저장되지 않습니다."), h("a.btn.gold", { href: "#/admin-sim" }, "체험하기")),

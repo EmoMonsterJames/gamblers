@@ -442,7 +442,7 @@ export function hrBox(co, { open = false } = {}) {
 function notesBox(pid) {
     const list = EP.notesOf(pid).slice(-12).reverse();
     if (!list.length) return null;
-    return h("details.ep-notes", h("summary", `📬 채용 소식 (${list.length})`), list.map(n => h("div.ep-note." + n.kind, h("small.muted", new Date(n.at).toLocaleDateString()), h("span", n.text))));
+    return h("details.ep-notes", h("summary", `📬 채용 소식 (${list.length})`), list.map(n => h("div.ep-note.k-" + n.kind, h("small.muted", new Date(n.at).toLocaleDateString()), h("span", n.text))));
 }
 // 🧪 Arizal Tech Test box (corner + turn HUD)
 export function arizalBox(pid, t, onChange) {
@@ -573,7 +573,7 @@ export async function employAtTurn(pid) {
     const fresh = EP.unseenNotes(pid);
     if (fresh.length) {
         const m = modal(h("div.ep-turn", avatar(pid, 90), h("h3", `📬 ${nm(pid)}님께 채용 소식이 도착했습니다`),
-            fresh.map(n => h("div.ep-note." + n.kind, h("b", L.COMPANIES[n.co]?.emoji || "🏢"), h("span", n.text))),
+            fresh.map(n => h("div.ep-note.k-" + n.kind, h("b", L.COMPANIES[n.co]?.emoji || "🏢"), h("span", n.text))),
             h("div.row.center", h("button.btn.gold.big", { onclick: () => m.close() }, "확인"))), { title: "🏢 취업 코너", closable: false });
         fresh.some(n => n.kind === "offer" || n.kind === "pass") ? (Sound.fanfare(), confetti(40, ["🎉", "🏢"])) : fresh.some(n => n.kind === "fail") ? Sound.lose() : Sound.bonus();
         await m.closed;

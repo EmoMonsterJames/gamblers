@@ -12,6 +12,7 @@ import { CONFIG } from "../config.js";
 import { LOCATIONS, ITEM_BY_ID, SHOPS } from "../data/catalog.js";
 import { saleOf } from "../data/catalogAdmin.js";
 import { parseGen } from "../ui/avatarGen.js";
+import { baseCountry, sameNation, hasResidency, isNaturalized } from "./nation.js";
 
 const C = () => (Store.community ||= { posts: [] });
 const save = () => Store.saveCommunity();
@@ -218,6 +219,7 @@ const RACE_GROUPS = [
 ];
 const SAME_FIELDS = [["ethnicity", "같은 종족"], ["country", "같은 국가"], ["gender", "같은 성별"], ["job", "같은 직업"], ["preference", "같은 Preference"], ["school", "같은 학교"], ["age_group", "같은 연령대"]];
 const norm = x => String(x || "").trim().toLowerCase();
+const displayNameOf = p => p.name_ko || p.player_name || `#${p.id}`;
 const STOP = new Set(["baby", "old", "senior", "the", "mr", "mrs", "ms", "little", "big", "dark", "light", "super", "mega", "dr", "sir", "lady", "young", "mini"]);
 function similarNames(a, b) {
     const ka = String(a.name_ko || ""), kb = String(b.name_ko || "");
@@ -239,7 +241,13 @@ export function intimacy(aId, bId) {
     const add = (label, pts) => parts.push({ label, pts });
     const r = relationOf(aId, bId);
     if (r) add(`${RELS[r.rel].emoji} ${RELS[r.rel].label}${r.note ? ` (${r.note})` : ""}`, RELS[r.rel].pts);
-    for (const [k, label] of SAME_FIELDS) if (norm(a[k]) && norm(a[k]) === norm(b[k])) add(`${label} (${a[k]})`, 1);
+    for (const [k, label] of SAME_FIELDS) {
+        if (k === "country") { if (sameNation(a.country, b.country)) add(`${label} (${baseCountry(a.country)}${isNaturalized(a.country) || isNaturalized(b.country) ? " · 출신 / 귀화" : ""})`, 1); continue; } // "X (Naturalized)" = X
+        if (norm(a[k]) && norm(a[k]) === norm(b[k])) add(`${label} (${a[k]})`, 1);
+    }
+    // 🪪 영주권: a resident of the other player's country → +1 (each way)
+    if (b.country && !sameNation(a.country, b.country) && hasResidency(a, baseCountry(b.country))) add(`🪪 ${displayNameOf(a)}의 ${baseCountry(b.country)} 영주권`, 1);
+    if (a.country && !sameNation(a.country, b.country) && hasResidency(b, baseCountry(a.country))) add(`🪪 ${displayNameOf(b)}의 ${baseCountry(a.country)} 영주권`, 1);
     const ta = traitNow(aId), tb = traitNow(bId);
     if (ta.mongi && tb.mongi) add("😶 둘 다 몽이주름 (-)", 1);
     const ra = norm(a.ethnicity), rb = norm(b.ethnicity);
@@ -260,7 +268,7 @@ export function intimacy(aId, bId) {
     }
     // 2026-11 adjustments (🛗 elevator rescue +20 · 💻 Cyber Town gold grabs: halved) — game/travel.js adjustIntimacy
     for (const x of C().intimacyAdj || []) if ((same(x.a, aId) && same(x.b, bId)) || (same(x.a, bId) && same(x.b, aId))) add(`${x.label}${x.season != null ? ` (시즌 ${x.season})` : ""}`, x.pts);
-    const na = a.country, nb = b.country;
+    const na = baseCountry(a.country), nb = baseCountry(b.country);
     if (na !== nb && [na, nb].includes("Emo World") && [na, nb].includes("Dung Town")) add("🚩 Emo World ↔ Dung Town 국적", -1);
     if (na !== nb && [na, nb].includes("Foggy Nation") && [na, nb].includes("Ground Town")) add("🌫️ Foggy Nation ↔ Ground Town 국적", 1);
     if (na !== nb && [na, nb].includes("Polynesia")) add("🌴 Polynesia ↔ 다른 국적", -1);
@@ -268,12 +276,29 @@ export function intimacy(aId, bId) {
 }
 
 // ================================================================ 🗳️ vote elimination (17 and 9 left)
-// Each threshold runs once per season: due as soon as the alive count is AT or BELOW it (a round that removes 2+
-// players can jump past the exact number), checked when a round starts (roundHooks) and when the season screen draws.
+// Checked when a round starts (roundHooks) and when the season screen draws. Each vote runs once per season.
+//   1st vote (17 left): only when exactly 17 are left — if instant deaths jump past it (→ 16 or fewer), it is skipped
+//     and only the 2nd vote is held.
+//   2nd vote (9 left): if instant deaths / eliminations jump past it, it slides down to the next round (8, 7 … left);
+//     with VOTE_MIN − 1 (= 4) or fewer players left there is no vote at all (enough players are already out).
 export const VOTE_AT = [17, 9];
-const votePending = s => { const n = alive().length; return n > CONFIG.FINALISTS ? VOTE_AT.filter(t => n <= t && !(s.voteDone || []).includes(t)) : []; };
+export const VOTE_MIN = 5;
+const votePending = s => {
+    const n = alive().length, done = s.voteDone || [];
+    if (n <= CONFIG.FINALISTS || n < VOTE_MIN) return [];
+    const [t1, t2] = VOTE_AT, out = [];
+    if (n === t1 && !done.includes(t1)) out.push(t1);
+    if (n <= t2 && !done.includes(t2)) out.push(t2);
+    return out;
+};
+// a 1st vote that was jumped past is marked as skipped (once)
+function skipMissedVotes(s) {
+    const n = alive().length, done = (s.voteDone ||= []);
+    if (n < VOTE_AT[0] && !done.includes(VOTE_AT[0])) { done.push(VOTE_AT[0]); (s.voteSkipped ||= []).push(VOTE_AT[0]); log(`🗳️ 바로 사망 등으로 ${VOTE_AT[0]}명 투표 시점을 지나쳐 첫 번째 투표는 진행하지 않습니다 (두 번째 투표만 진행)`); }
+    if (n < VOTE_MIN && n > CONFIG.FINALISTS && !done.includes(VOTE_AT[1])) { done.push(VOTE_AT[1]); (s.voteSkipped ||= []).push(VOTE_AT[1]); log(`🗳️ ${n}명만 남아 이번 시즌에는 더 이상 투표 탈락을 진행하지 않습니다`); }
+}
 export const voteDue = () => { const s = S(); return !!s && votePending(s).length > 0; };
-roundHooks.push(s => { if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason) && voteDue()) startVote(); });
+roundHooks.push(s => { if (s.status === "mission" && !s.mission && !(s.sandbox && !s.testSeason)) { skipMissedVotes(s); if (voteDue()) startVote(); } });
 export function startVote() {
     const s = S(), live = alive();
     s.voteDone = [...new Set([...(s.voteDone || []), ...votePending(s)])]; // one vote also covers a threshold jumped past

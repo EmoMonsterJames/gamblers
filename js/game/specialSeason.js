@@ -10,7 +10,7 @@ import { JACKPOT_RANK } from "../data/catalog.js";
 
 const N = 20, HALF = 10;
 const low = s => String(s || "").trim().toLowerCase();
-const normC = c => low(c).replace(/[^a-z]/g, "").replace(/^emworld$/, "emoworld");
+const normC = c => low(c).replace(/naturalized/, "").replace(/[^a-z]/g, "").replace(/^emworld$/, "emoworld");
 const normJob = j => low(j).replace(/[^a-z0-9]/g, "").replace(/hygh/g, "hyhg"); // "HYGH Corp." = "HYHG Corp."
 const gRaw = p => low(p?.gender);
 // same as season.js selGender: fluid / trans count as male for the 10 / 10 split

@@ -16,6 +16,7 @@ import { LOC_BY_ID, LOCATIONS, REGION_BY_ID } from "../data/catalog.js";
 import { BIZ_TYPES, TX_TIERS, TX_FREE_PER_SEASON, TX_EXTRA_MAX, TX_MIN_ALIVE, TX_DELAY_ROUNDS, BANK_OPEN_CHANCE } from "../data/business.js";
 import { S, alive, log, name, honorRecords, roundHooks, seasonEndHooks, noteRefuse } from "./season.js";
 import { cure as cureDisease, DISEASES } from "./extra.js";
+import { sameNation } from "./nation.js";
 
 export const B = () => {
     const b = (Store.bank ||= {});
@@ -166,7 +167,7 @@ export const activeBiz = () => B().biz.filter(b => !b.closed);
 export const bizAt = locId => B().biz.filter(b => b.loc === locId);
 export const bizOf = pid => activeBiz().filter(b => b.owner === +pid);
 export const stockLeft = type => BIZ_TYPES[type].max - activeBiz().filter(b => b.type === type).length;
-export const priceFor = (type, pid) => { const T = BIZ_TYPES[type], p = Store.player(pid); return T.nation && p?.country === T.nation ? Math.round(T.price * 0.95) : T.price; };
+export const priceFor = (type, pid) => { const T = BIZ_TYPES[type], p = Store.player(pid); return T.nation && sameNation(p?.country, T.nation) ? Math.round(T.price * 0.95) : T.price; };
 export const ptsFor = type => BIZ_TYPES[type].pts || 0; // points part of the price (no nation discount)
 const emoCount = pid => S().ps[pid]?.emo?.mons?.length || 0;
 // every map a type may open on, with its region tax (maps that already hold a business are taken)
