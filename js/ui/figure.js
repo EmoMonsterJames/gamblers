@@ -58,7 +58,7 @@ function analyse(url) {
                 const b = box(el);
                 if (b.y + b.h >= 236 && b.y > 150 && b.w >= 110 && b.w < 240 && fillOf(el) && (!torso || b.w > torso.b.w)) torso = { el, b };
             }
-            const shirt = torso ? fillOf(torso.el) : null;
+            const shirt = torso ? fillOf(torso.el) : null, shirtTop = torso ? torso.b.y : null;
             let H = null;
             if (head) H = { cx: head.b.x + head.b.w / 2, cy: head.b.y + head.b.h / 2, rx: head.b.w / 2, ry: head.b.h / 2, skin: fillOf(head.el) };
             else {
@@ -72,14 +72,14 @@ function analyse(url) {
                     if (Math.abs(a.b.y - c.b.y) > 4 || Math.abs(a.b.w - c.b.w) > 3 || Math.abs(a.b.h - c.b.h) > 3) continue;
                     if (!pair || a.b.w * a.b.h > pair[0].b.w * pair[0].b.h) pair = [a, c];
                 }
-                if (!pair) return { txt, ok: false, shirt };
+                if (!pair) return { txt, ok: false, shirt, shirtTop };
                 const [L, R] = pair, ex = (L.b.x + L.b.w / 2 + R.b.x + R.b.w / 2) / 2, ey = L.b.y + L.b.h / 2;
                 const sp = (R.b.x - L.b.x) / 2, rx = sp * 38 / (15 * 0.88), sc = rx / 38 * 0.88;
                 const first = Math.min(all.indexOf(L.el), all.indexOf(R.el));
                 const under = shapes.filter(el => all.indexOf(el) < first && fillOf(el) && !el.matches("line,polyline")).map(el => ({ el, b: box(el) }))
                     .filter(({ b }) => b.w > sp * 2.6 && b.w < 240 && b.x < ex - sp && b.x + b.w > ex + sp && b.y < ey && b.y + b.h > ey + sp);
                 const skinEl = under.pop();
-                if (!skinEl) return { txt, ok: false, shirt };
+                if (!skinEl) return { txt, ok: false, shirt, shirtTop };
                 head = skinEl;
                 H = { cx: ex, cy: ey + 2 * sc, rx, ry: rx, skin: fillOf(skinEl.el) };
                 H.cy -= 0.03 * H.ry;
@@ -92,7 +92,7 @@ function analyse(url) {
                 const pair = dx < H.rx * 0.15 && b.w <= H.rx * 1.9 && b.h <= H.ry * 0.42; // both eyes / brows drawn as one path
                 if (dx < H.rx * 0.62 && dy > -H.ry * 0.5 && dy < H.ry * 0.75 && (pair || b.w <= H.rx * 0.95) && b.h <= H.ry * 0.72) feats.push(all.indexOf(el));
             }
-            return { txt, ok: feats.length >= 2, H, feats, headIdx: all.indexOf(head.el), tags: all.map(e => e.tagName.toLowerCase()), shirt };
+            return { txt, ok: feats.length >= 2, H, feats, headIdx: all.indexOf(head.el), tags: all.map(e => e.tagName.toLowerCase()), shirt, shirtTop };
         } finally { host.remove(); }
     })());
     return analysed.get(url);
@@ -136,7 +136,16 @@ async function drawnFull(url, o, female) {
         `<path d="M101 184L103 232H123L127 190Z" fill="#374151" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="#374151" ${O}/>` +
         `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>`;
     const arms = A.shirt ? armsSvg(A.shirt, A.H?.skin || "#f6d2a8", o.pose, o.hold) : "";
-    return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256">${legs}<svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg>${arms}</svg>`);
+    if (!A.shirt) return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256">${legs}<svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg>${arms}</svg>`);
+    // the shirt is trimmed to a body that narrows from the shoulders to the hips, so it runs straight into the trousers
+    const top = A.shirtTop != null ? Math.max(104, Math.min(128, A.shirtTop * 168 / 256 + 4)) : 122;
+    const torso = `M84 ${top}Q128 ${top - 8} 172 ${top}Q182 ${top + 4} 180 ${top + 18}L160 170H96L76 ${top + 18}Q74 ${top + 4} 84 ${top}Z`;
+    const edge = `M84 ${top}Q74 ${top + 4} 76 ${top + 18}L96 170H160L180 ${top + 18}Q182 ${top + 4} 172 ${top}`;
+    const cid = "fc" + Math.random().toString(36).slice(2, 8);
+    return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256"><defs><clipPath id="${cid}"><rect x="0" y="0" width="256" height="${top}"/><path d="${torso}"/></clipPath></defs>` +
+        `${legs}<path d="${torso}" fill="${A.shirt}"/>` +
+        `<g clip-path="url(#${cid})"><svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg></g>` +
+        `<path d="${edge}" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${arms}</svg>`);
 }
 // does the redrawer understand this hand-drawn picture? (face → no mood mark needed · shirt → arms drawn, no prop emoji)
 const drawnInfo = url => analyse(url).then(A => ({ face: A.ok, arms: !!A.shirt })).catch(() => ({ face: false, arms: false }));

@@ -160,20 +160,6 @@ export function collectionView(pid, { onWatch = null } = {}) {
     return wrap;
 }
 
-// ---------------------------------------------------------------- 🎞️ 영화DB (text only · owned videos)
-export function movieDbView(pid) {
-    const out = h("div.vhs-db-out");
-    const inp = h("input.input", { placeholder: "영어 원제 또는 한글 출시명 검색 (예: Fortune Swindlers / 복덩이 사기단)", oninput: () => run() });
-    const run = () => {
-        const q = inp.value.trim().toLowerCase();
-        const own = V.collection(pid).map(x => x.m);
-        const list = own.filter(m => !q || m.en.toLowerCase().includes(q) || m.ko.toLowerCase().includes(q));
-        put(out, !own.length ? h("p.notice", "VHS Collection에 비디오가 없습니다 — 영화DB는 소장한 비디오만 검색됩니다.")
-            : !list.length ? h("p.notice", "검색 결과가 없습니다.") : list.map(dbCard));
-    };
-    run();
-    return h("div.vhs-db", h("div.vhs-head", h("div.big", "🎞️"), h("div", h("h3", "영화DB"), h("p.muted.small", "가지고 있는 VHS의 영어 원제 또는 한글 출시명으로 영화 정보를 찾아봅니다."))), inp, out);
-}
 export const dbCard = m => h("div.vhs-db-card",
     h("h4", m.ko, h("small", ` ${m.en}`)),
     h("dl",
