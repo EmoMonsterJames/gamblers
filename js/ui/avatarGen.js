@@ -357,6 +357,25 @@ function eyewear(spec, sun) {
 
 // ------------------------------------------------------------ bodies
 const ARM_H = { L: "M101 125Q80 140 82 170", R: "M155 125Q176 140 174 170", RW: "M155 125Q184 122 190 94" };
+// 🙋 humanoid arm poses: [arm path, hand centre] for the left / right arm
+const POSES = {
+    down: { L: [ARM_H.L, [82, 174]], R: [ARM_H.R, [174, 174]] },
+    wave: { L: [ARM_H.L, [82, 174]], R: [ARM_H.RW, [191, 89]] },
+    both: { L: ["M101 125Q72 122 66 94", [65, 89]], R: [ARM_H.RW, [191, 89]] },
+    point: { L: [ARM_H.L, [82, 174]], R: ["M155 125Q178 132 200 124", [202, 123]] },
+    hips: { L: ["M101 125Q74 140 98 162", [99, 165]], R: ["M155 125Q182 140 158 162", [157, 165]] },
+    shrug: { L: ["M101 125Q80 136 70 116", [68, 112]], R: ["M155 125Q176 136 186 116", [188, 112]] }
+};
+// 🔫 something held in the right hand (VHS films / covers)
+export function holdProp(kind, [x, y]) {
+    if (kind === "gun") return `<g transform="translate(${x} ${y})"><path d="M-4 -12H24V-4H6L4 8H-6L-4 -4Z" fill="#2b2b30" stroke="#111" stroke-width="2" stroke-linejoin="round"/><rect x="18" y="-15" width="4" height="3" fill="#2b2b30"/><circle cx="0" cy="0" r="7" fill="none"/></g>`;
+    if (kind === "money") return `<g transform="translate(${x} ${y}) rotate(-12)"><rect x="-14" y="-10" width="28" height="15" rx="2" fill="#7bc96f" stroke="#2f6b2a" stroke-width="2"/><rect x="-3" y="-10" width="6" height="15" fill="#f1e3a0" stroke="#2f6b2a" stroke-width="1.2"/><circle cx="-8" cy="-2.5" r="2.5" fill="none" stroke="#2f6b2a" stroke-width="1.2"/></g>`;
+    if (kind === "phone") return `<g transform="translate(${x} ${y - 4})"><rect x="-6" y="-11" width="12" height="20" rx="2.5" fill="#222" stroke="#111" stroke-width="1.6"/><rect x="-4" y="-8" width="8" height="13" fill="#7ad7ff"/></g>`;
+    if (kind === "sock") return `<g transform="translate(${x} ${y - 6})"><path d="M-5 -14H5V2Q14 4 13 10Q11 15 2 12L-5 8Z" fill="#fff" stroke="#3a2a24" stroke-width="2" stroke-linejoin="round"/><path d="M-5 -10H5M-5 -6H5" stroke="#e2463f" stroke-width="2"/></g>`;
+    if (kind === "bag") return `<g transform="translate(${x} ${y + 10})"><path d="M-8 -12Q0 -20 8 -12" fill="none" stroke="#3a2a24" stroke-width="3"/><rect x="-16" y="-12" width="32" height="22" rx="4" fill="#6b4a2f" stroke="#3a2a24" stroke-width="2"/><text x="0" y="5" text-anchor="middle" font-size="12" font-weight="900" fill="#ffd84a" font-family="Arial">$</text></g>`;
+    if (kind === "mic") return `<g transform="translate(${x} ${y})"><rect x="-2.5" y="-4" width="5" height="16" rx="2" fill="#333"/><circle cx="0" cy="-8" r="6" fill="#bbb" stroke="#333" stroke-width="1.6"/></g>`;
+    return "";
+}
 // skY / hip: where a skirt starts on the body and the body's half width there · waist: share of the body height the bottoms cover
 // legX: where the two legs leave the body (default 108 / 148)
 function shapeBody(id) {
@@ -466,8 +485,12 @@ export function buildAvatar(opts = {}) {
     const line = dark ? shade(skin, 0.45) : OUT; // outline that stays visible on dark skin
     const vary = { bg: Math.floor(R() * 8), eye: Math.floor(R() * 4), mood: Math.floor(R() * 4), pose: Math.floor(R() * 3), blush: R() < 0.55, eyeCol: ["#3a2a1e", "#3f7df0", "#3fae5a", "#6b4a2f", "#7a5af0"][Math.floor(R() * 5)], tilt: R() };
     // 👙 swimwear / lingerie: Human Form · Main/Other Animal · Kalisto · Dungi only, never a baby (others get a summer outfit)
-    const swim = o.season === "swim" && humanoid && SWIM_RACES.includes(race.id) && !o.baby ? swimSpec(female ? "female" : "male", o.outfit) : null;
-    const fit = swim ? { top: { ko: "", sl: 0 }, tc: swim[2], bot: BOT.none, bc: swim[2] } : outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit);
+    // 🎬 topless (VHS films only — a grown-up woman's figure): the regular bottoms stay, the top is bare skin
+    const topless = !!o.topless && humanoid && female && !o.baby;
+    const swim = topless ? ["", "topless", "#000", "#000", o.jiggle ? "jiggle" : ""]
+        : o.season === "swim" && humanoid && SWIM_RACES.includes(race.id) && !o.baby ? swimSpec(female ? "female" : "male", o.outfit) : null;
+    const fit = topless ? { ...outfit("female", o.season === "swim" ? "summer" : o.season, o.outfit), top: { ko: "", sl: 0 } }
+        : swim ? { top: { ko: "", sl: 0 }, tc: swim[2], bot: BOT.none, bc: swim[2] } : outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit);
     const season = o.season === "swim" ? "summer" : o.season;
     // 🐑 curly fur: soft wavy edges + curl texture on the ears, face and body
     const fur = !!o.curly && FUR_RACES.includes(race.id) && humanoid && !rainbow;
@@ -477,14 +500,17 @@ export function buildAvatar(opts = {}) {
     out.push(`<defs><linearGradient id="rb" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="216" y2="216">${rbStops()}</linearGradient><linearGradient id="rbh" gradientUnits="userSpaceOnUse" x1="-42" y1="-42" x2="42" y2="42">${rbStops()}</linearGradient>` +
         `<linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1a1e"/><stop offset="1" stop-color="#c88a5a"/></linearGradient><linearGradient id="smb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ad7ff"/><stop offset="1" stop-color="#3f4df0"/></linearGradient><linearGradient id="smf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd83b"/><stop offset="1" stop-color="#e2463f"/></linearGradient>` +
         AR.EAR_DEFS + (fur ? furDefs(skin) : "") + `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
-    out.push(`<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
+    // 🧍 full: the whole figure, head to feet, on a clear background (VHS covers / films) — no circle, no zoom
+    out.push(o.full ? `<g>` : `<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
     // 👶 Baby: the whole figure a little smaller (shrunk toward the bottom centre, so it still stands in the frame)
     if (o.baby) out.push(`<g transform="translate(128 250) scale(.78) translate(-128 -250)">`);
     // 🧑 humanoid races: a profile picture — the face and the upper body only (zoomed in on the head and torso)
     // 🦋 butterfly / moth: the wings of the preset (colour + pattern can be changed)
     const bfly = bugP && (bugP.wings === "butterfly" || bugP.wings === "moth");
     out.push(extrasBack(bfly ? { ...o, wings: isHex(o.wings) ? o.wings : bugP.wingCol, moth: bugP.wings === "moth" } : o)); // 🦋 wings · 🐿️ tail behind everything
-    if (humanoid) out.push(`<g transform="translate(128 128) scale(${UPPER.k}) translate(-128 -${UPPER.cy})">`);
+    if (humanoid) out.push(o.full ? `<g>` : `<g transform="translate(128 128) scale(${UPPER.k}) translate(-128 -${UPPER.cy})">`);
+    // 🙋 arm pose: o.pose (down · wave · both · point · hips · shrug) or the seed's own
+    const pose = POSES[o.pose] ? o.pose : vary.pose === 1 ? "wave" : "down";
 
     const body = humanoid ? null : prodP ? AR.PRODUCE_BODY[prodP.shape] || AR.PRODUCE_BODY.round : shapeBody(race.id);
     const headY = race.id === "giraffe" ? 58 : 74; // 🦒 long neck: the head sits higher
@@ -561,8 +587,10 @@ export function buildAvatar(opts = {}) {
         const blob = shape => fur ? woolEdge(shape.replace("FILL", "WOOL"), limbC, line, 3, 6) : blob0(shape);
         const armW = swim ? swimArm(swim) + (BT ? BT[2] - 10 : 0) : BT ? BT[2] : 10;
         const T = fit.top, B = fit.bot, tc = fit.tc, bc = fit.bc, tcd = shade(tc, lum(tc) < 0.25 ? 0.3 : -0.25), bcd = shade(bc, lum(bc) < 0.25 ? 0.3 : -0.25);
-        const dR = vary.pose === 1 ? ARM_H.RW : ARM_H.R, dL = ARM_H.L;
-        const handR = vary.pose === 1 ? [191, 89] : [174, 174];
+        const PZ = POSES[pose];
+        const dR = PZ.R[0], dL = PZ.L[0];
+        const handR = PZ.R[1], handL = PZ.L[1];
+        wrist = [handL[0], handL[1] - 9];
         // legs + shoes
         if (BT && !inv) out.push(`<g transform="translate(128 0) scale(${BT[0]} 1) translate(-128 0)">`);
         out.push(limb("M116 176L114 226", BT ? BT[3] : 12) + limb("M140 176L142 226", BT ? BT[3] : 12));
@@ -630,7 +658,7 @@ export function buildAvatar(opts = {}) {
         if (T.sl === 0 && !swim) out.push(`<path d="M104 121L109 132M152 121L147 132" stroke="${tcd}" stroke-width="2"/>`);
         // hands
         if (race.id === "bird") wrist = [66, 184];
-        else out.push(blob(`<circle cx="82" cy="174" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`));
+        else out.push(blob(`<circle cx="${handL[0]}" cy="${handL[1]}" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`) + holdProp(o.hold, handR));
         // 🦂 scorpion: pincers on both hands
         if (bugP?.arms === "claws") out.push([[82, 174], handR].map(([x, y]) => `<path d="M${x - 2} ${y + 4}C${x - 16} ${y - 2} ${x - 12} ${y - 20} ${x} ${y - 18}L${x - 2} ${y - 10}C${x - 6} ${y - 10} ${x - 6} ${y - 2} ${x} ${y}ZM${x + 2} ${y + 4}C${x + 16} ${y - 2} ${x + 12} ${y - 20} ${x + 2} ${y - 18}L${x + 3} ${y - 10}C${x + 7} ${y - 8} ${x + 6} ${y - 2} ${x + 1} ${y}Z" fill="${skinG}" ${S(3, line)}/>`).join(""));
         if (o.leprosy) out.push(spots(R, [[82, 174, 5], [handR[0], handR[1], 5], [114, 208, 5], [142, 212, 5]], 1));
@@ -654,9 +682,16 @@ export function buildAvatar(opts = {}) {
         // ---- shape body: the body is the head; arms / legs are stuck on
         const lc = rainbow ? "url(#rb)" : shade(skin, lum(skin) < 0.3 ? 0.3 : -0.38);
         const [xL, xR] = body.ax, ay = body.ay;
-        const dL = `M${xL + 4} ${ay}Q${xL - 22} ${ay + 12} ${xL - 18} ${ay + 40}`;
-        const dR = vary.pose === 1 ? `M${xR - 4} ${ay}Q${xR + 24} ${ay - 14} ${xR + 16} ${ay - 44}` : `M${xR - 4} ${ay}Q${xR + 22} ${ay + 12} ${xR + 18} ${ay + 40}`;
-        const hR = vary.pose === 1 ? [xR + 16, ay - 46] : [xR + 18, ay + 42];
+        // arms by pose (mirrored for the left): up · out · forward · down
+        const SA = {
+            up: (x, s) => [`M${x - s * 4} ${ay}Q${x + s * 24} ${ay - 14} ${x + s * 16} ${ay - 44}`, [x + s * 16, ay - 46]],
+            out: (x, s) => [`M${x - s * 4} ${ay}Q${x + s * 20} ${ay - 4} ${x + s * 34} ${ay - 16}`, [x + s * 36, ay - 18]],
+            fwd: (x, s) => [`M${x - s * 4} ${ay}Q${x + s * 22} ${ay + 4} ${x + s * 38} ${ay - 2}`, [x + s * 40, ay - 2]],
+            hip: (x, s) => [`M${x - s * 4} ${ay}Q${x + s * 26} ${ay + 10} ${x + s * 4} ${ay + 34}`, [x + s * 4, ay + 36]],
+            down: (x, s) => [`M${x - s * 4} ${ay}Q${x + s * 22} ${ay + 12} ${x + s * 18} ${ay + 40}`, [x + s * 18, ay + 42]]
+        };
+        const [aL, aR] = { wave: ["down", "up"], both: ["up", "up"], point: ["down", "fwd"], hips: ["hip", "hip"], shrug: ["out", "out"] }[pose] || ["down", "down"];
+        const [dL, hL] = SA[aL](xL, -1), [dR, hR] = SA[aR](xR, 1);
         const T = fit.top;
         const arm = d => `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
         // bottoms (like Melon Donglee): the lower part of the body is the pants / skirt, and
@@ -695,8 +730,8 @@ export function buildAvatar(opts = {}) {
             out.push(`<path d="M${128 - hip} ${yT}Q128 ${yT + 7} ${128 + hip} ${yT}L${128 + hip + fl} ${hem}Q128 ${hem + 9} ${128 - hip - fl} ${hem}Z" fill="${bandC}" ${S(4)}/>` + folds);
         }
         if (prodP) out.push(AR.produceTop(prodP.top, body, S)); // 🍃 stem · leaves · crown · mushroom cap
-        out.push(`<circle cx="${xL - 18}" cy="${ay + 42}" r="8.5" fill="${skinG}" ${S(3)}/><circle cx="${hR[0]}" cy="${hR[1]}" r="8.5" fill="${skinG}" ${S(3)}/>`);
-        wrist = [xL - 19, ay + 31];
+        out.push(`<circle cx="${hL[0]}" cy="${hL[1]}" r="8.5" fill="${skinG}" ${S(3)}/><circle cx="${hR[0]}" cy="${hR[1]}" r="8.5" fill="${skinG}" ${S(3)}/>` + holdProp(o.hold, hR));
+        wrist = [hL[0] - 1, hL[1] - 11];
     }
 
     // ---- accessories on the body
@@ -862,7 +897,7 @@ export function buildAvatar(opts = {}) {
     if (humanoid || BT) out.push("</g>");
     out.push(extrasFront(o)); // LUX logo on the clothes · cheek fluff
     if (o.baby) out.push("</g>");
-    if (typedLabel) out.push(`<text x="128" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#00000055">${esc(String(typedLabel).slice(0, 20))}</text>`);
+    if (typedLabel && !o.full) out.push(`<text x="128" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="9" fill="#00000055">${esc(String(typedLabel).slice(0, 20))}</text>`);
     out.push("</g>");
     const meta = `<desc>gen:${esc(JSON.stringify(o))}</desc>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">${meta}${out.join("")}</svg>`;

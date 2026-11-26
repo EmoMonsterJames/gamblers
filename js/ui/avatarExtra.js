@@ -160,8 +160,16 @@ export function swimTorso(female, spec, skinFill, skin, line, fur = null) {
             (pat === "side" ? `<path d="M${128 - w + 3} ${y0 + 3}L${128 - w + 1} 196M${128 + w - 3} ${y0 + 3}L${128 + w - 1} 196" stroke="#ffffff" stroke-width="3.4"/>` : "");
         return s;
     }
+    // 🎬 topless (VHS films): bare chest down to the waist, the figure's own bottoms show below · "jiggle" = the chest bounces (dance)
+    if (type === "topless") {
+        const tb = "M102 119Q128 113 154 119Q150 140 151 156L153 170Q128 176 103 170L105 156Q106 140 102 119Z";
+        const nip = isHex(skin) ? shade(skin, -0.32) : "#c9746a";
+        const chest = [-1, 1].map(k => `<path d="M${128 + k * 2} 138Q${128 + k * 4} 154 ${128 + k * 13} 155Q${128 + k * 25} 155 ${128 + k * 25} 141" fill="${skinFill}" stroke="${line}" stroke-width="2.4" stroke-linecap="round"/><circle cx="${128 + k * 14}" cy="147" r="2.3" fill="${nip}"/>`).join("");
+        const bounce = pat === "jiggle" ? `<animateTransform attributeName="transform" type="translate" values="0 0;0 3;0 -1;0 0" dur=".42s" repeatCount="indefinite"/>` : "";
+        return skinPath(tb) + `<g>${chest}${bounce}</g>` + navel(163);
+    }
     // 👩 women
-    const body = "M102 119Q128 113 154 119Q150 140 151 156Q160 170 158 186Q128 192 98 186Q96 170 105 156Q106 140 102 119Z";
+    const body ="M102 119Q128 113 154 119Q150 140 151 156Q160 170 158 186Q128 192 98 186Q96 170 105 156Q106 140 102 119Z";
     s += skinPath(body) + `<path d="M108 141Q117 149 126 142M130 142Q139 149 148 141" fill="none" stroke="${sd}" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>` + navel(166);
     const strap = (d, w = 2.4) => `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${w + 1.6}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
     const lace = d => `<path d="${d}" fill="none" stroke="${acc}" stroke-width="2.4" stroke-dasharray="1.2 2.4" stroke-linecap="round"/>`;

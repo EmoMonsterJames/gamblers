@@ -11,77 +11,17 @@ import * as D from "../data/vhs.js";
 import { makeBattler } from "../emomon/game.js";
 import { emoFight } from "./emoCorners.js";
 
+import { spine, front, back, vhsBox, brandLogo } from "./vhsCover.js";
+import { figure, setFigure } from "../ui/figure.js";
+export { spine, front, back, vhsBox, brandLogo };
+
 const pimg = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
 const stars = n => "★".repeat(n) + "☆".repeat(Math.max(0, 7 - n));
 const brandOf = m => D.BRAND_BY_ID[m.brand] || D.BRANDS[0];
 const rateOf = m => D.RATING_BY_ID[m.rating] || D.RATINGS[0];
 const roleCast = (m, role) => D.castOf(m, role);
-const leads = m => m.cast.filter(c => c.part === "lead");
-const sups = m => m.cast.filter(c => c.part === "support");
-const castLine = (list, short = false) => list.map(c => short ? c.ko : `${c.ko} (${c.role})`).join(", ");
-
-// ---------------------------------------------------------------- 🖼️ covers
-export const brandLogo = (b, size = 34) => h("div.vb-logo.sh-" + (b.shape || "square"), { style: { "--bc": b.color, "--bi": b.ink, width: size + "px", height: size + "px", fontSize: Math.max(8, size / (b.logo.length > 3 ? 3.4 : 2.4)) + "px" }, title: b.name }, h("span", b.logo));
-const face = (c, size, o = {}) => h("div.vc-face" + (o.cls ? "." + o.cls : "") + (c?.nude ? ".nude" : ""), { style: { width: size + "px", height: size + "px" } },
-    c?.pid != null && pimg(c.pid) ? h("img", { src: pimg(c.pid), alt: c.ko, draggable: "false" }) : h("span.vc-noimg", "👤"),
-    o.frown ? h("i.vc-mood", "😒") : null, o.gun ? h("i.vc-gun", "🔫") : null, o.joy ? h("i.vc-mood.joy", "😆") : null,
-    c?.nude ? h("i.vc-censor", "CENSORED") : null);
-const ratingBand = m => { const r = rateOf(m); return h("div.vc-band", { style: { background: r.color, color: r.ink } }, `${r.name} · ${r.age === 0 ? "모든 연령 관람가" : D.AGE_ORDER[r.age] + " 이상 관람가"}`); };
-
-export function spine(m, { onclick = null, small = false } = {}) {
-    const b = brandOf(m), lead = leads(m)[0];
-    return h("button.vhs-spine" + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold"), { style: { "--sc": m.cover?.front?.bg || b.color }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
-        h("div.vs-top", brandLogo(b, small ? 22 : 34), small ? null : h("small", b.name)),
-        h("div.vs-title", m.ko),
-        h("div.vs-en", m.en),
-        small ? null : h("div.vs-scene", lead ? face(lead, 46) : null, h("span", (m.cover?.front?.fx || D.GENRE_EMOJI[m.genres[0]] || "🎬"))),
-        h("div.vs-vhs", "VHS"),
-        h("div.vs-stars", "★".repeat(m.stars)));
-}
-export function front(m) {
-    const b = brandOf(m), F = m.cover?.front || {}, layout = F.layout || "hero";
-    let art;
-    if (layout === "duo-money") {
-        const main = (F.main || []).map(r => roleCast(m, r)).filter(Boolean), back = (F.back || []).map(r => roleCast(m, r)).filter(Boolean);
-        art = h("div.vf-art.va-duo",
-            h("div.vf-rain", ...Array.from({ length: 14 }, (_, i) => h("i", { style: { "--x": (i * 7.3 % 100) + "%", "--d": (i % 5) * 0.4 + "s" } }, F.fx || "💸"))),
-            h("div.vf-backrow", back.map(c => face(c, 46, { frown: F.frown, gun: F.gun && (c.role === F.gun || c.short === F.gun) }))),
-            h("div.vf-mainrow", main.map(c => face(c, 84, { joy: true, cls: "throw" }))));
-    } else if (layout === "collage") {
-        art = h("div.vf-art.va-collage", [...leads(m), ...sups(m)].slice(0, 5).map((c, i) => face(c, i === 0 ? 86 : 52, { cls: "d" + i })));
-    } else if (layout === "poster") {
-        art = h("div.vf-art.va-poster", leads(m)[0] ? face(leads(m)[0], 110, { cls: "vbig" }) : null, h("div.vf-small", sups(m).slice(0, 3).map(c => face(c, 38))));
-    } else {
-        art = h("div.vf-art.va-hero", h("div.vf-mainrow", leads(m).map(c => face(c, leads(m).length > 1 ? 72 : 100))), h("div.vf-small", sups(m).slice(0, 4).map(c => face(c, 34))));
-    }
-    return h("div.vhs-front" + (m.bw ? ".bw" : "") + ".l-" + layout, { style: { "--fb": F.bg || b.color } },
-        h("div.vf-head", brandLogo(b, 30), h("small", `주연: ${castLine(leads(m), true) || "-"}`)),
-        art,
-        h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.ko), h("small", m.en)),
-        m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
-        ratingBand(m));
-}
-// a little still of one script scene (used on the back cover)
-function still(m, sc) {
-    const who = (sc?.who || []).map(r => roleCast(m, r)).filter(Boolean).slice(0, 3);
-    return h("div.vb-still.bg-" + (sc?.bg || "street") + (m.bw ? ".bw" : ""), h("span.vb-prop", (sc?.props || [])[0] || ""), h("div.vb-still-row", who.map(c => face(c, 34, { cls: (sc?.nude || []).includes(c.role) ? "nude" : "" }))));
-}
-export function back(m) {
-    const b = brandOf(m), scenes = (m.script || []).filter(p => p.k === "scene");
-    const n = m.cover?.back?.scenes?.length || (scenes.length >= 4 ? 4 : Math.min(3, scenes.length));
-    return h("div.vhs-back" + (m.bw ? ".bw" : ""), { style: { "--fb": m.cover?.front?.bg || b.color } },
-        h("div.vb-stills.n" + n, scenes.slice(0, n).map(sc => still(m, sc))),
-        h("p.vb-plot", m.plot),
-        h("dl.vb-info",
-            h("dt", "주연"), h("dd", castLine(leads(m)) || "-"),
-            sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m)))] : null,
-            h("dt", "제작"), h("dd", `${m.nation} · ${m.date.replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, mo, d) => `${+y}년 ${+mo}월 ${+d}일`)}`),
-            h("dt", "장르"), h("dd", m.genres.join(" · ")),
-            h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`)),
-        h("div.vb-foot", brandLogo(b, 30), h("b", b.name), ratingBand(m)));
-}
-// 뒷표지 | 중간표지 | 앞표지
-export const vhsBox = m => h("div.vhs-box", back(m), spine(m), front(m));
+// a small round profile picture (lists — not the covers / the film)
+const face = (c, size) => h("div.vc-face", { style: { width: size + "px", height: size + "px" } }, c?.pid != null && pimg(c.pid) ? h("img", { src: pimg(c.pid), alt: c.ko, draggable: "false" }) : h("span.vc-noimg", "👤"));
 
 // ---------------------------------------------------------------- 🔞 age gate (a VHS 띠 이용권)
 async function ageGate(pid, m, where) {
@@ -355,7 +295,8 @@ export function playMovie(m) {
                         const box = h("div.vp-cast");
                         put(screen, box);
                         const each = part.sec / Math.max(1, list.length);
-                        for (const c of list) { if (skip) break; put(box, h("div.vp-cast-card", face(c, 120), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
+                        const big = Math.round(Math.min(220, screen.clientHeight * 0.52));
+                        for (const c of list) { if (skip) break; put(box, h("div.vp-cast-card", figure(c, { expr: "happy", pose: "wave", size: big }), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
                         continue;
                     } else if (part.k === "scene") {
                         await scene(part);
@@ -371,17 +312,25 @@ export function playMovie(m) {
         async function scene(sc) {
             const people = (sc.who || []).map(r => roleCast(m, r)).filter(Boolean);
             const nude = new Set(sc.nude || []);
-            const actors = people.map((c, i) => h("div.vp-actor" + (nude.has(c.role) ? ".nude" : ""), { style: { "--i": i } }, face(c, 110), h("small", c.short || c.role)));
+            // how each actor starts the scene (scene.cast) · topless when the scene says so (a dancer's chest bounces)
+            const base = people.map(c => { const o = { expr: "happy", pose: "down", ...(sc.cast?.[c.role] || sc.cast?.[c.short] || {}) }; if (nude.has(c.role) || nude.has(c.short)) { o.nude = true; o.jiggle = o.act === "dance"; } return o; });
+            const W = screen.clientWidth || 800, H = screen.clientHeight || 450;
+            const size = Math.round(Math.min(H * 0.62, (W * 0.9) / Math.max(1, people.length)));
+            const figs = people.map((c, i) => figure(c, { ...base[i], size }));
+            const actors = people.map((c, i) => h("div.vp-actor", { style: { "--i": i } }, figs[i], h("small", c.short || c.role)));
+            const pose = (i, o) => setFigure(figs[i], people[i], { ...o, size, jiggle: o.nude && o.act === "dance" });
             const sub = h("div.vp-sub");
             const fx = sc.fx === "money" || sc.fx === "sparkle" || sc.fx === "music" ? h("div.vp-fx", ...Array.from({ length: 16 }, (_, i) => h("i", { style: { "--x": (i * 6.7 % 100) + "%", "--d": (i % 6) * 0.35 + "s" } }, sc.fx === "money" ? "💸" : sc.fx === "music" ? "🎵" : "✨"))) : null;
             put(screen, h("div.vp-scene.bg-" + (sc.bg || "street") + (sc.fx === "chase" ? ".chase" : ""), h("div.vp-deco"), (sc.props || []).length ? h("div.vp-props", sc.props.map(p => h("span", p))) : null, fx, h("div.vp-actors", actors), sub));
             const lines = sc.lines || [];
             const per = sc.sec / Math.max(1, lines.length);
             if (!lines.length) return wait(sc.sec);
-            for (const [who, text] of lines) {
+            for (const [who, text, meta] of lines) {
                 if (skip) return;
                 const ci = people.findIndex(c => c.role === who || c.short === who || c.role.startsWith(who + ","));
                 actors.forEach((a, i) => a.classList.toggle("talk", i === ci));
+                // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they started
+                people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...(meta || {}) } : base[i]));
                 put(sub, h("b", `${who}: `), text);
                 mumble(text, ci + 3);
                 await wait(per);

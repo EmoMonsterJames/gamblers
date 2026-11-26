@@ -1,0 +1,298 @@
+/* ================================================================ 📼 VHS covers (still pictures — no animation) + the film's actors */
+
+/* ---- 🧍 full-body figures (ui/figure.js) */
+.vfig { position: relative; flex: none; width: var(--fs); height: var(--fs); }
+.vfig-in { width: 100%; height: 100%; }
+.vfig-in img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 3px 3px #0006); }
+.vfig.upper { height: calc(var(--fs) * .6); overflow: hidden; }
+.vfig.upper .vfig-in { height: var(--fs); }
+.vfig-none { display: grid; place-items: center; width: 100%; height: 100%; font-size: calc(var(--fs) * .5); }
+.vfig-mark { position: absolute; top: 2%; right: 14%; font-style: normal; font-weight: 900; font-size: max(9px, calc(var(--fs) * .16)); color: #e11d48; text-shadow: 0 1px 2px #fff; line-height: 1; }
+.vfig-hold { position: absolute; top: 44%; right: 2%; font-style: normal; font-size: max(9px, calc(var(--fs) * .2)); filter: drop-shadow(0 1px 1px #000); }
+.vfig-hold.h-gun { transform: scaleX(-1); }
+.vfig-name { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); font-size: 10px; white-space: nowrap; }
+.va-flip .vfig { transform: scaleX(-1); }
+
+/* ---- logos: 뽀리 has a star magic wand beside it */
+.vb-logo-wrap { display: inline-flex; align-items: center; gap: 1px; }
+.vb-wand { display: inline-block; } .vb-wand svg { width: 100%; height: 100%; display: block; }
+
+/* ---- 🎞️ stills (scenes) */
+.vstill { position: relative; overflow: hidden; display: grid; place-items: end center; border-radius: 3px; border: 1px solid #fff6; }
+.vstill-row { display: flex; align-items: end; justify-content: center; gap: 0; margin-bottom: -2px; }
+.vstill-row .vfig + .vfig { margin-left: calc(var(--fs) * -.22); }
+.vstill-prop { position: absolute; left: 3px; top: 1px; font-size: 14px; }
+.vstill-cap { position: absolute; right: 3px; top: 2px; max-width: 70%; padding: 1px 4px; border-radius: 3px; font-size: 8px; font-weight: 800; background: #000a; color: #fde047; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* scene backgrounds (stills + the film) */
+.bg-street { background: linear-gradient(180deg, #93c5fd 0 55%, #64748b 55% 75%, #334155 75%); }
+.bg-bank { background: linear-gradient(180deg, #fef3c7 0 60%, #a16207 60%); }
+.bg-hideout { background: radial-gradient(circle at 50% 10%, #f472b688, transparent 50%), linear-gradient(180deg, #1e1b4b, #0f0a1e); }
+.bg-taxi { background: linear-gradient(180deg, #fde047 0 18%, #1f2937 18% 70%, #4b5563 70%); }
+.bg-home { background: linear-gradient(180deg, #fde68a 0 65%, #92400e 65%); }
+.bg-forest { background: linear-gradient(180deg, #86efac 0 40%, #15803d 40% 80%, #14532d 80%); }
+.bg-space { background: radial-gradient(circle at 20% 30%, #fff 0 1px, transparent 2px) 0 0 / 40px 40px, linear-gradient(180deg, #020617, #312e81); }
+.bg-castle { background: linear-gradient(180deg, #c4b5fd 0 55%, #57534e 55%); }
+.bg-beach { background: linear-gradient(180deg, #7dd3fc 0 50%, #0ea5e9 50% 65%, #fde68a 65%); }
+.bg-night { background: radial-gradient(circle at 80% 20%, #fef9c3 0 14px, transparent 16px), linear-gradient(180deg, #020617, #1e293b); }
+.bg-stage { background: radial-gradient(ellipse at 50% 0, #fde04799, transparent 60%), linear-gradient(180deg, #7f1d1d 0 70%, #451a03 70%); }
+.bg-office { background: linear-gradient(180deg, #e2e8f0 0 62%, #64748b 62%); }
+/* 💵 money bundles (a heap of green bills with paper bands) */
+.bg-money, .va-bed, .va-pile, .l-money-burst .vf-art {
+    background:
+        linear-gradient(90deg, transparent 0 44%, #f1e3a0 44% 56%, transparent 56%) 0 0 / 34px 16px,
+        linear-gradient(0deg, #2f6b2a 0 2px, transparent 2px) 0 0 / 34px 16px,
+        linear-gradient(90deg, #2f6b2a 0 2px, transparent 2px) 0 0 / 34px 16px,
+        #7bc96f;
+}
+.bg-money { background-position: 0 0, 0 0, 17px 8px, 0 0; }
+
+/* ---- 중간표지 (spine) */
+.vhs-spine { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 74px; height: 300px; padding: 5px 4px; overflow: hidden;
+    background: var(--sc); color: var(--si, #fff); border-radius: 4px; box-shadow: inset -6px 0 10px #0005, inset 3px 0 0 #fff4, 0 6px 12px #0008; text-align: center; transition: transform .15s; }
+.vhs-shelf .vhs-spine:hover { transform: translateY(-8px); }
+.vs-top { display: grid; justify-items: center; gap: 2px; flex: none; }
+.vs-top small { font-size: 7.5px; font-weight: 800; max-width: 66px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.vs-band { flex: none; width: 100%; padding: 2px 0; font-size: 8.5px; font-weight: 900; border-radius: 2px; box-shadow: 0 0 0 1px #0004; }
+.vs-title { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center; gap: 2px; overflow: hidden; }
+.vs-v { writing-mode: vertical-rl; white-space: nowrap; line-height: 1; }
+.vs-ko { font-family: 'Black Han Sans', 'Jua', sans-serif; text-orientation: upright; letter-spacing: -.02em; text-shadow: 2px 2px 0 #0007; }
+.vs-ko.sub { text-shadow: none; opacity: .9; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; }
+.vs-en-big { font-family: 'Lilita One', 'Arial Black', sans-serif; letter-spacing: .02em; text-shadow: 2px 2px 0 #0007; }
+.vs-sub { flex: none; max-width: 66px; line-height: 1.1; }
+.vs-en { font-size: 7px; letter-spacing: .04em; opacity: .9; }
+.vs-row { white-space: nowrap; font-weight: 800; font-family: 'Noto Sans KR', sans-serif; }
+.vs-still { flex: none; width: 64px; } .vs-still .vstill { width: 64px; }
+.vs-foot { flex: none; display: grid; justify-items: center; gap: 2px; }
+.vs-vhs { font: 900 10px/1 'Arial Black', sans-serif; padding: 2px 5px; border: 2px solid currentColor; border-radius: 3px; }
+.vs-stars { font-size: 8px; color: #fde047; text-shadow: 0 0 2px #000; }
+.vhs-spine.small { width: 46px; height: 190px; padding: 4px 2px; gap: 3px; }
+.vhs-spine.small .vs-band { font-size: 7px; }
+.vf-title.f-comic b, .vp-ko.f-comic { font-family: 'Jua', 'Poor Story', sans-serif; color: #fde047; -webkit-text-stroke: 1px #7c2d12; }
+.vf-title.f-neon b, .vp-ko.f-neon { color: #fff; text-shadow: 0 0 6px #f0f, 0 0 14px #0ff; }
+.vf-title.f-brush b, .vp-ko.f-brush { font-family: 'Yeon Sung', 'Nanum Pen Script', serif; color: #fee2e2; }
+.vhs-spine.f-comic .vs-ko { font-family: 'Jua', 'Poor Story', sans-serif; } .vhs-spine.f-brush .vs-ko { font-family: 'Yeon Sung', 'Nanum Pen Script', serif; }
+.bw, .vhs-spine.bw, .vhs-front.bw, .vhs-back.bw { filter: grayscale(1) contrast(1.1); }
+
+/* ---- 앞표지 */
+.vhs-front, .vhs-back { position: relative; flex: none; width: 230px; height: 300px; border-radius: 4px; overflow: hidden; color: #fff; display: grid; box-shadow: 0 6px 14px #0008; }
+.vhs-front { grid-template-rows: auto 1fr auto auto auto; background: var(--fb); }
+.vf-head { display: flex; justify-content: space-between; align-items: center; padding: 5px 6px; gap: 6px; }
+.vf-head small { font-size: 9px; text-shadow: 0 1px 2px #000; text-align: right; }
+.vf-art { position: relative; min-height: 0; overflow: hidden; display: flex; justify-content: center; align-items: end; }
+.va-row { display: flex; justify-content: center; align-items: end; }
+.va-row .vfig + .vfig { margin-left: -16px; }
+.vf-title { padding: 2px 8px; text-align: center; }
+.vf-title b { display: block; font: 900 27px/1.05 'Black Han Sans', 'Jua', sans-serif; white-space: nowrap; text-shadow: 2px 2px 0 #000, 0 0 10px #0008; }
+.vf-title small { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+.vf-tag { margin: 0 8px 4px; padding: 3px 6px; font-size: 10px; font-weight: 800; text-align: center; color: #fde047; background: #0007; border-radius: 4px; }
+.vc-band { padding: 3px; text-align: center; font-size: 10px; font-weight: 900; border-top: 2px solid #0005; }
+
+.va-hero { align-items: end; } .va-minis { position: absolute; left: 4px; bottom: 2px; display: flex; gap: 0; }
+.va-duo { gap: 0; align-items: end; } .va-mid { align-self: center; font-style: normal; font-size: 26px; } .va-mid::before { content: "♥"; color: #fb7185; text-shadow: 0 0 8px #fff; }
+.va-still { align-items: stretch; padding: 0 6px; } .va-still .vstill { width: 100%; }
+.va-spot { background: radial-gradient(ellipse at 50% 100%, #fff9 0, #fff3 30%, transparent 60%), #0b0b12; }
+.va-spot .va-back { position: absolute; top: 4px; left: 0; right: 0; display: flex; justify-content: space-around; filter: brightness(.35) saturate(.5); }
+.va-spot .va-lit { position: relative; }
+.va-stage { background: radial-gradient(ellipse at 50% 0, #fde04799, transparent 60%), linear-gradient(180deg, #7f1d1d 0 78%, #451a03 78%); }
+.va-curtain { position: absolute; top: 0; bottom: 0; width: 26px; font-style: normal; background: repeating-linear-gradient(90deg, #991b1b 0 6px, #7f1d1d 6px 12px); z-index: 1; }
+.va-curtain.l { left: 0; border-radius: 0 0 60% 0; } .va-curtain.r { right: 0; border-radius: 0 0 0 60%; }
+.va-pyr { flex-direction: column; align-items: center; justify-content: end; }
+.va-pyr .va-row.mid, .va-pyr .va-row.low { margin-top: -26px; }
+.va-frame { flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.va-pic { padding: 4px; border: 7px solid #d4a017; border-radius: 3px; background: #fef3c7; box-shadow: inset 0 0 0 2px #7c5a0a, 0 3px 8px #0009; outline: 2px solid #7c5a0a; }
+.va-frame .va-minis { position: static; }
+.va-panels { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; padding: 0 6px; align-items: stretch; }
+.va-panel { position: relative; display: flex; justify-content: center; align-items: end; overflow: hidden; border: 3px solid #111; background-color: #fff; }
+.va-panel:first-child { grid-row: span 2; }
+.va-split { padding: 0; align-items: stretch; }
+.va-half { flex: 1; display: flex; justify-content: center; align-items: end; }
+.va-half.a { background: linear-gradient(160deg, var(--bc), transparent); clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%); margin-right: -18%; }
+.va-half.b { background: linear-gradient(200deg, #111, #333); clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%); margin-left: -18%; }
+/* 복덩이 사기단: money bed + 3 bursting out of the money */
+.l-money-burst .vf-art { flex-direction: column; justify-content: end; }
+.va-burst { position: absolute; top: 2px; left: 0; right: 0; display: flex; justify-content: center; gap: 0; }
+.va-burster { position: relative; display: grid; justify-items: center; margin: 0 -30px; }
+.va-pile { position: absolute; left: 22%; right: 22%; bottom: -6px; height: 20px; border-radius: 50% 50% 0 0; border: 2px solid #2f6b2a; box-shadow: 0 -2px 4px #0005; }
+.va-bed { position: absolute; left: 0; right: 0; bottom: 0; height: 38px; border-top: 3px solid #2f6b2a; box-shadow: 0 -4px 8px #0006; }
+.va-money .va-row.main { position: relative; z-index: 1; margin-bottom: 10px; }
+
+/* ---- 뒷표지 */
+.vhs-back { grid-template-rows: auto 1fr auto; background: linear-gradient(180deg, #111827, var(--fb)); padding: 6px; gap: 4px; }
+.vb-stills { display: grid; gap: 3px; }
+.vb-stills.g4, .vb-stills.g2x { grid-template-columns: 1fr 1fr; }
+.vb-stills.g3 { grid-template-columns: 1fr 1fr; } .vb-stills.g3 > :first-child { grid-column: 1 / -1; }
+.vb-stills.g-strip { grid-template-columns: 1fr 1fr 1fr; }
+.vb-text { min-height: 0; overflow: hidden; display: grid; gap: 4px; align-content: start; }
+.vb-plot { margin: 0; font-size: 10px; line-height: 1.35; background: #0006; padding: 4px 6px; border-radius: 3px; }
+.vb-info { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1px 6px; font-size: 9px; align-content: start; }
+.vb-info dt { color: #fde68a; font-weight: 800; } .vb-info dd { margin: 0; }
+.vb-foot { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2px 6px; font-size: 10px; }
+.vb-foot .vc-band { grid-column: 1 / -1; }
+.l-filmstrip { grid-template-columns: 74px 1fr; grid-template-rows: 1fr auto; }
+.l-filmstrip .vb-foot { grid-column: 1 / -1; }
+.vb-film { display: grid; gap: 4px; align-content: start; padding: 4px 9px; background: #111; border-radius: 2px;
+    -webkit-mask: radial-gradient(circle 2.5px at 4px 6px, #0000 98%, #000) 0 0 / 100% 12px, radial-gradient(circle 2.5px at calc(100% - 4px) 6px, #0000 98%, #000) 0 0 / 100% 12px; -webkit-mask-composite: source-in; mask-composite: intersect; }
+.vb-polas { display: flex; justify-content: center; gap: 6px; padding: 4px 0 2px; }
+.vb-pola { width: 98px; padding: 4px 4px 2px; background: #fff; color: #333; box-shadow: 0 3px 6px #0008; transform: rotate(-4deg); text-align: center; }
+.vb-pola.r { transform: rotate(5deg); } .vb-pola small { font-size: 8px; font-family: 'Nanum Pen Script', cursive; font-size: 12px; }
+.l-text .vb-plot { font-size: 12px; font-style: italic; padding: 10px; }
+
+/* ================================================================ 🏷️ 24 영화사 — each brand its own cover look */
+/* HYHG Film — gold & black, crown */
+.vt-hyhg.vhs-spine { background: linear-gradient(180deg, #111 0 14%, #facc15 14% 86%, #111 86%); color: #111; }
+.vt-hyhg .vs-top small { color: #facc15; }
+.vt-hyhg.vhs-front { border: 3px solid #facc15; }
+.vt-hyhg.vhs-back { background: linear-gradient(180deg, #111, #3b2f00); border: 3px solid #facc15; }
+/* B-Movie — red / cream grindhouse, worn paper */
+.vt-bmovie.vhs-spine { background: repeating-linear-gradient(0deg, #ef4444 0 6px, #dc2626 6px 7px); color: #fff7ed; }
+.vt-bmovie .vs-en-big { font-family: 'Rye', serif; color: #fef08a; -webkit-text-stroke: .5px #000; }
+.vt-bmovie.vhs-front { background: #fff7ed; color: #111; } .vt-bmovie .vf-title b { font-family: 'Rye', serif; color: #dc2626; text-shadow: 2px 2px 0 #000; }
+.vt-bmovie.vhs-front .vf-head small { color: #7f1d1d; text-shadow: none; }
+.vt-bmovie.vhs-back { background: #fff7ed; color: #111; } .vt-bmovie .vb-plot { background: #fde68a; } .vt-bmovie .vb-info dt { color: #b91c1c; }
+/* Ghost Reels — grey fog */
+.vt-ghost.vhs-spine { background: radial-gradient(circle at 30% 30%, #e2e8f0, #64748b 70%, #334155); color: #0f172a; }
+.vt-ghost .vs-ko { color: #f8fafc; text-shadow: 0 0 8px #fff, 2px 2px 0 #334155; }
+.vt-ghost.vhs-front { background: radial-gradient(ellipse at 50% 20%, #cbd5e1, #475569 70%); } .vt-ghost .vf-title b { font-family: 'Creepster', 'Black Han Sans'; color: #f1f5f9; }
+.vt-ghost.vhs-back { background: linear-gradient(180deg, #475569, #1e293b); }
+/* MJ Films — purple glitter stage */
+.vt-mj.vhs-spine { background: radial-gradient(circle, #fff6 0 1px, transparent 1.5px) 0 0 / 8px 8px, linear-gradient(180deg, #7e22ce, #3b0764); }
+.vt-mj .vs-ko { color: #f5d0fe; text-shadow: 0 0 6px #e879f9; }
+.vt-mj.vhs-front { background: linear-gradient(180deg, #581c87, #1e1b4b); } .vt-mj .vf-title b { color: #f5d0fe; text-shadow: 0 0 10px #e879f9, 2px 2px 0 #000; }
+.vt-mj.vhs-back { background: radial-gradient(circle, #fff3 0 1px, transparent 1.5px) 0 0 / 10px 10px, linear-gradient(180deg, #3b0764, #1e1b4b); }
+/* Dung Films — brown swirls */
+.vt-dung.vhs-spine { background: repeating-radial-gradient(circle at 50% 110%, #92400e 0 8px, #78350f 8px 16px); color: #fde68a; }
+.vt-dung .vs-ko { color: #fde68a; font-family: 'Poor Story', 'Jua'; }
+.vt-dung.vhs-front { background: linear-gradient(180deg, #fde68a 0 40%, #b45309); color: #451a03; } .vt-dung .vf-title b { color: #78350f; text-shadow: 1px 1px 0 #fde68a; font-family: 'Poor Story', 'Jua'; }
+.vt-dung.vhs-front .vf-head small { color: #451a03; text-shadow: none; }
+.vt-dung.vhs-back { background: linear-gradient(180deg, #78350f, #451a03); }
+/* Ground Cinema — earth layers + grass */
+.vt-ground.vhs-spine { background: linear-gradient(180deg, #4ade80 0 6%, #65a30d 6% 10%, #a16207 10% 60%, #713f12 60%); }
+.vt-ground .vs-ko { color: #fff; -webkit-text-stroke: 1px #365314; }
+.vt-ground.vhs-front { background: linear-gradient(180deg, #bef264 0 58%, #a16207 58%); color: #1a2e05; } .vt-ground .vf-title b { color: #fef9c3; -webkit-text-stroke: 1px #365314; }
+.vt-ground.vhs-front .vf-head small { color: #1a2e05; text-shadow: none; }
+.vt-ground.vhs-back { background: linear-gradient(180deg, #365314, #713f12); }
+/* Emo Screen — pink hearts */
+.vt-emo.vhs-spine { background: radial-gradient(circle at 25% 25%, #fbcfe8 0 3px, transparent 3.5px) 0 0 / 16px 16px, #ec4899; }
+.vt-emo .vs-ko { font-family: 'Gamja Flower', 'Jua'; font-weight: 900; color: #fff; text-shadow: 2px 2px 0 #9d174d; }
+.vt-emo.vhs-front { background: linear-gradient(180deg, #fbcfe8, #ec4899); } .vt-emo .vf-title b { font-family: 'Gamja Flower', 'Jua'; color: #fff; text-shadow: 2px 2px 0 #9d174d; }
+.vt-emo.vhs-back { background: linear-gradient(180deg, #831843, #ec4899); }
+/* Polycinema — ocean waves */
+.vt-poly.vhs-spine { background: radial-gradient(circle at 50% 0, transparent 7px, #0284c7 7.5px) 0 0 / 16px 10px, linear-gradient(180deg, #38bdf8, #0369a1); }
+.vt-poly .vs-ko { color: #fef3c7; text-shadow: 2px 2px 0 #0c4a6e; }
+.vt-poly.vhs-front { background: linear-gradient(180deg, #7dd3fc 0 45%, #0ea5e9 45% 70%, #fde68a 70%); } .vt-poly .vf-title b { color: #fff7ed; text-shadow: 2px 2px 0 #0c4a6e; }
+.vt-poly.vhs-back { background: linear-gradient(180deg, #0c4a6e, #0ea5e9); }
+/* Black & White — film grain, white frame */
+.vt-bw.vhs-spine { background: #111; color: #fafafa; border: 2px solid #fafafa; }
+.vt-bw .vs-ko { font-family: 'Yeon Sung', serif; }
+.vt-bw.vhs-front { background: #f4f4f5; color: #111; border: 8px solid #fafafa; outline: 1px solid #111; } .vt-bw .vf-title b { color: #111; text-shadow: none; font-family: 'Yeon Sung', serif; }
+.vt-bw.vhs-front .vf-head small { color: #111; text-shadow: none; }
+.vt-bw.vhs-back { background: #18181b; }
+/* 拙作 ENT — clumsy hand-made: notebook paper, marker */
+.vt-jolja.vhs-spine { background: repeating-linear-gradient(0deg, #fafaf9 0 9px, #a8a29e 9px 10px); color: #292524; }
+.vt-jolja .vs-en-big { font-family: 'Nanum Pen Script', cursive; font-size: 1.25em; text-shadow: none; transform: rotate(2deg); }
+.vt-jolja.vhs-front { background: repeating-linear-gradient(0deg, #fafaf9 0 13px, #cbd5e1 13px 14px); color: #292524; } .vt-jolja .vf-title b { font-family: 'Nanum Pen Script', cursive; color: #1d4ed8; text-shadow: none; font-size: 34px; }
+.vt-jolja.vhs-front .vf-head small { color: #292524; text-shadow: none; } .vt-jolja .vf-tag { color: #292524; background: #fde68a; }
+.vt-jolja.vhs-back { background: #e7e5e4; color: #292524; } .vt-jolja .vb-plot { background: #fff; } .vt-jolja .vb-info dt { color: #b91c1c; }
+/* 뽀리 — pastel pink with stars */
+.vt-ppori.vhs-spine { background: radial-gradient(circle at 50% 50%, #fff 0 1.5px, transparent 2px) 0 0 / 12px 12px, linear-gradient(180deg, #fbcfe8, #f9a8d4 60%, #c4b5fd); color: #831843; }
+.vt-ppori .vs-ko { color: #fff; -webkit-text-stroke: 1px #db2777; font-family: 'Jua'; }
+.vt-ppori.vhs-front { background: radial-gradient(circle, #fff9 0 1.5px, transparent 2px) 0 0 / 14px 14px, linear-gradient(180deg, #fbcfe8, #c4b5fd); } .vt-ppori .vf-title b { color: #fff; -webkit-text-stroke: 1px #db2777; font-family: 'Jua'; text-shadow: 2px 2px 0 #f472b6; }
+.vt-ppori.vhs-back { background: linear-gradient(180deg, #db2777, #7c3aed); }
+/* 삼색시네마 — three colour bars */
+.vt-samsaek.vhs-spine { background: linear-gradient(90deg, #dc2626 0 33%, #2563eb 33% 66%, #facc15 66%); }
+.vt-samsaek .vs-ko { color: #fff; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; }
+.vt-samsaek.vhs-front { background: linear-gradient(180deg, #dc2626 0 33%, #2563eb 33% 66%, #facc15 66%); }
+.vt-samsaek.vhs-back { background: linear-gradient(180deg, #1e3a8a, #111827); border-top: 8px solid #dc2626; border-bottom: 8px solid #facc15; }
+/* Good Film! — green ticket stub */
+.vt-goodfilm.vhs-spine { background: linear-gradient(180deg, #16a34a, #14532d); border-left: 4px dashed #bbf7d0; }
+.vt-goodfilm .vs-ko { color: #f0fdf4; text-shadow: 2px 2px 0 #052e16; font-family: 'Do Hyeon'; }
+.vt-goodfilm.vhs-front { background: linear-gradient(180deg, #dcfce7, #16a34a); } .vt-goodfilm .vf-title b { font-family: 'Do Hyeon'; color: #fff; text-shadow: 2px 2px 0 #052e16; }
+.vt-goodfilm.vhs-back { background: linear-gradient(180deg, #052e16, #15803d); }
+/* 명작시네마 — classic gold leaf on dark wine */
+.vt-myeongjak.vhs-spine { background: linear-gradient(180deg, #450a0a, #7f1d1d); color: #fde68a; border: 2px solid #d4a017; }
+.vt-myeongjak .vs-ko { font-family: 'Yeon Sung', serif; color: #fcd34d; text-shadow: 0 1px 0 #78350f; }
+.vt-myeongjak.vhs-front { background: radial-gradient(ellipse at 50% 30%, #991b1b, #450a0a); border: 4px double #d4a017; } .vt-myeongjak .vf-title b { font-family: 'Yeon Sung', serif; color: #fcd34d; }
+.vt-myeongjak.vhs-back { background: #450a0a; border: 4px double #d4a017; }
+/* Movie Screen — teal cinema screen with seat rows */
+.vt-moviescreen.vhs-spine { background: linear-gradient(180deg, #f8fafc 0 3%, #0f766e 3% 97%, #f8fafc 97%); }
+.vt-moviescreen .vs-ko { color: #ccfbf1; }
+.vt-moviescreen.vhs-front { background: linear-gradient(180deg, #f0fdfa 0 6px, #0f766e 6px); } .vt-moviescreen .vf-art { background: radial-gradient(ellipse at 50% 100%, #134e4a 0 30%, transparent 31%) 0 100% / 26px 12px repeat-x, #e0f2f1; margin: 0 8px; border-radius: 4px; }
+.vt-moviescreen.vhs-back { background: linear-gradient(180deg, #134e4a, #0f766e); }
+/* Action 123 — orange slashes & speed */
+.vt-action123.vhs-spine { background: repeating-linear-gradient(-30deg, #f97316 0 10px, #ea580c 10px 20px); color: #111; }
+.vt-action123 .vs-ko { color: #111; font-style: italic; text-shadow: 2px 2px 0 #fed7aa; }
+.vt-action123.vhs-front { background: repeating-linear-gradient(-30deg, #111 0 14px, #1f2937 14px 28px); } .vt-action123 .vf-title b { color: #f97316; font-style: italic; transform: skewX(-10deg); }
+.vt-action123.vhs-back { background: linear-gradient(160deg, #f97316, #111 60%); }
+/* Kidz! — crayon rainbow */
+.vt-kidz.vhs-spine { background: linear-gradient(180deg, #f87171, #fb923c, #facc15, #4ade80, #60a5fa, #a78bfa); color: #1e3a8a; }
+.vt-kidz .vs-ko { font-family: 'Jua'; color: #fff; -webkit-text-stroke: 1px #1e3a8a; }
+.vt-kidz.vhs-front { background: linear-gradient(180deg, #fef9c3, #bfdbfe); color: #1e3a8a; } .vt-kidz .vf-title b { font-family: 'Jua'; color: #f97316; -webkit-text-stroke: 1px #1e3a8a; text-shadow: none; }
+.vt-kidz.vhs-front .vf-head small { color: #1e3a8a; text-shadow: none; }
+.vt-kidz.vhs-back { background: linear-gradient(180deg, #2563eb, #7c3aed); }
+/* Adult Films — black satin with a red stripe */
+.vt-adultfilms.vhs-spine { background: linear-gradient(90deg, #0a0a0a 0 70%, #be123c 70%); }
+.vt-adultfilms .vs-ko { color: #fecdd3; font-family: 'Do Hyeon'; }
+.vt-adultfilms.vhs-front { background: linear-gradient(180deg, #0a0a0a, #4c0519); } .vt-adultfilms .vf-title b { color: #fda4af; font-family: 'Do Hyeon'; }
+.vt-adultfilms.vhs-back { background: #0a0a0a; border-left: 8px solid #be123c; }
+/* Red Lips — glossy red with lips */
+.vt-redlips.vhs-spine { background: radial-gradient(ellipse at 30% 20%, #fda4af, #e11d48 40%, #881337); }
+.vt-redlips .vs-ko { color: #fff1f2; font-family: 'Yeon Sung'; text-shadow: 0 0 6px #fb7185; }
+.vt-redlips.vhs-front { background: radial-gradient(ellipse at 50% 30%, #fb7185, #9f1239 70%); } .vt-redlips .vf-title b { font-family: 'Yeon Sung'; color: #fff1f2; }
+.vt-redlips.vhs-back { background: linear-gradient(180deg, #881337, #4c0519); }
+/* Cinematheque — art-house: plain slate, thin serif */
+.vt-cinematheque.vhs-spine { background: #334155; color: #e2e8f0; box-shadow: inset 0 0 0 3px #e2e8f0, 0 6px 12px #0008; }
+.vt-cinematheque .vs-ko { font-family: 'Noto Sans KR', serif; font-weight: 400; letter-spacing: .3em; text-shadow: none; }
+.vt-cinematheque.vhs-front { background: #e2e8f0; color: #1e293b; } .vt-cinematheque .vf-title b { font: 400 24px/1.1 'Noto Sans KR', serif; letter-spacing: .25em; color: #1e293b; text-shadow: none; }
+.vt-cinematheque.vhs-front .vf-head small { color: #1e293b; text-shadow: none; } .vt-cinematheque .vf-tag { background: none; color: #475569; font-style: italic; }
+.vt-cinematheque.vhs-back { background: #1e293b; }
+/* Crazy Films — lime with comic dots */
+.vt-crazy.vhs-spine { background: radial-gradient(circle, #365314 0 1.5px, transparent 2px) 0 0 / 7px 7px, #84cc16; color: #111; }
+.vt-crazy .vs-ko { font-family: 'Poor Story', 'Jua'; color: #fff; -webkit-text-stroke: 1.5px #111; transform: rotate(4deg); }
+.vt-crazy.vhs-front { background: radial-gradient(circle, #36531433 0 2px, transparent 2.5px) 0 0 / 9px 9px, #d9f99d; color: #111; } .vt-crazy .vf-title b { font-family: 'Poor Story', 'Jua'; color: #fff; -webkit-text-stroke: 1.5px #111; transform: rotate(-3deg); }
+.vt-crazy.vhs-front .vf-head small { color: #111; text-shadow: none; }
+.vt-crazy.vhs-back { background: linear-gradient(180deg, #365314, #65a30d); }
+/* Dodo Movie — sky blue clouds */
+.vt-dodo.vhs-spine { background: radial-gradient(ellipse 14px 7px at 30% 40%, #fff 98%, transparent) 0 0 / 30px 40px, #38bdf8; color: #0c4a6e; }
+.vt-dodo .vs-en-big { color: #0c4a6e; text-shadow: 1px 1px 0 #fff; }
+.vt-dodo.vhs-front { background: radial-gradient(ellipse 22px 10px at 30% 40%, #fff 98%, transparent) 0 0 / 70px 60px, #7dd3fc; color: #0c4a6e; } .vt-dodo .vf-title b { color: #0c4a6e; text-shadow: 2px 2px 0 #fff; }
+.vt-dodo.vhs-front .vf-head small { color: #0c4a6e; text-shadow: none; }
+.vt-dodo.vhs-back { background: linear-gradient(180deg, #0369a1, #38bdf8); }
+/* R.G.B Screen — RGB scanlines on black */
+.vt-rgb.vhs-spine { background: repeating-linear-gradient(0deg, #111 0 3px, #ef444422 3px 4px, #22c55e22 4px 5px, #3b82f622 5px 6px); }
+.vt-rgb .vs-en-big { color: #fff; text-shadow: -2px 0 #ef4444, 2px 0 #3b82f6; }
+.vt-rgb.vhs-front { background: #050505; } .vt-rgb .vf-title b { color: #fff; text-shadow: -3px 0 #ef4444, 3px 0 #3b82f6; }
+.vt-rgb.vhs-back { background: #050505; border-top: 4px solid #ef4444; border-bottom: 4px solid #3b82f6; }
+/* Spookies — dark purple, dripping */
+.vt-spookies.vhs-spine { background: linear-gradient(180deg, #a3e635 0 4%, #4c1d95 4%); color: #e9d5ff; }
+.vt-spookies .vs-en-big { font-family: 'Creepster', cursive; color: #a3e635; text-shadow: 0 2px 0 #1e1b4b; font-size: 1.15em; }
+.vt-spookies.vhs-front { background: radial-gradient(circle at 50% 110%, #a3e63555, transparent 50%), #2e1065; } .vt-spookies .vf-title b { font-family: 'Creepster', 'Black Han Sans'; color: #a3e635; }
+.vt-spookies.vhs-back { background: linear-gradient(180deg, #2e1065, #0f0720); }
+
+/* ================================================================ 🎬 the film's actors (gestures) */
+.vp-actor.talk .vfig-in { animation: vfTalk .22s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes vfTalk { to { transform: scaleY(1.03); } }
+.vp-actor .vfig.act-hop .vfig-in { animation: vfHop .45s ease-in-out infinite; }
+.vp-actor .vfig.act-jump .vfig-in { animation: vfJump .8s cubic-bezier(.3, 1.6, .5, 1) infinite; }
+.vp-actor .vfig.act-run .vfig-in { animation: vfRun .3s ease-in-out infinite alternate; }
+.vp-actor .vfig.act-stomp .vfig-in { animation: vfStomp .35s steps(2) infinite; }
+.vp-actor .vfig.act-shake .vfig-in { animation: vfShake .12s linear infinite alternate; }
+.vp-actor .vfig.act-dance .vfig-in { animation: vfDance .84s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes vfHop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8%); } }
+@keyframes vfJump { 0%, 100% { transform: translateY(0) scaleY(1); } 10% { transform: translateY(0) scaleY(.92); } 45% { transform: translateY(-22%) scaleY(1.04); } }
+@keyframes vfRun { from { transform: translate(-6%, 0) rotate(-6deg); } to { transform: translate(6%, -4%) rotate(-10deg); } }
+@keyframes vfStomp { 0% { transform: translateY(0) rotate(-2deg); } 100% { transform: translateY(2%) rotate(2deg); } }
+@keyframes vfShake { from { transform: translateX(-1.5%); } to { transform: translateX(1.5%); } }
+@keyframes vfDance { 0% { transform: rotate(-7deg) translateY(0); } 25% { transform: rotate(0) translateY(-5%); } 50% { transform: rotate(7deg) translateY(0); } 75% { transform: rotate(0) translateY(-5%); } 100% { transform: rotate(-7deg) translateY(0); } }
+.vp-scene.chase .vp-actor { animation: vfChase .6s ease infinite alternate; }
+@keyframes vfChase { from { transform: translateX(-12px); } to { transform: translateX(12px); } }
+
+@media (max-width: 600px) {
+    .vhs-front, .vhs-back { width: 200px; height: 280px; }
+    .vhs-spine { width: 66px; height: 280px; }
+}
+.vt-hyhg .vs-ko { color: #dc2626; -webkit-text-stroke: 1px #111; text-shadow: 1px 1px 0 #fff8; }
+.vt-hyhg .vs-vhs { color: #facc15; background: #111; }
+.va-money .va-row.main { justify-content: space-between; width: 100%; padding: 0 6px; box-sizing: border-box; }
+.va-money .va-row.main .vfig + .vfig { margin-left: 0; }
+.va-burster:first-child .vfig-hold { right: auto; left: 0; transform: none; } .va-burster:first-child { z-index: 1; }

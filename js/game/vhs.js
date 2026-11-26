@@ -14,7 +14,7 @@ const ps_ = pid => S()?.ps?.[pid];
 const round = () => S()?.round || 0;
 export const LEG_SECONDS = [10, 10, 10, 20, 20, 40];
 export const CINEMA_PER_SEASON = 2;
-export const VIEWER_PAY = [30000, 1000000];
+export const VIEWER_PAY = [10000, 30000];
 export const ACTOR_PAY = { lead: [1000, 10000], support: [500, 5000], extra: [100, 500] };
 export const PART_KO = { lead: "주연", support: "조연", extra: "엑스트라" };
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));

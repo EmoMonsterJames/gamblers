@@ -1,0 +1,143 @@
+// ================================================================ 📼 VHS covers — 뒷표지 | 중간표지 (spine) | 앞표지
+//   every 영화사 (brand) has its own look (theme class .vt-<brand>) and its own spine rules (data/vhs.js BRAND_STYLE):
+//   which title is big, whether the 띠 band / a small still is shown. Front / back layouts: the movie's own cover order,
+//   otherwise the brand's default. Players are drawn full-body (ui/figure.js) · covers are still pictures (no animation).
+import { h } from "../core/util.js";
+import * as D from "../data/vhs.js";
+import { figure } from "../ui/figure.js";
+
+const brandOf = m => D.BRAND_BY_ID[m.brand] || D.BRANDS[0];
+const rateOf = m => D.RATING_BY_ID[m.rating] || D.RATINGS[0];
+const leads = m => m.cast.filter(c => c.part === "lead");
+const sups = m => m.cast.filter(c => c.part === "support");
+const extras = m => m.cast.filter(c => c.part === "extra");
+const castLine = (list, short = false) => list.map(c => short ? c.ko : `${c.ko} (${c.role})`).join(", ");
+const norm = s => typeof s === "string" ? { r: s } : (s || {});
+const spec = (c, o = {}) => ({ r: c.role, expr: "happy", ...o });
+
+// ---------------------------------------------------------------- 🏷️ brand logo (뽀리: a star-tipped magic wand beside it)
+const WAND = `<svg viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg"><path d="M12 14L10 39" stroke="#7c2d12" stroke-width="3" stroke-linecap="round"/><path d="M12 1l3.2 6.6 7.2 1-5.2 5 1.3 7.2L12 17.4 5.5 20.8l1.3-7.2-5.2-5 7.2-1Z" fill="#fde047" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+export function brandLogo(b, size = 34) {
+    const logo = h("div.vb-logo.sh-" + (b.shape || "square"), { style: { "--bc": b.color, "--bi": b.ink, width: size + "px", height: size + "px", fontSize: Math.max(8, size / (b.logo.length > 3 ? 3.4 : 2.4)) + "px" }, title: b.name }, h("span", b.logo));
+    if (b.id !== "ppori") return logo;
+    const wand = h("i.vb-wand", { style: { width: size * 0.42 + "px", height: size + "px" } });
+    wand.innerHTML = WAND;
+    return h("div.vb-logo-wrap", logo, wand);
+}
+const ratingBand = m => { const r = rateOf(m); return h("div.vc-band", { style: { background: r.color, color: r.ink } }, `${r.name} · ${r.age === 0 ? "모든 연령 관람가" : D.AGE_ORDER[r.age] + " 이상 관람가"}`); };
+
+// ---------------------------------------------------------------- 🎞️ a still: a scene with full-body players
+//   s: { bg, props, cap, who: [{ r, expr, pose, hold }] } · o: { hgt (px), cap: show the caption }
+export function still(m, s, { hgt = 60, cap = false, cls = "" } = {}) {
+    const who = (s?.who || []).map(norm).map(w => ({ w, c: D.castOf(m, w.r) })).filter(x => x.c).slice(0, 4);
+    const size = Math.round(hgt * (who.length > 2 ? 0.86 : 0.94));
+    return h("div.vstill.bg-" + (s?.bg || "street") + (cls ? "." + cls : ""), { style: { height: hgt + "px" } },
+        (s?.props || []).length ? h("span.vstill-prop", s.props[0]) : null,
+        h("div.vstill-row", who.map(({ w, c }) => figure(c, { ...w, size }))),
+        cap && s?.cap ? h("small.vstill-cap", s.cap) : null);
+}
+// the stills a cover uses: the cover's own (cover.back.stills) or the first scenes of the film
+export function coverStills(m, n) {
+    const own = (m.cover?.back?.stills || []).filter(s => s?.who?.length);
+    if (own.length) return own.slice(0, n);
+    return (m.script || []).filter(p => p.k === "scene" && (p.who || []).length).slice(0, n).map(sc => ({
+        bg: sc.bg, props: (sc.props || []).slice(0, 1), cap: String(sc.lines?.[0]?.[1] || "").slice(0, 16),
+        who: (sc.who || []).slice(0, 3).map(r => {
+            const line = (sc.lines || []).find(l => D.castOf(m, l[0])?.role === r);
+            const meta = { ...(sc.cast?.[r] || {}), ...(line?.[2] || {}) };
+            return { r, expr: meta.expr || (line ? D.lineMood(line[1]) : "happy"), pose: meta.pose, hold: meta.hold };
+        })
+    }));
+}
+
+// ---------------------------------------------------------------- 중간표지 (spine)
+// how wide a title is in "em" (Korean 1 · Latin / digits .6 · space .45) — the font is sized so the title fits in one line
+const ems = t => Array.from(String(t || "")).reduce((a, ch) => a + (ch === " " ? 0.45 : /[\x21-\x7e]/.test(ch) ? 0.62 : 1), 0) || 1;
+const fit = (len, room, lo, hi) => Math.max(lo, Math.min(hi, Math.floor(room / len)));
+export function spine(m, { onclick = null, small = false } = {}) {
+    const b = brandOf(m), S = D.brandStyle(b.id), r = rateOf(m);
+    const showStill = !small && S.still !== "none";
+    // room for the big title (px along the spine)
+    const room = small ? 104 : 300 - 52 - (S.band ? 18 : 0) - (showStill ? 64 : 0) - 40 - (S.sub === "en" || S.sub === "row" ? 22 : 0) - 18;
+    const vKo = (t, fs, cls = "") => h("span.vs-v.vs-ko" + cls, { style: { fontSize: fs + "px" } }, t);
+    const vEn = (t, fs, cls = "") => h("span.vs-v.vs-en-big" + cls, { style: { fontSize: fs + "px" } }, t);
+    let title;
+    if (S.main === "en") {
+        const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
+        title = h("div.vs-title.t-en", vEn(m.en, enFs), S.sub === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
+    } else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)));
+    const sub = S.sub === "en" ? h("div.vs-sub.vs-en", m.en)
+        : S.sub === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
+    const stillSpec = m.cover?.spine?.still || coverStills(m, 1)[0] || (leads(m)[0] ? { bg: "street", who: [spec(leads(m)[0])] } : null);
+    return h("button.vhs-spine.vt-" + b.id + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold") + ".st-" + S.still,
+        { style: { "--sc": b.color, "--si": b.ink }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
+        h("div.vs-top", brandLogo(b, small ? 22 : 30), small ? null : h("small", b.name)),
+        S.band ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
+        title, sub,
+        showStill && stillSpec ? h("div.vs-still", still(m, stillSpec, { hgt: 58 })) : null,
+        h("div.vs-foot", h("div.vs-vhs", "VHS"), h("div.vs-stars", "★".repeat(m.stars))));
+}
+
+// ---------------------------------------------------------------- 앞표지 layouts
+const F = (m, s, size, extra = {}) => { const w = norm(s), c = D.castOf(m, w.r); return c ? figure(c, { ...w, ...extra, size }) : null; };
+const FRONT = {
+    lineup: m => {
+        const L = leads(m), Sp = sups(m), row = [...Sp.slice(0, 1), ...L, ...Sp.slice(1, 3)].slice(0, 5);
+        return h("div.vf-art.va-lineup", h("div.va-row", row.map(c => F(m, spec(c, { expr: c.part === "lead" ? "excited" : "smug", pose: c.part === "lead" ? "wave" : "hips" }), c.part === "lead" ? 118 : 86))));
+    },
+    hero: m => h("div.vf-art.va-hero", leads(m)[0] ? F(m, spec(leads(m)[0], { expr: "cool", pose: "hips" }), 172) : null,
+        h("div.va-minis", [...leads(m).slice(1), ...sups(m)].slice(0, 4).map(c => F(m, spec(c), 54)))),
+    duo: m => { const [a, b] = [...leads(m), ...sups(m)]; return h("div.vf-art.va-duo", a ? F(m, spec(a, { expr: "love", pose: "point" }), 128) : null, h("i.va-mid"), b ? h("div.va-flip", F(m, spec(b, { expr: "shy", pose: "point" }), 128)) : null); },
+    still: m => h("div.vf-art.va-still", coverStills(m, 1)[0] ? still(m, coverStills(m, 1)[0], { hgt: 176, cls: "full" }) : null),
+    spotlight: m => h("div.vf-art.va-spot", h("div.va-back", [...sups(m), ...extras(m)].slice(0, 3).map(c => F(m, spec(c, { expr: "evil" }), 78, { upper: true }))),
+        leads(m)[0] ? h("div.va-lit", F(m, spec(leads(m)[0], { expr: "scared", pose: "shrug" }), 140)) : null),
+    stage: m => h("div.vf-art.va-stage", h("i.va-curtain.l"), h("i.va-curtain.r"), h("div.va-row", [...leads(m), ...sups(m)].slice(0, 4).map(c => F(m, spec(c, { expr: "excited", pose: "both" }), c.part === "lead" ? 96 : 74)))),
+    pyramid: m => { const all = [...leads(m), ...sups(m), ...extras(m)]; return h("div.vf-art.va-pyr", h("div.va-row.t", all.slice(0, 1).map(c => F(m, spec(c, { expr: "excited", pose: "both" }), 84))), h("div.va-row.mid", all.slice(1, 3).map(c => F(m, spec(c, { pose: "wave" }), 70))), h("div.va-row.low", all.slice(3, 6).map(c => F(m, spec(c), 58)))); },
+    frame: m => h("div.vf-art.va-frame", h("div.va-pic", leads(m)[0] ? F(m, spec(leads(m)[0], { expr: "blank" }), 124) : null), h("div.va-minis", sups(m).slice(0, 3).map(c => F(m, spec(c), 42, { upper: true })))),
+    panels: m => h("div.vf-art.va-panels", [...leads(m), ...sups(m)].slice(0, 3).map((c, i) => h("div.va-panel.bg-" + ["street", "home", "office"][i], F(m, spec(c, { expr: ["shock", "dizzy", "tongue"][i], pose: ["shrug", "both", "point"][i] }), 92)))),
+    split: m => { const a = leads(m)[0], b = sups(m)[0] || leads(m)[1]; return h("div.vf-art.va-split", h("div.va-half.a", a ? F(m, spec(a, { expr: "angry", pose: "point" }), 140) : null), h("div.va-half.b", b ? h("div.va-flip", F(m, spec(b, { expr: "evil", pose: "point" }), 140)) : null)); },
+    // 복덩이 사기단: the leads on a bed of money bundles · the others burst out of the money (face and chest only)
+    "money-burst": (m, FR) => h("div.vf-art.va-money",
+        h("div.va-burst", (FR.back || []).map(s => h("div.va-burster", F(m, s, 118, { upper: true }), h("i.va-pile")))),
+        h("div.va-bed"),
+        h("div.va-row.main", (FR.main || leads(m).map(c => spec(c, { expr: "excited", pose: "both", hold: "money" }))).map(s => F(m, s, 92))))
+};
+export function front(m) {
+    const b = brandOf(m), S = D.brandStyle(b.id), FR = m.cover?.front || {}, layout = FRONT[FR.layout] ? FR.layout : S.front;
+    return h("div.vhs-front.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": FR.bg || b.color, "--bc": b.color, "--bi": b.ink } },
+        h("div.vf-head", brandLogo(b, 28), h("small", `주연: ${castLine(leads(m), true) || "-"}`)),
+        FRONT[layout](m, FR),
+        h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.ko), h("small", m.en)),
+        m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
+        ratingBand(m));
+}
+
+// ---------------------------------------------------------------- 뒷표지 layouts
+const BACK = {
+    stills4: (m, L) => h("div.vb-stills.g4", L.map(s => still(m, s, { hgt: 56 }))),
+    stills3: (m, L) => h("div.vb-stills.g3", L.map((s, i) => still(m, s, { hgt: i ? 50 : 66 }))),
+    stills2: (m, L) => h("div.vb-stills.g2", L.map(s => still(m, s, { hgt: 58, cap: true }))),
+    still1: (m, L) => h("div.vb-stills.g1", L.map(s => still(m, s, { hgt: 112, cap: true }))),
+    strip3: (m, L) => h("div.vb-stills.g-strip", L.map(s => still(m, s, { hgt: 66 }))),
+    filmstrip: (m, L) => h("div.vb-film", L.map(s => still(m, s, { hgt: 62 }))),
+    polaroid: (m, L) => h("div.vb-polas", L.map((s, i) => h("div.vb-pola" + (i ? ".r" : ""), still(m, s, { hgt: 70 }), h("small", s.cap || "")))),
+    text: () => null
+};
+export function back(m) {
+    const b = brandOf(m), S = D.brandStyle(b.id), BK = m.cover?.back || {}, layout = BACK[BK.layout] ? BK.layout : S.back;
+    const L = coverStills(m, D.STILL_N[layout] ?? 4);
+    const date = String(m.date || "").replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, mo, d) => `${+y}년 ${+mo}월 ${+d}일`);
+    return h("div.vhs-back.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": m.cover?.front?.bg || b.color, "--bc": b.color, "--bi": b.ink } },
+        L.length ? BACK[layout](m, L) : null,
+        h("div.vb-text",
+            h("p.vb-plot", m.plot),
+            h("dl.vb-info",
+                h("dt", "주연"), h("dd", castLine(leads(m)) || "-"),
+                sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m)))] : null,
+                h("dt", "제작"), h("dd", `${m.nation} · ${date}`),
+                h("dt", "장르"), h("dd", m.genres.join(" · ")),
+                h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`))),
+        h("div.vb-foot", brandLogo(b, 26), h("b", b.name), ratingBand(m)));
+}
+// 뒷표지 | 중간표지 | 앞표지
+export const vhsBox = m => h("div.vhs-box", back(m), spine(m), front(m));

@@ -1,7 +1,7 @@
 // ================================================================ 📼 VHS — 동행 비디오 가게 · VHS Collection · 영화DB · 🎬 영화관
 //   genres · ratings (띠) · brands (= 영화사) · the 37 shop kinds · the movie catalog:
 //     • built-in movies (복덩이 사기단 …) + movies made in the admin generator (Store.vhs.movies)
-//     • a seeded batch of generated movies so every kind of shop has something on its shelves
+//     (only movies the admin ordered — the game makes none up)
 //   A movie a player buys is stored as a snapshot (game/vhs.js), so its cast never changes afterwards.
 import { Store } from "../core/store.js";
 import { COUNTRIES } from "./catalog.js";
@@ -117,208 +117,170 @@ export function seeded(str) {
     for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
     return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
 }
-const pickR = (r, a) => a[Math.floor(r() * a.length)];
-const intR = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+// ---------------------------------------------------------------- 🖼️ cover style per brand (영화사)
+//   중간표지 (spine): main = the big title ("ko" Korean, one vertical line · "en" the English title sideways)
+//                     sub = the small title ("en" · "ko" Korean small · "row" Korean across in a small row · null = none)
+//                     still = "none" · "small" (a small still) · "under" (a still under the Korean row) · band = the 띠 colour block
+//   front / back: the brand's own default cover layout (a movie's own cover order — cover.front.layout / cover.back.layout — wins)
+const BS = (band, main, sub, still, front, back) => ({ band, main, sub, still, front, back });
+export const BRAND_STYLE = {
+    hyhg: BS(1, "ko", "en", "small", "lineup", "stills4"),
+    bmovie: BS(0, "en", "row", "under", "still", "still1"),
+    ghost: BS(1, "ko", "en", "none", "spotlight", "stills2"),
+    mj: BS(1, "ko", "en", "none", "stage", "strip3"),
+    dung: BS(1, "ko", "en", "none", "pyramid", "stills2"),
+    ground: BS(1, "ko", "en", "none", "lineup", "filmstrip"),
+    emo: BS(1, "ko", "en", "none", "duo", "polaroid"),
+    poly: BS(1, "ko", "en", "none", "hero", "stills3"),
+    bw: BS(1, "ko", "en", "small", "frame", "filmstrip"),
+    jolja: BS(0, "en", "row", "none", "panels", "still1"),
+    ppori: BS(1, "ko", "en", "small", "hero", "stills4"),
+    samsaek: BS(0, "ko", "en", "small", "split", "stills3"),
+    goodfilm: BS(1, "ko", null, "small", "hero", "stills2"),
+    myeongjak: BS(1, "ko", "en", "none", "frame", "text"),
+    moviescreen: BS(1, "ko", "en", "small", "lineup", "stills4"),
+    action123: BS(1, "ko", "en", "small", "split", "strip3"),
+    kidz: BS(1, "ko", "en", "small", "pyramid", "polaroid"),
+    adultfilms: BS(1, "ko", "en", "small", "duo", "stills2"),
+    redlips: BS(1, "ko", "en", "small", "spotlight", "still1"),
+    cinematheque: BS(0, "ko", null, "none", "frame", "polaroid"),
+    crazy: BS(0, "ko", null, "small", "panels", "stills4"),
+    dodo: BS(1, "en", "ko", "none", "hero", "strip3"),
+    rgb: BS(0, "en", "ko", "none", "split", "filmstrip"),
+    spookies: BS(0, "en", "ko", "none", "spotlight", "stills2")
+};
+export const brandStyle = id => BRAND_STYLE[id] || BRAND_STYLE.hyhg;
+export const FRONT_LAYOUTS = [["", "영화사 기본"], ["lineup", "배우들 일렬"], ["hero", "주연 크게 + 조연"], ["duo", "주연 둘 마주보기"], ["still", "스틸컷 한 장"], ["spotlight", "스포트라이트"],
+    ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"]];
+export const BACK_LAYOUTS = [["", "영화사 기본"], ["stills4", "스틸컷 4장"], ["stills3", "스틸컷 3장"], ["stills2", "스틸컷 2장"], ["still1", "스틸컷 1장 크게"], ["strip3", "가로 띠 3장"],
+    ["filmstrip", "필름 스트립"], ["polaroid", "폴라로이드"], ["text", "글 위주 (스틸컷 없음)"]];
+export const STILL_N = { stills4: 4, stills3: 3, stills2: 2, still1: 1, strip3: 3, filmstrip: 3, polaroid: 2, text: 0 };
+
+// ---------------------------------------------------------------- 😀 a line's mood (when the script doesn't say)
+export function lineMood(text) {
+    const t = String(text || "");
+    if (/크크|ㅋㅋ|후후|흐흐/.test(t)) return "evil";
+    if (/뭐야|당장|놓쳤|잡아|거기 서|사기꾼|이놈|비켜/.test(t)) return "angry";
+    if (/헉|어\?|\?!|깜짝|세상에/.test(t)) return "shock";
+    if (/튀어|도망|살려/.test(t)) return "scared";
+    if (/…|ㅠ|흑/.test(t)) return "sad";
+    if (/!!|~!|최고|좋아|역시/.test(t)) return "excited";
+    if (/~/.test(t)) return "happy";
+    if (/\?/.test(t)) return "shock";
+    return "happy";
+}
+// what a line does with the body (when the script doesn't say)
+export const lineAct = text => /튀어|도망|비켜|거기 서/.test(text) ? "run" : /!!/.test(text) ? "stomp" : /~/.test(text) ? "hop" : "talk";
 
 // ---------------------------------------------------------------- players by name (the cast)
 const findPid = nameKo => Store.allPlayers.find(p => p.name_ko === nameKo)?.id ?? null;
 
-// ---------------------------------------------------------------- ⭐ built-in movie: 복덩이 사기단 (sample · saved in the movie DB)
-//   cast: { pid, ko: player name (kept for the record), role, part: lead | support | extra, nude?, sexy? }
+// ---------------------------------------------------------------- ⭐ built-in movie: 복덩이 사기단 (the admin's own idea · saved in the movie DB)
+//   cast: { pid, ko: player name (kept for the record), role, part: lead | support | extra, nude? }
 //   script: parts the 🎬 cinema plays (screens/vhs.js) — sec = seconds on screen
+//   a scene: who (roles on screen) · cast { role: { expr, pose, hold, act } } (how they start) · lines [who, text, { expr, pose, hold, act }]
+//            · nude (roles shown topless) · props · bg · fx
 const fortuneSwindlers = () => {
     const P = n => findPid(n);
+    const HENRY = "Henry", JUSTIN = "Justin", JACK = "Jack, the Gang Boss", PAUL = "Paul, the Gangster", LILY = "Lily", TAXI = "Taxi Driver", BABE = "Jack's Babe", BANKER = "Banker";
     return {
         id: "m_fortune_swindlers", builtin: true,
         en: "Fortune Swindlers", ko: "복덩이 사기단",
         brand: "hyhg", nation: "Emo World", date: "0-02-14",
         genres: ["코미디"], rating: "water", stars: 1, quality: 6, lgbtq: false,
         cast: [
-            { ko: "짱구", pid: P("짱구"), role: "Henry", part: "lead" },
-            { ko: "스마일", pid: P("스마일"), role: "Justin", part: "lead" },
-            { ko: "남자이모", pid: P("남자이모"), role: "Jack, the Gang Boss", short: "Jack", part: "support" },
-            { ko: "힘쎈이", pid: P("힘쎈이"), role: "Paul, the Gangster", short: "Paul", part: "support" },
-            { ko: "행복이모", pid: P("행복이모"), role: "Lily", part: "support" },
-            { ko: "보라곰돌이", pid: P("보라곰돌이"), role: "Taxi Driver", part: "extra" },
-            { ko: "완전에로년덩이", pid: P("완전에로년덩이"), role: "Jack's Babe", part: "extra", nude: true },
-            { ko: "똥멜론", pid: P("똥멜론"), role: "Banker", part: "extra" }
+            { ko: "짱구", pid: P("짱구"), role: HENRY, part: "lead" },
+            { ko: "스마일", pid: P("스마일"), role: JUSTIN, part: "lead" },
+            { ko: "남자이모", pid: P("남자이모"), role: JACK, short: "Jack", part: "support" },
+            { ko: "힘쎈이", pid: P("힘쎈이"), role: PAUL, short: "Paul", part: "support" },
+            { ko: "행복이모", pid: P("행복이모"), role: LILY, part: "support" },
+            { ko: "보라곰돌이", pid: P("보라곰돌이"), role: TAXI, part: "extra" },
+            { ko: "완전에로년덩이", pid: P("완전에로년덩이"), role: BABE, part: "extra", nude: true },
+            { ko: "똥멜론", pid: P("똥멜론"), role: BANKER, part: "extra" }
         ],
         plot: "사고만 치고 다니는 두 친구 Henry와 Justin이 우연히 범죄에 휘말리게 되면서 벌어지는 대소동.",
         tagline: "이들이 나타나면 온 세상의 배꼽이 뒤집어 진다!!",
         music: "comic",
         cover: {
-            spine: { font: "comic", scene: "money" },
-            front: { layout: "duo-money", main: ["Henry", "Justin"], back: ["Lily", "Jack, the Gang Boss", "Paul, the Gangster"], frown: true, gun: "Jack, the Gang Boss", bg: "#38bdf8", fx: "💸" },
-            back: { scenes: ["socks", "bank", "bag", "taxi"] }
+            spine: { font: "comic", still: { bg: "money", who: [{ r: HENRY, expr: "excited", pose: "both" }] } },
+            // 앞표지: Henry · Justin on a bed of money bundles (통쾌) — Paul · Jack · Lily burst out of the money, face and chest only (못마땅) · Jack and Paul hold guns
+            front: { layout: "money-burst", bg: "#38bdf8",
+                main: [{ r: HENRY, expr: "excited", pose: "both", hold: "money" }, { r: JUSTIN, expr: "excited", pose: "wave", hold: "money" }],
+                back: [{ r: PAUL, expr: "annoyed", pose: "point", hold: "gun" }, { r: LILY, expr: "annoyed", pose: "hips" }, { r: JACK, expr: "angry", pose: "point", hold: "gun" }] },
+            // 뒷표지: 4 stills made again for the cover
+            back: { layout: "stills4", stills: [
+                { bg: "street", props: ["🧦"], cap: "오늘만 특가!", who: [{ r: JUSTIN, expr: "excited", pose: "wave", hold: "sock" }, { r: HENRY, expr: "smug", pose: "point" }, { r: LILY, expr: "love", pose: "hips" }] },
+                { bg: "bank", props: ["💰"], cap: "오늘도 한껀 했다!", who: [{ r: BANKER, expr: "happy", pose: "down" }, { r: JUSTIN, expr: "evil", hold: "money" }, { r: HENRY, expr: "excited", pose: "both" }] },
+                { bg: "street", props: ["💎"], cap: "헉! 금은보화가!!", who: [{ r: JUSTIN, expr: "shock", hold: "bag" }, { r: HENRY, expr: "shock", pose: "shrug" }] },
+                { bg: "taxi", props: ["🚕"], cap: "아무 곳이나요~!!", who: [{ r: TAXI, expr: "happy", pose: "down" }, { r: JUSTIN, expr: "excited", pose: "wave" }, { r: HENRY, expr: "excited", pose: "both" }] }
+            ] }
         },
         script: [
             { k: "brand", sec: 4 },
             { k: "title", sec: 8, style: "comic" },
             { k: "cast", sec: 7, parts: ["lead", "support"] },
-            { k: "scene", sec: 12, bg: "street", props: ["🧦", "🧦"], who: ["Justin", "Henry", "Lily"], lines: [
-                ["Justin", "자자~ 오늘만 특가! 세상에서 제일 부드러운 양말이 왔어요!"],
-                ["Lily", "어머, 이 양말 얼마예요?"],
-                ["Henry", "100,000G입니다! 최고급 양말이에요, 손님!"],
-                ["Lily", "좋아요, 살게요!"]] },
-            { k: "scene", sec: 9, bg: "street", props: ["📱"], who: ["Lily", "Justin", "Henry"], lines: [
-                ["Lily", "(검색 중…) 뭐야? 10,000G짜리잖아?!"],
-                ["Lily", "이 사기꾼들아!! 거기 서!!"],
-                ["Henry", "튀어!!"]], fx: "chase" },
-            { k: "scene", sec: 9, bg: "bank", props: ["💰"], who: ["Justin", "Henry", "Banker"], lines: [
-                ["Banker", "어서 오세요~ 100,000G 출금 도와드릴게요."],
-                ["Justin", "오늘도 한껀 했다!"],
-                ["Henry", "크크크, 역시 우리야!"]] },
-            { k: "scene", sec: 10, bg: "street", props: ["💼", "💎"], who: ["Justin", "Henry"], lines: [
-                ["Justin", "어? 이거 누가 떨어뜨린 돈가방인데…?"],
-                ["Henry", "헉! 금은보화가 가득해!!"],
-                ["Justin", "일단 들고 튀자!"]], fx: "sparkle" },
-            { k: "scene", sec: 11, bg: "hideout", props: ["🍾"], who: ["Jack, the Gang Boss", "Jack's Babe", "Paul, the Gangster"], nude: ["Jack's Babe"], lines: [
-                ["Paul", "보스… 돈가방이 없어졌습니다."],
-                ["Jack", "뭐야?! 당장 그 돈가방 찾아와!!"]], fx: "music" },
-            { k: "scene", sec: 10, bg: "bank", who: ["Paul, the Gangster", "Lily"], lines: [
-                ["Paul", "이봐, 혹시 돈가방 든 놈들 못 봤어?"],
-                ["Lily", "봤죠! 양말 파는 사기꾼 둘이요. 하나는 웃는 얼굴, 하나는 짱구 머리!"]] },
-            { k: "scene", sec: 13, bg: "street", props: ["🚕", "💸", "💸", "💸"], who: ["Justin", "Henry", "Jack, the Gang Boss", "Paul, the Gangster"], lines: [
-                ["Jack", "저기 있다! 잡아!!"],
-                ["Justin", "택시!! 그리고… 받아라~!"],
-                ["Paul", "돈이다!! 비켜, 비켜!!"],
-                ["Jack", "놓쳤잖아!!"]], fx: "money" },
-            { k: "scene", sec: 8, bg: "street", props: ["💸"], who: ["Lily", "Henry"], lines: [
-                ["Lily", "어머, 하늘에서 돈이…!"],
-                ["Henry", "저희 더 이상 당신에게 빚 없어요~!"]], fx: "money" },
-            { k: "scene", sec: 10, bg: "taxi", props: ["🚕"], who: ["Taxi Driver", "Justin", "Henry"], lines: [
-                ["Taxi Driver", "어디로 모실까요?"],
-                ["Justin", "아무 곳이나요~!!"],
-                ["Henry", "저희가 한 껀 또 했잖아요~!!"]] },
+            { k: "scene", sec: 12, bg: "street", props: ["🧦", "🧦"], who: [JUSTIN, HENRY, LILY],
+                cast: { [JUSTIN]: { hold: "sock" }, [LILY]: { expr: "happy" } },
+                lines: [
+                    [JUSTIN, "자자~ 오늘만 특가! 세상에서 제일 부드러운 양말이 왔어요!", { expr: "excited", pose: "wave", hold: "sock", act: "hop" }],
+                    [LILY, "어머, 이 양말 얼마예요?", { expr: "love", pose: "hips" }],
+                    [HENRY, "100,000G입니다! 최고급 양말이에요, 손님!", { expr: "smug", pose: "point" }],
+                    [LILY, "좋아요, 살게요!", { expr: "excited", pose: "both", act: "hop" }]] },
+            { k: "scene", sec: 9, bg: "street", props: ["📱"], who: [LILY, JUSTIN, HENRY], fx: "chase",
+                lines: [
+                    [LILY, "(검색 중…) 뭐야? 10,000G짜리잖아?!", { expr: "shock", hold: "phone" }],
+                    [LILY, "이 사기꾼들아!! 거기 서!!", { expr: "angry", pose: "point", act: "stomp" }],
+                    [HENRY, "튀어!!", { expr: "scared", pose: "both", act: "run" }]] },
+            { k: "scene", sec: 9, bg: "bank", props: ["💰"], who: [JUSTIN, HENRY, BANKER],
+                lines: [
+                    [BANKER, "어서 오세요~ 100,000G 출금 도와드릴게요.", { expr: "happy", pose: "wave" }],
+                    [JUSTIN, "오늘도 한껀 했다!", { expr: "excited", hold: "money", act: "hop" }],
+                    [HENRY, "크크크, 역시 우리야!", { expr: "evil", pose: "hips" }]] },
+            { k: "scene", sec: 10, bg: "street", props: ["💼", "💎"], who: [JUSTIN, HENRY], fx: "sparkle",
+                lines: [
+                    [JUSTIN, "어? 이거 누가 떨어뜨린 돈가방인데…?", { expr: "shock", pose: "point" }],
+                    [HENRY, "헉! 금은보화가 가득해!!", { expr: "shock", pose: "shrug", act: "jump" }],
+                    [JUSTIN, "일단 들고 튀자!", { expr: "evil", hold: "bag", act: "run" }]] },
+            // 아지트: Jack's Babe dances topless, shaking her chest, the whole scene
+            { k: "scene", sec: 11, bg: "hideout", props: ["🍾"], who: [JACK, BABE, PAUL], nude: [BABE], fx: "music",
+                cast: { [BABE]: { expr: "wink", pose: "both", act: "dance" }, [JACK]: { expr: "cool", pose: "hips" } },
+                lines: [
+                    [PAUL, "보스… 돈가방이 없어졌습니다.", { expr: "scared", pose: "shrug", act: "shake" }],
+                    [JACK, "뭐야?! 당장 그 돈가방 찾아와!!", { expr: "angry", pose: "point", hold: "gun", act: "stomp" }]] },
+            { k: "scene", sec: 10, bg: "bank", who: [PAUL, LILY],
+                lines: [
+                    [PAUL, "이봐, 혹시 돈가방 든 놈들 못 봤어?", { expr: "annoyed", pose: "point", hold: "gun" }],
+                    [LILY, "봤죠! 양말 파는 사기꾼 둘이요. 하나는 웃는 얼굴, 하나는 짱구 머리!", { expr: "angry", pose: "point", act: "stomp" }]] },
+            { k: "scene", sec: 13, bg: "street", props: ["🚕", "💸", "💸", "💸"], who: [JUSTIN, HENRY, JACK, PAUL], fx: "money",
+                cast: { [JACK]: { hold: "gun" }, [PAUL]: { hold: "gun" } },
+                lines: [
+                    [JACK, "저기 있다! 잡아!!", { expr: "angry", pose: "point", hold: "gun", act: "stomp" }],
+                    [JUSTIN, "택시!! 그리고… 받아라~!", { expr: "excited", pose: "both", hold: "money", act: "jump" }],
+                    [PAUL, "돈이다!! 비켜, 비켜!!", { expr: "love", pose: "both", act: "run" }],
+                    [JACK, "놓쳤잖아!!", { expr: "angry", pose: "shrug", hold: "gun", act: "stomp" }]] },
+            { k: "scene", sec: 8, bg: "street", props: ["💸"], who: [LILY, HENRY], fx: "money",
+                lines: [
+                    [LILY, "어머, 하늘에서 돈이…!", { expr: "love", pose: "both", act: "hop" }],
+                    [HENRY, "저희 더 이상 당신에게 빚 없어요~!", { expr: "tongue", pose: "wave", act: "hop" }]] },
+            { k: "scene", sec: 10, bg: "taxi", props: ["🚕"], who: [TAXI, JUSTIN, HENRY],
+                lines: [
+                    [TAXI, "어디로 모실까요?", { expr: "happy", pose: "down" }],
+                    [JUSTIN, "아무 곳이나요~!!", { expr: "excited", pose: "both", act: "hop" }],
+                    [HENRY, "저희가 한 껀 또 했잖아요~!!", { expr: "excited", pose: "both", hold: "money", act: "jump" }]] },
             { k: "end", sec: 9, text: "The End", credits: true }
         ]
     };
 };
-
-// ---------------------------------------------------------------- 🎲 generated movies (fills the shops)
-const WORDS = {
-    adj: [["Crazy", "미친"], ["Lucky", "행운의"], ["Golden", "황금"], ["Midnight", "한밤의"], ["Silent", "침묵의"], ["Wild", "야생의"], ["Last", "마지막"], ["Burning", "불타는"], ["Frozen", "얼어붙은"], ["Secret", "비밀의"],
-        ["Pink", "핑크빛"], ["Iron", "강철"], ["Broken", "부서진"], ["Dancing", "춤추는"], ["Lonely", "외로운"], ["Bloody", "피의"], ["Sweet", "달콤한"], ["Hidden", "숨겨진"], ["Royal", "왕실의"], ["Forbidden", "금지된"]],
-    noun: {
-        코미디: [["Swindlers", "사기단"], ["Diner", "식당 소동"], ["Wedding", "결혼 대작전"], ["Twins", "쌍둥이"], ["Taxi", "택시"], ["Grandma", "할머니"]],
-        액션: [["Heist", "대작전"], ["Highway", "고속도로"], ["Commando", "특공대"], ["Fist", "주먹"], ["Express", "특급"], ["Revenge", "복수"]],
-        판타지: [["Dragon", "드래곤"], ["Kingdom", "왕국"], ["Wizard", "마법사"], ["Crystal", "수정구"], ["Fairy", "요정"], ["Sword", "검"]],
-        SF: [["Robot", "로봇"], ["Planet", "행성"], ["Galaxy", "은하"], ["Cyborg", "사이보그"], ["Time Machine", "타임머신"], ["Alien", "외계인"]],
-        공포: [["Ghost", "유령"], ["Doll", "인형"], ["Basement", "지하실"], ["Curse", "저주"], ["Night", "밤"], ["Mask", "가면"]],
-        스릴러: [["Witness", "목격자"], ["Stranger", "낯선 자"], ["Alibi", "알리바이"], ["Trap", "함정"], ["Shadow", "그림자"], ["Code", "암호"]],
-        성인: [["Kiss", "키스"], ["Desire", "욕망"], ["Affair", "정사"], ["Temptation", "유혹"], ["Lips", "입술"], ["Paradise", "낙원"]],
-        가족: [["Puppy", "강아지"], ["Summer", "여름방학"], ["Treehouse", "나무집"], ["Picnic", "소풍"], ["Christmas", "크리스마스"], ["Grandpa", "할아버지"]],
-        드라마: [["Letter", "편지"], ["Station", "정거장"], ["Mother", "어머니"], ["Rain", "비"], ["Promise", "약속"], ["Village", "마을"]],
-        로맨스: [["Love", "사랑"], ["Island", "섬"], ["Valentine", "발렌타인"], ["Heart", "마음"], ["Moonlight", "달빛"], ["Rose", "장미"]],
-        뮤지컬: [["Melody", "멜로디"], ["Stage", "무대"], ["Song", "노래"], ["Rhythm", "리듬"], ["Opera", "오페라"], ["Disco", "디스코"]],
-        어드벤처: [["Treasure", "보물"], ["Jungle", "정글"], ["Voyage", "항해"], ["Temple", "신전"], ["Map", "지도"], ["Expedition", "탐험대"]]
-    }
-};
-const ROLE_NAMES = ["Henry", "Justin", "Lily", "Jack", "Paul", "Mona", "Rex", "Tina", "Bruno", "Candy", "Victor", "Ruby", "Max", "Sally", "Leo", "Nina", "Otto", "Gina", "Duke", "Pearl"];
-const EXTRA_ROLES = ["Taxi Driver", "Banker", "Waiter", "Police Officer", "Old Man", "Nurse", "Shop Keeper", "Mailman", "Doctor", "Singer"];
-const TAGS = {
-    코미디: ["웃음 보장! 배꼽 주의!", "올해 최고의 폭소 대작!"], 액션: ["숨 막히는 액션의 연속!", "역대급 스케일의 액션 블록버스터!"], 판타지: ["꿈과 마법의 세계로!", "상상 그 이상의 판타지!"],
-    SF: ["미래가 온다!", "우주를 뒤흔든 SF 대작!"], 공포: ["절대 혼자 보지 마시오!", "악령인가? 인간인가?"], 스릴러: ["긴장감 넘치는 스릴러 대작!", "마지막 1분을 놓치지 마라!"],
-    성인: ["어른들만의 뜨거운 이야기", "금지된 사랑의 기록"], 가족: ["온 가족이 함께 보는 감동!", "웃음과 눈물의 가족 영화"], 드라마: ["가슴을 울리는 감동 실화!", "눈물 없이 볼 수 없다"],
-    로맨스: ["올해 가장 설레는 사랑 이야기", "다시 사랑하고 싶어진다"], 뮤지컬: ["노래와 춤이 넘치는 무대!", "귀가 즐거운 2시간"], 어드벤처: ["모험은 지금부터!", "전설의 보물을 찾아라!"]
-};
-const PLOTS = {
-    코미디: ["어설픈 {a}와 {b}가 엉뚱한 사건에 휘말리며 벌어지는 대소동.", "{a}가 실수로 받은 상자 하나 때문에 온 동네가 뒤집어진다."],
-    액션: ["모든 것을 잃은 {a}가 {b}에게 복수하기 위해 다시 일어선다.", "{a}와 {b}는 단 하룻밤 사이에 도시를 구해야 한다."],
-    판타지: ["평범한 {a}가 우연히 마법의 문을 열면서 시작되는 모험.", "{a}는 사라진 왕국의 마지막 후계자였다."],
-    SF: ["먼 미래, {a}는 인류를 구할 마지막 신호를 받는다.", "{a}가 만든 로봇이 스스로 생각하기 시작했다."],
-    공포: ["낡은 저택으로 이사 온 {a}에게 매일 밤 이상한 일이 일어난다.", "{a}와 {b}가 들어간 지하실에서는 아무도 돌아오지 못했다."],
-    스릴러: ["살인 사건의 유일한 목격자 {a}, 그리고 그를 쫓는 {b}.", "{a}에게 도착한 정체불명의 편지 한 통."],
-    성인: ["{a}와 {b}의 위험하고 뜨거운 비밀 관계.", "한여름 밤, {a}는 거부할 수 없는 유혹에 빠진다."],
-    가족: ["{a} 가족이 잃어버린 강아지를 찾아 떠나는 따뜻한 여정.", "방학을 맞은 {a}와 할아버지의 특별한 여름."],
-    드라마: ["가난하지만 꿈을 잃지 않은 {a}의 감동적인 인생 이야기.", "오랜 세월이 지나 다시 만난 {a}와 {b}."],
-    로맨스: ["우연히 같은 우산을 쓰게 된 {a}와 {b}의 설레는 사랑.", "{a}는 매일 같은 시간에 오는 {b}를 기다린다."],
-    뮤지컬: ["무대를 꿈꾸는 {a}가 노래 하나로 세상을 바꾼다.", "{a}와 {b}의 노래가 온 마을을 춤추게 한다."],
-    어드벤처: ["{a}와 {b}는 전설의 보물 지도를 손에 넣는다.", "정글 깊은 곳 잃어버린 신전을 찾아 떠난 {a}."]
-};
-const BGS = ["street", "bank", "hideout", "taxi", "home", "forest", "space", "castle", "beach", "night", "stage", "office"];
-const GENRE_BG = { 코미디: ["street", "home", "office"], 액션: ["street", "night", "office"], 판타지: ["castle", "forest"], SF: ["space", "office"], 공포: ["night", "home", "forest"], 스릴러: ["night", "office", "street"],
-    성인: ["home", "night", "beach"], 가족: ["home", "forest", "beach"], 드라마: ["home", "street"], 로맨스: ["beach", "street", "night"], 뮤지컬: ["stage", "street"], 어드벤처: ["forest", "castle", "beach"] };
-const LINES = {
-    open: ["거기 누구야?!", "이게 다 무슨 일이야…", "드디어 찾았다!", "오늘은 운이 좋을 것 같아.", "조용히 해, 누가 온다!", "믿을 수가 없어!"],
-    mid: ["절대 포기하지 않을 거야.", "넌 날 속였어!", "지금 아니면 기회는 없어!", "도대체 원하는 게 뭐야?", "날 믿어, 제발!", "모든 게 끝났어…", "이건 시작에 불과해."],
-    end: ["이제 다 끝났어.", "우리… 다시 만날 수 있을까?", "고마워, 정말로.", "내일은 또 내일의 해가 뜰 거야!", "모든 게 꿈이었나…?"]
-};
-const MUSIC = { 코미디: "comic", 액션: "action", 판타지: "fantasy", SF: "space", 공포: "horror", 스릴러: "tense", 성인: "smooth", 가족: "happy", 드라마: "sad", 로맨스: "smooth", 뮤지컬: "happy", 어드벤처: "action" };
-
-// one generated movie (the cast comes from the active players — r decides who)
-export function makeMovie(seed, { players = null, genres = null, nation = null, stars = null, brand = null, lgbtq = null } = {}) {
-    const r = seeded("vhs-movie-" + seed);
-    const pool = (players || Store.players || []).filter(p => p && p.id != null);
-    const g1 = genres?.[0] || pickR(r, GENRES);
-    const g2 = genres ? genres[1] || null : (r() < 0.3 ? pickR(r, GENRES.filter(g => g !== g1)) : null);
-    const gs = [g1, g2].filter(Boolean);
-    const adj = pickR(r, WORDS.adj), noun = pickR(r, WORDS.noun[g1]);
-    const nat = nation || pickR(r, COUNTRIES);
-    const bw = r() < 0.06;
-    const natBrand = BRANDS.find(b => b.nation === nat);
-    const genreBrand = BRANDS.filter(b => b.genre && gs.includes(b.genre));
-    const free = BRANDS.filter(b => !b.nation && !b.genre && !b.bw);
-    const br = brand || (bw ? "bw" : r() < 0.35 && natBrand ? natBrand.id : genreBrand.length && r() < 0.5 ? pickR(r, genreBrand).id : pickR(r, free).id);
-    const st = stars || (() => { const x = r(); return x < 0.3 ? 1 : x < 0.52 ? 2 : x < 0.7 ? 3 : x < 0.82 ? 4 : x < 0.91 ? 5 : x < 0.97 ? 6 : 7; })();
-    const adult = gs.includes("성인"), scary = gs.includes("공포") || gs.includes("스릴러");
-    const rating = adult ? pickR(r, ["fire", "flower", "emo", "emobu", "hyhg"]) : scary ? pickR(r, ["red", "water", "bam", "fire"]) : gs.includes("가족") ? pickR(r, ["white", "green"]) : pickR(r, ["white", "green", "bam", "red", "water"]);
-    const picks = [...pool].sort(() => r() - 0.5);
-    const nLead = intR(r, 1, 2), nSup = intR(r, 1, 3), nExt = intR(r, 1, 3);
-    const roles = [...ROLE_NAMES].sort(() => r() - 0.5);
-    const cast = [];
-    for (let i = 0; i < nLead + nSup && picks.length; i++) { const p = picks.shift(); cast.push({ pid: p.id, ko: p.name_ko || p.player_name, role: roles[i], part: i < nLead ? "lead" : "support" }); }
-    for (let i = 0; i < nExt && picks.length; i++) { const p = picks.shift(); cast.push({ pid: p.id, ko: p.name_ko || p.player_name, role: pickR(r, EXTRA_ROLES), part: "extra" }); }
-    if (adult && cast.length) { const n = cast[Math.floor(r() * cast.length)]; if (r() < 0.6) n.nude = true; else n.sexy = true; }
-    const leads = cast.filter(c => c.part === "lead"), main = leads[0]?.role || "Henry", other = cast.find(c => c !== leads[0])?.role || "Lily";
-    const plot = pickR(r, PLOTS[g1]).replace("{a}", main).replace("{b}", other);
-    const year = intR(r, 0, 10000), month = intR(r, 1, 12), day = intR(r, 1, 28);
-    const m = {
-        id: "g_" + seed, en: `The ${adj[0]} ${noun[0]}`, ko: `${adj[1]} ${noun[1]}`, brand: br, nation: nat,
-        date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-        genres: gs, rating, stars: st, quality: intR(r, 1, 7), lgbtq: lgbtq ?? r() < 0.08, bw: br === "bw",
-        cast, plot, tagline: pickR(r, TAGS[g1]), music: MUSIC[g1],
-        cover: { spine: { font: pickR(r, ["bold", "comic", "brush", "neon"]) }, front: { layout: pickR(r, ["hero", "collage", "poster"]), bg: pickR(r, ["#0ea5e9", "#be123c", "#111827", "#f59e0b", "#7c3aed", "#059669", "#ec4899"]) }, back: {} }
-    };
-    if (br === "jolja") m.quality = intR(r, 1, 2);      // 拙作 ENT: 졸작 전문
-    if (br === "myeongjak") m.quality = intR(r, 6, 7);  // 명작시네마: 명작 전문
-    m.script = autoScript(m, r);
-    return m;
-}
-// brand → title → cast → 3~6 story scenes → ending (60 ~ 180 s)
-export function autoScript(m, r = seeded("script-" + m.id)) {
-    const who = c => c.short || c.role;
-    const bgs = GENRE_BG[m.genres[0]] || BGS;
-    const leads = m.cast.filter(c => c.part === "lead"), sup = m.cast.filter(c => c.part === "support"), ext = m.cast.filter(c => c.part === "extra");
-    const scenes = [];
-    const nScenes = intR(r, 3, 6);
-    for (let i = 0; i < nScenes; i++) {
-        const people = [...leads, ...(i % 2 ? sup : ext.slice(0, 1)), ...(i === nScenes - 1 ? sup.slice(0, 1) : [])].filter(Boolean).slice(0, 4);
-        if (!people.length) continue;
-        const kind = i === 0 ? "open" : i === nScenes - 1 ? "end" : "mid";
-        const lines = Array.from({ length: intR(r, 2, 4) }, (_, j) => [who(people[j % people.length]), pickR(r, LINES[kind])]);
-        scenes.push({ k: "scene", sec: 6 + lines.length * 3, bg: pickR(r, bgs), who: people.map(c => c.role), lines, nude: people.filter(c => c.nude).map(c => c.role) });
-    }
-    const base = [{ k: "brand", sec: 4 }, { k: "title", sec: 6, style: m.cover?.spine?.font || "bold" }, { k: "cast", sec: 6, parts: ["lead", "support"] }, ...scenes, { k: "end", sec: 5, text: "The End", credits: r() < 0.5 }];
-    // 1 ~ 3 minutes
-    let total = base.reduce((a, p) => a + p.sec, 0);
-    while (total < 60) { for (const p of base) if (p.k === "scene" && total < 60) { p.sec += 2; total += 2; } }
-    while (total > 180) { for (const p of base) if (p.k === "scene" && total > 180 && p.sec > 8) { p.sec -= 2; total -= 2; } }
-    return base;
-}
 export const scriptSeconds = m => (m.script || []).reduce((a, p) => a + (p.sec || 0), 0);
 
-// ---------------------------------------------------------------- the catalog
-export const GEN_COUNT = 260;
+// ---------------------------------------------------------------- the catalog: only movies the admin ordered (built-in + made in the admin generator)
 let cache = null, cacheKey = "";
 export function allMovies() {
-    const key = `${(Store.players || []).length}|${(Store.vhs?.movies || []).length}|${(Store.vhs?.movies || []).map(m => m.updated || m.id).join(",")}`;
+    const key = `${(Store.allPlayers || []).length}|${(Store.vhs?.movies || []).map(m => m.updated || m.id).join(",")}`;
     if (cache && key === cacheKey) return cache;
     const admin = (Store.vhs?.movies || []).filter(m => m && m.id && !m.off);
-    const list = [fortuneSwindlers(), ...admin];
-    for (let i = 0; i < GEN_COUNT; i++) list.push(makeMovie(i));
-    cache = list; cacheKey = key;
-    return list;
+    cache = [fortuneSwindlers(), ...admin]; cacheKey = key;
+    return cache;
 }
 export const movieById = id => allMovies().find(m => m.id === id) || null;
 export const builtinMovies = () => [fortuneSwindlers()];
