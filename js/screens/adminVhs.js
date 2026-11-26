@@ -7,7 +7,7 @@ import { toast, confirmBox } from "../core/fx.js";
 import { Store } from "../core/store.js";
 import { COUNTRIES } from "../data/catalog.js";
 import * as D from "../data/vhs.js";
-import { vhsBox, playMovie, dbCard } from "./vhs.js";
+import { vhsBox, playMovie, dbCard, MUSIC_STYLES, BG_KO } from "./vhs.js";
 import { EXPR_KO, POSE_KO, HOLD_KO } from "../ui/figure.js";
 
 const DRAFT_KEY = "gamblers.vhsDraft";
@@ -18,9 +18,9 @@ const blank = () => ({
     script: [{ k: "brand", sec: 4 }, { k: "title", sec: 6, style: "bold" }, { k: "cast", sec: 6, parts: ["lead", "support"] }, { k: "scene", sec: 12, bg: "street", who: [], lines: [] }, { k: "end", sec: 5, text: "The End", credits: true }]
 });
 const PARTS = [["lead", "주연"], ["support", "조연"], ["extra", "엑스트라"]];
-const MUSIC = [["comic", "🤡 우스꽝스러운"], ["action", "💥 액션"], ["horror", "👻 공포"], ["tense", "🔪 긴장"], ["smooth", "💋 부드러운"], ["happy", "😊 밝은"], ["sad", "😢 슬픈"], ["space", "🛸 우주"], ["fantasy", "🧚 판타지"]];
-const BGS = [["street", "🏙️ 거리"], ["bank", "🏦 은행"], ["hideout", "🕶️ 아지트"], ["taxi", "🚕 택시"], ["home", "🏠 집"], ["forest", "🌲 숲"], ["space", "🪐 우주"], ["castle", "🏰 성"], ["beach", "🏖️ 해변"], ["night", "🌙 밤"], ["stage", "🎤 무대"], ["office", "🖥️ 사무실"]];
-const FX = [["", "없음"], ["money", "💸 돈 휘날림"], ["chase", "🏃 추격"], ["sparkle", "✨ 반짝"], ["music", "🎵 음악"]];
+const MUSIC = MUSIC_STYLES;
+const BGS = [["street", "🏙️ 거리"], ["bank", "🏦 은행"], ["hideout", "🕶️ 아지트"], ["taxi", "🚕 택시"], ["home", "🏠 집"], ["forest", "🌲 숲"], ["space", "🪐 우주"], ["castle", "🏰 성"], ["beach", "🏖️ 해변"], ["night", "🌙 밤"], ["stage", "🎤 무대"], ["office", "🖥️ 사무실"], ["campus", "🏫 대학교"], ["room", "🛏️ 방"], ["shower", "🚿 샤워실"], ["ballroom", "🪩 무도회장"]];
+const FX = [["", "없음"], ["money", "💸 돈 휘날림"], ["chase", "🏃 추격"], ["sparkle", "✨ 반짝"], ["music", "🎵 음악"], ["hearts", "💗 하트"], ["fog", "🌫️ 커튼 열림 + 안개"], ["steam", "♨️ 김 (샤워)"], ["disco", "🪩 디스코 조명"], ["rock", "🎸 락 조명"]];
 
 export function adminVhsPage() {
     if (Store.cloud && !Store.user) return h("div.page", h("h2.page-title", "🎬 영화 · 비디오 표지 생성기"), h("p.notice", "관리자 로그인이 필요합니다 (⚙️ 관리자 페이지)."));
@@ -113,6 +113,8 @@ export function adminVhsPage() {
         return h("div.vg-scene",
             h("div.row", h("b", `${head} ${m.script.slice(0, i).filter(x => x.k === "scene").length + 1}`), secIn, "초",
                 h("select", { onchange: e => { p.bg = e.target.value; upd(); } }, BGS.map(([v, l]) => h("option", { value: v, selected: p.bg === v }, l))),
+                h("input.input", { value: p.place || "", placeholder: `장소 (${BG_KO[p.bg || "street"] || ""})`, style: { width: "130px" }, title: "장면 위에 표시되는 장소 (비우면 배경 이름)", oninput: e => { p.place = e.target.value || undefined; upd(); } }),
+                h("select", { title: "이 장면의 배경음 (비우면 앞 장면 음악이 이어짐)", onchange: e => { p.music = e.target.value || undefined; upd(); } }, [["", "🎵 음악 이어짐"], ...MUSIC].map(([v, l]) => h("option", { value: v, selected: (p.music || "") === v }, l))),
                 h("select", { onchange: e => { p.fx = e.target.value || undefined; upd(); } }, FX.map(([v, l]) => h("option", { value: v, selected: (p.fx || "") === v }, l))),
                 h("button.btn.ghost.small", { disabled: i === 3, onclick: () => { [m.script[i - 1], m.script[i]] = [m.script[i], m.script[i - 1]]; upd(); drawForm(); } }, "⬆"),
                 h("button.btn.ghost.small", { onclick: () => { m.script.splice(i, 1); upd(); drawForm(); } }, "✕")),

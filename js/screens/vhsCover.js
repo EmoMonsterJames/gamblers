@@ -30,10 +30,11 @@ const ratingBand = m => { const r = rateOf(m); return h("div.vc-band", { style: 
 //   s: { bg, props, cap, who: [{ r, expr, pose, hold }] } · o: { hgt (px), cap: show the caption }
 export function still(m, s, { hgt = 60, cap = false, cls = "" } = {}) {
     const who = (s?.who || []).map(norm).map(w => ({ w, c: D.castOf(m, w.r) })).filter(x => x.c).slice(0, 4);
-    const size = Math.round(hgt * (who.length > 2 ? 0.86 : 0.94));
-    return h("div.vstill.bg-" + (s?.bg || "street") + (cls ? "." + cls : ""), { style: { height: hgt + "px" } },
+    const size = Math.round(hgt * (who.length > 3 ? 0.62 : who.length > 2 ? 0.86 : 0.94));
+    return h("div.vstill.bg-" + (s?.bg || "street") + (cls ? "." + cls : "") + (who.length > 3 ? ".n4" : ""), { style: { height: hgt + "px" } },
         (s?.props || []).length ? h("span.vstill-prop", s.props[0]) : null,
-        h("div.vstill-row", who.map(({ w, c }) => figure(c, { ...w, size }))),
+        s?.fx === "steam" ? h("div.vstill-steam", Array.from({ length: 5 }, (_, i) => h("i", { style: { "--x": (8 + i * 21) + "%" } }))) : null,
+        h("div.vstill-row", who.map(({ w, c }) => figure(c, { ...w, size, mosaic: !!s.mosaic }))),
         cap && s?.cap ? h("small.vstill-cap", s.cap) : null);
 }
 // the stills a cover uses: the cover's own (cover.back.stills) or the first scenes of the film
@@ -56,10 +57,13 @@ const ems = t => Array.from(String(t || "")).reduce((a, ch) => a + (ch === " " ?
 const fit = (len, room, lo, hi) => Math.max(lo, Math.min(hi, Math.floor(room / len)));
 export function spine(m, { onclick = null, small = false } = {}) {
     const b = brandOf(m), S = D.brandStyle(b.id), r = rateOf(m);
-    const showStill = !small && S.still !== "none";
+    const SP = m.cover?.spine || {};
+    const showStill = !small && S.still !== "none" && SP.still !== false, showBand = S.band && SP.band !== false;
     // room for the big title (px along the spine)
-    const room = small ? 104 : 300 - 52 - (S.band ? 18 : 0) - (showStill ? 64 : 0) - 40 - (S.sub === "en" || S.sub === "row" ? 22 : 0) - 18;
-    const vKo = (t, fs, cls = "") => h("span.vs-v.vs-ko" + cls, { style: { fontSize: fs + "px" } }, t);
+    const room = small ? 104 : 300 - 52 - (showBand ? 18 : 0) - (showStill ? 64 : 0) - 40 - (S.sub === "en" || S.sub === "row" ? 22 : 0) - 18;
+    // 구름 글씨 (font "cloud"): every letter puffed up and tilted a little its own way, so the title floats and sways
+    const cloudy = t => Array.from(t).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch));
+    const vKo = (t, fs, cls = "") => h("span.vs-v.vs-ko" + cls, { style: { fontSize: fs + "px" } }, SP.font === "cloud" && !cls ? cloudy(t) : t);
     const vEn = (t, fs, cls = "") => h("span.vs-v.vs-en-big" + cls, { style: { fontSize: fs + "px" } }, t);
     let title;
     if (S.main === "en") {
@@ -72,7 +76,7 @@ export function spine(m, { onclick = null, small = false } = {}) {
     return h("button.vhs-spine.vt-" + b.id + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold") + ".st-" + S.still,
         { style: { "--sc": b.color, "--si": b.ink }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
         h("div.vs-top", brandLogo(b, small ? 22 : 30), small ? null : h("small", b.name)),
-        S.band ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
+        showBand ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
         title, sub,
         showStill && stillSpec ? h("div.vs-still", still(m, stillSpec, { hgt: 58 })) : null,
         h("div.vs-foot", h("div.vs-vhs", "VHS"), h("div.vs-stars", "★".repeat(m.stars))));
@@ -100,14 +104,27 @@ const FRONT = {
     "money-burst": (m, FR) => h("div.vf-art.va-money",
         h("div.va-burst", (FR.back || []).map(s => h("div.va-burster", F(m, s, 118, { upper: true }), h("i.va-pile")))),
         h("div.va-bed"),
-        h("div.va-row.main", (FR.main || leads(m).map(c => spec(c, { expr: "excited", pose: "both", hold: "money" }))).map(s => F(m, s, 92))))
+        h("div.va-row.main", (FR.main || leads(m).map(c => spec(c, { expr: "excited", pose: "both", hold: "money" }))).map(s => F(m, s, 92)))),
+    // 말하는 초콜릿: a big rocket flies into the campus with the lead sitting on it · small figures watch from the campus
+    rocket: (m, FR) => {
+        const rocket = h("i.va-rocket"); rocket.innerHTML = ROCKET;
+        const rider = FR.main?.[0] || (leads(m)[0] && spec(leads(m)[0], { expr: "love", pose: "wave" }));
+        return h("div.vf-art.va-rocket-art.bg-campus",
+            h("div.va-watch", (FR.back || []).map(s => F(m, s, 62))),
+            h("div.va-ride", h("div.va-rider", rider ? F(m, rider, 100) : null), rocket));
+    }
 };
+const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><path d="M10 55Q-6 40 6 30L34 44Q20 55 34 66L6 80Q-6 70 10 55Z" fill="#f97316"/><path d="M0 55Q14 46 30 50V60Q14 64 0 55Z" fill="#fde047"/>` +
+    `<path d="M30 34H150Q204 34 216 55Q204 76 150 76H30Z" fill="#f8fafc" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
+    `<path d="M150 34Q204 34 216 55Q204 76 150 76Q162 55 150 34Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
+    `<path d="M60 34L40 8H76L96 34ZM60 76L40 102H76L96 76Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
+    `<circle cx="118" cy="55" r="11" fill="#7dd3fc" stroke="#1e1b4b" stroke-width="4"/><path d="M84 46h14M84 64h14" stroke="#ec4899" stroke-width="4" stroke-linecap="round"/></svg>`;
 export function front(m) {
     const b = brandOf(m), S = D.brandStyle(b.id), FR = m.cover?.front || {}, layout = FRONT[FR.layout] ? FR.layout : S.front;
     return h("div.vhs-front.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": FR.bg || b.color, "--bc": b.color, "--bi": b.ink } },
         h("div.vf-head", brandLogo(b, 28), h("small", `주연: ${castLine(leads(m), true) || "-"}`)),
         FRONT[layout](m, FR),
-        h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.ko), h("small", m.en)),
+        h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
         m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
         ratingBand(m));
 }
@@ -117,7 +134,7 @@ const BACK = {
     stills4: (m, L) => h("div.vb-stills.g4", L.map(s => still(m, s, { hgt: 56 }))),
     stills3: (m, L) => h("div.vb-stills.g3", L.map((s, i) => still(m, s, { hgt: i ? 50 : 66 }))),
     stills2: (m, L) => h("div.vb-stills.g2", L.map(s => still(m, s, { hgt: 58, cap: true }))),
-    still1: (m, L) => h("div.vb-stills.g1", L.map(s => still(m, s, { hgt: 112, cap: true }))),
+    still1: (m, L) => h("div.vb-stills.g1", L.map(s => still(m, s, { hgt: 100, cap: true }))),
     strip3: (m, L) => h("div.vb-stills.g-strip", L.map(s => still(m, s, { hgt: 66 }))),
     filmstrip: (m, L) => h("div.vb-film", L.map(s => still(m, s, { hgt: 62 }))),
     polaroid: (m, L) => h("div.vb-polas", L.map((s, i) => h("div.vb-pola" + (i ? ".r" : ""), still(m, s, { hgt: 70 }), h("small", s.cap || "")))),

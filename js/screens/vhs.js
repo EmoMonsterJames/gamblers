@@ -226,32 +226,89 @@ export function mumble(text, seed = 0) {
     const base = 150 + (seed % 7) * 25;
     for (let i = 0; i < n; i++) tone(base + Math.random() * 90, 0.08 + Math.random() * 0.05, { type: "triangle", vol: 0.06, at: i * 0.13, glide: (Math.random() - 0.5) * 80 });
 }
+// scene sets → the place name shown at the top of a scene
+export const BG_KO = { street: "거리", bank: "은행", hideout: "아지트", taxi: "택시 안", home: "집", forest: "숲", space: "우주", castle: "성", beach: "해변", night: "밤거리", stage: "무대", office: "사무실", campus: "대학교", room: "방", shower: "샤워실", ballroom: "무도회장" };
 const NOTE = n => 220 * Math.pow(2, n / 12);
+// 🥁 a short noise hit (snare / hi-hat) and a kick
+let noiseBuf = null;
+function drum(kind, at = 0) {
+    if (Sound.muted) return;
+    const a = actx(); if (!a) return;
+    const t0 = a.currentTime + at;
+    if (kind === "k") { // kick
+        const o = a.createOscillator(), g = a.createGain();
+        o.frequency.setValueAtTime(140, t0); o.frequency.exponentialRampToValueAtTime(40, t0 + 0.14);
+        g.gain.setValueAtTime(0.12, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+        o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + 0.18); return;
+    }
+    if (!noiseBuf) { noiseBuf = a.createBuffer(1, a.sampleRate * 0.3, a.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = noiseBuf; f.type = kind === "h" ? "highpass" : "bandpass"; f.frequency.value = kind === "h" ? 7000 : 1800;
+    const len = kind === "h" ? 0.04 : 0.12, vol = kind === "h" ? 0.03 : 0.06;
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+    s.connect(f); f.connect(g); g.connect(a.destination); s.start(t0); s.stop(t0 + len + 0.02);
+}
+// 🎼 background tunes — each mood has its own melody, bass line, tempo, sound and drums (one step = an 8th note)
+//   mel: semitones from A3 (null = rest) · bass: one note per bar half · drums: a 8-step pattern (k kick · s snare · h hi-hat)
+const _ = null;
 const STYLES = {
-    comic: { bpm: 168, scale: [0, 2, 4, 5, 7, 9, 12], bass: [0, 7, 5, 7], wave: "square", hop: true },
-    action: { bpm: 150, scale: [0, 3, 5, 7, 10, 12], bass: [0, 0, 3, 5], wave: "sawtooth" },
-    horror: { bpm: 60, scale: [0, 1, 6, 7, 11], bass: [0, 1, 0, 6], wave: "sine", low: true },
-    tense: { bpm: 96, scale: [0, 1, 3, 7, 8], bass: [0, 0, 1, 0], wave: "triangle" },
-    smooth: { bpm: 84, scale: [0, 4, 7, 11, 14], bass: [0, 5, 7, 4], wave: "sine" },
-    happy: { bpm: 132, scale: [0, 2, 4, 7, 9, 12], bass: [0, 5, 7, 5], wave: "square" },
-    sad: { bpm: 70, scale: [0, 3, 7, 8, 10], bass: [0, 8, 3, 7], wave: "triangle" },
-    space: { bpm: 100, scale: [0, 2, 7, 9, 14], bass: [0, 7, 2, 9], wave: "sine" },
-    fantasy: { bpm: 110, scale: [0, 2, 4, 6, 9, 11], bass: [0, 4, 9, 7], wave: "triangle" }
+    comic:   { ko: "🤡 우스꽝스러운", bpm: 168, wave: "square", mel: [12, _, 16, _, 19, 16, 12, _, 14, _, 17, 14, 11, _, 7, _], bass: [0, 7, 5, 7], drums: "k_s_k_s_" },
+    market:  { ko: "🧦 신나는 장터", bpm: 150, wave: "square", mel: [19, 19, 16, 19, 21, _, 19, _, 16, 16, 14, 16, 12, _, _, _], bass: [0, 5, 7, 0], drums: "khshkhsh" },
+    chase:   { ko: "🏃 추격전", bpm: 200, wave: "sawtooth", mel: [12, 13, 12, 13, 15, 13, 12, 10, 12, 13, 12, 13, 17, 15, 13, 12], bass: [0, 0, 1, 0], drums: "kskskkss", vol: 0.016 },
+    lounge:  { ko: "🍸 라운지 재즈", bpm: 96, wave: "sine", mel: [16, _, 19, 23, _, 21, 19, _, 14, _, 17, 21, _, 19, 16, _], bass: [0, 5, 2, 7], drums: "h_hhh_hh", swing: true },
+    mystery: { ko: "🔍 미스터리", bpm: 110, wave: "triangle", mel: [12, _, 15, _, 18, _, 17, _, 12, _, 15, _, 20, _, 19, _], bass: [0, 0, 3, 6], drums: "k___h___" },
+    club:    { ko: "🍾 클럽", bpm: 124, wave: "sawtooth", mel: [_, 12, _, 12, _, 15, _, 12, _, 17, _, 15, _, 12, _, 10], bass: [0, 0, 3, 5], drums: "khskkhsh", vol: 0.014 },
+    noir:    { ko: "🕶️ 갱스터 느와르", bpm: 80, wave: "triangle", mel: [7, _, _, 8, 7, _, 3, _, 5, _, _, 3, 2, _, _, _], bass: [0, 0, 8, 7], drums: "k_h_s_h_", low: true },
+    happy:   { ko: "😊 밝은", bpm: 132, wave: "square", mel: [12, 16, 19, 16, 21, 19, 16, 12, 14, 17, 21, 17, 19, _, _, _], bass: [0, 5, 7, 5], drums: "k_s_k_s_" },
+    victory: { ko: "🎉 승리의 팡파르", bpm: 140, wave: "square", mel: [12, 12, 12, 16, _, 12, 16, 19, _, _, 24, _, 19, _, 24, _], bass: [0, 0, 5, 7], drums: "kkshkksh" },
+    road:    { ko: "🚕 드라이브", bpm: 120, wave: "triangle", mel: [16, 19, 21, 19, 16, 14, 12, _, 14, 16, 19, 16, 14, 12, 9, _], bass: [0, 9, 5, 7], drums: "k_hsk_hs" },
+    campus:  { ko: "🏫 캠퍼스", bpm: 126, wave: "triangle", mel: [12, _, 14, 16, _, 19, _, 16, 17, _, 16, 14, _, 12, _, _], bass: [0, 5, 9, 7], drums: "k_h_s_h_" },
+    lullaby: { ko: "💤 자장가", bpm: 70, wave: "sine", mel: [19, _, 16, _, 14, _, 16, _, 12, _, _, _, 14, _, 16, _], bass: [0, 5, 0, 7] },
+    romance: { ko: "💗 로맨스", bpm: 76, wave: "sine", mel: [16, _, 19, _, 23, _, 21, 19, 18, _, 19, _, 16, _, _, _], bass: [0, 9, 5, 7], drums: "____s___" },
+    sexy:    { ko: "💋 섹시 색소폰", bpm: 84, wave: "sawtooth", mel: [12, _, 15, 17, _, 15, 12, _, 10, _, 12, _, _, _, _, _], bass: [0, 0, 5, 3], drums: "k__hs__h", swing: true, vol: 0.013 },
+    bubbly:  { ko: "🫧 보글보글", bpm: 112, wave: "sine", mel: [24, 28, 31, 28, 26, 29, 33, 29, 24, 28, 31, 36, _, 31, _, _], bass: [0, 5, 0, 7], drums: "h_h_h_hh" },
+    bitchy:  { ko: "💅 새침한", bpm: 104, wave: "square", mel: [15, _, 14, 15, _, 12, _, _, 15, _, 17, 15, 14, _, _, _], bass: [0, 0, 3, 3], drums: "k_s__ks_" },
+    march:   { ko: "📢 안내 방송", bpm: 116, wave: "square", mel: [12, _, 12, 12, 16, _, 19, _, 17, _, 16, _, 14, _, 12, _], bass: [0, 7, 0, 7], drums: "k_s_k_ss" },
+    sneaky:  { ko: "🤫 살금살금", bpm: 100, wave: "triangle", mel: [0, _, 2, _, 3, _, 5, _, 6, _, 5, _, 3, _, _, _], bass: [0, _, 0, _], drums: "h___h___", low: true },
+    action:  { ko: "💥 액션", bpm: 150, wave: "sawtooth", mel: [12, 12, 15, 12, 17, 12, 15, 12, 19, 17, 15, 17, 12, _, 10, _], bass: [0, 0, 3, 5], drums: "kskskkss", vol: 0.015 },
+    horror:  { ko: "👻 공포", bpm: 60, wave: "sine", mel: [0, _, _, 1, _, _, 6, _, _, _, 7, _, 6, _, 1, _], bass: [0, 1, 0, 6], low: true },
+    tense:   { ko: "🔪 긴장", bpm: 96, wave: "triangle", mel: [12, 13, 12, 13, 12, 13, 12, 13, 15, 16, 15, 16, 15, 16, 15, 16], bass: [0, 0, 1, 0], drums: "k___k_k_" },
+    smooth:  { ko: "🎷 부드러운", bpm: 84, wave: "sine", mel: [16, _, 19, _, 23, _, 26, _, 23, _, 19, _, 21, _, _, _], bass: [0, 5, 7, 4], drums: "h_h_s_h_", swing: true },
+    sad:     { ko: "😢 슬픈", bpm: 70, wave: "triangle", mel: [12, _, 15, _, 19, _, 17, 15, 14, _, 12, _, 10, _, _, _], bass: [0, 8, 3, 7] },
+    space:   { ko: "🛸 우주", bpm: 100, wave: "sine", mel: [24, _, 31, _, 26, _, 33, _, 24, _, 29, _, 31, _, _, _], bass: [0, 7, 2, 9] },
+    fantasy: { ko: "🧚 판타지", bpm: 110, wave: "triangle", mel: [12, 16, 18, 21, 23, 21, 18, 16, 14, 18, 21, 25, 23, _, _, _], bass: [0, 4, 9, 7] }
 };
+export const MUSIC_STYLES = Object.entries(STYLES).map(([k, s]) => [k, s.ko]);
 function music(style) {
     const S = STYLES[style] || STYLES.comic;
-    const beat = 60 / S.bpm;
+    const step8 = 60 / S.bpm / 2;
     let i = 0, alive = true;
     const step = () => {
         if (!alive) return;
-        const b = S.bass[Math.floor(i / 2) % S.bass.length];
-        if (i % 2 === 0) tone(NOTE(b - (S.low ? 24 : 12)), beat * 0.9, { type: S.low ? "sine" : "triangle", vol: 0.05 });
-        if (S.hop || Math.random() < 0.7) tone(NOTE(S.scale[Math.floor(Math.random() * S.scale.length)] + 12), beat * (S.hop ? 0.35 : 0.8), { type: S.wave, vol: S.low ? 0.025 : 0.022 });
+        const at = S.swing && i % 2 ? step8 * 0.33 : 0;
+        // bass: a long note at the start of each bar half (4 steps)
+        if (i % 4 === 0) { const b = S.bass[Math.floor(i / 4) % S.bass.length]; if (b != null) tone(NOTE(b - (S.low ? 24 : 12)), step8 * 3.6, { type: S.low ? "sine" : "triangle", vol: 0.05 }); }
+        const n = S.mel[i % S.mel.length];
+        if (n != null) tone(NOTE(n), step8 * (S.wave === "sine" ? 1.8 : 0.9), { type: S.wave, vol: S.vol || (S.wave === "sine" ? 0.04 : 0.022), at });
+        const d = S.drums?.[i % 8];
+        if (d && d !== "_") drum(d, at);
         i++;
     };
-    const id = setInterval(step, beat * 1000);
+    step();
+    const id = setInterval(step, step8 * 1000);
     return () => { alive = false; clearInterval(id); };
 }
+// a movie's own music file (audio/movies/…) — loops until the next music starts · a synth tune if it can't play
+function musicFile(url, fallback) {
+    if (Sound.muted) return () => { };
+    const a = new Audio(url);
+    a.loop = true; a.volume = 0.55;
+    let stopSynth = null, alive = true;
+    a.play().catch(() => { if (alive) stopSynth = music(fallback); });
+    return () => { alive = false; a.pause(); a.src = ""; stopSynth?.(); };
+}
+// what a part asks for: a file ("audio/…"), a synth style, "stop", or nothing (keep what's playing)
+const startMusic = (want, m) => /\.(mp3|ogg|m4a|wav)$/i.test(want) ? musicFile(want, m.music) : want === "stop" ? () => { } : music(want || m.music);
 
 // ---------------------------------------------------------------- 🎞️ the film
 export function playMovie(m) {
@@ -272,9 +329,13 @@ export function playMovie(m) {
                         put(screen, h("div.vp-brand", brandLogo(b, 120), h("b", b.name), h("small", "presents")));
                         tone(NOTE(12), 0.4, { type: "sine", vol: 0.06 }); tone(NOTE(19), 0.6, { type: "sine", vol: 0.05, at: 0.35 });
                     } else if (part.k === "title") {
-                        stopMusic(); stopMusic = music(m.music);
-                        const ko = h("div.vp-ko.f-" + (part.style || "bold"), m.ko);
-                        put(screen, h("div.vp-title.s-" + (part.style || "bold"), h("div.vp-en", m.en), ko));
+                        stopMusic(); stopMusic = startMusic(part.music, m);
+                        const ko = h("div.vp-ko.f-" + (part.font || part.style || "bold"), m.ko);
+                        // 🚀 "rockets": rockets fly over a pink screen, lip prints are stamped on it, then the Korean title comes in
+                        const deco = part.style === "rockets" ? [
+                            ...Array.from({ length: 7 }, (_, i) => h("i.vp-rk", { style: { "--y": (8 + i * 13) + "%", "--d": (i * 0.55) + "s", "--t": (2.4 + (i % 3) * 0.7) + "s", "--s": (i % 2 ? 1 : -1) } }, "🚀")),
+                            ...Array.from({ length: 9 }, (_, i) => h("i.vp-lip", { style: { "--x": [12, 80, 30, 66, 88, 8, 50, 22, 74][i] + "%", "--y": [18, 14, 70, 76, 48, 46, 88, 34, 30][i] + "%", "--d": (0.8 + i * 0.45) + "s", "--r": [-20, 15, 30, -10, 25, -30, 5, 18, -24][i] + "deg" } }, "💋"))] : [];
+                        put(screen, h("div.vp-title.s-" + (part.style || "bold"), ...deco, h("div.vp-en", m.en), ko));
                         setTimeout(() => ko.classList.add("show"), Math.min(2500, part.sec * 400));
                     } else if (part.k === "cast") {
                         const list = m.cast.filter(c => (part.parts || ["lead", "support"]).includes(c.part));
@@ -288,6 +349,7 @@ export function playMovie(m) {
                         await scene(part);
                         continue;
                     } else if (part.k === "end") {
+                        if (part.music) { stopMusic(); stopMusic = startMusic(part.music, m); }
                         put(screen, h("div.vp-end", h("b", part.text || "The End"), part.credits ? h("div.vp-credits", m.cast.map(c => h("div", `${c.role} ····· ${c.ko}`)), h("div", brandOf(m).name)) : null));
                         tone(NOTE(12), 0.5, { type: "sine", vol: 0.05 }); tone(NOTE(7), 0.5, { type: "sine", vol: 0.05, at: 0.4 }); tone(NOTE(0), 0.9, { type: "sine", vol: 0.05, at: 0.8 });
                     }
@@ -304,21 +366,44 @@ export function playMovie(m) {
             const size = Math.round(Math.min(H * 0.62, (W * 0.9) / Math.max(1, people.length)));
             const figs = people.map((c, i) => figure(c, { ...base[i], size }));
             const actors = people.map((c, i) => h("div.vp-actor", { style: { "--i": i } }, figs[i], h("small", c.short || c.role)));
-            const pose = (i, o) => setFigure(figs[i], people[i], { ...o, size, jiggle: o.nude && o.act === "dance" });
+            const pose = (i, o) => setFigure(figs[i], people[i], { ...o, size, jiggle: (o.nude || o.outfit === "bikini") && o.act === "dance" });
             const sub = h("div.vp-sub");
-            const fx = sc.fx === "money" || sc.fx === "sparkle" || sc.fx === "music" ? h("div.vp-fx", ...Array.from({ length: 16 }, (_, i) => h("i", { style: { "--x": (i * 6.7 % 100) + "%", "--d": (i % 6) * 0.35 + "s" } }, sc.fx === "money" ? "💸" : sc.fx === "music" ? "🎵" : "✨"))) : null;
-            put(screen, h("div.vp-scene.bg-" + (sc.bg || "street") + (sc.fx === "chase" ? ".chase" : ""), h("div.vp-deco"), (sc.props || []).length ? h("div.vp-props", sc.props.map(p => h("span", p))) : null, fx, h("div.vp-actors", actors), sub));
+            const idxOf = r => people.findIndex(c => c.role === r || c.short === r || c.role.startsWith(r + ","));
+            // a scene's music: a file, a synth style or "stop" (nothing = the music keeps going)
+            if (sc.music) { stopMusic(); stopMusic = startMusic(sc.music, m); }
+            const rain = (n, emo) => h("div.vp-fx", ...Array.from({ length: n }, (_, i) => h("i", { style: { "--x": (i * 6.7 % 100) + "%", "--d": (i % 6) * 0.35 + "s" } }, Array.isArray(emo) ? emo[i % emo.length] : emo)));
+            const FX = {
+                money: () => rain(16, "💸"), sparkle: () => rain(16, "✨"), music: () => rain(16, "🎵"), hearts: () => rain(14, ["💗", "💕", "💓"]),
+                rock: () => h("div.vp-fx.rock", rain(12, ["🎸", "🎵", "🤘"]), h("i.vp-beam.a"), h("i.vp-beam.b")),
+                fog: () => h("div.vp-fog", h("i.l"), h("i.r"), h("b.c")),                       // curtains open and the fog clears
+                steam: () => h("div.vp-steam", Array.from({ length: 9 }, (_, i) => h("i", { style: { "--x": (i * 11.5 + 3) + "%", "--d": (i % 4) * 0.7 + "s" } }))),
+                disco: () => h("div.vp-fx.disco", h("i.vp-ball", "🪩"), h("i.vp-spot.a"), h("i.vp-spot.b"), h("i.vp-spot.c"))
+            };
+            const fx = FX[sc.fx]?.() || null;
+            const sceneEl = h("div.vp-scene.bg-" + (sc.bg || "street") + (sc.fx === "chase" ? ".chase" : "") + (sc.dark ? ".dark" : ""), h("div.vp-deco"), (sc.props || []).length ? h("div.vp-props", sc.props.map(p => h("span", p))) : null, fx, h("div.vp-actors", actors), h("i.vp-shade"), sub);
+            // 🎬 the scene number and place, at the top
+            const no = sc.n ?? ((m.script || []).filter(p => p.k === "scene").indexOf(sc) + 1 || 1);
+            sceneEl.append(h("div.vp-place", h("b", `Scene ${no}`), sc.place || BG_KO[sc.bg || "street"] || ""));
+            put(screen, sceneEl);
             const lines = sc.lines || [];
             const per = sc.sec / Math.max(1, lines.length);
             if (!lines.length) return wait(sc.sec);
-            for (const [who, text, meta] of lines) {
+            for (const [who, text, meta = {}] of lines) {
                 if (skip) return;
-                const ci = people.findIndex(c => c.role === who || c.short === who || c.role.startsWith(who + ","));
-                actors.forEach((a, i) => a.classList.toggle("talk", i === ci));
-                // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they started
-                people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...(meta || {}) } : base[i]));
-                put(sub, h("b", `${who}: `), text);
-                mumble(text, ci + 3);
+                const ci = idxOf(who);
+                // 💡 the lights · 🎵 music change at this line · set: how other actors look from now on ({ role: { expr, act, outfit … } })
+                if (meta.light) sceneEl.classList.toggle("dark", meta.light === "off");
+                if (meta.music) { stopMusic(); stopMusic = startMusic(meta.music, m); }
+                for (const [r, o] of Object.entries(meta.set || {})) { const k = idxOf(r); if (k >= 0) { base[k] = { ...base[k], ...o }; if (o.nude !== undefined || o.outfit !== undefined) base[k].nude = !!(o.nude ?? base[k].nude); } }
+                // to: the actor this line is aimed at — a slap / kiss / push leans that way
+                const ti = meta.to ? idxOf(meta.to) : -1;
+                actors.forEach((a, i) => { a.classList.toggle("talk", i === ci); a.style.setProperty("--dir", i === ci && ti >= 0 ? Math.sign(ti - ci) || 1 : i < (people.length - 1) / 2 ? 1 : -1); });
+                // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they are
+                const { light, music: _m, set, to, ...look } = meta;
+                people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
+                actors.forEach((a, i) => a.classList.toggle("gone", !!base[i].gone));
+                put(sub, who ? h("b", `${who}: `) : null, who ? text : h("i.vp-narr", text));
+                if (who) mumble(text, ci + 3);
                 await wait(per);
             }
         }

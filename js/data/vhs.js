@@ -151,7 +151,7 @@ export const BRAND_STYLE = {
 };
 export const brandStyle = id => BRAND_STYLE[id] || BRAND_STYLE.hyhg;
 export const FRONT_LAYOUTS = [["", "영화사 기본"], ["lineup", "배우들 일렬"], ["hero", "주연 크게 + 조연"], ["duo", "주연 둘 마주보기"], ["still", "스틸컷 한 장"], ["spotlight", "스포트라이트"],
-    ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"]];
+    ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"], ["rocket", "날아온 로켓 위 주연 + 지켜보는 배우들"]];
 export const BACK_LAYOUTS = [["", "영화사 기본"], ["stills4", "스틸컷 4장"], ["stills3", "스틸컷 3장"], ["stills2", "스틸컷 2장"], ["still1", "스틸컷 1장 크게"], ["strip3", "가로 띠 3장"],
     ["filmstrip", "필름 스트립"], ["polaroid", "폴라로이드"], ["text", "글 위주 (스틸컷 없음)"]];
 export const STILL_N = { stills4: 4, stills3: 3, stills2: 2, still1: 1, strip3: 3, filmstrip: 3, polaroid: 2, text: 0 };
@@ -219,55 +219,215 @@ const fortuneSwindlers = () => {
             { k: "brand", sec: 4 },
             { k: "title", sec: 8, style: "comic" },
             { k: "cast", sec: 7, parts: ["lead", "support"] },
-            { k: "scene", sec: 12, bg: "street", props: ["🧦", "🧦"], who: [JUSTIN, HENRY, LILY],
+            { k: "scene", n: 1, place: "거리 · 양말 노점", music: "market", sec: 12, bg: "street", props: ["🧦", "🧦"], who: [JUSTIN, HENRY, LILY],
                 cast: { [JUSTIN]: { hold: "sock" }, [LILY]: { expr: "happy" } },
                 lines: [
                     [JUSTIN, "자자~ 오늘만 특가! 세상에서 제일 부드러운 양말이 왔어요!", { expr: "excited", pose: "wave", hold: "sock", act: "hop" }],
                     [LILY, "어머, 이 양말 얼마예요?", { expr: "love", pose: "hips" }],
                     [HENRY, "100,000G입니다! 최고급 양말이에요, 손님!", { expr: "smug", pose: "point" }],
                     [LILY, "좋아요, 살게요!", { expr: "excited", pose: "both", act: "hop" }]] },
-            { k: "scene", sec: 9, bg: "street", props: ["📱"], who: [LILY, JUSTIN, HENRY], fx: "chase",
+            { k: "scene", n: 2, place: "거리 · 추격", music: "chase", sec: 9, bg: "street", props: ["📱"], who: [LILY, JUSTIN, HENRY], fx: "chase",
                 lines: [
                     [LILY, "(검색 중…) 뭐야? 10,000G짜리잖아?!", { expr: "shock", hold: "phone" }],
                     [LILY, "이 사기꾼들아!! 거기 서!!", { expr: "angry", pose: "point", act: "stomp" }],
                     [HENRY, "튀어!!", { expr: "scared", pose: "both", act: "run" }]] },
-            { k: "scene", sec: 9, bg: "bank", props: ["💰"], who: [JUSTIN, HENRY, BANKER],
+            { k: "scene", n: 3, place: "은행", music: "lounge", sec: 9, bg: "bank", props: ["💰"], who: [JUSTIN, HENRY, BANKER],
                 lines: [
                     [BANKER, "어서 오세요~ 100,000G 출금 도와드릴게요.", { expr: "happy", pose: "wave" }],
                     [JUSTIN, "오늘도 한껀 했다!", { expr: "excited", hold: "money", act: "hop" }],
                     [HENRY, "크크크, 역시 우리야!", { expr: "evil", pose: "hips" }]] },
-            { k: "scene", sec: 10, bg: "street", props: ["💼", "💎"], who: [JUSTIN, HENRY], fx: "sparkle",
+            { k: "scene", n: 4, place: "뒷골목", music: "mystery", sec: 10, bg: "street", props: ["💼", "💎"], who: [JUSTIN, HENRY], fx: "sparkle",
                 lines: [
                     [JUSTIN, "어? 이거 누가 떨어뜨린 돈가방인데…?", { expr: "shock", pose: "point" }],
                     [HENRY, "헉! 금은보화가 가득해!!", { expr: "shock", pose: "shrug", act: "jump" }],
                     [JUSTIN, "일단 들고 튀자!", { expr: "evil", hold: "bag", act: "run" }]] },
             // 아지트: Jack's Babe dances topless, shaking her chest, the whole scene
-            { k: "scene", sec: 11, bg: "hideout", props: ["🍾"], who: [JACK, BABE, PAUL], nude: [BABE], fx: "music",
+            { k: "scene", n: 5, place: "갱단 아지트", music: "club", sec: 11, bg: "hideout", props: ["🍾"], who: [JACK, BABE, PAUL], nude: [BABE], fx: "music",
                 cast: { [BABE]: { expr: "wink", pose: "both", act: "dance" }, [JACK]: { expr: "cool", pose: "hips" } },
                 lines: [
                     [PAUL, "보스… 돈가방이 없어졌습니다.", { expr: "scared", pose: "shrug", act: "shake" }],
                     [JACK, "뭐야?! 당장 그 돈가방 찾아와!!", { expr: "angry", pose: "point", hold: "gun", act: "stomp" }]] },
-            { k: "scene", sec: 10, bg: "bank", who: [PAUL, LILY],
+            { k: "scene", n: 6, place: "은행 앞", music: "noir", sec: 10, bg: "bank", who: [PAUL, LILY],
                 lines: [
                     [PAUL, "이봐, 혹시 돈가방 든 놈들 못 봤어?", { expr: "annoyed", pose: "point", hold: "gun" }],
                     [LILY, "봤죠! 양말 파는 사기꾼 둘이요. 하나는 웃는 얼굴, 하나는 짱구 머리!", { expr: "angry", pose: "point", act: "stomp" }]] },
-            { k: "scene", sec: 13, bg: "street", props: ["🚕", "💸", "💸", "💸"], who: [JUSTIN, HENRY, JACK, PAUL], fx: "money",
+            { k: "scene", n: 7, place: "거리 · 대추격", music: "action", sec: 13, bg: "street", props: ["🚕", "💸", "💸", "💸"], who: [JUSTIN, HENRY, JACK, PAUL], fx: "money",
                 cast: { [JACK]: { hold: "gun" }, [PAUL]: { hold: "gun" } },
                 lines: [
                     [JACK, "저기 있다! 잡아!!", { expr: "angry", pose: "point", hold: "gun", act: "stomp" }],
                     [JUSTIN, "택시!! 그리고… 받아라~!", { expr: "excited", pose: "both", hold: "money", act: "jump" }],
                     [PAUL, "돈이다!! 비켜, 비켜!!", { expr: "love", pose: "both", act: "run" }],
                     [JACK, "놓쳤잖아!!", { expr: "angry", pose: "shrug", hold: "gun", act: "stomp" }]] },
-            { k: "scene", sec: 8, bg: "street", props: ["💸"], who: [LILY, HENRY], fx: "money",
+            { k: "scene", n: 8, place: "거리 · 돈벼락", music: "happy", sec: 8, bg: "street", props: ["💸"], who: [LILY, HENRY], fx: "money",
                 lines: [
                     [LILY, "어머, 하늘에서 돈이…!", { expr: "love", pose: "both", act: "hop" }],
                     [HENRY, "저희 더 이상 당신에게 빚 없어요~!", { expr: "tongue", pose: "wave", act: "hop" }]] },
-            { k: "scene", sec: 10, bg: "taxi", props: ["🚕"], who: [TAXI, JUSTIN, HENRY],
+            { k: "scene", n: 9, place: "택시 안", music: "road", sec: 10, bg: "taxi", props: ["🚕"], who: [TAXI, JUSTIN, HENRY],
                 lines: [
                     [TAXI, "어디로 모실까요?", { expr: "happy", pose: "down" }],
                     [JUSTIN, "아무 곳이나요~!!", { expr: "excited", pose: "both", act: "hop" }],
                     [HENRY, "저희가 한 껀 또 했잖아요~!!", { expr: "excited", pose: "both", hold: "money", act: "jump" }]] },
-            { k: "end", sec: 9, text: "The End", credits: true }
+            { k: "end", sec: 9, text: "The End", credits: true, music: "victory" }
+        ]
+    };
+};
+
+// ---------------------------------------------------------------- ⭐ built-in movie: 말하는 초콜릿 (Hello Baby · the admin's own idea)
+//   music: audio/movies/hello_baby_theme_1.mp3 (title · cast · Tim's dream) · hello_baby_theme_2.mp3 (무도회장)
+//   scene extras: dark (lights off) · line meta light "on"/"off" · music · set { role: { expr, act, nude, outfit, gone } } · to (aimed at)
+const THEME1 = "audio/movies/hello_baby_theme_1.mp3", THEME2 = "audio/movies/hello_baby_theme_2.mp3";
+const helloBaby = () => {
+    const P = n => findPid(n);
+    const VICKY = "Vicky", TIM = "Tim", JANE = "Jane", ANGELA = "Angela", BRANDON = "Brandon", RADIO = "Radio Boy",
+        DG1 = "Tim's Dream Girl #1", DG2 = "Tim's Dream Girl #2", DG3 = "Tim's Dream Girl #3", SG1 = "Shower Girl #1", SG2 = "Shower Girl #2";
+    return {
+        id: "m_hello_baby", builtin: true,
+        en: "Hello Baby", ko: "말하는 초콜릿",
+        brand: "redlips", nation: "Emo World", date: "78-03-29",
+        genres: ["코미디"], rating: "flower", stars: 6, quality: 1, lgbtq: false,
+        cast: [
+            { ko: "헬로토끼", pid: P("헬로토끼"), role: VICKY, part: "lead", nude: true },
+            { ko: "매력철철이모부", pid: P("매력철철이모부"), role: TIM, part: "lead", sexy: true },
+            { ko: "박세미", pid: P("박세미"), role: JANE, part: "support", sexy: true },
+            { ko: "네미시스토끼", pid: P("네미시스토끼"), role: ANGELA, part: "support", nude: true },
+            { ko: "케인이모부", pid: P("케인이모부"), role: BRANDON, part: "support" },
+            { ko: "간지나는개미", pid: P("간지나는개미"), role: RADIO, part: "extra" },
+            { ko: "누글이모", pid: P("누글이모"), role: DG1, part: "extra", nude: true },
+            { ko: "완전에로년덩이", pid: P("완전에로년덩이"), role: DG2, part: "extra", nude: true },
+            { ko: "메르베쟈토토", pid: P("메르베쟈토토"), role: DG3, part: "extra", nude: true },
+            { ko: "언니야개미", pid: P("언니야개미"), role: SG1, part: "extra", nude: true },
+            { ko: "미니마니모", pid: P("미니마니모"), role: SG2, part: "extra", nude: true }
+        ],
+        plot: "아리따운 시골 처녀가 도시에 상경하면서 벌어지는 화끈하고 재미난 사건들.",
+        tagline: "",
+        music: "smooth",
+        cover: {
+            // 중간표지: logo · 구름 글씨 Korean title · the English title small — nothing else
+            spine: { font: "cloud", still: false, band: false },
+            // 앞표지: Vicky rides a big rocket into the campus, lovely · small in the campus: Tim (hearts in his eyes) · Jane (angry)
+            front: { layout: "rocket", bg: "#f9a8d4",
+                main: [{ r: VICKY, expr: "love", pose: "wave" }],
+                back: [{ r: TIM, expr: "love", pose: "both" }, { r: JANE, expr: "angry", pose: "hips" }] },
+            // 뒷표지: the shower scene (steam · every chest under a mosaic)
+            back: { layout: "still1", stills: [
+                { bg: "shower", fx: "steam", mosaic: true, cap: "여자샤워실의 비밀 수다",
+                    who: [{ r: SG1, expr: "annoyed", pose: "point", nude: true }, { r: VICKY, expr: "shy", nude: true }, { r: ANGELA, expr: "excited", pose: "both", nude: true }, { r: SG2, expr: "scared", pose: "shrug", nude: true }] }
+            ] }
+        },
+        script: [
+            { k: "brand", sec: 4 },
+            // 핑크빛 화면 · 날아다니는 로켓 · 영어 원제 → 입술 자국 → 한글 제목 (Theme 1)
+            { k: "title", sec: 8, style: "rockets", font: "cloud", music: THEME1 },
+            { k: "cast", sec: 8, parts: ["lead", "support"] },
+            // Scene 1 · 대학교
+            { k: "scene", n: 1, place: "대학교", music: "campus", sec: 13, bg: "campus", who: [VICKY, ANGELA], props: ["🏫"],
+                cast: { [VICKY]: { expr: "excited", hold: "bag" } },
+                lines: [
+                    [VICKY, "와~ 여기가 도시의 대학교구나! 건물이 하늘까지 닿겠어~", { expr: "excited", pose: "both", act: "hop" }],
+                    [ANGELA, "안녕! 나는 Angela야. 너 새로 왔구나?", { expr: "happy", pose: "wave", to: VICKY }],
+                    [VICKY, "응, 시골에서 어제 막 올라왔어. 지하철은 너무 신기한데… 길을 잃을까 봐 걱정이야.", { expr: "sweat", pose: "shrug" }],
+                    [ANGELA, "걱정 마~ 내가 다 알려줄게!", { expr: "wink", pose: "point", to: VICKY }]] },
+            // Scene 2 · Tim의 방 — 불 꺼진 방, 잠든 Tim
+            { k: "scene", n: 2, place: "Tim의 방", music: "lullaby", sec: 6, bg: "room", dark: true, who: [TIM], props: ["💤"],
+                cast: { [TIM]: { expr: "sleepy", act: "sleep" } },
+                lines: [["", "불 꺼진 방… 혈기왕성 청년 Tim이 잠이 들어 꿈을 꾸는데…"]] },
+            // 꿈: 커튼을 치자 안개가 걷히고, Dream Girl 3명이 락음악에 맞춰 몸을 흔든다 (Theme 1)
+            { k: "scene", n: 2, place: "Tim의 방 · 꿈속", sec: 14, bg: "room", fx: "fog", music: THEME1, who: [DG1, DG2, TIM, DG3], nude: [DG1, DG2, DG3], props: ["🎸", "🤘", "🎸"],
+                cast: { [DG1]: { expr: "wink", pose: "both", act: "dance" }, [DG2]: { expr: "love", pose: "both", act: "dance" }, [DG3]: { expr: "wink", pose: "wave", act: "dance" }, [TIM]: { expr: "love", pose: "both" } },
+                lines: [
+                    [TIM, "어디 보자… (커튼을 촤악!)", { expr: "excited", pose: "both", act: "hop" }],
+                    ["", "안개가 걷히고 락 음악이 쾅쾅! 요염한 Dream Girl들이 몸을 흔든다~"],
+                    [DG1, "Tim~ 우리랑 놀자~", { expr: "wink", pose: "wave", act: "dance" }],
+                    [TIM, "우와… 여기가 천국이구나!!", { expr: "love", pose: "both", act: "jump" }]] },
+            // 방불이 켜지고 Jane의 호통 → 비키니 자랑
+            { k: "scene", n: 2, place: "Tim의 방", music: "comic", sec: 14, bg: "room", dark: true, who: [TIM, JANE],
+                cast: { [TIM]: { expr: "love", act: "sleep" }, [JANE]: { expr: "angry", pose: "hips" } },
+                lines: [
+                    [JANE, "Tim!!! 당장 일어나!!", { light: "on", expr: "angry", pose: "point", act: "stomp", to: TIM, set: { [TIM]: { expr: "shock", act: "shake" } } }],
+                    [TIM, "헉! 자기야… 언제 왔어?", { expr: "sweat", pose: "shrug" }],
+                    [JANE, "너 지금 야한 꿈 꿨지? 얼굴에 다 써 있어!", { expr: "annoyed", pose: "point", to: TIM, set: { [TIM]: { expr: "sweat", act: "" } } }],
+                    [JANE, "흥, 그럼 이거 봐봐~ 어제 산 비키니야!", { expr: "smug", pose: "wave", hold: "bikini", act: "hop" }],
+                    [TIM, "오오… 꿈보다 낫네~!", { expr: "love", pose: "both", act: "hop" }]] },
+            // 방불이 다시 꺼진 채로, Tim과 Jane이 사랑을 나눈다
+            { k: "scene", n: 2, place: "Tim의 방", music: "romance", sec: 8, bg: "room", dark: true, fx: "hearts", who: [TIM, JANE],
+                cast: { [TIM]: { expr: "love", act: "kiss" }, [JANE]: { expr: "love", act: "kiss" } },
+                lines: [
+                    ["", "방 불이 다시 꺼지고… Tim과 Jane은 사랑을 나눈다 ♥"],
+                    [JANE, "사랑해, Tim~", { expr: "love", act: "kiss", to: TIM }]] },
+            // Scene 3 · 대학교 — 수업을 마친 Vicky와 Angela, Tim과 Brandon을 마주친다
+            { k: "scene", n: 3, place: "대학교", music: "happy", sec: 10, bg: "campus", who: [VICKY, ANGELA, TIM, BRANDON],
+                cast: { [ANGELA]: { hold: "book" }, [VICKY]: { hold: "book", expr: "shy" } },
+                lines: [
+                    [ANGELA, "휴~ 드디어 수업 끝!", { expr: "happy", pose: "wave", hold: "book" }],
+                    [TIM, "Brandon, 저기 저 예쁘고 순해 보이는 여자는 누구야?", { expr: "love", pose: "point", to: VICKY }],
+                    [BRANDON, "아~ 시골에서 온 신입생이래.", { expr: "smug", pose: "hips" }],
+                    [VICKY, "(소곤) Angela… 저 남자가 자꾸 우리 쪽을 봐…", { expr: "shy", hold: "book" }]] },
+            // Jane 등장 — Vicky에게 망신을 준다
+            { k: "scene", n: 3, place: "대학교", music: "bitchy", sec: 10, bg: "campus", who: [JANE, VICKY, ANGELA, TIM],
+                cast: { [JANE]: { expr: "annoyed", pose: "hips" }, [TIM]: { expr: "sweat" }, [VICKY]: { hold: "book", expr: "shy" } },
+                lines: [
+                    [JANE, "Tim, 지금 누굴 그렇게 쳐다봐?", { expr: "annoyed", pose: "hips", to: TIM }],
+                    [JANE, "어머, 너 시골에서 왔다며? 옷차림이 왜 이러니? 촌스러워~", { expr: "roll", pose: "point", act: "stomp", to: VICKY, set: { [VICKY]: { expr: "cry", act: "shake" } } }],
+                    [VICKY, "흑…", { expr: "cry", hold: "book" }],
+                    [ANGELA, "너무하잖아, Jane!", { expr: "angry", pose: "point", to: JANE, act: "stomp" }]] },
+            // Scene 4 · 여자샤워실 — 김이 모락모락, 모두 상반신 노출
+            { k: "scene", n: 4, place: "여자샤워실", music: "bubbly", sec: 16, bg: "shower", fx: "steam", who: [SG1, VICKY, ANGELA, SG2], nude: [SG1, VICKY, ANGELA, SG2], props: ["🚿", "🧼", "🚿"],
+                cast: { [VICKY]: { expr: "shy" }, [SG2]: { expr: "happy" } },
+                lines: [
+                    [VICKY, "Angela… 사실 나 Tim한테 관심이 생겼어.", { expr: "shy", to: ANGELA }],
+                    [ANGELA, "정말?! 깜짝이야~ 잘 해봐, 응원할게!", { expr: "excited", pose: "both", act: "hop", to: VICKY }],
+                    [SG1, "얘, Tim 여친 Jane 알지? 성격이 아주 못됐어. 조심해!", { expr: "annoyed", pose: "point", to: VICKY }],
+                    [SG2, "맞아 맞아, 걔 진짜 무서워~", { expr: "scared", pose: "shrug", act: "shake" }]] },
+            // Scene 5 · 대학교 — Tim의 고백과 키스, 몰래 본 Jane
+            { k: "scene", n: 5, place: "대학교", music: "romance", sec: 13, bg: "campus", fx: "hearts", who: [JANE, TIM, VICKY],
+                cast: { [JANE]: { expr: "angry", act: "sneak" }, [VICKY]: { expr: "shy" } },
+                lines: [
+                    [TIM, "Vicky, 처음 본 순간부터 너한테 관심이 있었어.", { expr: "love", pose: "point", to: VICKY }],
+                    [VICKY, "네…? 저, 저는… 어쩌죠…", { expr: "shy", pose: "shrug", act: "shake" }],
+                    [TIM, "(쪽♥)", { expr: "love", act: "kiss", to: VICKY, set: { [VICKY]: { expr: "shock", act: "kiss" } } }],
+                    [JANE, "(몰래 보며) 뭐야?! 저 시골뜨기가 감히!!", { expr: "angry", act: "stomp" }]] },
+            // Scene 6 · Tim의 방 — 고백, 둘 다 상의를 벗고 사랑을 나눈다
+            { k: "scene", n: 6, place: "Tim의 방", music: "sexy", sec: 13, bg: "room", who: [TIM, VICKY],
+                cast: { [VICKY]: { expr: "shy" } },
+                lines: [
+                    [TIM, "난 이제 Jane한테 관심 없어. 네가 내 타입이야.", { expr: "love", pose: "point", to: VICKY }],
+                    [VICKY, "Tim… 나도 네가 좋아.", { expr: "shy", to: TIM }],
+                    ["", "Tim이 셔츠를 벗고, Vicky도 상의를 벗는다…", { set: { [TIM]: { nude: true, expr: "love" }, [VICKY]: { nude: true, expr: "love" } } }],
+                    ["", "그리고 둘은 사랑을 나눈다 ♥", { light: "off", set: { [TIM]: { act: "kiss" }, [VICKY]: { act: "kiss" } } }]] },
+            // Scene 7 · 대학교 — Radio Boy의 무도회 안내
+            { k: "scene", n: 7, place: "대학교", music: "march", sec: 7, bg: "campus", who: [RADIO, VICKY, ANGELA], props: ["📢"],
+                cast: { [RADIO]: { hold: "radio" } },
+                lines: [
+                    [RADIO, "알립니다~! 종강 후 금요일 밤, 대망의 무도회가 열립니다~!", { expr: "excited", pose: "wave", hold: "radio", act: "hop" }],
+                    [ANGELA, "무도회래! 너도 갈 거지, Vicky?", { expr: "excited", pose: "both", to: VICKY }]] },
+            // Jane의 따귀 · Angela를 밀치고 떠난다
+            { k: "scene", n: 7, place: "대학교", music: "tense", sec: 8, bg: "campus", who: [VICKY, JANE, ANGELA],
+                cast: { [JANE]: { expr: "angry" } },
+                lines: [
+                    [JANE, "(찰싹!) 똑똑히 들어! Tim은 내 무도회 파트너야!", { expr: "angry", pose: "point", act: "slap", to: VICKY, set: { [VICKY]: { expr: "cry", act: "hit" } } }],
+                    [ANGELA, "Jane, 그만해!", { expr: "angry", pose: "both", to: JANE }],
+                    [JANE, "비켜!", { expr: "angry", act: "push", to: ANGELA, set: { [ANGELA]: { expr: "dizzy", act: "fall" } } }]] },
+            // Tim의 위로 · Brandon의 계획
+            { k: "scene", n: 7, place: "대학교", music: "sneaky", sec: 7, bg: "campus", who: [VICKY, TIM, BRANDON],
+                cast: { [VICKY]: { expr: "cry" } },
+                lines: [
+                    [TIM, "Vicky, 괜찮아? 많이 아팠지…", { expr: "sad", pose: "both", to: VICKY }],
+                    [VICKY, "흑… 괜찮아요…", { expr: "cry" }],
+                    [BRANDON, "Tim, 걱정 마. Jane이랑 깔끔하게 헤어질 좋은 계획이 있어. 크크", { expr: "evil", pose: "point", to: TIM }]] },
+            // Scene 8 · 무도회장 (Theme 2)
+            { k: "scene", n: 8, place: "무도회장", sec: 26, bg: "ballroom", fx: "disco", music: THEME2, who: [VICKY, ANGELA, TIM, JANE, BRANDON], props: ["🎉", "😂", "🎉"],
+                cast: { [VICKY]: { expr: "sad", act: "dance" }, [ANGELA]: { expr: "happy", act: "dance" }, [TIM]: { expr: "blank", act: "dance" }, [JANE]: { expr: "smug", act: "dance", outfit: "dress" }, [BRANDON]: { expr: "evil", act: "sneak" } },
+                lines: [
+                    [JANE, "오호호~ 오늘 밤 주인공은 나야!", { expr: "smug", pose: "both", act: "dance" }],
+                    [VICKY, "(Tim을 바라보며) …Angela, 우리끼리 추자.", { expr: "sad", act: "dance", to: ANGELA }],
+                    ["", "음악이 끝나고… Brandon이 몰래 Jane의 드레스 끈을 잡아당긴다!", { music: "stop", set: { [VICKY]: { act: "" }, [ANGELA]: { act: "" }, [TIM]: { act: "" }, [JANE]: { act: "" } } }],
+                    [JANE, "꺄악!! 내 드레스!!", { expr: "shock", pose: "both", act: "shake", set: { [JANE]: { outfit: "bikini", expr: "cry" }, [VICKY]: { expr: "tongue", act: "laugh" }, [ANGELA]: { expr: "tongue", act: "laugh" }, [TIM]: { expr: "roll", act: "laugh" } } }],
+                    [BRANDON, "너처럼 헤픈 애는 Tim의 상대가 아니야!", { expr: "smug", pose: "point", to: JANE }],
+                    [JANE, "흥!! 다들 두고 봐!!", { expr: "angry", act: "run" }],
+                    [TIM, "Vicky, 나랑 춤출래?", { expr: "love", pose: "wave", to: VICKY, music: THEME2, set: { [JANE]: { gone: true }, [VICKY]: { expr: "love", act: "dance" } } }],
+                    [BRANDON, "Angela, 우리도 출까?", { expr: "love", pose: "wave", to: ANGELA, set: { [ANGELA]: { expr: "shy", act: "dance" }, [TIM]: { expr: "love", act: "dance" }, [BRANDON]: { expr: "happy", act: "dance" } } }],
+                    [ANGELA, "좋아~!", { expr: "excited", act: "dance" }]] },
+            { k: "end", sec: 8, text: "The End", credits: true }
         ]
     };
 };
@@ -279,11 +439,11 @@ export function allMovies() {
     const key = `${(Store.allPlayers || []).length}|${(Store.vhs?.movies || []).map(m => m.updated || m.id).join(",")}`;
     if (cache && key === cacheKey) return cache;
     const admin = (Store.vhs?.movies || []).filter(m => m && m.id && !m.off);
-    cache = [fortuneSwindlers(), ...admin]; cacheKey = key;
+    cache = [fortuneSwindlers(), helloBaby(), ...admin]; cacheKey = key;
     return cache;
 }
 export const movieById = id => allMovies().find(m => m.id === id) || null;
-export const builtinMovies = () => [fortuneSwindlers()];
+export const builtinMovies = () => [fortuneSwindlers(), helloBaby()];
 export const castOf = (m, role) => m.cast.find(c => c.role === role || c.short === role) || null;
 export const titleText = m => `${m.ko}${m.en ? ` (${m.en})` : ""}`;
 // does a movie fit a shop kind?

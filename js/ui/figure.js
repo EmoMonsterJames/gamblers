@@ -18,9 +18,9 @@ export const EXPR_KO = {
     blank: "😐 무표정", evil: "😈 음흉", sweat: "😅 당황", excited: "😆 신남", shy: "😳 부끄", annoyed: "😤 못마땅", roll: "🙄 어이없음", scared: "😨 겁먹음", cool: "😎 썩소", dizzy: "😵 어질"
 };
 export const POSE_KO = { down: "기본", wave: "한 손 들기", both: "두 손 들기", point: "가리키기", hips: "허리에 손", shrug: "으쓱" };
-export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크" };
+export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미" };
 const MARK = { angry: "💢", annoyed: "💢", sweat: "💦", scared: "💦", shock: "❗", love: "💕", sad: "💧", cry: "💧", excited: "✨", happy: "♪", evil: "ㅋ", cool: "✨", dizzy: "💫", sleepy: "💤", shy: "💗", roll: "…", smug: "♪", wink: "♪", tongue: "♪" };
-const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤" };
+const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹" };
 
 const cache = new Map();
 const imgOf = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
@@ -135,7 +135,11 @@ async function drawnFull(url, o, female) {
     const legs = `<path d="M100 166H156L158 186H98Z" fill="#374151" ${O}/>` +
         `<path d="M101 184L103 232H123L127 190Z" fill="#374151" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="#374151" ${O}/>` +
         `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>`;
-    const arms = A.shirt ? armsSvg(A.shirt, A.H?.skin || "#f6d2a8", o.pose, o.hold) : "";
+    const skin = /^#[0-9a-f]{3,8}$/i.test(A.H?.skin || "") ? A.H.skin : "#f6d2a8";
+    const wear = o.nude ? "nude" : o.outfit || "";            // nude · bikini · dress
+    const bare = wear === "nude" || wear === "bikini";
+    if (A.shirt && wear) return wardrobe(A, o, female, body, skin, wear, bare, O);
+    const arms = A.shirt ? armsSvg(A.shirt, skin, o.pose, o.hold) : "";
     if (!A.shirt) return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256">${legs}<svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg>${arms}</svg>`);
     // the shirt is trimmed to a body that narrows from the shoulders to the hips, so it runs straight into the trousers
     const top = A.shirtTop != null ? Math.max(104, Math.min(128, A.shirtTop * 168 / 256 + 4)) : 122;
@@ -147,6 +151,50 @@ async function drawnFull(url, o, female) {
         `<g clip-path="url(#${cid})"><svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg></g>` +
         `<path d="${edge}" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${arms}</svg>`);
 }
+// 🎬 films only: the hand-drawn body bare-chested (nude) · in a bikini · in a long gown (dress)
+//   the shirt is cut away (only the head part of the picture stays) and the body is drawn: bare skin with a chest,
+//   a bikini (hot pink with yellow dots + bikini bottoms over bare legs) or a gown down to the floor
+const BIKINI = "#ec4899", DOT = "#fde047", GOWN = "#be123c";
+function wardrobe(A, o, female, body, skin, wear, bare, O) {
+    const top = A.shirtTop != null ? Math.max(104, Math.min(128, A.shirtTop * 168 / 256 + 4)) : 122;
+    const torso = `M84 ${top}Q128 ${top - 8} 172 ${top}Q182 ${top + 4} 180 ${top + 18}L160 170H96L76 ${top + 18}Q74 ${top + 4} 84 ${top}Z`;
+    const cid = "fc" + Math.random().toString(36).slice(2, 8);
+    const sd = shadeHex(skin, -0.32), y = top + 12;
+    // the chest (a woman's bounces while she dances)
+    const bounce = o.jiggle ? `<animateTransform attributeName="transform" type="translate" values="0 0;0 3;0 -1;0 0" dur=".42s" repeatCount="indefinite"/>` : "";
+    const chest = female
+        ? `<g>${[-1, 1].map(k => `<path d="M${128 + k * 3} ${y}Q${128 + k * 5} ${y + 20} ${128 + k * 17} ${y + 21}Q${128 + k * 32} ${y + 21} ${128 + k * 32} ${y + 3}" fill="${skin}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` + (wear === "nude" ? `<circle cx="${128 + k * 18}" cy="${y + 11}" r="3" fill="${sd}"/>` : "")).join("")}${bounce}</g>`
+        : [-1, 1].map(k => `<path d="M${128 + k * 4} ${y + 14}Q${128 + k * 18} ${y + 20} ${128 + k * 30} ${y + 10}" fill="none" stroke="${sd}" stroke-width="2.6" stroke-linecap="round"/><circle cx="${128 + k * 19}" cy="${y + 9}" r="2.6" fill="${sd}"/>`).join("") +
+          `<path d="M128 ${y + 30}v14" stroke="${sd}" stroke-width="2" stroke-linecap="round"/>`;
+    const navel = `<path d="M127 ${top + 40}q1 3 2 0" fill="none" stroke="${sd}" stroke-width="2" stroke-linecap="round"/>`;
+    // the bikini top: two cups on strings, the gown: the body coloured with a sweetheart neckline
+    const dots = (cx, cy) => `<circle cx="${cx - 4}" cy="${cy - 2}" r="1.8" fill="${DOT}"/><circle cx="${cx + 4}" cy="${cy + 3}" r="1.8" fill="${DOT}"/>`;
+    const bikiniTop = `<path d="M84 ${top + 2}L${128 - 18} ${y + 2}M172 ${top + 2}L${128 + 18} ${y + 2}M${128 - 34} ${y + 16}H${128 + 34}" stroke="${INK}" stroke-width="2.4" fill="none"/>` +
+        [-1, 1].map(k => `<path d="M${128 + k * 4} ${y + 18}Q${128 + k * 6} ${y + 2} ${128 + k * 18} ${y + 1}Q${128 + k * 30} ${y + 4} ${128 + k * 31} ${y + 17}Q${128 + k * 17} ${y + 24} ${128 + k * 4} ${y + 18}Z" fill="${BIKINI}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>` + dots(128 + k * 17, y + 12)).join("");
+    let legs;
+    if (wear === "dress") {
+        legs = `<path d="M96 160H160L192 236Q128 248 64 236Z" fill="${GOWN}" ${O}/><path d="M112 170L100 236M144 170L156 236" stroke="#0003" stroke-width="3" fill="none"/>`;
+    } else {
+        const lc = bare && wear === "bikini" ? skin : "#374151";
+        legs = `<path d="M100 166H156L158 186H98Z" fill="${lc}" ${O}/>` +
+            `<path d="M101 184L103 232H123L127 190Z" fill="${lc}" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="${lc}" ${O}/>` +
+            `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>` +
+            (wear === "bikini" ? `<path d="M99 168H157L150 184Q128 196 106 184Z" fill="${BIKINI}" ${O}/>${dots(122, 176)}${dots(138, 178)}` : "");
+    }
+    const bodyFill = wear === "dress" ? GOWN : skin;
+    const neck = wear === "dress" ? `<path d="M90 ${top + 10}Q108 ${top + 2} 128 ${top + 14}Q148 ${top + 2} 166 ${top + 10}V${top - 2}H90Z" fill="${skin}"/>` : "";
+    const sleeve = bare || wear === "dress" ? skin : A.shirt;
+    return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256"><defs><clipPath id="${cid}"><rect x="0" y="0" width="256" height="${top - 2}"/></clipPath></defs>` +
+        `${legs}<path d="${torso}" fill="${bodyFill}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${neck}` +
+        `<g clip-path="url(#${cid})"><svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg></g>` +
+        (bare ? chest + navel : "") + (wear === "bikini" ? bikiniTop : "") +
+        armsSvg(sleeve, skin, o.pose, o.hold) + `</svg>`);
+}
+function shadeHex(hex, k) {
+    let s = hex.slice(1); if (s.length === 3) s = [...s].map(c => c + c).join("");
+    const n = parseInt(s.slice(0, 6), 16), f = v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k)));
+    return "#" + [n >> 16, (n >> 8) & 255, n & 255].map(f).map(v => v.toString(16).padStart(2, "0")).join("");
+}
 // does the redrawer understand this hand-drawn picture? (face → no mood mark needed · shirt → arms drawn, no prop emoji)
 const drawnInfo = url => analyse(url).then(A => ({ face: A.ok, arms: !!A.shirt })).catch(() => ({ face: false, arms: false }));
 // → a data URI (or a Promise of one, for a hand-drawn picture)
@@ -154,7 +202,7 @@ function figSrc(pid, o) {
     const src = imgOf(pid);
     if (!src) return "";
     const g = parseGen(src);
-    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude ? 1 : 0, o.jiggle ? 1 : 0].join(",")}`;
+    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude ? 1 : 0, o.jiggle ? 1 : 0, o.outfit || ""].join(",")}`;
     if (cache.has(key)) return cache.get(key);
     let out;
     if (g) {
@@ -195,4 +243,7 @@ export function setFigure(el, c, o = {}) {
         });
     }
     el.className = "vfig" + (o.upper ? " upper" : "") + (o.act ? " act-" + o.act : "");
+    // 🔲 covers: a mosaic over a bare chest
+    el.querySelector(".vfig-mosaic")?.remove();
+    if (o.mosaic && (o.nude || o.outfit === "nude")) el.append(h("i.vfig-mosaic"));
 }
