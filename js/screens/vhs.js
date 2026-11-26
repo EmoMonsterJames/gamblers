@@ -173,6 +173,7 @@ export const dbCard = m => h("div.vhs-db-card",
         h("dt", "비디오브랜드"), h("dd", brandOf(m).name),
         h("dt", "등급"), h("dd", D.ratingText(m.rating)),
         h("dt", "출연 배우"), h("dd", h("ul", m.cast.map(c => h("li", `${V.PART_KO[c.part]} · ${c.ko} — ${c.role}${c.nude ? " (Nudity)" : c.sexy ? " (Sexy)" : ""}`)))),
+        h("dt", "Body Count"), h("dd", (d => d.length ? `💀 총 ${d.length}명 — ${d.map(c => `${c.ko} (${c.role})`).join(", ")}` : "0명")(D.bodyCountOf(m))),
         h("dt", "줄거리"), h("dd", m.plot)));
 
 // ---------------------------------------------------------------- 🎬 영화관 (under 💰 Money)
@@ -183,14 +184,14 @@ export function cinemaView(pid, { turn = null, onChange = () => { } } = {}) {
         const own = V.collection(pid).map(x => x.m), left = V.cinemaLeft(pid);
         const m = own.find(x => x.id === sel) || null;
         put(wrap,
-            h("div.vhs-head", h("div.big", "🎬"), h("div", h("h3", "영화관"), h("p.muted.small", `내 VHS를 넣어 재생합니다 (시즌당 ${V.CINEMA_PER_SEASON}회 · 남은 상영 ${left}회). 감상하는 동안 플레이 시간은 멈춥니다. 끝나면 관람 보상 ${fmt(V.VIEWER_PAY[0])}~${fmt(V.VIEWER_PAY[1])}G + 출연 배우들도 보상을 받습니다.`))),
+            h("div.vhs-head", h("div.big", "🎬"), h("div", h("h3", "영화관"), h("p.muted.small", `내 VHS를 넣어 재생합니다 (시즌당 ${V.CINEMA_PER_SEASON}회 · 남은 상영 ${left}회). 감상하는 동안 플레이 시간은 멈춥니다. 끝나면 관람 보상 ${fmt(V.VIEWER_PAY[0])}~${fmt(V.VIEWER_PAY[1])}G (희귀도가 높을수록 · 작품성이 낮을수록 큼) + 출연 배우들도 보상을 받습니다.`))),
             h("div.vhs-player-deck", h("div.vhs-slot" + (m ? ".in" : ""), m ? spine(m, { small: true }) : h("span", "📼 비디오를 넣어 주세요")),
                 h("button.btn.gold.big", { disabled: !m || left <= 0, onclick: () => play(m) }, left <= 0 ? "이번 시즌 상영을 모두 썼습니다" : "▶ 재생")),
             own.length ? h("div.vhs-shelf", own.map(x => spine(x, { onclick: () => { sel = x.id; Sound.click(); draw(); } }))) : h("p.notice", "VHS Collection에 비디오가 없습니다."));
     };
     async function play(m) {
         if (!(await ageGate(pid, m, "view"))) return;
-        if (!(await confirmBox(`${m.ko}을(를) 재생할까요? (${Math.round(D.scriptSeconds(m) / 6) / 10}분)\n이번 시즌 남은 상영 ${V.cinemaLeft(pid)}회 → ${V.cinemaLeft(pid) - 1}회`, "▶ 재생", "취소"))) return;
+        if (!(await confirmBox(`${m.ko}을(를) 재생할까요? (${Math.round(D.scriptSeconds(m) / 6) / 10}분 · 관람 보상 ${fmt(V.viewerPay(m))}G)\n이번 시즌 남은 상영 ${V.cinemaLeft(pid)}회 → ${V.cinemaLeft(pid) - 1}회`, "▶ 재생", "취소"))) return;
         const r = V.cinemaPay(pid, m);
         if (!r.ok) return toast(r.why, "warn");
         const was = turn?.running;

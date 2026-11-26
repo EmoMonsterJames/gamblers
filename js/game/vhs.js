@@ -6,7 +6,7 @@
 //   • 🎬 영화관 (under 💰 Money): 2 showings a season → the viewer and every actor in the running season get paid
 import { Store } from "../core/store.js";
 import { S, log, name } from "./season.js";
-import { LOC_BY_ID } from "../data/catalog.js";
+import { LOC_BY_ID, LOCATIONS } from "../data/catalog.js";
 import { belongsTo } from "./nation.js";
 import { SHOP_KINDS, SHOP_BY_ID, PRICE_BY_STAR, RATING_BY_ID, ageIndex, seeded, allMovies, fitsShop, titleText } from "../data/vhs.js";
 
@@ -14,7 +14,12 @@ const ps_ = pid => S()?.ps?.[pid];
 const round = () => S()?.round || 0;
 export const LEG_SECONDS = [10, 10, 10, 20, 20, 40];
 export const CINEMA_PER_SEASON = 2;
-export const VIEWER_PAY = [10000, 30000];
+// the viewer's pay: 5,000G (★1 rarity · ★7 quality) … 100,000G (★7 rarity · ★1 quality) — rarer and worse films pay more
+export const VIEWER_PAY = [5000, 100000];
+export function viewerPay(m) {
+    const s = ((Math.min(7, Math.max(1, m.stars || 1)) - 1) + (7 - Math.min(7, Math.max(1, m.quality || 7)))) / 12;
+    return Math.round((VIEWER_PAY[0] + s * (VIEWER_PAY[1] - VIEWER_PAY[0])) / 1000) * 1000;
+}
 export const ACTOR_PAY = { lead: [1000, 10000], support: [500, 5000], extra: [100, 500] };
 export const PART_KO = { lead: "주연", support: "조연", extra: "엑스트라" };
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -92,12 +97,36 @@ export function settleBattle(pid, won) {
     log(`📼 ${name(pid)} Battle VHS 배틀 ${won ? "승리 → 입장" : "패배 → 입장 실패"}`);
     Store.saveSeason(true);
 }
-// the shelf: up to 8 videos that fit the shop (changes every round)
+// ---------------------------------------------------------------- 📦 where the videos are stocked (fixed for a season)
+//   a movie with stock { maps, shops }: `maps` maps are drawn at random, then up to `shops` shops among them that may
+//   carry it (the shop's genre / nation / rarity / LGBTQ rule — fitsShop) — if there are fewer such shops, only those get it
+const shuffle = (arr, r) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let planCache = null, planKey = "";
+export function stockPlan() {
+    const n = S()?.number || 0, movies = allMovies().filter(m => m.stock);
+    const key = `${n}|${movies.map(m => `${m.id}:${m.stock.maps}/${m.stock.shops}:${m.genres}:${m.nation}:${m.stars}`).join(",")}`;
+    if (planCache && key === planKey) return planCache;
+    const at = new Map(), count = {};   // "loc#i" → [movie ids] · movie id → { maps, shops }
+    for (const m of movies) {
+        const r = seeded(`vhs-stock-${n}-${m.id}`);
+        const maps = shuffle(LOCATIONS.map(l => l.id), r).slice(0, m.stock.maps);
+        const spots = [];
+        for (const loc of maps) vhsMap(loc).nodes.forEach((x, i) => { if (fitsShop(m, SHOP_BY_ID[x.kind])) spots.push(`${loc}#${i}`); });
+        const put = shuffle(spots, r).slice(0, m.stock.shops);
+        for (const s of put) { if (!at.has(s)) at.set(s, []); at.get(s).push(m.id); }
+        count[m.id] = { maps: new Set(put.map(s => s.split("#")[0])).size, shops: put.length, room: spots.length };
+    }
+    planCache = { at, count }; planKey = key;
+    return planCache;
+}
+// the shelf: the stocked videos placed in this shop + (movies without a stock plan) up to 8 that fit the shop, changing every round
 export function shelf(locId, i) {
     const node = vhsMap(locId).nodes[i], k = SHOP_BY_ID[node.kind];
-    const fit = allMovies().filter(m => fitsShop(m, k));
+    const placed = new Set(stockPlan().at.get(`${locId}#${i}`) || []);
+    const mine = allMovies().filter(m => placed.has(m.id) && fitsShop(m, k));
+    const fit = allMovies().filter(m => !m.stock && fitsShop(m, k));
     const r = seeded(`vhs-shelf-${S()?.number}-${round()}-${locId}-${i}`);
-    return [...fit].sort(() => r() - 0.5).slice(0, 8);
+    return [...mine, ...shuffle(fit, r)].slice(0, Math.max(8, mine.length));
 }
 
 // ---------------------------------------------------------------- 🔞 age (띠)
@@ -143,7 +172,7 @@ export function cinemaPay(pid, m) {
     if (cinemaLeft(pid) <= 0) return { ok: false, why: `영화관은 시즌당 ${CINEMA_PER_SEASON}회까지입니다` };
     if (!owns(pid, m.id)) return { ok: false, why: "VHS Collection에 있는 비디오만 재생할 수 있습니다" };
     ps.cinemaN = (ps.cinemaN || 0) + 1;
-    const viewer = Math.round(rint(VIEWER_PAY[0], VIEWER_PAY[1]) / 1000) * 1000;
+    const viewer = viewerPay(m);
     ps.money += viewer;
     const roster = new Set((S()?.roster || []).map(Number));
     let toWallet = false;

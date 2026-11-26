@@ -5,7 +5,8 @@
 import { h, put } from "../core/util.js";
 import { Store } from "../core/store.js";
 import * as D from "../data/vhs.js";
-import { PART_KO } from "../game/vhs.js";
+import { PART_KO, stockPlan, viewerPay } from "../game/vhs.js";
+import { modal, toast } from "../core/fx.js";
 import { vhsBox, playMovie } from "./vhs.js";
 
 const stars = n => "★".repeat(n) + "☆".repeat(Math.max(0, 7 - n));
@@ -37,8 +38,30 @@ export function adminMovieDbPage() {
     const link = (text, view, cls = "") => h("a.mdb-link" + cls, { href: "javascript:void 0", onclick: e => { e.preventDefault(); go(view); } }, text);
     const facetLinks = (kind, m) => { const [, vals, txt] = FACETS[kind]; return vals(m).map((v, i) => [i ? " · " : null, link(txt(v), { k: kind, v })]); };
 
+    // 🔑 영화확인: the video covers and the film open only after the movie's Creator Code is typed in
+    const opened = new Set();  // creators whose code was entered while this page is open
+    function checkMovie(m) {
+        const who = D.creatorOf(m), code = D.CREATOR_CODES[who];
+        const show = () => {
+            const pm = modal(h("div.mdb-box", vhsBox(m), h("button.btn.gold", { onclick: () => { pm.close(); playMovie(m); } }, "▶ 비디오 감상")), { title: `📼 ${D.titleText(m)}`, wide: true, cls: "vhs-modal" });
+        };
+        if (opened.has(who)) return show();
+        if (!code) return toast(`${who}의 Creator Code가 아직 정해지지 않았습니다`, "warn");
+        const inp = h("input.input", { type: "password", inputmode: "numeric", autocomplete: "off", placeholder: "Creator Code", onkeydown: e => { if (e.key === "Enter") ok(); } });
+        const pm = modal(h("div.mdb-code", h("p", `Creator: `, h("b", who)), h("p.muted.small", "Creator Code를 입력해야 비디오 표지와 영화를 볼 수 있습니다."), inp,
+            h("div.row.end", h("button.btn.ghost", { onclick: () => pm.close() }, "취소"), h("button.btn.gold", { onclick: () => ok() }, "확인"))), { title: "🔑 영화확인" });
+        setTimeout(() => inp.focus(), 50);
+        function ok() {
+            if (inp.value.trim() !== code) { toast("Creator Code가 맞지 않습니다", "warn"); inp.select(); return; }
+            opened.add(who); pm.close(); show();
+        }
+    }
+    const placed = m => { const c = stockPlan().count[m.id]; return c ? `${c.maps}개 맵 · ${c.shops}곳${c.shops < m.stock.shops ? ` (목표 ${m.stock.maps}개 맵 · ${m.stock.shops}곳 — 비치 가능한 가게가 ${c.room}곳뿐)` : ""}` : "모든 맞는 가게 (무작위)"; };
+    // 💀 Body Count: how many die in the film, and who (actor — role)
+    const bodyCount = m => { const dead = D.bodyCountOf(m); return dead.length ? [`💀 총 ${dead.length}명 — `, dead.map((c, i) => [i ? ", " : null, c.pid != null ? link(actorName(c), { k: "actor", pid: c.pid }) : actorName(c), ` (${c.role})`])] : "0명"; };
     const card = m => h("div.vhs-db-card.mdb-card",
-        h("h4", link(m.ko, { k: "movie", id: m.id }), h("small", ` ${m.en}`), m.off ? h("span.mdb-tag", "판매 중지") : null),
+        h("h4", link(m.ko, { k: "movie", id: m.id }), h("small", ` ${m.en}`), m.off ? h("span.mdb-tag", "판매 중지") : null,
+            h("button.btn.ghost.small.mdb-check", { onclick: () => checkMovie(m) }, "🎬 영화확인")),
         h("dl",
             h("dt", "희귀도"), h("dd.st", facetLinks("stars", m)),
             h("dt", "장르"), h("dd", facetLinks("genre", m)),
@@ -51,7 +74,11 @@ export function adminMovieDbPage() {
             h("dt", "등급"), h("dd", facetLinks("rating", m)),
             h("dt", "출연 배우"), h("dd", h("ul", [...m.cast].sort((a, b) => PART_ORDER.indexOf(a.part) - PART_ORDER.indexOf(b.part)).map(c =>
                 h("li", `${PART_KO[c.part] || c.part} · `, c.pid != null ? link(actorName(c), { k: "actor", pid: c.pid }) : actorName(c), ` — ${c.role}`, ...tags(c))))),
-            h("dt", "줄거리"), h("dd", m.plot)));
+            h("dt", "Body Count"), h("dd", bodyCount(m)),
+            h("dt", "줄거리"), h("dd", m.plot),
+            h("dt", "Creator"), h("dd", D.creatorOf(m)),
+            h("dt", "관람 보상"), h("dd", `${viewerPay(m).toLocaleString()}G`),
+            h("dt", "비디오 가게 비치"), h("dd", placed(m))));
 
     const row = m => h("div.mdb-row", link(m.ko, { k: "movie", id: m.id }), h("small.muted", ` ${m.en}`), h("span.mdb-meta", `${dateKo(m.date)} · ${brandName(m.brand)} · ${stars(m.stars)}`));
 
@@ -81,7 +108,7 @@ export function adminMovieDbPage() {
     function movieView(id) {
         const m = allMovies().find(x => x.id === id);
         if (!m) return h("p.notice", "영화를 찾을 수 없습니다.");
-        return [h("div.mdb-movie", h("div.mdb-box", vhsBox(m), h("button.btn.gold", { onclick: () => playMovie(m) }, "▶ 영화 재생")), card(m))];
+        return [card(m)];
     }
     function actorView(pid) {
         const p = Store.player(pid);
@@ -99,7 +126,7 @@ export function adminMovieDbPage() {
                         h("td.muted", dateKo(m.date)),
                         h("td", link(m.ko, { k: "movie", id: m.id }), h("small.muted", ` ${m.en}`)),
                         h("td", c.role),
-                        h("td", ...tags(c))))))) : null;
+                        h("td", ...tags(c), D.bodyCountOf(m).includes(c) ? h("span.mdb-tag.dead", "💀 Body Count") : null)))))) : null;
             }),
             films.length ? null : h("p.notice", "아직 출연한 영화가 없습니다.")
         ];

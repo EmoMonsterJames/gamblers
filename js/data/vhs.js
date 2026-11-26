@@ -111,6 +111,12 @@ export const shopDoor = k => k.gear ? `${{ wings: "🪽 날개", oxygen: "🤿 �
 // price by rarity (G)
 export const PRICE_BY_STAR = [0, 5000, 10000, 20000, 50000, 100000, 200000, 400000];
 
+// 🔑 영화DB: a movie's covers and film open only with its creator's code (null = no code set yet → stays locked)
+export const CREATOR_CODES = { James: "2026", Dylan: null };
+export const creatorOf = m => m.creator || "James";
+// 💀 Body Count: the cast members who die in the film (on screen or found dead off-screen) — ghosts, monsters and spirits are not counted
+export const bodyCountOf = m => (m.bodyCount || []).map(r => m.cast.find(c => c.role === r || c.short === r)).filter(Boolean);
+
 // ---------------------------------------------------------------- seeded random
 export function seeded(str) {
     let h = 2166136261;
@@ -187,7 +193,7 @@ const fortuneSwindlers = () => {
     return {
         id: "m_fortune_swindlers", builtin: true,
         en: "Fortune Swindlers", ko: "복덩이 사기단",
-        brand: "hyhg", nation: "Emo World", date: "0-02-14",
+        brand: "hyhg", nation: "Emo World", date: "0-02-14", creator: "James", stock: { maps: 105, shops: 195 }, bodyCount: [],
         genres: ["코미디"], rating: "water", stars: 1, quality: 6, lgbtq: false,
         cast: [
             { ko: "짱구", pid: P("짱구"), role: HENRY, part: "lead" },
@@ -284,7 +290,7 @@ const helloBaby = () => {
     return {
         id: "m_hello_baby", builtin: true,
         en: "Hello Baby", ko: "말하는 초콜릿",
-        brand: "redlips", nation: "Emo World", date: "78-03-29",
+        brand: "redlips", nation: "Emo World", date: "78-03-29", creator: "James", stock: { maps: 5, shops: 10 }, bodyCount: [],
         genres: ["코미디"], rating: "flower", stars: 6, quality: 1, lgbtq: false,
         cast: [
             { ko: "헬로토끼", pid: P("헬로토끼"), role: VICKY, part: "lead", nude: true },
@@ -451,7 +457,7 @@ const hurryKidMe = () => {
     return {
         id: "m_hurry_kid_me", builtin: true,
         en: "Hurry Kid Me", ko: "앙클베리",
-        brand: "hyhg", nation: "Emo World", date: "0-10-13",
+        brand: "hyhg", nation: "Emo World", date: "0-10-13", creator: "James", stock: { maps: 120, shops: 250 }, bodyCount: [],
         genres: ["뮤지컬", "드라마"], rating: "white", stars: 1, quality: 7, lgbtq: false,
         cast: [
             ...LEADS.map(n => me(n, "lead", SHE.has(n))),
@@ -570,7 +576,9 @@ const emptyDen = () => {
     return {
         id: "m_empty_den", builtin: true, bw: true,
         en: "Empty Den", ko: "헛간",
-        brand: "bw", nation: "Dung Town", date: "0-08-11",
+        brand: "bw", nation: "Dung Town", date: "0-08-11", creator: "James", stock: { maps: 110, shops: 200 },
+        // 💀 Body Count: Old Woman is found dead in the barn (Mom is a ghost → not counted)
+        bodyCount: [OLD],
         genres: ["공포"], rating: "red", stars: 1, quality: 7, lgbtq: false,
         cast: [
             { ko: "친공미", pid: P("친공미"), role: EMILY, part: "lead" },

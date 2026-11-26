@@ -141,3 +141,6 @@
 .mdb-browse { gap: 6px; }
 .mdb-link.sq { display: inline-block; padding: 7px 14px; border-radius: 6px; border: 1px solid #ffffff33; background: #ffffff10; color: #e2e8f0; font-weight: 700; font-size: 13px; }
 .mdb-link.sq:hover { background: #fde68a22; border-color: #fde68a; color: #fde68a; }
+.mdb-check { margin-left: 8px; padding: 2px 8px; font-size: 11px; vertical-align: middle; }
+.mdb-code { display: grid; gap: 8px; min-width: 240px; } .mdb-code p { margin: 0; }
+.mdb-tag.dead { background: #44403c; color: #fafaf9; }
