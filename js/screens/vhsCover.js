@@ -13,7 +13,7 @@ const sups = m => m.cast.filter(c => c.part === "support");
 const extras = m => m.cast.filter(c => c.part === "extra");
 const castLine = (list, short = false) => list.map(c => short ? c.ko : `${c.ko} (${c.role})`).join(", ");
 const norm = s => typeof s === "string" ? { r: s } : (s || {});
-const spec = (c, o = {}) => ({ r: c.role, expr: "happy", ...o });
+const spec = (c, o = {}) => ({ r: c.short || c.role, expr: "happy", ...o });
 
 // ---------------------------------------------------------------- 🏷️ brand logo (뽀리: a star-tipped magic wand beside it)
 const WAND = `<svg viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg"><path d="M12 14L10 39" stroke="#7c2d12" stroke-width="3" stroke-linecap="round"/><path d="M12 1l3.2 6.6 7.2 1-5.2 5 1.3 7.2L12 17.4 5.5 20.8l1.3-7.2-5.2-5 7.2-1Z" fill="#fde047" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
@@ -60,7 +60,9 @@ export function spine(m, { onclick = null, small = false } = {}) {
     const SP = m.cover?.spine || {};
     const showStill = !small && S.still !== "none" && SP.still !== false, showBand = S.band && SP.band !== false;
     // room for the big title (px along the spine)
-    const room = small ? 104 : 300 - 52 - (showBand ? 18 : 0) - (showStill ? 64 : 0) - 40 - (S.sub === "en" || S.sub === "row" ? 22 : 0) - 18;
+    // sub: the movie can put the English title "side" (small, sideways beside the Korean title) instead of the brand's way
+    const subMode = SP.sub || S.sub;
+    const room = small ? 104 : 300 - 52 - (showBand ? 18 : 0) - (showStill ? 64 : 0) - 40 - (subMode === "en" || subMode === "row" ? 22 : 0) - 18;
     // 구름 글씨 (font "cloud"): every letter puffed up and tilted a little its own way, so the title floats and sways
     const cloudy = t => Array.from(t).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch));
     const vKo = (t, fs, cls = "") => h("span.vs-v.vs-ko" + cls, { style: { fontSize: fs + "px" } }, SP.font === "cloud" && !cls ? cloudy(t) : t);
@@ -69,15 +71,16 @@ export function spine(m, { onclick = null, small = false } = {}) {
     if (S.main === "en") {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
         title = h("div.vs-title.t-en", vEn(m.en, enFs), S.sub === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
-    } else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)));
-    const sub = S.sub === "en" ? h("div.vs-sub.vs-en", m.en)
-        : S.sub === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
+    } else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
+    const sub = subMode === "en" ? h("div.vs-sub.vs-en", m.en)
+        : subMode === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
     const stillSpec = m.cover?.spine?.still || coverStills(m, 1)[0] || (leads(m)[0] ? { bg: "street", who: [spec(leads(m)[0])] } : null);
     return h("button.vhs-spine.vt-" + b.id + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold") + ".st-" + S.still,
         { style: { "--sc": b.color, "--si": b.ink }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
         h("div.vs-top", brandLogo(b, small ? 22 : 30), small ? null : h("small", b.name)),
         showBand ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
-        title, sub,
+        // font "plain": the titles sit on a plain label (black, ordinary letters)
+        SP.font === "plain" ? h("div.vs-label", title, sub) : [title, sub],
         showStill && stillSpec ? h("div.vs-still", still(m, stillSpec, { hgt: 58 })) : null,
         h("div.vs-foot", h("div.vs-vhs", "VHS"), h("div.vs-stars", "★".repeat(m.stars))));
 }
@@ -112,8 +115,33 @@ const FRONT = {
         return h("div.vf-art.va-rocket-art.bg-campus",
             h("div.va-watch", (FR.back || []).map(s => F(m, s, 62))),
             h("div.va-ride", h("div.va-rider", rider ? F(m, rider, 100) : null), rocket));
+    },
+    // 앙클베리: a concert hall — spotlights on the stage, every lead gathered in two rows, the audience's heads below
+    concert: (m, FR) => {
+        const L = FR.main || leads(m).map(c => spec(c, { expr: "excited", pose: "both" })), cut = Math.ceil(L.length / 2);
+        return h("div.vf-art.va-concert", h("i.va-beam.a"), h("i.va-beam.b"), h("i.va-beam.c"),
+            h("div.va-row.back", L.slice(0, cut).map(s => F(m, s, 54))),
+            h("div.va-row.front", L.slice(cut).map(s => F(m, s, 62))),
+            h("i.va-crowd"));
+    },
+    // 헛간: night, the barn's doors ajar on the dark · the leads in front, candles lit, trembling
+    barn: (m, FR) => {
+        const barn = h("i.va-barnhouse"); barn.innerHTML = BARN;
+        return h("div.vf-art.va-barn", barn, h("i.va-dark"),
+            h("div.va-row.main", (FR.main || leads(m).map(c => spec(c, { expr: "scared", hold: "candle" }))).map(s => F(m, s, 104))),
+            h("i.va-glow"));
     }
 };
+const BARN = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg"><circle cx="190" cy="28" r="14" fill="#e5e5e5"/><circle cx="196" cy="24" r="12" fill="#0a0a0a"/>` +
+    `<path d="M0 150Q60 140 115 146T230 142V190H0Z" fill="#262626"/>` +
+    `<path d="M40 160V78L115 30L190 78V160Z" fill="#3f3f46" stroke="#111" stroke-width="3" stroke-linejoin="round"/>` +
+    `<path d="M30 84L115 26L200 84" fill="none" stroke="#18181b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<path d="M48 90V160M60 88V160M72 80V160M158 80V160M170 88V160M182 90V160" stroke="#27272a" stroke-width="2"/>` +
+    `<rect x="102" y="52" width="26" height="20" fill="#0a0a0a" stroke="#18181b" stroke-width="3"/>` +
+    `<rect x="78" y="94" width="74" height="66" fill="#000"/>` +
+    `<path d="M78 94H104V160H78Z" fill="#52525b" stroke="#111" stroke-width="2.5" transform="skewY(-6) translate(0 9)"/><path d="M80 104L102 150M102 104L80 150" stroke="#27272a" stroke-width="3" transform="skewY(-6) translate(0 9)"/>` +
+    `<path d="M140 94H152V160H140Z" fill="#52525b" stroke="#111" stroke-width="2.5"/>` +
+    `<path d="M20 160L26 126M14 136H34M180 160L186 132M174 142H196" stroke="#18181b" stroke-width="3"/></svg>`;
 const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><path d="M10 55Q-6 40 6 30L34 44Q20 55 34 66L6 80Q-6 70 10 55Z" fill="#f97316"/><path d="M0 55Q14 46 30 50V60Q14 64 0 55Z" fill="#fde047"/>` +
     `<path d="M30 34H150Q204 34 216 55Q204 76 150 76H30Z" fill="#f8fafc" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
     `<path d="M150 34Q204 34 216 55Q204 76 150 76Q162 55 150 34Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
@@ -122,7 +150,7 @@ const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><p
 export function front(m) {
     const b = brandOf(m), S = D.brandStyle(b.id), FR = m.cover?.front || {}, layout = FRONT[FR.layout] ? FR.layout : S.front;
     return h("div.vhs-front.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": FR.bg || b.color, "--bc": b.color, "--bi": b.ink } },
-        h("div.vf-head", brandLogo(b, 28), h("small", `주연: ${castLine(leads(m), true) || "-"}`)),
+        h("div.vf-head", brandLogo(b, 28), h("small", `주연: ${leads(m).length > 4 ? `${castLine(leads(m).slice(0, 3), true)} 외 ${leads(m).length - 3}명` : castLine(leads(m), true) || "-"}`)),
         FRONT[layout](m, FR),
         h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
         m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
@@ -149,8 +177,9 @@ export function back(m) {
         h("div.vb-text",
             h("p.vb-plot", m.plot),
             h("dl.vb-info",
-                h("dt", "주연"), h("dd", castLine(leads(m)) || "-"),
-                sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m)))] : null,
+                // short: names only (a big cast that plays themselves)
+                h("dt", "주연"), h("dd", castLine(leads(m), BK.short) || "-"),
+                sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m), BK.short))] : null,
                 h("dt", "제작"), h("dd", `${m.nation} · ${date}`),
                 h("dt", "장르"), h("dd", m.genres.join(" · ")),
                 h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`))),

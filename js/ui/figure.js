@@ -18,9 +18,9 @@ export const EXPR_KO = {
     blank: "😐 무표정", evil: "😈 음흉", sweat: "😅 당황", excited: "😆 신남", shy: "😳 부끄", annoyed: "😤 못마땅", roll: "🙄 어이없음", scared: "😨 겁먹음", cool: "😎 썩소", dizzy: "😵 어질"
 };
 export const POSE_KO = { down: "기본", wave: "한 손 들기", both: "두 손 들기", point: "가리키기", hips: "허리에 손", shrug: "으쓱" };
-export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미" };
+export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미", candle: "🕯️ 촛불" };
 const MARK = { angry: "💢", annoyed: "💢", sweat: "💦", scared: "💦", shock: "❗", love: "💕", sad: "💧", cry: "💧", excited: "✨", happy: "♪", evil: "ㅋ", cool: "✨", dizzy: "💫", sleepy: "💤", shy: "💗", roll: "…", smug: "♪", wink: "♪", tongue: "♪" };
-const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹" };
+const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹", candle: "🕯️" };
 
 const cache = new Map();
 const imgOf = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";

@@ -398,3 +398,125 @@
 .vp-place { position: absolute; top: 3%; left: 3%; z-index: 4; display: flex; align-items: baseline; gap: 8px; padding: 4px 12px; border-radius: 8px; background: #000a; color: #fff; font-weight: 800; font-size: clamp(12px, 1.8vw, 17px); animation: vpPlace .6s ease; box-shadow: 0 2px 6px #0006; }
 .vp-place b { color: #fde047; font-family: "Lilita One", sans-serif; letter-spacing: .04em; }
 @keyframes vpPlace { from { transform: translateY(-120%); opacity: 0; } }
+
+/* ================= 앙클베리 (Hurry Kid Me) · 헛간 (Empty Den): new sets, effects, acts and covers ================= */
+/* sets: 연습실 · 복도 · 객석 · 시골길 · 어두운 시골길 · 헛간 앞 · 헛간 안 · 경찰조사실 */
+.bg-practice { background:
+    linear-gradient(180deg, transparent 0 46%, #a16207 46% 48%, transparent 48%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(90deg, #bae6fd 0 2px, transparent 2px) 0 0 / 25% 100%,
+    linear-gradient(180deg, #fef3c7 0 10%, #dbeafe 10% 60%, #fef3c7 60% 72%, transparent 72%) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #b45309 0 34px, #92400e 34px 36px, #c2410c 36px 70px, #92400e 70px 72px); }
+.bg-hallway { background:
+    linear-gradient(180deg, #78350f 0 8%, #fde68a 8% 22%, #78350f 22% 100%) 10% 18% / 18% 52% no-repeat,
+    linear-gradient(180deg, transparent 0 66%, #94a3b8 66% 68%, transparent 68%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, #e0e7ff 0 68%, #cbd5e1 68%); }
+.bg-seats { background:
+    radial-gradient(ellipse 16px 13px at 50% 100%, #991b1b 96%, transparent) 0 100% / 34px 26px repeat-x,
+    radial-gradient(ellipse 16px 13px at 50% 100%, #7f1d1d 96%, transparent) 17px calc(100% - 26px) / 34px 26px repeat-x,
+    radial-gradient(ellipse at 50% 0, #fde04766, transparent 60%),
+    linear-gradient(180deg, #1e1b4b, #3b0764); }
+.bg-country { background:
+    radial-gradient(circle at 82% 18%, #fef9c3 0 22px, transparent 24px),
+    linear-gradient(180deg, transparent 0 56%, #a16207 56% 57%, transparent 57%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(90deg, #92400e 0 3px, transparent 3px) 0 52% / 40px 6% repeat-x,
+    linear-gradient(180deg, #7dd3fc 0 50%, #a3e635 50% 70%, #d6a96b 70% 84%, #65a30d 84%); }
+.bg-darkroad { background:
+    radial-gradient(circle at 80% 16%, #e5e5e5 0 16px, transparent 18px),
+    radial-gradient(circle at 20% 12%, #fff 0 1px, transparent 2px) 0 0 / 60px 50px,
+    linear-gradient(90deg, #111 0 3px, transparent 3px) 0 52% / 40px 6% repeat-x,
+    linear-gradient(180deg, #020617 0 50%, #1c1917 50% 70%, #3f3f46 70% 84%, #0c0a09 84%); }
+.bg-barnout { background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100' preserveAspectRatio='xMidYMax meet'%3E%3Cpath d='M64 100V48L100 24L136 48V100Z' fill='%23292524' stroke='%230c0a09' stroke-width='2'/%3E%3Cpath d='M58 52L100 22L142 52' fill='none' stroke='%230c0a09' stroke-width='5' stroke-linecap='round'/%3E%3Crect x='86' y='62' width='28' height='38' fill='%23000'/%3E%3Cpath d='M86 62L114 100M114 62L86 100' stroke='%2344403c' stroke-width='2'/%3E%3C/svg%3E") 50% 84% / auto 70% no-repeat,
+    radial-gradient(circle at 18% 16%, #e7e5e4 0 14px, transparent 16px),
+    linear-gradient(180deg, #0c0a09 0 84%, #1c1917 84%); }
+.bg-barn { background:
+    linear-gradient(180deg, transparent 0 78%, #a16207 78% 80%, #ca8a04 80%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 30px 8px at 50% 50%, #eab308 90%, transparent) 0 92% / 60px 16px repeat-x,
+    linear-gradient(90deg, #0c0a09 0 3px, transparent 3px) 0 0 / 46px 100%,
+    linear-gradient(180deg, #57534e, #292524); }
+.bg-police { background:
+    radial-gradient(ellipse 22% 60% at 50% 0, #fef9c3aa, transparent 70%),
+    linear-gradient(90deg, transparent 0 49.5%, #111 49.5% 50.5%, transparent 50.5%) 0 0 / 100% 10% no-repeat,
+    linear-gradient(180deg, transparent 0 66%, #3f3f46 66% 70%, transparent 70%) 25% 0 / 50% 100% no-repeat,
+    linear-gradient(180deg, #9ca3af 0 72%, #4b5563 72%); }
+
+/* the film: a crowd in two rows (grid set by the script) · actors not seen yet · blackout · a flash */
+/* falling emoji effects in the film (💸 ✨ 🎵 💗 👏) — their style was lost in an earlier commit */
+.vp-fx > i:not([class]) { position: absolute; top: -12%; left: var(--x); font-style: normal; font-size: clamp(16px, 2.6vw, 26px); animation: vhsRain 2.6s linear var(--d) infinite; }
+@keyframes vhsRain { to { transform: translateY(560px) rotate(260deg); } }
+.vp-actors.crowd { display: grid; justify-content: center; align-items: end; bottom: 12%; gap: 0; }
+.vp-actors.crowd .vp-actor small { font-size: 9px; padding: 0 4px; }
+.vp-actor.hid { opacity: 0; transition: opacity .25s; }
+.vp-scene.black .vp-shade { opacity: 1 !important; background: #000; transition: opacity .1s; }
+.vp-flash { position: absolute; inset: 0; z-index: 5; background: #fff; pointer-events: none; animation: vpFlash .45s ease-out forwards; }
+@keyframes vpFlash { from { opacity: .95; } to { opacity: 0; } }
+/* 👻 ghost: see-through, floating · ghostblink: there, gone, there … · dead: lying on the floor */
+.vp-actor .vfig.act-ghost .vfig-in { opacity: .62; filter: drop-shadow(0 0 10px #fff) blur(.4px); animation: vfGhost 3s ease-in-out infinite; }
+.vp-actor .vfig.act-ghostblink .vfig-in { filter: drop-shadow(0 0 10px #fff) blur(.6px); animation: vfBlink 2.6s linear infinite; }
+@keyframes vfGhost { 0%, 100% { transform: translateY(-4%); } 50% { transform: translateY(-10%); } }
+@keyframes vfBlink { 0%, 18% { opacity: 0; } 22%, 40% { opacity: .6; transform: translateY(-5%); } 44%, 62% { opacity: 0; } 64% { opacity: .5; } 66% { opacity: 0; } 72%, 90% { opacity: .55; transform: translateY(-8%); } 94%, 100% { opacity: 0; } }
+.vp-actor .vfig.act-dead .vfig-in { transform: translate(72%, -12%) rotate(-90deg); transform-origin: 50% 100%; filter: brightness(.55) drop-shadow(0 3px 3px #000); }
+/* a role holding someone's head · a framed photo on a table · the one on the phone */
+.vp-actor { position: relative; }
+.vp-held { position: absolute; right: -18%; top: 30%; z-index: 2; transform-origin: 50% 0; animation: vpSwingHead 2.4s ease-in-out infinite; }
+.vp-held .vfig.upper { height: calc(var(--fs) * .46); }
+@keyframes vpSwingHead { 0%, 100% { transform: rotate(10deg); } 50% { transform: rotate(-6deg); } }
+.vp-photo { position: absolute; left: 6%; bottom: 13%; z-index: 1; display: grid; justify-items: center; }
+.vp-frame { padding: 3px; border: 6px solid #78350f; border-radius: 3px; background: #f5f5f4; box-shadow: inset 0 0 0 1px #0006, 0 3px 6px #0008; transform: rotate(-3deg); margin-bottom: -2px; }
+.vp-frame .vfig img { filter: sepia(.4); }
+.vp-table { display: block; width: 170%; height: 40px; border-top: 8px solid #6b4226; background: linear-gradient(90deg, #6b4226 0 8px, transparent 8px calc(100% - 8px), #6b4226 calc(100% - 8px)); }
+.vp-call { position: absolute; right: 3%; top: 4%; z-index: 4; display: grid; justify-items: center; gap: 2px; animation: vpPlace .5s ease; }
+.vp-call-in { padding: 4px 8px 0; border-radius: 50% 50% 14px 14px; border: 4px solid #fff; background: radial-gradient(circle, #e0f2fe, #7dd3fc); box-shadow: 0 0 0 3px #0ea5e9, 0 4px 10px #0008; overflow: hidden; }
+.vp-call small { font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 6px; background: #0ea5e9; }
+.vp-call.talk .vp-call-in { animation: vpRing .3s ease-in-out infinite alternate; }
+@keyframes vpRing { from { transform: rotate(-3deg); } to { transform: rotate(3deg) scale(1.03); } }
+/* 🕯️ only a candle's light in the dark (it flickers) · low mist along the ground */
+.vp-scene.fx-candle.dark .vp-shade { opacity: .96; background: radial-gradient(ellipse 70% 75% at 58% 62%, #0000 0 30%, #0009 60%, #000 100%); animation: vpFlicker .16s ease-in-out infinite alternate; }
+@keyframes vpFlicker { from { opacity: .9; transform: scale(1); } to { opacity: 1; transform: scale(1.02); } }
+.vp-mist { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.vp-mist i { position: absolute; bottom: -6%; left: -40%; width: 80%; height: 34%; border-radius: 50%; background: radial-gradient(ellipse, #ffffff70, transparent 70%); animation: vpMist 10s linear infinite; }
+.vp-mist i:nth-child(2) { animation-delay: -3.4s; bottom: 2%; } .vp-mist i:nth-child(3) { animation-delay: -6.8s; bottom: -10%; }
+@keyframes vpMist { to { transform: translateX(170%); } }
+
+/* 🎵 title "fade": notes float up a bright screen · the English title lights up and dims · then the Korean title under it */
+.vp-title.s-fade { background: radial-gradient(circle at 50% 42%, #fef08a, #f9a8d4 50%, #8b5cf6); overflow: hidden; }
+.vp-title.s-fade .vp-en { position: relative; z-index: 2; color: #fff; text-shadow: 0 0 18px #fff, 3px 3px 0 #6d28d9; animation: vpEnFade 3.6s ease forwards; }
+@keyframes vpEnFade { 0% { opacity: 0; transform: scale(.85); filter: brightness(.5); } 30% { opacity: 1; transform: scale(1.08); filter: brightness(1.7); } 55% { opacity: 1; transform: scale(1); filter: brightness(1); } 100% { opacity: .22; transform: scale(.97); filter: blur(1.2px); } }
+.vp-title.s-fade .vp-ko { position: relative; z-index: 2; transform: translateY(22px); transition: opacity 1s, transform 1s; }
+.vp-title.s-fade .vp-ko.show { opacity: 1; transform: none; animation: vhsBounce .9s ease 1s infinite alternate; }
+.vp-note { position: absolute; left: var(--x); bottom: -12%; font-style: normal; font-size: clamp(20px, 3.6vw, 36px); color: #fff; text-shadow: 0 0 6px #7c3aed; animation: vpNote var(--t) linear var(--d) infinite; }
+@keyframes vpNote { from { transform: translateY(0) rotate(-10deg); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(-600px) rotate(14deg); opacity: 0; } }
+/* 🔥 title "fire": the dark lit by a fire, a skull heap for a moment, the titles burn in */
+.vp-title.s-fire { background: #000; overflow: hidden; }
+.vp-flame { position: absolute; left: -10%; right: -10%; bottom: -35%; height: 95%; z-index: 0; background: radial-gradient(ellipse at 50% 100%, #fde68a, #f97316 22%, #7c2d12 46%, transparent 70%); animation: vpFireUp 1.6s ease-out forwards, vpFlicker .14s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes vpFireUp { from { opacity: 0; } }
+.vp-skulls { position: absolute; left: 0; right: 0; bottom: 2%; z-index: 1; display: grid; justify-items: center; line-height: .92; font-size: clamp(22px, 4.2vw, 42px); filter: grayscale(1) brightness(.8); opacity: 0; animation: vpSkulls 3.4s ease .5s forwards; }
+@keyframes vpSkulls { 35% { opacity: .55; } 100% { opacity: 0; } }
+.vp-title.s-fire .vp-en { position: relative; z-index: 2; color: #fed7aa; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .06em; text-shadow: 0 0 12px #f97316, 0 0 30px #7c2d12, 3px 3px 0 #000; animation: vpBurnIn 1.8s ease forwards; }
+@keyframes vpBurnIn { from { opacity: 0; filter: blur(8px); } }
+.vp-title.s-fire .vp-ko { position: relative; z-index: 2; color: #fff7ed; text-shadow: 0 0 14px #ea580c, 3px 3px 0 #000; transform: scale(1.4); filter: blur(8px); transition: opacity 1.2s, transform 1.4s, filter 1.4s; }
+.vp-title.s-fire .vp-ko.show { opacity: 1; transform: none; filter: none; }
+
+/* 중간표지 font "plain": the titles on a label — black, ordinary letters · "side": the English title small and sideways beside it */
+.vs-label { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.vs-label .vs-title { flex: 1; }
+.vhs-spine.f-plain .vs-ko { font-family: 'Noto Sans KR', sans-serif; font-weight: 700; color: #111; text-shadow: none; -webkit-text-stroke: 0; letter-spacing: 0; }
+.vs-en-side { font: 700 8px/1 'Noto Sans KR', sans-serif; letter-spacing: .08em; color: #111; opacity: .85; align-self: flex-end; margin-bottom: 6px; }
+.vt-bw.vhs-spine.f-plain .vs-label { padding: 8px 2px 6px; border-radius: 2px; background: #f4f4f5; box-shadow: inset 0 0 0 1px #111, 0 0 0 1px #fafafa; }
+.vt-bw.vhs-spine.f-plain .vs-en { color: #111; font-size: 7.5px; font-weight: 700; }
+
+/* 앞표지 "concert": spotlights, every lead on stage in two rows, the audience's heads below */
+.va-concert { flex-direction: column; align-items: center; justify-content: end; padding-bottom: 12px; background: radial-gradient(ellipse at 50% 0, #fde04766, transparent 55%), linear-gradient(180deg, #312e81 0 64%, #a16207 64% 68%, #78350f 68%); }
+.va-concert .va-row { position: relative; z-index: 1; }
+.va-concert .va-row .vfig + .vfig { margin-left: -18px; }
+.va-concert .va-row.front { margin-top: -24px; z-index: 2; }
+.va-beam { position: absolute; top: -12%; width: 28%; height: 115%; background: linear-gradient(180deg, #fef9c388, transparent 85%); transform-origin: 50% 0; pointer-events: none; }
+.va-beam.a { left: 4%; transform: rotate(-16deg); } .va-beam.b { left: 36%; } .va-beam.c { right: 4%; transform: rotate(16deg); }
+.va-crowd { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; z-index: 3; background: radial-gradient(circle at 50% 100%, #0b0b12 0 9px, transparent 10px) 0 0 / 18px 16px repeat-x; }
+/* 앞표지 "barn": the barn at night, its door ajar on the dark · the leads with candles, a warm glow */
+.va-barn { background: #0a0a0a; align-items: end; }
+.va-barnhouse { position: absolute; inset: 0; } .va-barnhouse svg { width: 100%; height: 100%; display: block; }
+.va-dark { position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse at 50% 70%, transparent 30%, #000d 85%); }
+.va-barn .va-row.main { position: relative; z-index: 2; gap: 4px; margin-bottom: -4px; }
+.va-barn .va-row .vfig + .vfig { margin-left: -6px; }
+.va-glow { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: radial-gradient(ellipse 60% 40% at 50% 62%, #fde68a44, transparent 70%); mix-blend-mode: screen; }

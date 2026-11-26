@@ -151,7 +151,8 @@ export const BRAND_STYLE = {
 };
 export const brandStyle = id => BRAND_STYLE[id] || BRAND_STYLE.hyhg;
 export const FRONT_LAYOUTS = [["", "영화사 기본"], ["lineup", "배우들 일렬"], ["hero", "주연 크게 + 조연"], ["duo", "주연 둘 마주보기"], ["still", "스틸컷 한 장"], ["spotlight", "스포트라이트"],
-    ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"], ["rocket", "날아온 로켓 위 주연 + 지켜보는 배우들"]];
+    ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"], ["rocket", "날아온 로켓 위 주연 + 지켜보는 배우들"],
+    ["concert", "공연장 무대 위 주연 전원"], ["barn", "촛불 들고 헛간 앞에 선 주연"]];
 export const BACK_LAYOUTS = [["", "영화사 기본"], ["stills4", "스틸컷 4장"], ["stills3", "스틸컷 3장"], ["stills2", "스틸컷 2장"], ["still1", "스틸컷 1장 크게"], ["strip3", "가로 띠 3장"],
     ["filmstrip", "필름 스트립"], ["polaroid", "폴라로이드"], ["text", "글 위주 (스틸컷 없음)"]];
 export const STILL_N = { stills4: 4, stills3: 3, stills2: 2, still1: 1, strip3: 3, filmstrip: 3, polaroid: 2, text: 0 };
@@ -431,6 +432,259 @@ const helloBaby = () => {
         ]
     };
 };
+// ---------------------------------------------------------------- ⭐ built-in movie: 앙클베리 (Hurry Kid Me · the admin's own idea)
+//   everyone plays themselves (Herself / Himself) → each cast member's `short` is their own name, and the script uses that
+//   scene extras: crowd (> 7 on screen → two rows) · call (someone on the phone, in a bubble) · sfx · flash
+const hurryKidMe = () => {
+    const P = n => findPid(n);
+    const me = (ko, part, she) => ({ ko, pid: P(ko), role: she ? "Herself" : "Himself", short: ko, part });
+    const LEADS = ["하댕이", "파댕이", "꽃찌", "짱구", "스마일", "다람쥐토끼", "남자토끼", "방울토끼", "보라곰돌이", "호빵맨", "돌고래"];
+    const SUPS = ["덩이", "가리", "거북이", "롱토끼", "빠찌", "뽀야", "공자"];
+    const SHE = new Set(["하댕이", "꽃찌", "다람쥐토끼", "방울토끼", "롱토끼", "빠찌", "뽀야"]);
+    const MC = "Show MC", A1 = "짱구이모", A2 = "1909이모부", A3 = "레인보우곰돌이";
+    // on stage: the back row (supporting cast + 호빵맨 · 돌고래), the front row with 하댕이 in the middle
+    const CHOIR = ["덩이", "가리", "거북이", "롱토끼", "호빵맨", "돌고래", "빠찌", "뽀야", "공자", "다람쥐토끼", "남자토끼", "짱구", "파댕이", "하댕이", "꽃찌", "방울토끼", "스마일", "보라곰돌이"];
+    const TEAM = ["다람쥐토끼", "남자토끼", "방울토끼", "보라곰돌이", "호빵맨", "돌고래", "짱구", "파댕이", "하댕이", "꽃찌", "스마일"];
+    const all = (list, o) => Object.fromEntries(list.map(r => [r, typeof o === "function" ? o(r) : o]));
+    const sing = all(CHOIR, r => ({ expr: r === "꽃찌" ? "happy" : "excited", pose: r === "하댕이" ? "wave" : "both", act: "hop" }));
+    const SONG = "hurrykid";
+    return {
+        id: "m_hurry_kid_me", builtin: true,
+        en: "Hurry Kid Me", ko: "앙클베리",
+        brand: "hyhg", nation: "Emo World", date: "0-10-13",
+        genres: ["뮤지컬", "드라마"], rating: "white", stars: 1, quality: 7, lgbtq: false,
+        cast: [
+            ...LEADS.map(n => me(n, "lead", SHE.has(n))),
+            ...SUPS.map(n => me(n, "support", SHE.has(n))),
+            { ko: "남자이모", pid: P("남자이모"), role: MC, part: "extra" },
+            { ko: A1, pid: P(A1), role: "Audience", short: A1, part: "extra" },
+            { ko: A2, pid: P(A2), role: "Audience", short: A2, part: "extra" },
+            { ko: A3, pid: P(A3), role: "Audience", short: A3, part: "extra" }
+        ],
+        plot: "'앙클베리' 합창단원들의 동고동락하는 이야기.",
+        tagline: "'하댕이파' 인원들 전격 출연!!",
+        music: "hurrykid",
+        cover: {
+            // 중간표지: logo · big Korean title (plain black) · the English title small and sideways beside it
+            spine: { font: "plain", sub: "side", still: false },
+            // 앞표지: the concert hall, the 11 leads gathered on the stage
+            front: { layout: "concert", bg: "#1e1b4b",
+                main: ["다람쥐토끼", "보라곰돌이", "짱구", "스마일", "남자토끼", "돌고래", "방울토끼", "파댕이", "하댕이", "꽃찌", "호빵맨"]
+                    .map((r, i) => ({ r, expr: r === "방울토끼" ? "smug" : "excited", pose: i % 3 ? "both" : "wave" })) },
+            // 뒷표지: plot + 2 stills + cast / date / logo
+            back: { layout: "stills2", short: true, stills: [
+                { bg: "practice", props: ["🎼"], cap: "너 때문에 연습이 안 되잖아!", who: [{ r: "하댕이", expr: "shock", pose: "both" }, { r: "꽃찌", expr: "cry" }, { r: "방울토끼", expr: "angry", pose: "point" }] },
+                { bg: "stage", props: ["🎵"], cap: "♪ Hurry, Kid, Me~ ♪", who: [{ r: "파댕이", expr: "excited", pose: "both" }, { r: "하댕이", expr: "excited", pose: "wave" }, { r: "꽃찌", expr: "excited", pose: "both" }, { r: "방울토끼", expr: "happy", pose: "both" }] }
+            ] }
+        },
+        script: [
+            { k: "brand", sec: 3 },
+            // 신나는 음악 · 영어 원제가 밝아졌다가 흐려지고 → 그 밑에 한글 제목 (출연 배우는 보여주지 않음)
+            { k: "title", sec: 7, style: "fade", font: "comic", koAt: 3400, music: SONG },
+            // Scene 1 · 연습실 — 하댕이가 이끄는 'Hurry Kid Me' 합창 (주연 + 조연 전원)
+            { k: "scene", n: 1, place: "연습실", sec: 11, bg: "practice", fx: "music", props: ["🎼", "🎹", "🎼"], who: CHOIR, cast: sing,
+                lines: [
+                    ["하댕이", "자~ 앙클베리! 하나, 둘, 셋, 넷!", { expr: "excited", pose: "both", act: "jump" }],
+                    ["", "♪ Hurry, Kid, Me~ 서둘러 달려가~ ♪"],
+                    ["", "♪ Hurry, Kid, Me~ 손에 손을 잡고~ ♪"],
+                    ["", "♪ 랄랄라 앙클베리~ 우리 노래 들어봐~! ♪"]] },
+            // 꽃찌의 목이 쉬어 연습 중단 · 방울토끼의 화
+            { k: "scene", n: 1, place: "연습실", sec: 9, bg: "practice", music: "stop", props: ["🎼"], who: ["짱구", "꽃찌", "하댕이", "방울토끼", "파댕이"],
+                cast: { 꽃찌: { expr: "happy", pose: "both" }, 하댕이: { pose: "wave" } },
+                lines: [
+                    ["꽃찌", "♪ Hurry, Kid… 콜록! 켁켁…", { expr: "sweat", act: "shake", sfx: "cough" }],
+                    ["하댕이", "잠깐! 연습 멈춰요~ 꽃찌야, 괜찮아?", { expr: "shock", pose: "both", to: "꽃찌", set: { 짱구: { expr: "shock" }, 파댕이: { expr: "shock" }, 꽃찌: { expr: "sad", pose: "down" } } }],
+                    ["꽃찌", "목이… 쉬었나 봐… 미안해…", { expr: "sad" }],
+                    ["방울토끼", "또야?! 너 때문에 연습이 제대로 안 되잖아!!", { expr: "angry", pose: "point", act: "stomp", to: "꽃찌", music: "bitchy", set: { 꽃찌: { expr: "cry", act: "shake" } } }]] },
+            // Scene 2 · 연습실 밖 — 꽃찌의 걱정 · 짱구와 스마일의 뒷담 · 파댕이의 위로
+            { k: "scene", n: 2, place: "연습실 밖", music: "sad", sec: 11, bg: "hallway", who: ["짱구", "스마일", "꽃찌", "하댕이", "파댕이"],
+                cast: { 꽃찌: { expr: "sad" }, 하댕이: { expr: "sad" }, 파댕이: { expr: "sad" } },
+                lines: [
+                    ["꽃찌", "목소리가 제대로 안 나와… 이러다 공연에 못 서면 어떡하지…", { expr: "cry", to: "하댕이" }],
+                    ["짱구", "방울토끼는 이런 사정도 모르면서 왜 그렇게 화를 내?", { expr: "annoyed", pose: "hips" }],
+                    ["스마일", "맞아 맞아! 진짜 너무했어!", { expr: "annoyed", pose: "point", act: "stomp" }],
+                    ["파댕이", "걱정 마, 꽃찌야~ 모두 다 잘 될 거야!", { expr: "happy", pose: "wave", to: "꽃찌", music: "happy", set: { 꽃찌: { expr: "shy" }, 하댕이: { expr: "happy" } } }]] },
+            // Scene 3 · 공연 전날밤 — 네 명의 걱정
+            { k: "scene", n: 3, place: "공연 전날밤", music: "lullaby", sec: 13, bg: "night", props: ["🌙"], who: ["다람쥐토끼", "남자토끼", "하댕이", "파댕이", "보라곰돌이", "돌고래"],
+                cast: { 다람쥐토끼: { expr: "scared" }, 남자토끼: { expr: "sweat" }, 보라곰돌이: { expr: "dizzy" }, 돌고래: { expr: "sad" } },
+                lines: [
+                    ["다람쥐토끼", "하댕아… 내일 공연 생각하니까 너무 불안해…", { expr: "scared", act: "shake", to: "하댕이" }],
+                    ["남자토끼", "나는 가사가 자꾸 까먹어져…", { expr: "sweat", pose: "shrug" }],
+                    ["보라곰돌이", "나도! 2절이 하나도 기억 안 나…", { expr: "dizzy", pose: "shrug" }],
+                    ["돌고래", "난… 자신감이 없어…", { expr: "sad" }],
+                    ["하댕이", "걱정하지 마~ 우리 그동안 정말 열심히 연습했잖아!", { expr: "happy", pose: "both", music: "happy", set: { 다람쥐토끼: { expr: "shy" }, 남자토끼: { expr: "happy" }, 보라곰돌이: { expr: "happy" }, 돌고래: { expr: "shy" } } }],
+                    ["파댕이", "모두 잘될 거야! 마침 다 같이 불러서 화이팅 한번 외쳐보자!", { expr: "excited", pose: "point", act: "hop" }]] },
+            // 하댕이의 전화 — 호빵맨: 조연들은 못 온대
+            { k: "scene", n: 3, place: "공연 전날밤", sec: 8, bg: "night", props: ["🌙"], who: ["파댕이", "하댕이"], call: "호빵맨",
+                cast: { 하댕이: { hold: "phone", pose: "wave" } },
+                lines: [
+                    ["", "따르릉~ 따르릉~", { sfx: "ring" }],
+                    ["하댕이", "여보세요, 호빵맨? 다들 지금 올 수 있어?", { hold: "phone", pose: "wave" }],
+                    ["호빵맨", "거북이, 롱토끼, 빠찌, 뽀야, 공자는 일이 있어서 지금 못 온대~", { hold: "phone", expr: "sweat" }],
+                    ["하댕이", "그렇구나~ 그럼 올 수 있는 사람들끼리 모이자!", { hold: "phone", pose: "wave", expr: "happy" }]] },
+            // 주연 전원 화이팅!
+            { k: "scene", n: 3, place: "공연 전날밤", music: "victory", sec: 6, bg: "night", fx: "sparkle", who: TEAM, cast: all(TEAM, { expr: "excited", pose: "both" }),
+                lines: [
+                    ["하댕이", "앙클베리~ 하나, 둘, 셋!", { expr: "excited", pose: "both", act: "hop" }],
+                    ["", "모두: 화이팅~!!!", { set: all(TEAM, { expr: "excited", pose: "both", act: "jump" }) }]] },
+            // Scene 4 · 공연 당일 — Show MC의 소개 · 반신반의하는 관중
+            { k: "scene", n: 4, place: "공연 당일 · 무대", music: "march", sec: 8, bg: "stage", who: [A1, MC, A2, A3],
+                cast: { [MC]: { hold: "mic", pose: "wave", expr: "excited" }, [A1]: { expr: "roll" }, [A2]: { expr: "blank" }, [A3]: { expr: "annoyed" } },
+                lines: [
+                    [MC, "자~ 다음 무대는! 합창단 '앙클베리'의 'Hurry Kid Me'입니다~!", { hold: "mic", pose: "wave", expr: "excited", act: "hop" }],
+                    [A1, "합창단? 흠… 재미있으려나…", { expr: "roll", pose: "hips" }],
+                    [A2, "(하품) 글쎄~", { expr: "sleepy" }]] },
+            // 앙클베리 전원 무대 · 'Hurry Kid Me'
+            { k: "scene", n: 4, place: "공연 당일 · 무대", sec: 11, bg: "stage", fx: "spot", music: SONG, who: CHOIR, cast: sing,
+                lines: [
+                    ["", "♪ Hurry, Kid, Me~ 서둘러 달려가~ ♪"],
+                    ["", "♪ Hurry, Kid, Me~ 손에 손을 잡고~ ♪"],
+                    ["꽃찌", "♪ 랄랄라 앙클베리~!! ♪", { expr: "excited", pose: "both", act: "jump" }],
+                    ["", "♪ 우리 노래 들어봐~! ♪", { set: all(CHOIR, { expr: "excited", pose: "both", act: "dance" }) }]] },
+            // 관중의 환호 · 박수갈채
+            { k: "scene", n: 4, place: "공연 당일 · 객석", music: "victory", sec: 7, bg: "seats", fx: "clap", who: [A1, A2, A3],
+                cast: { [A1]: { expr: "blank" }, [A2]: { expr: "blank" }, [A3]: { expr: "blank" } },
+                lines: [
+                    ["", "관중들이 하나둘 리듬을 타기 시작한다~", { set: { [A1]: { expr: "happy", act: "dance" }, [A2]: { expr: "excited", act: "dance" }, [A3]: { expr: "happy", act: "dance" } } }],
+                    [A3, "우와~ 최고다!!", { expr: "excited", pose: "both", act: "jump" }],
+                    ["", "짝짝짝짝!! 우레와 같은 박수갈채!", { sfx: "clap", set: { [A1]: { expr: "love", pose: "both", act: "hop" }, [A2]: { expr: "excited", pose: "both", act: "hop" }, [A3]: { expr: "excited", pose: "both", act: "jump" } } }]] },
+            // 꽃찌의 기쁨 · 방울토끼의 사과
+            { k: "scene", n: 4, place: "공연 당일 · 무대 뒤", music: "happy", sec: 10, bg: "stage", fx: "hearts", who: ["방울토끼", "꽃찌", "하댕이", "파댕이"],
+                cast: { 방울토끼: { expr: "sad" }, 하댕이: { expr: "excited" }, 파댕이: { expr: "excited" } },
+                lines: [
+                    ["꽃찌", "하댕아, 파댕아! 나 너무 기뻐~ 목소리가 끝까지 나왔어!!", { expr: "excited", pose: "both", act: "jump", to: "하댕이" }],
+                    ["하댕이", "거봐~ 우리 해냈잖아!", { expr: "excited", pose: "both", act: "hop" }],
+                    ["방울토끼", "꽃찌야… 그때 무례하게 굴어서 정말 미안해.", { expr: "sad", to: "꽃찌", set: { 꽃찌: { expr: "shock" } } }],
+                    ["꽃찌", "괜찮아~ 우린 앙클베리잖아!", { expr: "happy", pose: "wave", act: "hop", to: "방울토끼", set: { 방울토끼: { expr: "shy" } } }]] },
+            { k: "end", sec: 6, text: "The End", credits: true, music: SONG }
+        ]
+    };
+};
+
+// ---------------------------------------------------------------- ⭐ built-in movie: 헛간 (Empty Den · the admin's own idea · Black & White → a black-and-white film)
+//   scene extras: photo (a framed picture on the table) · held (a role holds another's head) · hid (not seen yet) · act ghost / ghostblink / dead
+//   · light "black" (blackout) · fx candle (only a candle's light)
+const emptyDen = () => {
+    const P = n => findPid(n);
+    const EMILY = "Emily", BILLY = "Billy", OLD = "Old Woman", JOHN = "John, the Police Officer", MOM = "Emily & Billy's Mom", COP1 = "Cop #1", COP2 = "Cop #2";
+    return {
+        id: "m_empty_den", builtin: true, bw: true,
+        en: "Empty Den", ko: "헛간",
+        brand: "bw", nation: "Dung Town", date: "0-08-11",
+        genres: ["공포"], rating: "red", stars: 1, quality: 7, lgbtq: false,
+        cast: [
+            { ko: "친공미", pid: P("친공미"), role: EMILY, part: "lead" },
+            { ko: "힘쎈이", pid: P("힘쎈이"), role: BILLY, part: "lead" },
+            { ko: "김벳데이", pid: P("김벳데이"), role: OLD, part: "support" },
+            { ko: "죠클라크", pid: P("죠클라크"), role: JOHN, short: "John", part: "support" },
+            { ko: "김현옥", pid: P("김현옥"), role: MOM, short: "Mom", part: "support" },
+            { ko: "나병신", pid: P("나병신"), role: COP1, part: "extra" },
+            { ko: "천사파3호", pid: P("천사파3호"), role: COP2, part: "extra" }
+        ],
+        plot: "절대 경고!! 절대 그 헛간에 들어가지 마라!!",
+        tagline: "",
+        music: "horror",
+        cover: {
+            // 중간표지: logo · big Korean title (plain black, on a white label) · the English title small under it · a small still
+            spine: { font: "plain", still: { bg: "barnout", who: [{ r: EMILY, expr: "scared", hold: "candle" }, { r: BILLY, expr: "scared", hold: "candle" }] } },
+            // 앞표지: Emily and Billy, candles lit, trembling at the barn door
+            front: { layout: "barn", bg: "#0a0a0a",
+                main: [{ r: BILLY, expr: "scared", pose: "point", hold: "candle" }, { r: EMILY, expr: "scared", pose: "shrug", hold: "candle" }] },
+            // 뒷표지: plot + 1 still + cast / date / logo
+            back: { layout: "still1", stills: [
+                { bg: "darkroad", cap: "절대 그 헛간에 들어가지 마라!!", who: [{ r: OLD, expr: "evil", pose: "point" }, { r: EMILY, expr: "scared", pose: "shrug" }] }
+            ] }
+        },
+        script: [
+            { k: "brand", sec: 3 },
+            // 어두운 화면에 불빛이 비치며 영어 원제 · 한글 제목 — 해골 더미가 희미하게 잠깐
+            { k: "title", sec: 8, style: "fire", koAt: 2600, music: "horror" },
+            { k: "cast", sec: 6, parts: ["lead", "support"] },
+            // Scene 1 · 시골길
+            { k: "scene", n: 1, place: "시골길", music: "road", sec: 10, bg: "country", who: [EMILY, BILLY],
+                lines: [
+                    [EMILY, "오빠! 저기 길 너머 구석에 있는 헛간 보여? 나 예전부터 꼭 가보고 싶었어!", { expr: "excited", pose: "point", act: "hop" }],
+                    [BILLY, "헛간? 거기 안 좋은 소문이 있다던데…", { expr: "sweat", pose: "shrug" }],
+                    [BILLY, "별로 좋은 생각이 아닌 것 같아, Emily.", { expr: "annoyed", pose: "hips", to: EMILY }],
+                    [EMILY, "치… 오빠는 겁쟁이야~", { expr: "tongue" }]] },
+            // Scene 2 · 집 — 한밤중, 엄마 사진, 잠꼬대
+            { k: "scene", n: 2, place: "집", music: "musicbox", sec: 12, bg: "home", dark: true, who: [BILLY, EMILY], photo: { r: MOM, expr: "happy" },
+                cast: { [BILLY]: { expr: "sleepy", act: "sleep" }, [EMILY]: { expr: "sleepy", act: "sleep" } },
+                lines: [
+                    ["", "한밤중… Emily가 갑자기 잠에서 깬다.", { set: { [EMILY]: { expr: "shock", act: "" } } }],
+                    [EMILY, "(탁자 위 엄마 사진을 보며) 엄마… 보고 싶어요…", { expr: "sad" }],
+                    [EMILY, "(소곤) 오빠 자지…? 헛간 주변만 살짝 보고 올게…", { expr: "evil", act: "sneak", to: BILLY }],
+                    [BILLY, "으음… 헛간… 가면… 안 돼…", { expr: "sleepy", act: "sleep", set: { [EMILY]: { expr: "shock", act: "shake" } } }],
+                    [EMILY, "헉…! …휴, 잠꼬대였구나.", { expr: "sweat", act: "sneak" }]] },
+            // Scene 3 · 어두운 시골길 — Old Woman의 경고
+            { k: "scene", n: 3, place: "어두운 시골길", music: "horror", sec: 11, bg: "darkroad", fx: "mist", who: [EMILY, OLD],
+                cast: { [EMILY]: { expr: "blank", act: "sneak" }, [OLD]: { hid: true } },
+                lines: [
+                    ["", "으스스한 시골길… 바람 소리만 들려온다…"],
+                    [OLD, "거기 서라, 꼬마야!!", { expr: "angry", pose: "point", act: "stomp", sfx: "sting", flash: true, set: { [OLD]: { hid: false }, [EMILY]: { expr: "scared", act: "shake" } } }],
+                    [OLD, "밑으로 더 내려가면 헛간이 나온다… 절대, 절대 들어가지 마라!", { expr: "evil", pose: "point", to: EMILY }],
+                    [EMILY, "…쳇, 기분 나빠.", { expr: "annoyed", act: "run", set: { [OLD]: { expr: "evil" } } }]] },
+            // Scene 4 · 헛간 주변 — 엄마의 목소리 · 문가에 보였다 말았다 하는 엄마
+            { k: "scene", n: 4, place: "헛간 주변", music: "heartbeat", sec: 12, bg: "barnout", fx: "mist", who: [EMILY, MOM],
+                cast: { [EMILY]: { expr: "scared", act: "sneak" }, [MOM]: { expr: "sad", act: "ghostblink" } },
+                lines: [
+                    ["", "헛간에 가까워질수록… 어디선가 목소리가 들려온다."],
+                    [MOM, "Emily… Emily…", { expr: "sad", act: "ghostblink" }],
+                    [EMILY, "엄마…? 엄마 목소리야…!", { expr: "shock", act: "shake" }],
+                    [MOM, "억울하다… 억울하다…", { expr: "cry", act: "ghostblink" }],
+                    [EMILY, "엄마! 기다려요!!", { expr: "cry", pose: "point", act: "run" }]] },
+            // 헛간 안 — 칠흑같이 어둡다 · 비명
+            { k: "scene", n: 4, place: "헛간 안", music: "tense", sec: 6, bg: "barn", dark: true, who: [EMILY],
+                cast: { [EMILY]: { expr: "scared", act: "sneak" } },
+                lines: [
+                    [EMILY, "너무 어두워… 엄마, 어디 있어요…?", { expr: "scared", act: "shake" }],
+                    [EMILY, "꺄아아아악!!!", { expr: "scared", pose: "both", act: "shake", sfx: "scream", flash: true, music: "stop", light: "black" }]] },
+            // Scene 5 · 집 — Billy의 신고
+            { k: "scene", n: 5, place: "집", music: "tense", sec: 12, bg: "home", dark: true, who: [BILLY], call: JOHN, photo: { r: MOM, expr: "happy" },
+                cast: { [BILLY]: { expr: "sleepy", act: "sleep" } },
+                lines: [
+                    [BILLY, "(벌떡) …Emily? Emily가 없어!!", { expr: "shock", pose: "both", act: "shake", light: "on" }],
+                    [BILLY, "여보세요, 경찰이죠? 동생이 사라졌어요!", { expr: "scared", hold: "phone" }],
+                    ["John", "진정하세요. John 경관입니다. 무슨 일이죠?", { hold: "phone", expr: "blank" }],
+                    [BILLY, "동생이 길 건너 헛간에 간 것 같아요… 낮에 거기 가고 싶다고 했거든요!", { expr: "sweat", hold: "phone" }],
+                    ["John", "알겠습니다. 경찰들과 곧 그쪽으로 보내겠습니다.", { hold: "phone", expr: "cool" }],
+                    [BILLY, "…기다릴 수 없어. 내가 가야겠어!", { expr: "angry", pose: "point", hold: "candle", act: "run" }]] },
+            // Scene 6 · 헛간 — 촛불, 울음소리, 시체
+            { k: "scene", n: 6, place: "헛간", music: "heartbeat", sec: 13, bg: "barn", dark: true, fx: "candle", who: [OLD, EMILY, BILLY],
+                cast: { [BILLY]: { expr: "scared", hold: "candle", act: "sneak" }, [EMILY]: { expr: "cry", act: "shake", hid: true }, [OLD]: { hid: true, act: "dead", expr: "dizzy" } },
+                lines: [
+                    ["", "흑… 흐흑… (어디선가 울음소리가 들린다)", { sfx: "sob" }],
+                    [BILLY, "Emily! 여기 있었구나… 괜찮아, 오빠 왔어. 근데 여긴 왜 왔어?", { expr: "sad", hold: "candle", to: EMILY, set: { [EMILY]: { hid: false } } }],
+                    [EMILY, "오, 오빠… 저, 저기…", { expr: "scared", pose: "point", act: "shake", to: OLD }],
+                    [BILLY, "…!!!", { expr: "shock", hold: "candle", act: "shake", sfx: "sting", flash: true, set: { [OLD]: { hid: false }, [EMILY]: { expr: "scared", act: "shake" } } }],
+                    [BILLY, "튀어!!", { expr: "scared", hold: "candle", act: "run", set: { [EMILY]: { expr: "scared", act: "run" } } }]] },
+            // 경찰 도착
+            { k: "scene", n: 6, place: "헛간 앞", music: "noir", sec: 9, bg: "barnout", props: ["🚨"], who: [COP1, BILLY, EMILY, COP2],
+                cast: { [BILLY]: { expr: "scared", hold: "candle" }, [EMILY]: { expr: "cry", act: "shake" }, [COP1]: { pose: "point", expr: "cool" }, [COP2]: { expr: "blank" } },
+                lines: [
+                    [COP1, "경찰이다! 무슨 일이야?!", { expr: "angry", pose: "point" }],
+                    [COP2, "…헛간 안에 시체가 있다! 노인이야.", { expr: "shock", pose: "shrug" }],
+                    [COP1, "얘들아, 이제 괜찮다. 진정하고… 같이 경찰서로 가자.", { expr: "sad", pose: "wave", to: BILLY, set: { [BILLY]: { expr: "sad" }, [EMILY]: { expr: "sad", act: "" } } }]] },
+            // Scene 7 · 경찰조사실 — 충격적인 진실
+            { k: "scene", n: 7, place: "경찰조사실", music: "mystery", sec: 15, bg: "police", who: [EMILY, JOHN, BILLY],
+                cast: { [EMILY]: { expr: "sad" }, [BILLY]: { expr: "sad" }, [JOHN]: { expr: "blank" } },
+                lines: [
+                    ["John", "놀랐을 텐데… 너희에게 충격적인 이야기를 해야겠구나.", { expr: "blank", pose: "hips" }],
+                    ["John", "너희가 어렸을 때, 너희 엄마는 계모의 미움을 받다가 그 헛간에서 스스로 생을 마감했단다.", { expr: "sad" }],
+                    [BILLY, "엄마가… 그 헛간에서…?", { expr: "shock", act: "shake" }],
+                    ["John", "오늘 발견된 노인… 아무래도 그 계모 같다. 사건 뒤로 정체를 숨기고, 지나가는 사람들에게 헛간에 가지 말라고 틈틈이 경고했다더군.", { expr: "cool", pose: "point" }],
+                    [EMILY, "그 할머니가…!", { expr: "scared", act: "shake" }],
+                    ["John", "그리고 오늘 밤, 다 늙은 계모가 그 헛간에서 죽은 채로 발견됐다. 원인은… 자살로 추정된다.", { expr: "blank" }]] },
+            // 헛간 — 죽은 엄마가 Old Woman의 목을 들고 웃는다
+            { k: "scene", n: 7, place: "헛간", music: "stop", sec: 7, bg: "barn", dark: true, fx: "mist", who: [MOM], held: { [MOM]: { r: OLD, expr: "dizzy" } },
+                cast: { [MOM]: { expr: "evil", act: "ghost", pose: "wave" } },
+                lines: [
+                    ["", "그 시각… 아무도 없는 헛간…"],
+                    ["Mom", "히히히… 히히히히히…", { expr: "evil", act: "ghost", pose: "wave", sfx: "laugh" }]] },
+            { k: "end", sec: 5, text: "The End", credits: true, music: "horror" }
+        ]
+    };
+};
 export const scriptSeconds = m => (m.script || []).reduce((a, p) => a + (p.sec || 0), 0);
 
 // ---------------------------------------------------------------- the catalog: only movies the admin ordered (built-in + made in the admin generator)
@@ -439,11 +693,11 @@ export function allMovies() {
     const key = `${(Store.allPlayers || []).length}|${(Store.vhs?.movies || []).map(m => m.updated || m.id).join(",")}`;
     if (cache && key === cacheKey) return cache;
     const admin = (Store.vhs?.movies || []).filter(m => m && m.id && !m.off);
-    cache = [fortuneSwindlers(), helloBaby(), ...admin]; cacheKey = key;
+    cache = [...builtinMovies(), ...admin]; cacheKey = key;
     return cache;
 }
 export const movieById = id => allMovies().find(m => m.id === id) || null;
-export const builtinMovies = () => [fortuneSwindlers(), helloBaby()];
+export const builtinMovies = () => [fortuneSwindlers(), helloBaby(), hurryKidMe(), emptyDen()];
 export const castOf = (m, role) => m.cast.find(c => c.role === role || c.short === role) || null;
 export const titleText = m => `${m.ko}${m.en ? ` (${m.en})` : ""}`;
 // does a movie fit a shop kind?
