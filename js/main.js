@@ -75,5 +75,10 @@ function route() {
         if (authWait) return;
         authWait = setInterval(() => { if (!document.querySelector(".game-layer")) { clearInterval(authWait); authWait = null; route(); } }, 1000);
     });
+    // 🖼️ pictures changed on the server since the cached copy: redraw — but never mid-game or on an admin page (a form being filled)
+    document.addEventListener("players-updated", () => {
+        if (document.querySelector(".game-layer") || /^#\/?admin/.test(location.hash)) return;
+        route();
+    });
     route();
 })();

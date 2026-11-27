@@ -80,6 +80,32 @@ const LS = "gamblers.v1";
 let sb = null; // supabase client
 
 function load() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch { return {}; } }
+// ⚡ player pictures cache (IndexedDB — the ~6 MB of pictures don't fit in localStorage):
+// the page starts from the cached pictures + a light player query (no pictures), and checks the
+// pictures against the server in the background (only changed ones are redrawn).
+const PLAYER_COLS_LIGHT = "id,login_id,name_ko,player_name,country,school,job,ethnicity,age_group,gender,preference,handler,frame,profile_effect,owned_frames,owned_effects,is_active,created_at";
+const IMG_KEY = "player-images";
+function idb() {
+    return new Promise((res, rej) => {
+        const r = indexedDB.open("gamblers-cache", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("kv");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+    });
+}
+async function idbGet(key) {
+    try {
+        const db = await idb();
+        return await new Promise((res) => { const t = db.transaction("kv").objectStore("kv").get(key); t.onsuccess = () => res(t.result ?? null); t.onerror = () => res(null); });
+    } catch { return null; }
+}
+async function idbSet(key, val) {
+    try {
+        const db = await idb();
+        await new Promise((res) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(val, key); tx.oncomplete = res; tx.onerror = res; tx.onabort = res; });
+    } catch { }
+}
+const imgMap = rows => Object.fromEntries((rows || []).map(r => [r.id, r.profile_image ?? null]));
 
 export const Store = {
     mode: "local",
@@ -174,8 +200,24 @@ export const Store = {
 
     async pull() {
         const q = async (t, sel = "*") => { const { data, error } = await sb.from(t).select(sel); if (error) throw error; return data; };
+        // ⚡ players: with cached pictures, only the light columns (+ the pictures of players new to this browser);
+        // without a cache (first visit), the whole table — and the pictures are cached for next time
+        let usedCache = false;
+        const playersQ = idbGet(IMG_KEY).then(async cache => {
+            if (!cache || !Object.keys(cache).length) { const rows = await q("players"); idbSet(IMG_KEY, imgMap(rows)); return rows; }
+            const rows = await q("players", PLAYER_COLS_LIGHT);
+            const miss = rows.filter(p => !(p.id in cache)).map(p => p.id);
+            if (miss.length) {
+                const { data, error } = await sb.from("players").select("id,profile_image").in("id", miss);
+                if (error) throw error;
+                Object.assign(cache, imgMap(data));
+                idbSet(IMG_KEY, cache);
+            }
+            usedCache = true;
+            return rows.map(p => ({ ...p, profile_image: cache[p.id] ?? null }));
+        });
         const [players, hall, results, jps, machines, seasons, hits, settings] = await Promise.all([
-            q("players"), q("hall_of_fame"), q("season_results"), q("slot_jackpots"), q("slot_machine_state"),
+            playersQ, q("hall_of_fame"), q("season_results"), q("slot_jackpots"), q("slot_machine_state"),
             sb.from("seasons").select("*").order("number", { ascending: false }).limit(1).then(r => { if (r.error) throw r.error; return r.data; }),
             q("jackpot_hits"), sb.from("settings").select("*").neq("key", "emomon").then(r => { if (r.error) throw r.error; return r.data; })
         ]);
@@ -185,6 +227,7 @@ export const Store = {
             // 🧑‍💼 old stored handlers are cleared once (전담자 now only exists inside a running season)
             if (stale.length && this.user) this.write(sb => sb.from("players").update({ handler: null }).in("id", stale.map(p => p.id)));
             for (const p of players) this.decor[p.id] = { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] };
+            if (usedCache) setTimeout(() => this.checkPlayerImages(players), 1500); // after the first screen is up
         }
         this.hall = hall.map(r => ({ season: r.season_number, playerId: r.player_id, snapshot: r.snapshot, at: r.crowned_at })).sort((a, b) => b.season - a.season);
         this.results = results.map(r => ({ season: r.season_number, playerId: r.player_id, rank: r.rank }));
@@ -455,6 +498,24 @@ export const Store = {
     // 🔄 reload the player list from the server (players added / edited by another admin show up)
     //   newOnly: only players this browser doesn't have yet (ids + names first, then the full rows of the new ones) —
     //   the whole table is ~6 MB of pictures, so adding a player no longer downloads everything (twice)
+    // 🖼️ background check of the cached pictures (another admin may have changed some): changed ones are
+    // swapped in and the page is redrawn (main.js skips the redraw while a game or an admin page is open)
+    async checkPlayerImages(rows) {
+        if (!sb) return;
+        const list = this.allPlayers;
+        try {
+            const { data, error } = await sb.from("players").select("id,profile_image");
+            if (error) throw error;
+            const fresh = imgMap(data);
+            idbSet(IMG_KEY, fresh);
+            const changed = rows.filter(p => p.id in fresh && fresh[p.id] !== p.profile_image);
+            if (!changed.length || this.allPlayers !== list) return; // nothing new · or the list was already reloaded / edited
+            const byId = new Map(this.allPlayers.map(p => [p.id, p]));
+            for (const p of changed) { const cur = byId.get(p.id); if (cur) byId.set(p.id, { ...cur, profile_image: fresh[p.id] }); }
+            this.setPlayers([...byId.values()]);
+            document.dispatchEvent(new Event("players-updated"));
+        } catch (e) { console.warn(e); }
+    },
     async refreshPlayers({ newOnly = false } = {}) {
         if (!this.cloud || !sb) return false;
         if (newOnly && this.allPlayers?.length) try {
@@ -472,6 +533,7 @@ export const Store = {
         try {
             const { data, error } = await sb.from("players").select("*");
             if (error) throw error;
+            if (data?.length) idbSet(IMG_KEY, imgMap(data));
             if (data?.length) { this.setPlayers(data); for (const p of data) this.decor[p.id] ||= { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] }; }
             return true;
         } catch (e) { console.warn(e); return false; }
