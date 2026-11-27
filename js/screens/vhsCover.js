@@ -74,12 +74,13 @@ export function spine(m, { onclick = null, small = false } = {}) {
     if ((SP.main || S.main) === "en") {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
         title = h("div.vs-title.t-en", vEn(m.en, enFs), subMode === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
-    } else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
+    } else if (SP.img) title = h("div.vs-title.t-img", h("img", { src: SP.img, alt: m.ko, draggable: "false", style: { maxHeight: room + "px" } }));   // the movie's own title art
+    else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
     const sub = subMode === "en" ? h("div.vs-sub.vs-en", m.en)
         : subMode === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
     const stillSpec = m.cover?.spine?.still || coverStills(m, 1)[0] || (leads(m)[0] ? { bg: "street", who: [spec(leads(m)[0])] } : null);
     return h("button.vhs-spine.vt-" + b.id + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold") + ".st-" + S.still,
-        { style: { "--sc": b.color, "--si": b.ink }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
+        { style: { "--sc": b.color, "--si": b.ink, ...(SP.bg ? { background: SP.bg, color: "#f5f5f4" } : {}) }, title: D.titleText(m), ...(onclick ? { onclick } : {}) },
         h("div.vs-top", brandLogo(b, small ? 22 : 30), small ? null : h("small", b.name)),
         showBand ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
         // font "plain": the titles sit on a plain label (black, ordinary letters)
@@ -129,6 +130,8 @@ const FRONT = {
     },
     // 늑대인간의 밤: a dark night, a huge full moon — a red eye glares through it · a wolf's silhouette below
     moon: () => { const a = h("i.va-moonart"); a.innerHTML = MOON_EYE; return h("div.vf-art.va-moon", a); },
+    // 문차일드2: a forest under the full moon — a huge wolf's hand with long claws bursts out through the middle of the cover
+    clawmoon: () => { const a = h("i.va-moonart"); a.innerHTML = CLAW_MOON; return h("div.vf-art.va-moon.va-clawmoon", a); },
     // 헛간: night, the barn's doors ajar on the dark · the leads in front, candles lit, trembling
     barn: (m, FR) => {
         const barn = h("i.va-barnhouse"); barn.innerHTML = BARN;
@@ -164,6 +167,36 @@ const MOON_EYE = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid slice
     `<path d="M0 190V170Q40 160 70 166Q100 156 130 164Q170 154 230 166V190Z" fill="#000"/>` +
     `<path d="M86 166L92 148Q86 140 90 130L84 124L90 122L98 128Q104 122 110 120L106 104L114 112L118 100L120 114Q130 118 134 130Q150 136 156 150L162 166L150 166L146 156L140 166L128 166L124 156L104 158L100 166Z" fill="#000"/>` +
     `<path d="M106 104L102 92L112 100Z" fill="#000"/></svg>`;
+// the full moon over a dark forest · the cover is torn open in the middle and a furry wolf's hand reaches out, long claws first
+const CLAW_MOON = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">` +
+    `<defs><radialGradient id="cmG" cx="42%" cy="40%" r="60%"><stop offset="0" stop-color="#fffbeb"/><stop offset=".7" stop-color="#fde68a"/><stop offset="1" stop-color="#d97706"/></radialGradient>` +
+    `<radialGradient id="cmH" cx="50%" cy="50%" r="50%"><stop offset=".5" stop-color="#fde68a" stop-opacity=".4"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>` +
+    `<radialGradient id="cmT" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000"/><stop offset=".75" stop-color="#1a0303"/><stop offset="1" stop-color="#450a0a"/></radialGradient>` +
+    `<linearGradient id="cmC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fafaf9"/><stop offset="1" stop-color="#a8a29e"/></linearGradient></defs>` +
+    `<rect width="230" height="190" fill="#04030c"/>` + [[16, 18], [58, 10], [204, 16], [30, 56], [216, 64], [148, 8], [92, 20], [186, 40]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#fff" opacity=".8"/>`).join("") +
+    `<circle cx="115" cy="58" r="66" fill="url(#cmH)"/><circle cx="115" cy="58" r="46" fill="url(#cmG)"/>` +
+    `<g fill="#d9770633"><circle cx="96" cy="44" r="7"/><circle cx="134" cy="72" r="9"/><circle cx="138" cy="38" r="5"/></g>` +
+    // pine trees on both sides
+    `<g fill="#020617">` + [[6, 190, 30, 70], [28, 190, 24, 96], [196, 190, 30, 66], [218, 190, 26, 92], [52, 190, 18, 120], [176, 190, 18, 118]].map(([x, y, w, t]) =>
+        `<path d="M${x} ${t}L${x + w / 2} ${y}H${x - w / 2}Z"/><path d="M${x} ${t + 18}L${x + w * 0.7} ${y - 20}H${x - w * 0.7}Z"/>`).join("") + `</g>` +
+    `<path d="M0 190V168Q60 158 115 164T230 160V190Z" fill="#000"/>` +
+    // the torn hole in the middle of the cover
+    `<path d="M62 118L72 100L66 86L84 82L88 66L104 72L114 58L124 72L140 64L146 80L164 82L160 98L174 110L162 122L170 138L152 140L148 158L132 152L120 166L108 154L92 160L90 144L70 144L76 130Z" fill="url(#cmT)"/>` +
+    // torn paper flaps around the hole
+    `<path d="M62 118L72 100L66 86L84 82L88 66L104 72L114 58L124 72L140 64L146 80L164 82L160 98L174 110L162 122L170 138L152 140L148 158L132 152L120 166L108 154L92 160L90 144L70 144L76 130Z" fill="none" stroke="#e7e5e4" stroke-width="3" stroke-linejoin="round"/>` +
+    `<g fill="#d6d3d1" stroke="#78716c" stroke-width=".8"><path d="M66 86L84 82L76 94Z"/><path d="M140 64L146 80L134 74Z"/><path d="M170 138L152 140L160 130Z"/><path d="M92 160L90 144L100 152Z"/></g>` +
+    // the furry wrist coming out of the hole · the palm open · five thick fingers reaching out
+    `<path d="M96 168L92 150L84 146L94 140L92 128L104 132Q114 124 128 132L140 126L138 140L148 144L138 150L136 168Z" fill="#3b2414" stroke="#0b0603" stroke-width="2.4" stroke-linejoin="round"/>` +
+    `<g fill="none" stroke-linecap="round"><g stroke="#0b0603" stroke-width="16">` +
+    `<path d="M96 112L72 84"/><path d="M106 102L94 62"/><path d="M117 98L118 56"/><path d="M128 102L140 62"/><path d="M140 120L166 104"/></g>` +
+    `<g stroke="#4a2c17" stroke-width="11"><path d="M96 112L72 84"/><path d="M106 102L94 62"/><path d="M117 98L118 56"/><path d="M128 102L140 62"/><path d="M140 120L166 104"/></g>` +
+    `<g stroke="#6b4226" stroke-width="2"><path d="M80 98l6 -3M98 82l6 -1M115 78h6M132 80l6 1M154 116l3 5"/></g></g>` +
+    `<ellipse cx="117" cy="120" rx="27" ry="24" fill="#4a2c17" stroke="#0b0603" stroke-width="2.6"/>` +
+    `<ellipse cx="117" cy="124" rx="14" ry="11" fill="#7c4a2a"/><g fill="#7c4a2a"><circle cx="99" cy="108" r="4"/><circle cx="108" cy="100" r="4"/><circle cx="120" cy="98" r="4"/><circle cx="131" cy="101" r="4"/></g>` +
+    // long claws, blood on the tips
+    `<g fill="url(#cmC)" stroke="#1c0f06" stroke-width="1.4" stroke-linejoin="round">` +
+    `<path d="M75 81L57 62L69 86Z"/><path d="M98 61L88 36L90 63Z"/><path d="M122 56L119 29L114 56Z"/><path d="M144 63L148 36L136 61Z"/><path d="M168 108L190 92L164 100Z"/></g>` +
+    `<g fill="#b91c1c"><path d="M57 62l6 4l-3 3Z"/><path d="M88 36l3 7l-3 1Z"/><path d="M119 29l1.5 8l-3 -.5Z"/><path d="M148 36l-.8 8l-3 -1Z"/><path d="M190 92l-5 6l-2 -3Z"/><circle cx="62" cy="72" r="1.4"/><circle cx="146" cy="50" r="1.4"/></g></svg>`;
 const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><path d="M10 55Q-6 40 6 30L34 44Q20 55 34 66L6 80Q-6 70 10 55Z" fill="#f97316"/><path d="M0 55Q14 46 30 50V60Q14 64 0 55Z" fill="#fde047"/>` +
     `<path d="M30 34H150Q204 34 216 55Q204 76 150 76H30Z" fill="#f8fafc" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
     `<path d="M150 34Q204 34 216 55Q204 76 150 76Q162 55 150 34Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
@@ -172,9 +205,11 @@ const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><p
 export function front(m) {
     const b = brandOf(m), S = D.brandStyle(b.id), FR = m.cover?.front || {}, layout = FRONT[FR.layout] ? FR.layout : S.front;
     return h("div.vhs-front.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": FR.bg || b.color, "--bc": b.color, "--bi": b.ink } },
-        h("div.vf-head", brandLogo(b, 28), h("small", `주연: ${leads(m).length > 4 ? `${castLine(leads(m).slice(0, 3), true)} 외 ${leads(m).length - 3}명` : castLine(leads(m), true) || "-"}`)),
+        // FR.noCast: no actor names on the front (just the logo)
+        h("div.vf-head", brandLogo(b, 28), FR.noCast ? null : h("small", `주연: ${leads(m).length > 4 ? `${castLine(leads(m).slice(0, 3), true)} 외 ${leads(m).length - 3}명` : castLine(leads(m), true) || "-"}`)),
         FRONT[layout](m, FR),
-        h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b", m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
+        // FR.titleImg: the Korean title is the movie's own title art (big), the English title small under it
+        FR.titleImg ? h("div.vf-title.t-img", h("img", { src: FR.titleImg, alt: m.ko, draggable: "false" }), h("small", m.en)) : h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b",m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
         m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
         ratingBand(m));
 }

@@ -10,7 +10,8 @@ const BY_BG = {
     forest: ["birds", "wind"], woods: ["wind", "crickets"], country: ["birds", "wind"], darkroad: ["crickets", "wind"], barnout: ["crickets", "wind"], barn: ["wind", "room"], moonhouse: ["wind", "crickets"],
     beach: ["waves", "birds"], space: ["drone"], castle: ["wind", "room"],
     stage: ["crowd"], seats: ["crowd"], ballroom: ["chatter"], hallway: ["chatter"], campus: ["chatter", "birds"], school: ["chatter"], classroom: ["chatter"],
-    shower: ["water"], church: ["room"], funeral: ["room", "rain"], funeralout: ["rain", "wind"]
+    shower: ["water"], church: ["room"], funeral: ["room", "rain"], funeralout: ["rain", "wind"],
+    agency: ["room", "cars"], bedroom: ["room", "crickets"], camp: ["crickets", "wind"], lake: ["water", "crickets", "wind"], hospital: ["room"]
 };
 export const AMB_KO = { rain: "🌧️ 비", wind: "🌬️ 바람", birds: "🐦 새소리", crickets: "🦗 풀벌레", cars: "🚗 차 소리", engine: "🚕 차 엔진", crowd: "📣 시끄러운 관객", chatter: "🗣️ 웅성웅성", room: "🏠 실내 소음", waves: "🌊 파도", water: "🚿 물소리", drone: "🛸 우주 웅웅", storm: "⛈️ 폭풍우", heartbeat: "💓 심장 소리" };
 export function ambFor(sc) {

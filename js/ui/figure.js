@@ -138,7 +138,7 @@ async function drawnFull(url, o, female) {
         `<path d="M101 184L103 232H123L127 190Z" fill="#374151" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="#374151" ${O}/>` +
         `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>`;
     const skin = /^#[0-9a-f]{3,8}$/i.test(A.H?.skin || "") ? A.H.skin : "#f6d2a8";
-    const wear = o.nude ? "nude" : o.outfit || "";            // nude · bikini · dress
+    const wear = o.nude ? "nude" : o.outfit === "clothes" ? "" : o.outfit || "";            // nude · bikini · dress ("clothes" = as drawn)
     const bare = wear === "nude" || wear === "bikini";
     if (A.shirt && wear) return wardrobe(A, o, female, body, skin, wear, bare, O);
     const arms = A.shirt ? armsSvg(A.shirt, skin, o.pose, o.hold) : "";
@@ -204,11 +204,15 @@ function figSrc(pid, o) {
     const src = imgOf(pid);
     if (!src) return "";
     const g = parseGen(src);
-    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude ? 1 : 0, o.jiggle ? 1 : 0, o.outfit || ""].join(",")}`;
+    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude ? 1 : 0, o.jiggle ? 1 : 0, o.outfit || "", o.swim ?? ""].join(",")}`;
     if (cache.has(key)) return cache.get(key);
     let out;
     if (g) {
-        out = toDataUri(buildAvatar({ ...g, full: true, expr: o.expr in EXPR ? EXPR[o.expr] : g.expr, pose: o.pose || "down", hold: o.hold || "", topless: !!o.nude, jiggle: !!o.jiggle }));
+        // 👙 outfit "bikini" on a generated picture: its own swimwear (o.swim: which one · else the picture's own when it already wears one, else the first)
+        //    outfit "clothes": a picture drawn in swimwear gets dressed (summer clothes) — before the strip show
+        const sw = o.outfit === "bikini" && !o.nude ? { season: "swim", outfit: o.swim ?? (g.season === "swim" ? g.outfit : 0) }
+            : o.outfit === "clothes" && g.season === "swim" ? { season: "summer", outfit: 0 } : {};
+        out = toDataUri(buildAvatar({ ...g, ...sw, full: true, expr: o.expr in EXPR ? EXPR[o.expr] : g.expr, pose: o.pose || "down", hold: o.hold || "", topless: !!o.nude, jiggle: !!o.jiggle }));
     } else if (/\.svg(\?|$)/i.test(src) && !src.startsWith("data:")) {
         const female = String(Store.player(pid)?.gender || "").toLowerCase() === "female";
         out = drawnFull(src, o, female).then(u => { cache.set(key, u); return u; }).catch(e => { console.warn(e); cache.set(key, src); return src; });

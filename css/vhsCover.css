@@ -643,3 +643,86 @@
 .vhs-back.l-side3 .vb-foot { grid-column: 1 / -1; }
 /* 중간표지: the English title big · the Korean title small beside it */
 .vs-title.t-en .vs-ko.sub { align-self: flex-end; margin-bottom: 4px; }
+
+/* ================= 문차일드2 (Moonchild 2: Blood Vengeance): the blood title, the old footage, new sets, the cover ================= */
+/* 🩸 title "blood": a black screen, blood runs down from the top · then a claw tears it and the Korean title art comes in */
+.vp-title.s-blood { background: #000; overflow: hidden; }
+.vp-blood { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.vp-blood i { position: absolute; top: 0; left: var(--x); width: var(--w); height: 0; border-radius: 0 0 50% 50% / 0 0 30px 30px;
+    background: linear-gradient(180deg, #450a0a, #991b1b 60%, #dc2626); box-shadow: inset -2px 0 3px #0008; animation: vpDrip 3.2s cubic-bezier(.5, 0, .7, 1) var(--d) forwards; }
+.vp-blood i::after { content: ""; position: absolute; left: 50%; bottom: -10px; width: 70%; aspect-ratio: .8; translate: -50% 0; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #b91c1c; }
+@keyframes vpDrip { to { height: var(--h); } }
+.vp-title.s-blood .vp-en { position: relative; z-index: 2; color: #fee2e2; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .06em; text-shadow: 0 0 14px #dc2626, 3px 3px 0 #450a0a; animation: vpBurnIn 1.6s ease forwards; transition: opacity .6s, transform .6s; }
+.vp-title.s-blood.ko-in .vp-en { opacity: 0; transform: scale(.8); }
+.vp-title.s-blood .vp-ko { position: absolute; z-index: 3; left: 50%; top: 50%; translate: -50% -50%; transform: scale(1.3); filter: blur(6px); transition: opacity .5s, transform .6s, filter .6s; }
+.vp-title.s-blood .vp-ko.show { opacity: 1; transform: none; filter: none; animation: vpHowlShake .1s linear 6 alternate; }
+.vp-title .vp-claw { z-index: 4; }
+.vp-ko.img img { display: block; width: min(78vw, 560px); aspect-ratio: 3 / 1; object-fit: cover; mix-blend-mode: lighten; }
+
+/* 📼 old footage (a scene from 늑대인간의 밤 in a dream): faded, grainy, flickering */
+.vp-scene.footage { filter: sepia(.75) contrast(1.15) brightness(.85); animation: vpFlicker .18s steps(2) infinite; }
+.vp-scene.footage::after { content: "▶ 늑대인간의 밤"; position: absolute; right: 10px; top: 10px; z-index: 6; font: 700 11px monospace; color: #fef3c7; opacity: .8; }
+.vp-scene.footage .vp-deco::after { content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: .25;
+    background: repeating-linear-gradient(0deg, #0000 0 2px, #0006 2px 3px), radial-gradient(ellipse at center, transparent 50%, #000c); }
+@keyframes vpFlicker { 50% { opacity: .92; } }
+
+/* sets: 탐정사무소 · 침실 · 숲속 파티 · 숲속 호숫가 · 병원 */
+.bg-agency { background:
+    linear-gradient(180deg, #0f172a 0 100%) 70% 14% / 22% 36% no-repeat,
+    linear-gradient(180deg, #e7e5e4 0 100%) 14% 18% / 16% 26% no-repeat,
+    linear-gradient(180deg, #78350f 0 100%) 50% 78% / 46% 10% no-repeat,
+    linear-gradient(180deg, #57534e 0 70%, #3f2a1d 70%); }
+.bg-bedroom { background:
+    linear-gradient(90deg, transparent 0 66%, #1e3a8a 66% 86%, transparent 86%) 0 14% / 100% 32% no-repeat,
+    linear-gradient(180deg, #f8fafc 0 100%) 50% 74% / 64% 12% no-repeat,
+    linear-gradient(180deg, #7c2d12 0 100%) 50% 66% / 66% 10% no-repeat,
+    linear-gradient(180deg, #334155 0 68%, #1e293b 68%); }
+.bg-camp { background:
+    radial-gradient(ellipse 30% 26% at 50% 86%, #f9731655, transparent 70%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 9% 40% at 6% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 8% 44% at 94% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, #0b1026 0 60%, #1a2e12 60% 84%, #0f1a09 84%); }
+.bg-lake { background:
+    radial-gradient(ellipse 5% 3% at 76% 72%, #fde68acc, transparent) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 7px, #fde68a22 7px 8px) 0 64% / 100% 22% no-repeat,
+    radial-gradient(ellipse 9% 36% at 4% 66%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 8% 30% at 96% 64%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, #070b1e 0 58%, #0c1f3a 58% 86%, #10200b 86%); }
+.bg-hospital { background:
+    linear-gradient(90deg, transparent 0 40%, #ef4444 40% 60%, transparent 60%) 88% 14% / 6% 10% no-repeat,
+    linear-gradient(180deg, transparent 0 40%, #ef4444 40% 60%, transparent 60%) 88% 14% / 6% 10% no-repeat,
+    linear-gradient(180deg, #bae6fd 0 100%) 14% 14% / 22% 30% no-repeat,
+    linear-gradient(180deg, #f8fafc 0 100%) 50% 80% / 50% 10% no-repeat,
+    linear-gradient(180deg, #ecfeff 0 70%, #a5f3fc 70%); }
+/* 🔥 a campfire and two parked motorbikes */
+.vp-fx.camp { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.vp-fire { position: absolute; left: 50%; bottom: 3%; width: 5%; aspect-ratio: .8; translate: -50% 0; border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%;
+    background: radial-gradient(ellipse at 50% 80%, #fef08a, #f97316 50%, #dc2626 80%, transparent 82%); filter: drop-shadow(0 0 14px #f97316); animation: vpFire .25s ease-in-out infinite alternate; }
+@keyframes vpFire { to { transform: scale(1.08, .92) skewX(4deg); } }
+.vp-bike { position: absolute; bottom: 12%; width: 9%; aspect-ratio: 2; opacity: .9;
+    background: radial-gradient(circle at 18% 70%, #000 0 22%, #52525b 23% 28%, transparent 29%), radial-gradient(circle at 82% 70%, #000 0 22%, #52525b 23% 28%, transparent 29%),
+        linear-gradient(170deg, transparent 0 30%, #18181b 30% 52%, transparent 52%); }
+.vp-bike.a { left: 6%; } .vp-bike.b { right: 6%; transform: scaleX(-1); }
+/* 👁️ waking up in the hospital: dark, a slow blink, then sharp */
+.vp-wake { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: #000; backdrop-filter: blur(10px); animation: vpWake 3.6s ease-out forwards; }
+@keyframes vpWake { 0% { opacity: 1; } 18% { opacity: .25; } 28% { opacity: .9; } 50% { opacity: .15; } 100% { opacity: 0; } }
+/* anon: the monster's name tag stays hidden */
+.vp-actor.anon small { visibility: hidden; }
+/* 🍑 wiggle · 🏊 in the water up to the chest */
+.vp-actor .vfig.act-wiggle .vfig-in { animation: vfWiggle .3s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+/* the full-nude wiggle: a mosaic over the hips */
+.vp-actor .vfig.act-wiggle .vfig-in::after { content: ""; position: absolute; left: 36%; right: 36%; top: 58%; height: 13%; z-index: 2;
+    background: conic-gradient(#d6a77a 0 25%, #f1c9a5 0 50%, #c08a5c 0 75%, #e8b896 0) 0 0 / 22% 34%; outline: 1px solid #0004; }
+@keyframes vfWiggle { from { transform: rotate(-6deg) translateX(-4%); } to { transform: rotate(6deg) translateX(4%); } }
+.vp-actor .vfig.act-swim .vfig-in { clip-path: inset(0 0 46% 0); transform: translateY(40%); animation: vfBob 1.4s ease-in-out infinite alternate; }
+@keyframes vfBob { from { translate: 0 0; } to { translate: 0 4%; } }
+/* 👶 a baby cradled in the arms */
+.vp-held.baby { right: 8%; top: 30%; animation: none; transform: rotate(-10deg); filter: drop-shadow(0 2px 3px #0006); }
+
+/* 중간표지: the Korean title art down the spine */
+.vs-title.t-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 앞표지 "clawmoon": the forest, the full moon, a wolf's hand tearing through · the Korean title art big, the English title small */
+.vhs-front.l-clawmoon { background: linear-gradient(180deg, #04030c, #160404) !important; }
+.vf-title.t-img { padding: 0 4px; }
+.vf-title.t-img img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; mix-blend-mode: lighten; }
+.vf-title.t-img small { color: #fecaca; margin-top: -2px; }
