@@ -723,7 +723,7 @@ const emptyDen = () => {
 //   · flash "red" · wolf "half" / "full" / "claws" (ui/figure.js) · expr beast / redeye · act wolfing · close (a close-up scene)
 const moonchild = () => {
     const P = n => findPid(n);
-    const DENIS = "Denis", LYNN = "Lynn", TOM = "Tom", KIKI = "Kiki", PRIEST = "The Priest", VINCENT = "Vincent", PHIL = "Detective Phil",
+    const DENIS = "Denis", LYNN = "Lynn", TOM = "Tom", KIKI = "Kiki", PRIEST = "The Priest", PHIL = "Detective Phil",
         MINA = "Mina", TEACHER = "History Teacher", STUDENT = "Student";
     return {
         id: "m_moonchild", builtin: true,
@@ -742,7 +742,6 @@ const moonchild = () => {
             { ko: "파댕이", pid: P("파댕이"), role: TOM, part: "lead" },
             { ko: "노랑토끼", pid: P("노랑토끼"), role: KIKI, part: "lead" },
             { ko: "흰머리구름", pid: P("흰머리구름"), role: PRIEST, short: "Priest", part: "lead" },
-            { ko: "칼리스토52호", pid: P("칼리스토52호"), role: VINCENT, part: "lead" },
             { ko: "하이스트이모부", pid: P("하이스트이모부"), role: PHIL, short: "Phil", part: "lead" },
             { ko: "꽃나리", pid: P("꽃나리"), role: MINA, part: "support" },
             { ko: "헤일리톰슨", pid: P("헤일리톰슨"), role: TEACHER, part: "support" },
