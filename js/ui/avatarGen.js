@@ -370,6 +370,48 @@ function eyewear(spec, sun) {
 
 // ------------------------------------------------------------ bodies
 const ARM_H = { L: "M101 125Q80 140 82 170", R: "M155 125Q176 140 174 170", RW: "M155 125Q184 122 190 94" };
+// 💪 근육질 팔: one smooth outlined silhouette along an arm path ("M x y Q cx cy x y" or "M x y L x y")
+// — a big biceps bump on the outer side, a pinched elbow, a thick forearm on the inner side, a tapered wrist.
+// Drawn as ONE closed shape so there are no seams; a couple of short crease lines like a cartoon flex.
+function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh = 0 }) {
+    const n = (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+    if (n.length < 4) return "";
+    const q = n.length >= 6 ? n.slice(0, 6) : [n[0], n[1], (n[0] + n[2]) / 2, (n[1] + n[3]) / 2, n[2], n[3]];
+    const [x0, y0, cx, cy, x1, y1] = q;
+    const P = t => [(1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1, (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1];
+    // offsets go along ONE direction (across the shoulder→wrist chord), so a bent arm never folds into spikes
+    const cl = Math.hypot(x1 - x0, y1 - y0) || 1, nrm = () => [-(y1 - y0) / cl, (x1 - x0) / cl];
+    // which side faces away from the body (x = 128)? the biceps bulges that way
+    const [mx, my] = P(0.4), [nx] = nrm(0.4); const out = Math.abs(mx + nx * 5 - 128) > Math.abs(mx - 128) ? 1 : -1;
+    const g = (t, c, s) => Math.exp(-(((t - c) / s) ** 2));
+    const B = (h0 * 1.6 + 4) * big, F = (h0 * 1.0 + 3) * big;
+    const taper = t => t > 0.8 ? 1 - (t - 0.8) * 1.4 : 1;
+    // sh: the first part of the arm is hidden (shape bodies) — fit the whole muscle profile into the visible rest
+    const U = t => Math.max(0, (t - sh) / (1 - sh));
+    const hOut = t => (h0 + B * g(U(t), 0.38, 0.21) + F * 0.45 * g(U(t), 0.76, 0.17)) * taper(t);
+    const hIn = t => (h0 + B * 0.3 * g(U(t), 0.36, 0.21) + F * 0.9 * g(U(t), 0.72, 0.18)) * taper(t);
+    const N = 32, A = [], Z = [];
+    for (let i = 0; i <= N; i++) {
+        const t = i / N, [px, py] = P(t), [ux, uy] = nrm(t);
+        A.push([px + ux * out * hOut(t), py + uy * out * hOut(t)]);
+        Z.push([px - ux * out * hIn(t), py - uy * out * hIn(t)]);
+    }
+    // smooth outline: quadratic segments through the midpoints of the sampled points
+    const smooth = pts => { let s = ""; for (let i = 1; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1]; s += `Q${f1(ax)} ${f1(ay)} ${f1((ax + bx) / 2)} ${f1((ay + by) / 2)}`; } return s; };
+    const [ex, ey] = P(1), dx = (x1 - x0) / cl, dy = (y1 - y0) / cl, r = h0 * taper(1);
+    const back = Z.slice().reverse();
+    const path = `M${f1(A[0][0])} ${f1(A[0][1])}L${f1((A[0][0] + A[1][0]) / 2)} ${f1((A[0][1] + A[1][1]) / 2)}${smooth(A)}L${f1(A[N][0])} ${f1(A[N][1])}`
+        + `Q${f1(ex + dx * r * 1.3)} ${f1(ey + dy * r * 1.3)} ${f1(back[0][0])} ${f1(back[0][1])}` // round wrist end
+        + `L${f1((back[0][0] + back[1][0]) / 2)} ${f1((back[0][1] + back[1][1]) / 2)}${smooth(back)}L${f1(back[N][0])} ${f1(back[N][1])}Z`;
+    // crease lines: under the biceps, and the elbow fold
+    const ln = (t0, t1, side, k0, k1) => {
+        const pt = (t, k) => { const [px, py] = P(t), [ux, uy] = nrm(t), h = side > 0 ? hOut(t) : hIn(t); return [px + ux * out * side * h * k, py + uy * out * side * h * k]; };
+        const [a0, a1] = pt(t0, k0), [b0, b1] = pt((t0 + t1) / 2, (k0 + k1) / 2 + 0.18), [c0, c1] = pt(t1, k1);
+        return `M${f1(a0)} ${f1(a1)}Q${f1(b0)} ${f1(b1)} ${f1(c0)} ${f1(c1)}`;
+    };
+    const lines = `<path d="${ln(sh + (1 - sh) * 0.26, sh + (1 - sh) * 0.5, 1, 0.1, 0.45)}" fill="none" stroke="${crease}" stroke-width="${f1(sw * 0.6)}" stroke-linecap="round" opacity=".7"/>`;
+    return `<path d="${path}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>` + lines;
+}
 // 🙋 humanoid arm poses: [arm path, hand centre] for the left / right arm
 const POSES = {
     down: { L: [ARM_H.L, [82, 174]], R: [ARM_H.R, [174, 174]] },
@@ -665,18 +707,8 @@ export function buildAvatar(opts = {}) {
             const wing = "M104 122C74 126 56 156 60 190L72 180L74 194L86 182L90 194L96 178Q102 158 110 136Z";
             out.push([wing, mx(wing)].map(d => `<path d="${d}" fill="${skinG}" ${S(3.5, line)}/>`).join("") + [-1, 1].map(s => `<path d="M${128 + s * 30} 140Q${128 + s * 46} 156 ${128 + s * 56} 176M${128 + s * 26} 154Q${128 + s * 38} 168 ${128 + s * 44} 184" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.25)}" stroke-width="2" stroke-linecap="round"/>`).join(""));
         } else out.push(limb(dL, armW) + limb(dR, armW));
-        // 💪 근육질 팔 (any race, any 체형): big bulging biceps and forearms along each arm, with muscle lines
-        if (o.armMuscle && race.id !== "bird" && !inv) out.push([dL, dR].map(d => {
-            const n = (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
-            if (n.length < 4) return "";
-            const [sx, sy] = n, [ex, ey] = n.slice(-2), len = Math.hypot(ex - sx, ey - sy) || 1, ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
-            const at = t => [f1(sx + (ex - sx) * t), f1(sy + (ey - sy) * t)];
-            const bump = (t, rx, ry) => { const [x, y] = at(t); return `<ellipse cx="${x}" cy="${y}" rx="${f1(rx)}" ry="${f1(ry)}" transform="rotate(${f1(ang)} ${x} ${y})" fill="${limbC}" ${S(3.5, line)}/>`; };
-            const [bx, by] = at(0.4), [fx2, fy2] = at(0.74), dk = isHex(skin) ? shade(skin, -0.28) : line;
-            return bump(0.4, len * 0.3, armW / 2 + 11) + bump(0.74, len * 0.2, armW / 2 + 7) +
-                `<g transform="rotate(${f1(ang)} ${bx} ${by})" fill="none" stroke="${dk}" stroke-width="2" stroke-linecap="round" opacity=".75"><path d="M${f1(bx - len * 0.14)} ${f1(by - 2)}Q${bx} ${f1(by - armW / 2 - 4)} ${f1(bx + len * 0.14)} ${f1(by - 2)}"/><path d="M${f1(bx - len * 0.08)} ${f1(by + 3)}q${f1(len * 0.08)} 4 ${f1(len * 0.16)} 0"/></g>` +
-                `<g transform="rotate(${f1(ang)} ${fx2} ${fy2})" fill="none" stroke="${dk}" stroke-width="1.6" stroke-linecap="round" opacity=".6"><path d="M${f1(fx2 - len * 0.1)} ${fy2}q${f1(len * 0.1)} -3 ${f1(len * 0.2)} 0"/></g>`;
-        }).join(""));
+        // 💪 근육질 팔 (any race, any 체형): one smooth bulging silhouette over each arm
+        if (o.armMuscle && race.id !== "bird" && !inv) out.push([dL, dR].map(d => muscleArm(d, { h0: armW / 2 + 1.5, fill: limbC, stroke: line, crease: isHex(skin) ? shade(skin, -0.3) : line })).join(""));
         if (tatOn("arm") && race.id !== "bird") out.push(tatStroke(dL, armW) + tatStroke(dR, armW)); // 🖋️ both arms covered, shoulder to wrist (the sleeves go on top)
         const slc = T.slc ? "#f7f7f5" : tc;
         const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
@@ -756,7 +788,7 @@ export function buildAvatar(opts = {}) {
         const [aL, aR] = { wave: ["down", "up"], both: ["up", "up"], point: ["down", "fwd"], hips: ["hip", "hip"], shrug: ["out", "out"] }[pose] || ["down", "down"];
         const [dL, hL] = SA[aL](xL, -1), [dR, hR] = SA[aR](xR, 1);
         const T = fit.top;
-        const arm = d => `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (tatOn("arm") ? tatStroke(d, 9) : "") + (T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
+        const arm = d => (o.armMuscle ? muscleArm(d, { h0: 3.5, fill: lc, stroke: rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? -0.15 : -0.6), sw: 2.6, big: 1.6, sh: 0.3 }) : `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>`) + (tatOn("arm") ? tatStroke(d, 9) : "") + (T.sl && !o.armMuscle ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
         // bottoms (like Melon Donglee): the lower part of the body is the pants / skirt, and
         // 👖 pants come out under the body as two trouser legs · 👗 a skirt / dress flares out past the bottom.
         // (👻 Ghost has no legs: just the band, as before)
