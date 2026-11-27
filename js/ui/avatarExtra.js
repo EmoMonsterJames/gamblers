@@ -130,7 +130,8 @@ export const swimArm = spec => ({ muscle: 13, belly: 11, fat: 14, slim: 9 }[spec
 
 // the torso: bare skin + the suit (humanoid frame, the torso sits at y 112..192, shoulders at x 101 / 155)
 // skinFill / line: skin paint + outline · fur: optional { filter, tex } for curly fur
-export function swimTorso(female, spec, skinFill, skin, line, fur = null) {
+// tat: a tattoo pattern fill painted on the bare skin (under the suit) · "" = none
+export function swimTorso(female, spec, skinFill, skin, line, fur = null, tat = "") {
     const [, type, c, acc, pat] = spec;
     const S = (w = 3) => `stroke="${OUT}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
     const sd = isHex(skin) ? shade(skin, lum(skin) < 0.3 ? 0.3 : -0.22) : OUT;
@@ -138,7 +139,7 @@ export function swimTorso(female, spec, skinFill, skin, line, fur = null) {
         : pat === "dots" ? `<pattern id="swp" width="11" height="11" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.4" fill="${acc}"/><circle cx="8.5" cy="8.5" r="1.6" fill="#ffd84a"/></pattern>`
             : pat === "leopard" ? `<pattern id="swp" width="14" height="12" patternUnits="userSpaceOnUse"><path d="M2 3q3 -2 5 1q-1 3 -4 2zM9 8q3 -1 4 2q-2 2 -4 0z" fill="none" stroke="${acc}" stroke-width="1.6"/><circle cx="4.5" cy="4.5" r="1.1" fill="#8a5a2a"/></pattern>` : "";
     const piece = d => `<path d="${d}" fill="${c}" ${S(2.6)}/>` + (patDef ? `<path d="${d}" fill="url(#swp)"/><path d="${d}" fill="none" ${S(2.6)}/>` : "");
-    const skinPath = d => (fur ? woolEdge(`<path d="${d}" WOOL/>`, skinFill, line) : `<path d="${d}" fill="${skinFill}" stroke="${line}" stroke-width="3.5" stroke-linejoin="round"/>`);
+    const skinPath = d => (fur ? woolEdge(`<path d="${d}" WOOL/>`, skinFill, line) : `<path d="${d}" fill="${skinFill}" stroke="${line}" stroke-width="3.5" stroke-linejoin="round"/>`) + (tat ? `<path d="${d}" fill="${tat}"/>` : "");
     const navel = (y = 166) => `<path d="M128 ${y - 2}q-1.8 2.4 0 4.4" fill="none" stroke="${sd}" stroke-width="1.8" stroke-linecap="round"/>`;
     let s = `<defs>${patDef}</defs>`;
     if (!female) {

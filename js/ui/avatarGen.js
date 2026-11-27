@@ -505,6 +505,10 @@ export function buildAvatar(opts = {}) {
     // 🖋️ tattoo: one design (20) on one area — "full" = face + neck/upper body + both arms
     const tatI = o.tattoo >= 0 ? o.tattoo | 0 : -1, tatInk = dark ? "#efe6ff" : "#1f3350";
     const tatOn = a => tatI >= 0 && (o.tatArea === a || (o.tatArea === "full" && a !== "eye"));
+    // 🖋️ arm · neck+upper body · whole body: the design repeats all over the area (a tiled pattern painted on the skin there)
+    const tatId = "tat" + tatI, tatFill = `url(#${tatId})`;
+    const tatDef = tatI >= 0 ? `<pattern id="${tatId}" width="20" height="20" patternUnits="userSpaceOnUse">${tatAt(tatI, tatInk, 5, 5, 0.38)}${tatAt(tatI, tatInk, 15, 15, 0.38, 18)}</pattern>` : "";
+    const tatStroke = (d, w) => `<path d="${d}" fill="none" stroke="${tatFill}" stroke-width="${w}" stroke-linecap="round"/>`;
     const vary = { bg: Math.floor(R() * 8), eye: Math.floor(R() * 4), mood: Math.floor(R() * 4), pose: Math.floor(R() * 3), blush: R() < 0.55, eyeCol: ["#3a2a1e", "#3f7df0", "#3fae5a", "#6b4a2f", "#7a5af0"][Math.floor(R() * 5)], tilt: R() };
     // 👙 swimwear / lingerie: every humanoid race, never a baby (shape races get a summer outfit)
     // 🎬 topless (VHS films only — a grown-up woman's figure): the regular bottoms stay, the top is bare skin
@@ -522,7 +526,7 @@ export function buildAvatar(opts = {}) {
     const BG = ["#fdeedd", "#e6f4ff", "#eafbe6", "#fff3c9", "#f6e6ff", "#ffe6ee", "#e6fbf6", "#f0f0f4"][vary.bg];
     out.push(`<defs><linearGradient id="rb" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="216" y2="216">${rbStops()}</linearGradient><linearGradient id="rbh" gradientUnits="userSpaceOnUse" x1="-42" y1="-42" x2="42" y2="42">${rbStops()}</linearGradient>` +
         `<linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1a1e"/><stop offset="1" stop-color="#c88a5a"/></linearGradient><linearGradient id="smb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ad7ff"/><stop offset="1" stop-color="#3f4df0"/></linearGradient><linearGradient id="smf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd83b"/><stop offset="1" stop-color="#e2463f"/></linearGradient>` +
-        AR.EAR_DEFS + (fur ? furDefs(skin) : "") + `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
+        AR.EAR_DEFS + (fur ? furDefs(skin) : "") + tatDef + `<clipPath id="cc"><circle cx="128" cy="128" r="124"/></clipPath></defs>`);
     // 🧍 full: the whole figure, head to feet, on a clear background (VHS covers / films) — no circle, no zoom
     out.push(o.full ? `<g>` : `<circle cx="128" cy="128" r="124" fill="${BG}"/><g clip-path="url(#cc)">`);
     // 👶 Baby: the whole figure a little smaller (shrunk toward the bottom centre, so it still stands in the frame)
@@ -619,6 +623,7 @@ export function buildAvatar(opts = {}) {
         // legs + shoes
         if (BT && !inv) out.push(`<g transform="translate(128 0) scale(${BT[0]} 1) translate(-128 0)">`);
         out.push(limb("M116 176L114 226", BT ? BT[3] : 12) + limb("M140 176L142 226", BT ? BT[3] : 12));
+        if (tatOn("full")) out.push(tatStroke("M116 176L114 226", BT ? BT[3] : 12) + tatStroke("M140 176L142 226", BT ? BT[3] : 12)); // 🖋️ 전신: the legs too
         const shoe = SHOES[season] || SHOES.spring;
         out.push(season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
             : season === "summer" ? `<ellipse cx="110" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><ellipse cx="146" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><path d="M104 231l10 -6M152 231l-10 -6" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`
@@ -647,17 +652,14 @@ export function buildAvatar(opts = {}) {
             const wing = "M104 122C74 126 56 156 60 190L72 180L74 194L86 182L90 194L96 178Q102 158 110 136Z";
             out.push([wing, mx(wing)].map(d => `<path d="${d}" fill="${skinG}" ${S(3.5, line)}/>`).join("") + [-1, 1].map(s => `<path d="M${128 + s * 30} 140Q${128 + s * 46} 156 ${128 + s * 56} 176M${128 + s * 26} 154Q${128 + s * 38} 168 ${128 + s * 44} 184" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.25)}" stroke-width="2" stroke-linecap="round"/>`).join(""));
         } else out.push(limb(dL, armW) + limb(dR, armW));
+        if (tatOn("arm") && race.id !== "bird") out.push(tatStroke(dL, armW) + tatStroke(dR, armW)); // 🖋️ both arms covered, shoulder to wrist (the sleeves go on top)
         const slc = T.slc ? "#f7f7f5" : tc;
         const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
         if (race.id !== "bird") out.push(sleeve(dL) + sleeve(dR));
-        // 🖋️ arm tattoo: on the forearm, just past the sleeve (left arm · both arms for 전신)
-        if (tatOn("arm") && race.id !== "bird") {
-            const cover = swim || !T.sl ? 0 : T.sl === 1 ? 19 : 45;
-            out.push((o.tatArea === "full" ? [dL, dR] : [dL]).map(d => { const [x, y, a] = armSpot(d, cover); return tatAt(tatI, tatInk, x, y, 0.42, a); }).join(""));
-        }
         // neck + torso (🦒 giraffe: a long spotted neck)
         if (race.id === "giraffe") out.push(blob(`<rect x="117" y="${headY + 22}" width="22" height="${122 - headY - 22}" rx="6" FILL/>`) + [[123, headY + 34], [133, headY + 46], [122, headY + 56]].map(([x, y]) => `<path d="M${x} ${y}m-4 0l4 -4l4 4l-4 4Z" fill="#c07a2a"/>`).join(""));
         else out.push(blob(`<rect x="120" y="102" width="16" height="20" rx="5" FILL/>`));
+        if (tatOn("upper")) out.push(race.id === "giraffe" ? `<rect x="117" y="${headY + 22}" width="22" height="${122 - headY - 22}" rx="6" fill="${tatFill}"/>` : `<rect x="120" y="102" width="16" height="20" rx="5" fill="${tatFill}"/>`); // 🖋️ the whole neck
         const tors = T.len === "crop" ? "M99 120Q128 113 157 120L158 150Q128 156 98 150Z" : T.len === "coat" ? "M99 120Q128 113 157 120L165 202Q128 209 91 202Z"
             : T.len === "dress" ? "M99 120Q128 113 157 120L158 160L177 206Q128 215 79 206L98 160Z" : "M99 120Q128 113 157 120L161 172Q128 178 95 172Z";
         if (T.len === "crop") out.push(blob(`<path d="M99 140H157L160 168H96Z" FILL/>`));
@@ -675,7 +677,7 @@ export function buildAvatar(opts = {}) {
         if (T.btn) deco += Array.from({ length: T.len === "coat" ? 4 : 3 }, (_, i) => `<circle cx="${T.open ? 146 : 128}" cy="${136 + i * 14}" r="2.3" fill="${lum(tc) > 0.6 ? "#6b4a2f" : "#f7f7f5"}"/>`).join("");
         if (T.pocket) deco += `<path d="M112 152H144L140 167H116Z" fill="none" stroke="${tcd}" stroke-width="2.4" stroke-linejoin="round"/>`;
         if (T.belt) deco += `<path d="M92 164H164" stroke="${tcd}" stroke-width="7"/><rect x="123" y="159" width="10" height="10" rx="2" fill="none" stroke="#e8b923" stroke-width="2.4"/>`;
-        if (swim) out.push(swimTorso(topless || swimG === "female", swim, skinG, skin, line, fur)); // 👙 bare skin + swimsuit / lingerie / trunks
+        if (swim) out.push(swimTorso(topless || swimG === "female", swim, skinG, skin, line, fur, tatOn("upper") ? tatFill : "")); // 👙 bare skin + swimsuit / lingerie / trunks
         else out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
         // neck line
         const nk = T.open ? "" : T.neck;
@@ -686,14 +688,10 @@ export function buildAvatar(opts = {}) {
         if (nk === "hood") out.push(`<path d="M114 117Q128 130 142 117" fill="none" stroke="${tcd}" stroke-width="3.4"/><path d="M122 124V142M134 124V142" stroke="#f7f7f5" stroke-width="2.2" stroke-linecap="round"/>`);
         if (nk === "round") out.push(`<circle cx="119" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><circle cx="137" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><path d="M128 124L120 132H136Z" fill="${shade(tc, -0.25)}" ${S(2)}/>`);
         if (T.sl === 0 && !swim) out.push(`<path d="M104 121L109 132M152 121L147 132" stroke="${tcd}" stroke-width="2"/>`);
-        // 🖋️ neck + upper body tattoo: a small one on the side of the neck (not under a turtleneck / hood) + the shoulder when the torso is bare
-        if (tatOn("upper")) {
-            if (swim || !["turtle", "hood"].includes(nk)) out.push(tatAt(tatI, tatInk, 134, 112, 0.26));
-            if (swim) out.push(tatAt(tatI, tatInk, 112, 124, 0.5, -12));
-        }
+        // 🖋️ upper body: the whole bare torso is covered (in clothes only the neck shows · in swimwear the chest, belly and shoulders)
         // hands
         if (race.id === "bird") wrist = [66, 184];
-        else out.push(blob(`<circle cx="${handL[0]}" cy="${handL[1]}" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`) + holdProp(o.hold, handR));
+        else out.push(blob(`<circle cx="${handL[0]}" cy="${handL[1]}" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`) + (tatOn("full") ? [handL, handR].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7.5" fill="${tatFill}"/>`).join("") : "") + holdProp(o.hold, handR));
         // 🦂 scorpion: pincers on both hands
         if (bugP?.arms === "claws") out.push([[82, 174], handR].map(([x, y]) => `<path d="M${x - 2} ${y + 4}C${x - 16} ${y - 2} ${x - 12} ${y - 20} ${x} ${y - 18}L${x - 2} ${y - 10}C${x - 6} ${y - 10} ${x - 6} ${y - 2} ${x} ${y}ZM${x + 2} ${y + 4}C${x + 16} ${y - 2} ${x + 12} ${y - 20} ${x + 2} ${y - 18}L${x + 3} ${y - 10}C${x + 7} ${y - 8} ${x + 6} ${y - 2} ${x + 1} ${y}Z" fill="${skinG}" ${S(3, line)}/>`).join(""));
         if (o.leprosy) out.push(spots(R, [[82, 174, 5], [handR[0], handR[1], 5], [114, 208, 5], [142, 212, 5]], 1));
@@ -728,7 +726,7 @@ export function buildAvatar(opts = {}) {
         const [aL, aR] = { wave: ["down", "up"], both: ["up", "up"], point: ["down", "fwd"], hips: ["hip", "hip"], shrug: ["out", "out"] }[pose] || ["down", "down"];
         const [dL, hL] = SA[aL](xL, -1), [dR, hR] = SA[aR](xR, 1);
         const T = fit.top;
-        const arm = d => `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
+        const arm = d => `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>` + (tatOn("arm") ? tatStroke(d, 9) : "") + (T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
         // bottoms (like Melon Donglee): the lower part of the body is the pants / skirt, and
         // 👖 pants come out under the body as two trouser legs · 👗 a skirt / dress flares out past the bottom.
         // (👻 Ghost has no legs: just the band, as before)
@@ -752,6 +750,7 @@ export function buildAvatar(opts = {}) {
         if (prodP) out.push(AR.produceBack(prodP.pat, pc, body, S)); // 🍈 durian spikes
         out.push(arm(dL) + arm(dR));
         out.push(`<path d="${body.d}" fill="${skinG}" ${edge}/>`);
+        if (tatOn("upper")) out.push(`<path d="${body.d}" fill="${tatFill}" opacity=".6"/>`); // 🖋️ a shape body: the whole body is covered (the face is drawn on top)
         // 🍉 fruit / veggie skin pattern (stripes · seeds · net · kernels …)
         if (prodP) out.push(`<clipPath id="fc"><path d="${body.d}"/></clipPath><g clip-path="url(#fc)">${AR.producePattern(prodP.pat, pc, body)}</g>`);
         const y0 = body.bot - (body.bot - body.top) * (body.waist || (skirt ? 0.3 : 0.26));
@@ -766,9 +765,6 @@ export function buildAvatar(opts = {}) {
         }
         if (prodP) out.push(AR.produceTop(prodP.top, body, S)); // 🍃 stem · leaves · crown · mushroom cap
         out.push(`<circle cx="${hL[0]}" cy="${hL[1]}" r="8.5" fill="${skinG}" ${S(3)}/><circle cx="${hR[0]}" cy="${hR[1]}" r="8.5" fill="${skinG}" ${S(3)}/>` + holdProp(o.hold, hR));
-        // 🖋️ shape bodies: arm tattoo on the arm · upper-body tattoo on the body under the face
-        if (tatOn("arm")) out.push((o.tatArea === "full" ? [dL, dR] : [dL]).map(d => { const [x, y, a] = armSpot(d, T.sl === 1 ? 17 : T.sl ? 36 : 0); return tatAt(tatI, tatInk, x, y, 0.4, a); }).join(""));
-        if (tatOn("upper")) out.push(grp(ff, tatAt(tatI, tatInk, 22, 34, 0.55)));
         wrist = [hL[0] - 1, hL[1] - 11];
     }
 
@@ -942,21 +938,6 @@ export function buildAvatar(opts = {}) {
     out.push("</g>");
     const meta = `<desc>gen:${esc(JSON.stringify(o))}</desc>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">${meta}${out.join("")}</svg>`;
-}
-// 🖋️ a spot on an arm path ("Mx y Qcx cy x y"): past the first `cover` px (the sleeve), toward the hand → [x, y, angle]
-function armSpot(d, cover = 0) {
-    const n = (String(d).match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
-    const [x0, y0, cx, cy, x1, y1] = n.length >= 6 ? n : [n[0], n[1], n[0], n[1], n[2] ?? n[0], n[3] ?? n[1]];
-    const P = t => [(1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * x1, (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * cy + t * t * y1];
-    const pts = Array.from({ length: 41 }, (_, i) => P(i / 40));
-    const acc = [0];
-    for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-    const L = acc[acc.length - 1], want = Math.min(L - 7, Math.max(L * 0.6, cover + 6));
-    const i = Math.max(1, acc.findIndex(v => v >= want));
-    const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
-    let a = Math.atan2(by - ay, bx - ax) * 180 / Math.PI - 90; // the design stands along the arm
-    if (a < -90) a += 180; else if (a > 90) a -= 180;
-    return [bx, by, a];
 }
 function rbStops() { return ["#ff7b7b", "#ffc56b", "#fff07a", "#8ef08e", "#7ac8ff", "#c49bff"].map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join(""); }
 // ---- extras drawn in picture space (256×256), around a humanoid picture
