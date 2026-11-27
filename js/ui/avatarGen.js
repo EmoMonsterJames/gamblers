@@ -373,7 +373,7 @@ const ARM_H = { L: "M101 125Q80 140 82 170", R: "M155 125Q176 140 174 170", RW: 
 // 💪 근육질 팔: one smooth outlined silhouette along an arm path ("M x y Q cx cy x y" or "M x y L x y")
 // — a big biceps bump on the outer side, a pinched elbow, a thick forearm on the inner side, a tapered wrist.
 // Drawn as ONE closed shape so there are no seams; a couple of short crease lines like a cartoon flex.
-function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh = 0 }) {
+function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh = 0, pad = 0, cutPx = 0 }) {
     const n = (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
     if (n.length < 4) return "";
     const q = n.length >= 6 ? n.slice(0, 6) : [n[0], n[1], (n[0] + n[2]) / 2, (n[1] + n[3]) / 2, n[2], n[3]];
@@ -388,11 +388,14 @@ function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh
     const taper = t => t > 0.8 ? 1 - (t - 0.8) * 1.4 : 1;
     // sh: the first part of the arm is hidden (shape bodies) — fit the whole muscle profile into the visible rest
     const U = t => Math.max(0, (t - sh) / (1 - sh));
-    const hOut = t => (h0 + B * g(U(t), 0.38, 0.21) + F * 0.45 * g(U(t), 0.76, 0.17)) * taper(t);
-    const hIn = t => (h0 + B * 0.3 * g(U(t), 0.36, 0.21) + F * 0.9 * g(U(t), 0.72, 0.18)) * taper(t);
+    const hOut = t => (pad + h0 + B * g(U(t), 0.38, 0.21) + F * 0.45 * g(U(t), 0.76, 0.17)) * taper(t);
+    const hIn = t => (pad + h0 + B * 0.3 * g(U(t), 0.36, 0.21) + F * 0.9 * g(U(t), 0.72, 0.18)) * taper(t);
+    // cutPx: only the first cutPx along the arm (a 👕 sleeve that hugs the muscle), ending in a straight cuff
+    let alen = 0; for (let i = 1; i <= 20; i++) { const [a, b] = P((i - 1) / 20), [c, e] = P(i / 20); alen += Math.hypot(c - a, e - b); }
+    const cut = cutPx ? Math.min(1, cutPx / alen) : 1;
     const N = 32, A = [], Z = [];
     for (let i = 0; i <= N; i++) {
-        const t = i / N, [px, py] = P(t), [ux, uy] = nrm(t);
+        const t = cut * i / N, [px, py] = P(t), [ux, uy] = nrm(t);
         A.push([px + ux * out * hOut(t), py + uy * out * hOut(t)]);
         Z.push([px - ux * out * hIn(t), py - uy * out * hIn(t)]);
     }
@@ -401,7 +404,7 @@ function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh
     const [ex, ey] = P(1), dx = (x1 - x0) / cl, dy = (y1 - y0) / cl, r = h0 * taper(1);
     const back = Z.slice().reverse();
     const path = `M${f1(A[0][0])} ${f1(A[0][1])}L${f1((A[0][0] + A[1][0]) / 2)} ${f1((A[0][1] + A[1][1]) / 2)}${smooth(A)}L${f1(A[N][0])} ${f1(A[N][1])}`
-        + `Q${f1(ex + dx * r * 1.3)} ${f1(ey + dy * r * 1.3)} ${f1(back[0][0])} ${f1(back[0][1])}` // round wrist end
+        + (cut < 1 ? `L${f1(back[0][0])} ${f1(back[0][1])}` : `Q${f1(ex + dx * r * 1.3)} ${f1(ey + dy * r * 1.3)} ${f1(back[0][0])} ${f1(back[0][1])}`) // straight cuff · round wrist end
         + `L${f1((back[0][0] + back[1][0]) / 2)} ${f1((back[0][1] + back[1][1]) / 2)}${smooth(back)}L${f1(back[N][0])} ${f1(back[N][1])}Z`;
     // crease lines: under the biceps, and the elbow fold
     const ln = (t0, t1, side, k0, k1) => {
@@ -410,7 +413,7 @@ function muscleArm(d, { h0, fill, stroke, sw = 3.5, crease = stroke, big = 1, sh
         return `M${f1(a0)} ${f1(a1)}Q${f1(b0)} ${f1(b1)} ${f1(c0)} ${f1(c1)}`;
     };
     const lines = `<path d="${ln(sh + (1 - sh) * 0.26, sh + (1 - sh) * 0.5, 1, 0.1, 0.45)}" fill="none" stroke="${crease}" stroke-width="${f1(sw * 0.6)}" stroke-linecap="round" opacity=".7"/>`;
-    return `<path d="${path}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>` + lines;
+    return `<path d="${path}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>` + (cut < 1 ? "" : lines);
 }
 // 🙋 humanoid arm poses: [arm path, hand centre] for the left / right arm
 const POSES = {
@@ -711,7 +714,8 @@ export function buildAvatar(opts = {}) {
         if (o.armMuscle && race.id !== "bird" && !inv) out.push([dL, dR].map(d => muscleArm(d, { h0: armW / 2 + 1.5, fill: limbC, stroke: line, crease: isHex(skin) ? shade(skin, -0.3) : line })).join(""));
         if (tatOn("arm") && race.id !== "bird") out.push(tatStroke(dL, armW) + tatStroke(dR, armW)); // 🖋️ both arms covered, shoulder to wrist (the sleeves go on top)
         const slc = T.slc ? "#f7f7f5" : tc;
-        const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
+        // 👕 with 근육질 팔 the sleeve hugs the muscle (same silhouette, a bit looser, cut off at the sleeve length)
+        const sleeve = (d) => T.sl && o.armMuscle && !inv ? muscleArm(d, { h0: armW / 2 + 1.5, pad: T.puff ? 4 : 2, fill: slc, stroke: OUT, sw: 3.2, cutPx: T.sl === 1 ? 20 : 46 }) : T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
         if (race.id !== "bird") out.push(sleeve(dL) + sleeve(dR));
         // neck + torso (🦒 giraffe: a long spotted neck)
         if (race.id === "giraffe") out.push(blob(`<rect x="117" y="${headY + 22}" width="22" height="${122 - headY - 22}" rx="6" FILL/>`) + [[123, headY + 34], [133, headY + 46], [122, headY + 56]].map(([x, y]) => `<path d="M${x} ${y}m-4 0l4 -4l4 4l-4 4Z" fill="#c07a2a"/>`).join(""));
@@ -788,7 +792,7 @@ export function buildAvatar(opts = {}) {
         const [aL, aR] = { wave: ["down", "up"], both: ["up", "up"], point: ["down", "fwd"], hips: ["hip", "hip"], shrug: ["out", "out"] }[pose] || ["down", "down"];
         const [dL, hL] = SA[aL](xL, -1), [dR, hR] = SA[aR](xR, 1);
         const T = fit.top;
-        const arm = d => (o.armMuscle ? muscleArm(d, { h0: 3.5, fill: lc, stroke: rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? -0.15 : -0.6), sw: 2.6, big: 1.6, sh: 0.3 }) : `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>`) + (tatOn("arm") ? tatStroke(d, 9) : "") + (T.sl && !o.armMuscle ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
+        const arm = d => (o.armMuscle ? muscleArm(d, { h0: 3.5, fill: lc, stroke: rainbow ? OUT : shade(skin, lum(skin) < 0.3 ? -0.15 : -0.6), sw: 2.6, big: 1.6, sh: 0.3 }) : `<path d="${d}" fill="none" stroke="${lc}" stroke-width="9" stroke-linecap="round"/>`) + (tatOn("arm") ? tatStroke(d, 9) : "") + (T.sl && o.armMuscle ? muscleArm(d, { h0: 3.5, pad: 2, fill: T.slc ? "#f7f7f5" : fit.tc, stroke: OUT, sw: 2.6, big: 1.6, sh: 0.3, cutPx: T.sl === 1 ? 24 : 38 }) : T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="16" stroke-dasharray="${T.sl === 1 ? 17 : 36} 400"/><path d="${d}" fill="none" stroke="${T.slc ? "#f7f7f5" : fit.tc}" stroke-width="12" stroke-dasharray="${T.sl === 1 ? 16 : 35} 400"/>` : "");
         // bottoms (like Melon Donglee): the lower part of the body is the pants / skirt, and
         // 👖 pants come out under the body as two trouser legs · 👗 a skirt / dress flares out past the bottom.
         // (👻 Ghost has no legs: just the band, as before)
