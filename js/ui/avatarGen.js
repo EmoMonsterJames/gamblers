@@ -206,6 +206,8 @@ export const DEFAULTS = {
     expr: -1,
     // 🏋️ 체형 (body type): "" 일반 · skinny 스키니 · chubby · fat 과체중 · muscle 근육질
     bt: "",
+    // 💪 근육질 팔: big bulging arms (any race · on top of any 체형)
+    armMuscle: false,
     // 👙 swimwear gender set by the profile (male / trans + Trans-Curious or Gay → women's · female + those → men's), "" = the picture's gender
     swimAs: "",
     // 👂 no ears at all (like 외계덩이) · 📌 hair pin (20, −1 none) + where on the head · 🖋️ tattoo (20, −1 none) + body area
@@ -663,6 +665,18 @@ export function buildAvatar(opts = {}) {
             const wing = "M104 122C74 126 56 156 60 190L72 180L74 194L86 182L90 194L96 178Q102 158 110 136Z";
             out.push([wing, mx(wing)].map(d => `<path d="${d}" fill="${skinG}" ${S(3.5, line)}/>`).join("") + [-1, 1].map(s => `<path d="M${128 + s * 30} 140Q${128 + s * 46} 156 ${128 + s * 56} 176M${128 + s * 26} 154Q${128 + s * 38} 168 ${128 + s * 44} 184" fill="none" stroke="${rainbow ? OUT : shade(skin, -0.25)}" stroke-width="2" stroke-linecap="round"/>`).join(""));
         } else out.push(limb(dL, armW) + limb(dR, armW));
+        // 💪 근육질 팔 (any race, any 체형): big bulging biceps and forearms along each arm, with muscle lines
+        if (o.armMuscle && race.id !== "bird" && !inv) out.push([dL, dR].map(d => {
+            const n = (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+            if (n.length < 4) return "";
+            const [sx, sy] = n, [ex, ey] = n.slice(-2), len = Math.hypot(ex - sx, ey - sy) || 1, ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+            const at = t => [f1(sx + (ex - sx) * t), f1(sy + (ey - sy) * t)];
+            const bump = (t, rx, ry) => { const [x, y] = at(t); return `<ellipse cx="${x}" cy="${y}" rx="${f1(rx)}" ry="${f1(ry)}" transform="rotate(${f1(ang)} ${x} ${y})" fill="${limbC}" ${S(3.5, line)}/>`; };
+            const [bx, by] = at(0.4), [fx2, fy2] = at(0.74), dk = isHex(skin) ? shade(skin, -0.28) : line;
+            return bump(0.4, len * 0.3, armW / 2 + 11) + bump(0.74, len * 0.2, armW / 2 + 7) +
+                `<g transform="rotate(${f1(ang)} ${bx} ${by})" fill="none" stroke="${dk}" stroke-width="2" stroke-linecap="round" opacity=".75"><path d="M${f1(bx - len * 0.14)} ${f1(by - 2)}Q${bx} ${f1(by - armW / 2 - 4)} ${f1(bx + len * 0.14)} ${f1(by - 2)}"/><path d="M${f1(bx - len * 0.08)} ${f1(by + 3)}q${f1(len * 0.08)} 4 ${f1(len * 0.16)} 0"/></g>` +
+                `<g transform="rotate(${f1(ang)} ${fx2} ${fy2})" fill="none" stroke="${dk}" stroke-width="1.6" stroke-linecap="round" opacity=".6"><path d="M${f1(fx2 - len * 0.1)} ${fy2}q${f1(len * 0.1)} -3 ${f1(len * 0.2)} 0"/></g>`;
+        }).join(""));
         if (tatOn("arm") && race.id !== "bird") out.push(tatStroke(dL, armW) + tatStroke(dR, armW)); // 🖋️ both arms covered, shoulder to wrist (the sleeves go on top)
         const slc = T.slc ? "#f7f7f5" : tc;
         const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
@@ -692,7 +706,9 @@ export function buildAvatar(opts = {}) {
         // 🎬 full nudity: bare hips joining the legs, then the little drawing
         if (nudeFull) out.push(`<path d="M99 166Q128 174 157 166L158 184Q128 194 98 184Z" fill="${skinG}"/><path d="M99 166L98 184Q128 194 158 184L157 166" fill="none" stroke="${line}" stroke-width="3.5" stroke-linejoin="round"/>` +
             nudeBits(!female, 128, 178, skinG, line, human && isHex(o.hair) ? o.hair : "#3a2a24"));
-        else out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
+        // the regular top only when there's no swimsuit / bare skin (this used to be the `else` of `if (swim)` —
+        // keep it that way, or swimwear gets painted over with the season's clothes)
+        if (!swim) out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
         // neck line
         const nk = T.open ? "" : T.neck;
         if (nk === "crew") out.push(`<path d="M116 117Q128 127 140 117" fill="none" stroke="${tcd}" stroke-width="3.4" stroke-linecap="round"/>`);

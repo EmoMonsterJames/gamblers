@@ -732,7 +732,9 @@
 .mp-date { display: flex; align-items: center; gap: 4px; } .mp-date .input { width: 4.5em; }
 .mp-genres { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .mp-actor { display: grid; grid-template-columns: 96px 1fr 1fr auto auto auto auto auto; gap: 6px; align-items: center; }
-.mp-part { border-left: 3px solid #f59e0b; padding: 6px 0 6px 10px; display: grid; gap: 6px; }
+.mp-part { border-left: 3px solid #f59e0b; padding: 6px 0 14px 10px; display: grid; gap: 6px; border-bottom: 2px dashed rgba(245, 158, 11, .55); margin-bottom: 8px; }
+.mp-part:last-of-type { margin-bottom: 0; }
+.mp-note { margin: 4px 0 8px; font-size: 12px; opacity: .75; }
 .mp-part-head { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; } .mp-part-head .input { max-width: 260px; }
 .mp-grow { flex: 1; }
 .mp-music, .mp-attach, .mp-style { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }

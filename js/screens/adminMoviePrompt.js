@@ -67,7 +67,7 @@ export function adminMoviePromptPage() {
                 field("한글 출시 제목", inp(st, "ko", { placeholder: "늑대인간" })),
                 field("영화사", sel(st, "brand", D.BRANDS.map(b => [b.id, b.name]))),
                 field("제작국가", inp(st, "nation", { list: "mp-nations" })),
-                field("제작년월일", h("div.mp-date", inp(st, "yy", { placeholder: "년", size: 3 }), "년", inp(st, "mm", { placeholder: "월", size: 2 }), "월", inp(st, "dd", { placeholder: "일", size: 2 }), "일")),
+                field("제작년월일", h("div.mp-date", inp(st, "yy", { placeholder: "년", size: 3 }), inp(st, "mm", { placeholder: "월", size: 2 }), inp(st, "dd", { placeholder: "일", size: 2 }))),
                 field("등급", sel(st, "rating", D.RATINGS.map(r => [r.id, D.ratingText ? D.ratingText(r.id) : r.name]))),
                 field("희귀도", sel(st, "stars", [1, 2, 3, 4, 5, 6, 7].map(n => [n, "★".repeat(n)]))),
                 field("작품성", sel(st, "quality", [1, 2, 3, 4, 5, 6, 7].map(n => [n, "★".repeat(n)])))),
@@ -120,7 +120,8 @@ export function adminMoviePromptPage() {
         const c = st.covers[coverTab];
         const front = coverTab !== "spine";
         return h("section.mp-sec", h("h3", "④ 비디오 표지"),
-            h("div.mp-tabs", COVERS.map(([k, t]) => h("button.btn.small" + (k === coverTab ? ".gold" : ".ghost"), { onclick: () => { coverTab = k; draw(); } }, t))),
+            h("div.mp-tabs", COVERS.map(([k, t]) => h("button.btn.small" + (k === coverTab ? ".gold" : ".ghost"), { onclick: () => { coverTab = k; draw(); } }, t + (JSON.stringify(st.covers[k]) !== JSON.stringify(blankCover(k)) ? " ✓" : "")))),
+            h("p.mp-note", "💾 중간·앞·뒷표지에서 작업한 내용은 탭을 바꿔도 각각 저장되며, 세 표지 모두 한꺼번에 프롬트에 들어갑니다. (✓ = 기본값에서 수정됨)"),
             h("div.mp-cover",
                 field("🖼️ 첨부 이미지", attach(c, "img", "image/*", "📎 이미지 선택"), c.img ? inp(c, "imgNote", { placeholder: "이미지를 어디에 · 어떻게 쓸지 (예: 한글 제목 그림 · 배경)" }) : null),
                 chk(c, "logo", "🏷️ 영화사 로고"),
