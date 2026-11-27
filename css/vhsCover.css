@@ -710,9 +710,6 @@
 .vp-actor.anon small { visibility: hidden; }
 /* 🍑 wiggle · 🏊 in the water up to the chest */
 .vp-actor .vfig.act-wiggle .vfig-in { animation: vfWiggle .3s ease-in-out infinite alternate; transform-origin: 50% 100%; }
-/* the full-nude wiggle: a mosaic over the hips */
-.vp-actor .vfig.act-wiggle .vfig-in::after { content: ""; position: absolute; left: 36%; right: 36%; top: 58%; height: 13%; z-index: 2;
-    background: conic-gradient(#d6a77a 0 25%, #f1c9a5 0 50%, #c08a5c 0 75%, #e8b896 0) 0 0 / 22% 34%; outline: 1px solid #0004; }
 @keyframes vfWiggle { from { transform: rotate(-6deg) translateX(-4%); } to { transform: rotate(6deg) translateX(4%); } }
 .vp-actor .vfig.act-swim .vfig-in { clip-path: inset(0 0 46% 0); transform: translateY(40%); animation: vfBob 1.4s ease-in-out infinite alternate; }
 @keyframes vfBob { from { translate: 0 0; } to { translate: 0 4%; } }

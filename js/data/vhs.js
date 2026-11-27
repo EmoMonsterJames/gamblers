@@ -900,7 +900,7 @@ const moonchild2 = () => {
             { ko: "부댕이", pid: P("부댕이"), role: ERICA, part: "lead", look: { outfit: "clothes" } },
             { ko: "하이스트이모부", pid: P("하이스트이모부"), role: PHIL, short: "Phil", part: "lead" },
             { ko: "힘쎈이", pid: P("힘쎈이"), role: SAGE, short: "Sage", part: "lead" },
-            { ko: "매력철철이모부", pid: P("매력철철이모부"), role: "T.O, Biker #1", short: TO, part: "lead" },
+            { ko: "매력철철이모부", pid: P("매력철철이모부"), role: "T.O, Biker #1", short: TO, part: "lead", sexy: true },
             { ko: "말차곰", pid: P("말차곰"), role: "Mike, Biker #2", short: MIKE, part: "lead", look: { outfit: "clothes" } },
             { ko: "나쁜년개미", pid: P("나쁜년개미"), role: "Ling Ling, Biker Chick #1", short: LING, part: "lead", sexy: true, look: { outfit: "clothes" } },
             { ko: "미라지댕이", pid: P("미라지댕이"), role: "Sally, Biker Chick #2", short: SALLY, part: "lead", nude: true },
