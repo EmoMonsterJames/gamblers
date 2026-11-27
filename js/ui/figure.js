@@ -6,7 +6,7 @@
 import { h } from "../core/util.js";
 import { Store } from "../core/store.js";
 import { parseGen, buildAvatar, toDataUri, holdProp } from "./avatarGen.js";
-import { exprParts } from "./avatarExtra.js";
+import { exprParts, nudeBits } from "./avatarExtra.js";
 
 // expression name → ui/avatarExtra.js EXPRESSIONS index
 export const EXPR = {
@@ -20,9 +20,9 @@ export const EXPR_KO = {
     beast: "🐺 야수 (붉은 눈 · 송곳니)", redeye: "🔴 붉은 눈"
 };
 export const POSE_KO = { down: "기본", wave: "한 손 들기", both: "두 손 들기", point: "가리키기", hips: "허리에 손", shrug: "으쓱" };
-export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미", candle: "🕯️ 촛불", cross: "✝️ 십자가", paper: "📰 신문" };
+export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미", candle: "🕯️ 촛불", cross: "✝️ 십자가", paper: "📰 신문", knife: "🔪 칼", bow: "🏹 활", pighead: "🐷 구운 돼지머리", necklace: "🦴 뼈 목걸이" };
 const MARK = { beast: "🐺", redeye: "🔴", angry: "💢", annoyed: "💢", sweat: "💦", scared: "💦", shock: "❗", love: "💕", sad: "💧", cry: "💧", excited: "✨", happy: "♪", evil: "ㅋ", cool: "✨", dizzy: "💫", sleepy: "💤", shy: "💗", roll: "…", smug: "♪", wink: "♪", tongue: "♪" };
-const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹", candle: "🕯️", cross: "✝️", paper: "📰" };
+const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹", candle: "🕯️", cross: "✝️", paper: "📰", knife: "🔪", bow: "🏹", pighead: "🐷", necklace: "🦴" };
 
 const cache = new Map();
 const imgOf = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
@@ -179,10 +179,12 @@ function wardrobe(A, o, female, body, skin, wear, bare, O) {
     if (wear === "dress") {
         legs = `<path d="M96 160H160L192 236Q128 248 64 236Z" fill="${GOWN}" ${O}/><path d="M112 170L100 236M144 170L156 236" stroke="#0003" stroke-width="3" fill="none"/>`;
     } else {
-        const lc = bare && wear === "bikini" ? skin : "#374151";
+        // nude "full": bare legs and feet (no trousers, no shoes)
+        const full = wear === "nude" && o.nude === "full";
+        const lc = bare && (wear === "bikini" || full) ? skin : "#374151";
         legs = `<path d="M100 166H156L158 186H98Z" fill="${lc}" ${O}/>` +
             `<path d="M101 184L103 232H123L127 190Z" fill="${lc}" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="${lc}" ${O}/>` +
-            `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>` +
+            `<ellipse cx="110" cy="236" rx="${full ? 12 : 15}" ry="${full ? 6 : 7.5}" fill="${full ? skin : "#1f2937"}" ${O}/><ellipse cx="146" cy="236" rx="${full ? 12 : 15}" ry="${full ? 6 : 7.5}" fill="${full ? skin : "#1f2937"}" ${O}/>` +
             (wear === "bikini" ? `<path d="M99 168H157L150 184Q128 196 106 184Z" fill="${BIKINI}" ${O}/>${dots(122, 176)}${dots(138, 178)}` : "");
     }
     const bodyFill = wear === "dress" ? GOWN : skin;
@@ -192,6 +194,7 @@ function wardrobe(A, o, female, body, skin, wear, bare, O) {
         `${legs}<path d="${torso}" fill="${bodyFill}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>${neck}` +
         `<g clip-path="url(#${cid})"><svg x="44" y="0" width="168" height="168" viewBox="0 0 256 256" overflow="hidden">${body}</svg></g>` +
         (bare ? chest + navel : "") + (wear === "bikini" ? bikiniTop : "") +
+        (wear === "nude" && o.nude === "full" ? nudeBits(!female, 128, 174, skin, INK) : "") +
         armsSvg(sleeve, skin, o.pose, o.hold) + `</svg>`);
 }
 function shadeHex(hex, k) {
@@ -206,7 +209,7 @@ function figSrc(pid, o) {
     const src = imgOf(pid);
     if (!src) return "";
     const g = parseGen(src);
-    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude ? 1 : 0, o.jiggle ? 1 : 0, o.outfit || "", o.swim ?? ""].join(",")}`;
+    const key = `${pid}|${[o.expr, o.pose, o.hold, o.nude === "full" ? 2 : o.nude ? 1 : 0, o.jiggle ? 1 : 0, o.outfit || "", o.swim ?? ""].join(",")}`;
     if (cache.has(key)) return cache.get(key);
     let out;
     if (g) {
@@ -214,7 +217,7 @@ function figSrc(pid, o) {
         //    outfit "clothes": a picture drawn in swimwear gets dressed (summer clothes) — before the strip show
         const sw = o.outfit === "bikini" && !o.nude ? { season: "swim", outfit: o.swim ?? (g.season === "swim" ? g.outfit : 0) }
             : o.outfit === "clothes" && g.season === "swim" ? { season: "summer", outfit: 0 } : {};
-        out = toDataUri(buildAvatar({ ...g, ...sw, full: true, expr: o.expr in EXPR ? EXPR[o.expr] : g.expr, pose: o.pose || "down", hold: o.hold || "", topless: !!o.nude, jiggle: !!o.jiggle }));
+        out = toDataUri(buildAvatar({ ...g, ...sw, full: true, expr: o.expr in EXPR ? EXPR[o.expr] : g.expr, pose: o.pose || "down", hold: o.hold || "", topless: !!o.nude, nudeFull: o.nude === "full", jiggle: !!o.jiggle }));
     } else if (/\.svg(\?|$)/i.test(src) && !src.startsWith("data:")) {
         const female = String(Store.player(pid)?.gender || "").toLowerCase() === "female";
         out = drawnFull(src, o, female).then(u => { cache.set(key, u); return u; }).catch(e => { console.warn(e); cache.set(key, src); return src; });
@@ -234,10 +237,12 @@ export function figure(c, o = {}) {
 }
 // change the expression / pose of a figure already on screen (the film)
 export function setFigure(el, c, o = {}) {
-    const img = el.querySelector("img");
     const gen = isGenerated(c?.pid);
     const s = c?.pid != null ? figSrc(c.pid, o) : "";
-    if (!s) { img.replaceWith(h("span.vfig-none", "👤")); return; }
+    // no picture (yet): a 👤 stands in · once there is one, the <img> comes back
+    if (!s) { el.querySelector("img")?.replaceWith(h("span.vfig-none", "👤")); return; }
+    el.querySelector(".vfig-none")?.replaceWith(h("img", { alt: c?.ko || "", draggable: "false" }));
+    const img = el.querySelector("img");
     if (typeof s === "string") img.src = s; else s.then(u => { img.src = u; });
     if (!gen) {
         el.querySelector(".vfig-mark")?.remove();
@@ -256,7 +261,11 @@ export function setFigure(el, c, o = {}) {
     if (o.mosaic && (o.nude || o.outfit === "nude")) el.append(h("i.vfig-mosaic"));
     // 🐺 werewolf (films): "half" — wolf ears, fur, claws over the player · "full" — a wolf stands where the player was
     el.querySelector(".vfig-wolf")?.remove();
-    if (o.wolf) { const w = h("i.vfig-wolf"); w.innerHTML = o.wolf === "full" ? WOLF_FULL : wolfHalf(o.wolf, o.pose); el.querySelector(".vfig-in").append(w); }
+    //   eyes "yellow": the wolf's red eyes turn yellow (he knows his friends again)
+    if (o.wolf) { const w = h("i.vfig-wolf"); w.innerHTML = o.wolf === "full" ? (o.eyes === "yellow" ? WOLF_FULL.replaceAll("#ef4444", "#facc15") : WOLF_FULL) : wolfHalf(o.wolf, o.pose); el.querySelector(".vfig-in").append(w); }
+    // 🪶 tribal: a feathered headband and a grass skirt · 🦴 beads: a bone necklace worn round the neck
+    el.querySelector(".vfig-tribal")?.remove();
+    if ((o.tribal || o.beads) && !(o.wolf === "full")) { const w = h("i.vfig-wolf.vfig-tribal"); w.innerHTML = tribalSvg(!!o.tribal, !!o.beads, o.upper); el.querySelector(".vfig-in").append(w); }
     // 👶 swaddled (films): a baby wrapped in a blanket, only the face peeping out (a generated picture: the face sits at about 128,114)
     el.querySelector(".vfig-swaddle")?.remove();
     if (o.swaddle) { const w = h("i.vfig-wolf.vfig-swaddle"); w.innerHTML = SWADDLE; el.querySelector(".vfig-in").append(w); }
@@ -268,6 +277,15 @@ function wolfHalf(kind, pose) {
     const ears = kind === "claws" ? "" : `<g fill="#4a2c17" stroke="#1c0f06" stroke-width="4" stroke-linejoin="round"><path d="M72 46L66 -4L104 26Z"/><path d="M184 46L190 -4L152 26Z"/></g><path d="M76 34L72 8L94 26ZM180 34L184 8L162 26Z" fill="#f9a8d4" opacity=".7"/>` +
         `<g fill="#4a2c17" opacity=".9">${[-1, 1].map(k => `<path d="M${128 + k * 46} 150l${k * 14} -6l${-k * 4} 12l${k * 12} -2l${-k * 6} 12l${k * 10} 0l${-k * 10} 10Z"/>`).join("")}</g>`;
     return `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">${ears}<g fill="#f5f5f4" stroke="#1c0f06" stroke-width="1.6" stroke-linejoin="round">${claws}</g></svg>`;
+}
+function tribalSvg(tribal, beads, upper) {
+    const band = `<path d="M70 58Q128 36 186 58" fill="none" stroke="#b91c1c" stroke-width="9" stroke-linecap="round"/><path d="M76 56Q128 36 180 56" fill="none" stroke="#fde047" stroke-width="2.4" stroke-dasharray="5 5"/>` +
+        [[-46, -26], [-24, -12], [0, 0], [24, 12], [46, 26]].map(([dx, r], i) => `<g transform="translate(${128 + dx} ${50 - (i === 2 ? 6 : i % 2 ? 2 : 0)}) rotate(${r})"><path d="M0 0Q-8 -24 0 -44Q8 -24 0 0Z" fill="${["#16a34a", "#dc2626", "#facc15", "#dc2626", "#16a34a"][i]}" stroke="#1c1917" stroke-width="1.8"/><path d="M0 -2V-38" stroke="#1c1917" stroke-width="1"/></g>`).join("");
+    const skirt = upper ? "" : `<path d="M70 184Q128 172 186 184" fill="none" stroke="#78350f" stroke-width="6"/>` +
+        Array.from({ length: 15 }, (_, i) => { const x = 72 + i * 8; return `<path d="M${x} 184L${x - 3 + (i % 3) * 3} 226" stroke="${i % 2 ? "#65a30d" : "#a16207"}" stroke-width="5" stroke-linecap="round"/>`; }).join("");
+    const neck = `<path d="M92 146Q128 176 164 146" fill="none" stroke="#78350f" stroke-width="2"/>` +
+        [[-28, 152, -40], [-14, 162, -20], [0, 166, 0], [14, 162, 20], [28, 152, 40]].map(([dx, y, r]) => `<g transform="translate(${128 + dx} ${y}) rotate(${r})"><rect x="-2.5" y="-1" width="5" height="13" rx="1" fill="#f5f5f4" stroke="#44403c" stroke-width="1.4"/><circle cx="-2.5" cy="12" r="2.6" fill="#f5f5f4" stroke="#44403c" stroke-width="1.2"/><circle cx="2.5" cy="12" r="2.6" fill="#f5f5f4" stroke="#44403c" stroke-width="1.2"/></g>`).join("");
+    return `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">${tribal ? skirt + band : ""}${tribal || beads ? neck : ""}</svg>`;
 }
 const SWADDLE = `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">` +
     `<path fill-rule="evenodd" d="M128 64C172 64 190 100 184 142L190 238Q128 258 66 238L72 142C66 100 84 64 128 64ZM128 88C110 88 101 102 101 116C101 132 112 143 128 143C144 143 155 132 155 116C155 102 146 88 128 88Z" fill="#bfdbfe" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>` +

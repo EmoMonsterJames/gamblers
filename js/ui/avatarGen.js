@@ -12,7 +12,7 @@
 // 0,0) so hair / wigs / hats / glasses fit every body.
 // =====================================================================
 import * as AR from "./avatarRaces.js";
-import { exprParts, swimNames, swimSpec, swimArm, swimTorso, furDefs, furWrap, woolEdge } from "./avatarExtra.js";
+import { exprParts, swimNames, swimSpec, swimArm, swimTorso, furDefs, furWrap, woolEdge, nudeBits } from "./avatarExtra.js";
 import { pinSvg, tatAt } from "./avatarWear.js";
 export { EXPRESSIONS, SWIM_SEASON } from "./avatarExtra.js";
 export { PINS, PIN_POS, TATTOOS, TAT_AREAS } from "./avatarWear.js";
@@ -393,6 +393,11 @@ export function holdProp(kind, [x, y]) {
     // ✝️ a wooden crucifix held up · 📰 a folded newspaper
     if (kind === "cross") return `<g transform="translate(${x} ${y - 8})"><circle cx="0" cy="-10" r="18" fill="#fef9c3" opacity=".35"/><path d="M-3 -28H3V-18H12V-12H3V12H-3V-12H-12V-18H-3Z" fill="#a16207" stroke="#422006" stroke-width="2" stroke-linejoin="round"/></g>`;
     if (kind === "paper") return `<g transform="translate(${x} ${y}) rotate(-8)"><rect x="-15" y="-14" width="30" height="24" rx="1.5" fill="#f5f5f4" stroke="#44403c" stroke-width="2"/><path d="M-11 -9H11" stroke="#111" stroke-width="3"/><path d="M-11 -3H-1M-11 1H-1M-11 5H-1" stroke="#78716c" stroke-width="1.4"/><rect x="2" y="-4" width="9" height="10" fill="#a8a29e"/></g>`;
+    // 🔪 a tribal knife (blade up) · 🏹 a bow with an arrow nocked · 🐷 a roasted pig's head on a stick · 🦴 a bone necklace
+    if (kind === "knife") return `<g transform="translate(${x} ${y}) rotate(-20)"><rect x="-3.5" y="-2" width="7" height="14" rx="2" fill="#78350f" stroke="#2a1608" stroke-width="1.6"/><path d="M-5 -2H5" stroke="#2a1608" stroke-width="3"/><path d="M-4 -3L0 -32L4 -3Z" fill="#e7e5e4" stroke="#44403c" stroke-width="1.6" stroke-linejoin="round"/><path d="M0 -26V-6" stroke="#a8a29e" stroke-width="1"/></g>`;
+    if (kind === "bow") return `<g transform="translate(${x} ${y})"><path d="M-4 -30Q18 0 -4 30" fill="none" stroke="#78350f" stroke-width="4" stroke-linecap="round"/><path d="M-4 -30L-4 30" stroke="#f5f5f4" stroke-width="1.2"/><path d="M-26 0H22" stroke="#a16207" stroke-width="2.4"/><path d="M22 0l-7 -4v8Z" fill="#57534e"/><path d="M-26 0l-5 -4M-26 0l-5 4M-22 0l-5 -4M-22 0l-5 4" stroke="#dc2626" stroke-width="1.6"/></g>`;
+    if (kind === "pighead") return `<g transform="translate(${x} ${y})"><path d="M0 8V30" stroke="#78350f" stroke-width="3"/><ellipse cx="0" cy="-4" rx="17" ry="14" fill="#b45309" stroke="#431407" stroke-width="2"/><path d="M-14 -14L-18 -26L-6 -17ZM14 -14L18 -26L6 -17Z" fill="#92400e" stroke="#431407" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="0" cy="2" rx="8" ry="6" fill="#c2410c" stroke="#431407" stroke-width="1.6"/><circle cx="-3" cy="2" r="1.5" fill="#431407"/><circle cx="3" cy="2" r="1.5" fill="#431407"/><path d="M-9 -9l4 2M9 -9l-4 2" stroke="#1c0a02" stroke-width="2" stroke-linecap="round"/><path d="M-10 -12q2 -3 5 0M5 -12q2 -3 5 0" stroke="#fde68a" stroke-width="1" fill="none" opacity=".7"/></g>`;
+    if (kind === "necklace") return `<g transform="translate(${x} ${y})"><path d="M-14 -16Q0 14 14 -16" fill="none" stroke="#78350f" stroke-width="1.6"/>${[-10, -5, 0, 5, 10].map((dx, i) => `<g transform="translate(${dx} ${[-4, 3, 5, 3, -4][i]}) rotate(${dx * 6})"><rect x="-1.4" y="-1" width="2.8" height="8" fill="#f5f5f4" stroke="#57534e" stroke-width=".9"/><circle cx="-1.4" cy="7" r="1.6" fill="#f5f5f4" stroke="#57534e" stroke-width=".7"/><circle cx="1.4" cy="7" r="1.6" fill="#f5f5f4" stroke="#57534e" stroke-width=".7"/></g>`).join("")}</g>`;
     return "";
 }
 // skY / hip: where a skirt starts on the body and the body's half width there · waist: share of the body height the bottoms cover
@@ -512,11 +517,16 @@ export function buildAvatar(opts = {}) {
     const vary = { bg: Math.floor(R() * 8), eye: Math.floor(R() * 4), mood: Math.floor(R() * 4), pose: Math.floor(R() * 3), blush: R() < 0.55, eyeCol: ["#3a2a1e", "#3f7df0", "#3fae5a", "#6b4a2f", "#7a5af0"][Math.floor(R() * 5)], tilt: R() };
     // 👙 swimwear / lingerie: every humanoid race, never a baby (shape races get a summer outfit)
     // 🎬 topless (VHS films only — a grown-up woman's figure): the regular bottoms stay, the top is bare skin
-    const topless = !!o.topless && humanoid && female && !o.baby;
+    // 🎬 nudeFull (VHS films only — grown-ups): nothing on at all, bare feet · drawn cute (ui/avatarExtra.js nudeBits)
+    const nudeFull = !!o.nudeFull && humanoid && !o.baby;
+    const topless = (!!o.topless || nudeFull) && humanoid && female && !o.baby;
     const swimG = o.swimAs === "female" || o.swimAs === "male" ? o.swimAs : female ? "female" : "male";
+    const manBody = { muscle: "muscle", fat: "fat", chubby: "belly", skinny: "slim" }[o.bt] || "normal";
     const swim = topless ? ["", "topless", "#000", "#000", o.jiggle ? "jiggle" : ""]
+        : nudeFull ? ["", manBody, "#000", "#000", "nude"]
         : o.season === "swim" && swimOk(race.id) && !o.baby ? swimSpec(swimG, o.outfit) : null;
-    const fit = topless ? { ...outfit("female", o.season === "swim" ? "summer" : o.season, o.outfit), top: { ko: "", sl: 0 } }
+    const fit = nudeFull ? { ...outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit), top: { ko: "", sl: 0 }, bot: BOT.none }
+        : topless ? { ...outfit("female", o.season === "swim" ? "summer" : o.season, o.outfit), top: { ko: "", sl: 0 } }
         : swim ? { top: { ko: "", sl: 0 }, tc: swim[2], bot: BOT.none, bc: swim[2] } : outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit);
     const season = o.season === "swim" ? "summer" : o.season;
     // 🐑 curly fur: soft wavy edges + curl texture on the ears, face and body
@@ -625,7 +635,8 @@ export function buildAvatar(opts = {}) {
         out.push(limb("M116 176L114 226", BT ? BT[3] : 12) + limb("M140 176L142 226", BT ? BT[3] : 12));
         if (tatOn("full")) out.push(tatStroke("M116 176L114 226", BT ? BT[3] : 12) + tatStroke("M140 176L142 226", BT ? BT[3] : 12)); // 🖋️ 전신: the legs too
         const shoe = SHOES[season] || SHOES.spring;
-        out.push(season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
+        out.push(nudeFull ? `<ellipse cx="111" cy="232" rx="11" ry="6" fill="${skinG}" ${S(3, line)}/><ellipse cx="145" cy="232" rx="11" ry="6" fill="${skinG}" ${S(3, line)}/>` // 🦶 bare feet
+            : season === "winter" ? `<path d="M104 214h18v16q8 2 8 8h-28Z" fill="${shoe}" ${S(3)}/><path d="M134 214h18l2 24h-28q0-6 8-8Z" fill="${shoe}" ${S(3)}/>`
             : season === "summer" ? `<ellipse cx="110" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><ellipse cx="146" cy="234" rx="13" ry="5.5" fill="${shoe}" ${S(3)}/><path d="M104 231l10 -6M152 231l-10 -6" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`
                 : `<ellipse cx="109" cy="233" rx="14" ry="7.5" fill="${shoe}" ${S(3)}/><ellipse cx="147" cy="233" rx="14" ry="7.5" fill="${shoe}" ${S(3)}/>`);
         // bottom
@@ -677,7 +688,10 @@ export function buildAvatar(opts = {}) {
         if (T.btn) deco += Array.from({ length: T.len === "coat" ? 4 : 3 }, (_, i) => `<circle cx="${T.open ? 146 : 128}" cy="${136 + i * 14}" r="2.3" fill="${lum(tc) > 0.6 ? "#6b4a2f" : "#f7f7f5"}"/>`).join("");
         if (T.pocket) deco += `<path d="M112 152H144L140 167H116Z" fill="none" stroke="${tcd}" stroke-width="2.4" stroke-linejoin="round"/>`;
         if (T.belt) deco += `<path d="M92 164H164" stroke="${tcd}" stroke-width="7"/><rect x="123" y="159" width="10" height="10" rx="2" fill="none" stroke="#e8b923" stroke-width="2.4"/>`;
-        if (swim) out.push(swimTorso(topless || swimG === "female", swim, skinG, skin, line, fur, tatOn("upper") ? tatFill : "")); // 👙 bare skin + swimsuit / lingerie / trunks
+        if (swim) out.push(swimTorso(topless || (!nudeFull && swimG === "female"), swim, skinG, skin, line, fur, tatOn("upper") ? tatFill : "")); // 👙 bare skin + swimsuit / lingerie / trunks
+        // 🎬 full nudity: bare hips joining the legs, then the little drawing
+        if (nudeFull) out.push(`<path d="M99 166Q128 174 157 166L158 184Q128 194 98 184Z" fill="${skinG}"/><path d="M99 166L98 184Q128 194 158 184L157 166" fill="none" stroke="${line}" stroke-width="3.5" stroke-linejoin="round"/>` +
+            nudeBits(!female, 128, 178, skinG, line, human && isHex(o.hair) ? o.hair : "#3a2a24"));
         else out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
         // neck line
         const nk = T.open ? "" : T.neck;

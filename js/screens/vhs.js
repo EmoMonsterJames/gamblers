@@ -245,7 +245,8 @@ export function mumble(text, seed = 0) {
 export const BG_KO = { street: "거리", bank: "은행", hideout: "아지트", taxi: "택시 안", home: "집", forest: "숲", space: "우주", castle: "성", beach: "해변", night: "밤거리", stage: "무대", office: "사무실", campus: "대학교", room: "방", shower: "샤워실", ballroom: "무도회장",
     practice: "연습실", hallway: "복도", seats: "객석", country: "시골길", darkroad: "어두운 시골길", barnout: "헛간 앞", barn: "헛간", police: "경찰조사실",
     woods: "밤의 숲속", house: "하우스", school: "학교", classroom: "교실", moonhouse: "보름달 뜬 집 밖", church: "성당", funeral: "장례식장", funeralout: "장례식장 밖",
-    agency: "탐정사무소", bedroom: "침실", camp: "숲속 파티", lake: "숲속 호숫가", hospital: "병원" };
+    agency: "탐정사무소", bedroom: "침실", camp: "숲속 파티", lake: "숲속 호숫가", hospital: "병원",
+    jungle: "정글", junglenight: "정글 · 밤", village: "Nuka 부족 마을", hut: "부족의 집" };
 const NOTE = n => 220 * Math.pow(2, n / 12);
 // 🥁 a short noise hit (snare / hi-hat) and a kick
 let noiseBuf = null;
@@ -323,6 +324,7 @@ function sfx(kind) {
     else if (kind === "shot") { drum("k"); drum("s"); drum("s", 0.01); tone(90, 0.4, { type: "sawtooth", vol: 0.06, glide: -50 }); }
     // 🌊 something dragged under the water: a deep gulp + a spray of noise
     else if (kind === "splash") { tone(160, 0.5, { type: "sine", vol: 0.08, glide: -110 }); for (let i = 0; i < 8; i++) drum(i % 2 ? "h" : "s", i * 0.05 + Math.random() * 0.03); }
+    else if (kind === "drum") { [0, 0.28, 0.56, 0.7, 0.98, 1.26, 1.4].forEach((t, i) => drum(i % 3 === 2 ? "s" : "k", t)); } // 🥁 tribal drums
     else if (kind === "bell") { [0, 1.4].forEach(t => { tone(NOTE(-5), 2.2, { type: "sine", vol: 0.06, at: t }); tone(NOTE(7), 1.6, { type: "sine", vol: 0.025, at: t }); }); }
 }
 export const MUSIC_STYLES = Object.entries(STYLES).map(([k, s]) => [k, s.ko]);
@@ -380,13 +382,12 @@ export function playMovie(m) {
         const setAmb = kinds => amb.set(Sound.muted ? [] : kinds);
         // ⏸ Pause: the film (scenes · lines · music · animations) stops where it is — the play time was already stopped for the film
         const pauseBtn = h("button.btn.ghost.small.vp-pause-btn", { onclick: () => setPause(!paused) }, "⏸ 일시정지");
-        const pauseMark = h("div.vp-paused", h("b", "⏸ PAUSE"), h("small", "▶ 재생을 누르면 이어서 봅니다"));
         function setPause(on) {
             paused = on;
             setFilmPaused(on);
             screen.classList.toggle("paused", on);
             pauseBtn.textContent = on ? "▶ 재생" : "⏸ 일시정지";
-            if (on) screen.append(pauseMark); else pauseMark.remove();
+            // (no PAUSE sign over the picture — the ▶ 재생 button brings it back)
         }
         const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
         // 💀 Body Count roll after The End (a few seconds more)
@@ -419,7 +420,10 @@ export function playMovie(m) {
                             // 🌕 "moon": a dark forest under a huge full moon — the camera looks up at it, the titles glow in its light
                             : part.style === "moon" ? [h("i.vp-moon"), h("i.vp-trees"), h("i.vp-clouds")]
                             // 🩸 "blood": a black screen, blood runs down from the top over the English title
-                            : part.style === "blood" ? [h("div.vp-blood", Array.from({ length: 14 }, (_, i) => h("i", { style: { "--x": (i * 7.3 + 1) + "%", "--w": (8 + (i * 37) % 22) + "px", "--h": (30 + (i * 53) % 55) + "%", "--d": ((i * 0.37) % 1.6).toFixed(2) + "s" } })))] : [];
+                            : part.style === "blood" ? [h("div.vp-blood", Array.from({ length: 14 }, (_, i) => h("i", { style: { "--x": (i * 7.3 + 1) + "%", "--w": (8 + (i * 37) % 22) + "px", "--h": (30 + (i * 53) % 55) + "%", "--d": ((i * 0.37) % 1.6).toFixed(2) + "s" } })))]
+                            // 🌴 "jungle": a plane flies over the jungle · through its window someone (part.peek) looks down · the English title, then the Korean title art spins in
+                            : part.style === "jungle" ? [h("div.vp-canopy"), h("i.vp-plane", "✈️"),
+                                part.peek && roleCast(m, part.peek) ? h("div.vp-porthole", h("div.vp-porthole-in", figure(roleCast(m, part.peek), { ...(roleCast(m, part.peek).look || {}), expr: "blank", pose: "down", upper: true, size: 420 }))) : null] : [];
                         const titleEl = h("div.vp-title.s-" + (part.style || "bold"), ...deco, h("div.vp-en", m.en), ko);
                         put(screen, titleEl);
                         // koClaw: a wolf's claw tears across the screen as the Korean title comes in
@@ -428,12 +432,13 @@ export function playMovie(m) {
                             if (part.koClaw) { const c = h("div.vp-claw", h("i"), h("i"), h("i"), h("i")); titleEl.append(c); }
                         }, part.koAt ?? Math.min(2500, part.sec * 400));
                     } else if (part.k === "cast") {
-                        const list = m.cast.filter(c => (part.parts || ["lead", "support"]).includes(c.part));
-                        const box = h("div.vp-cast");
+                        // only: just these roles (in this order) · bg: the cast cards over a set (e.g. "jungle")
+                        const list = part.only ? part.only.map(r => roleCast(m, r)).filter(Boolean) : m.cast.filter(c => (part.parts || ["lead", "support"]).includes(c.part));
+                        const box = h("div.vp-cast" + (part.bg ? ".on-" + part.bg : ""));
                         put(screen, box);
                         const each = part.sec / Math.max(1, list.length);
                         const big = Math.round(Math.min(220, screen.clientHeight * 0.52));
-                        for (const c of list) { if (skip) break; put(box, h("div.vp-cast-card", figure(c, { expr: "happy", pose: "wave", size: big }), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
+                        for (const c of list) { if (skip) break; put(box, h("div.vp-cast-card", figure(c, { ...(c.look || {}), expr: "happy", pose: "wave", size: big }), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
                         continue;
                     } else if (part.k === "scene") {
                         await scene(part);
@@ -458,9 +463,9 @@ export function playMovie(m) {
         })();
         async function scene(sc) {
             const people = (sc.who || []).map(r => roleCast(m, r)).filter(Boolean);
-            const nude = new Set(sc.nude || []);
+            const nude = new Set(sc.nude || []), fullNude = new Set(sc.fullNude || []);   // fullNude: nothing on at all
             // how each actor starts the scene (scene.cast) · topless when the scene says so (a dancer's chest bounces)
-            const base = people.map(c => { const o = { expr: "happy", pose: "down", ...(c.look || {}), ...(sc.cast?.[c.role] || sc.cast?.[c.short] || {}) }; if (nude.has(c.role) || nude.has(c.short)) { o.nude = true; o.jiggle = o.act === "dance"; } return o; });
+            const base = people.map(c => { const o = { expr: "happy", pose: "down", ...(c.look || {}), ...(sc.cast?.[c.role] || sc.cast?.[c.short] || {}) }; if (fullNude.has(c.role) || fullNude.has(c.short)) o.nude = "full"; else if (nude.has(c.role) || nude.has(c.short)) o.nude = true; if (o.nude) o.jiggle = o.act === "dance"; return o; });
             const W = screen.clientWidth || 800, H = screen.clientHeight || 450;
             // a crowd (more than 7 on screen) stands in two rows, the back row a little higher
             const rows = people.length > 7 ? 2 : 1, perRow = Math.ceil(people.length / rows);
@@ -468,7 +473,7 @@ export function playMovie(m) {
             const COL = 0.36;
             // 🔍 close: a close-up — one face and chest fills the screen
             if (sc.close) base.forEach(o => { o.upper = true; });
-            const size = Math.round(sc.close ? H * 1.6 : rows > 1 ? Math.min(H * 0.42, (W * 0.96) / ((perRow * 2 + 1) * COL)) : Math.min(H * 0.62, (W * 0.9) / Math.max(1, people.length)));
+            const size = Math.round(sc.close ? H * 1.6 : rows > 1 ? Math.min(H * 0.42, (W * 0.96) / ((perRow * 2 + 1) * COL)) : Math.min(H * 0.62, (W * (0.94 - 0.03 * Math.max(0, people.length - 1))) / Math.max(1, people.length)));   // (the 3% gaps between actors count too)
             const figs = people.map((c, i) => figure(c, { ...base[i], size }));
             const actors = people.map((c, i) => h("div.vp-actor", { style: { "--i": i } }, figs[i], h("small", c.short || c.role)));
             if (rows > 1) actors.forEach((a, i) => {
@@ -512,7 +517,17 @@ export function playMovie(m) {
                 moon: () => h("div.vp-fx.moon", h("i.vp-bigmoon"), h("i.vp-mist-band")),         // 🌕 a huge full moon over the set
                 shadow: () => h("div.vp-fx.shadow", h("i.vp-bigmoon.small"), h("i.vp-shadow")),  // 👤 a shadow slides past behind someone
                 wake: () => h("i.vp-wake"),                                                       // 👁️ waking up: blurred, blinking, then clear
-                camp: () => h("div.vp-fx.camp", h("i.vp-fire"), h("i.vp-bike.a"), h("i.vp-bike.b"))  // 🔥 a campfire · motorbikes parked in the dark
+                camp: () => h("div.vp-fx.camp", h("i.vp-fire"), h("i.vp-bike.a"), h("i.vp-bike.b")), // 🔥 a campfire · motorbikes parked in the dark
+                bonfire: () => h("div.vp-fx.camp", h("i.vp-fire"), h("i.vp-tent.a"), h("i.vp-tent.b")),  // ⛺ a campfire between two tents
+                // 🐷 the tribe's ritual: a pig's head on a stake in the middle of a ring of fires
+                ritual: () => h("div.vp-fx.camp.ritual", h("i.vp-fire.r1"), h("i.vp-fire.r2"), h("i.vp-fire.r3"), h("i.vp-fire.r4"), h("i.vp-pig", "🐷"))
+            };
+            // pop: { e: emoji, at: role, fly } — something turns up by an actor (a snake behind someone · an arrow flying in)
+            const popAt = p => {
+                const k = idxOf(p.at); if (k < 0) return;
+                const el = h("i.vp-pop" + (p.fly ? ".fly" : "") + (p.cls ? "." + p.cls : ""), p.e);
+                actors[k].append(el);
+                if (!p.stay) setTimeout(() => el.remove(), p.fly ? 1400 : 3200);
             };
             // 🩸 claw marks torn across the screen (a line can ask for them: meta.claw)
             const clawMarks = () => { const c = h("div.vp-claw", h("i"), h("i"), h("i"), h("i")); sceneEl.append(c); setTimeout(() => c.remove(), 1800); };
@@ -536,16 +551,17 @@ export function playMovie(m) {
                 if (meta.flash) { const fl = h("i.vp-flash" + (meta.flash === "red" ? ".red" : "")); sceneEl.append(fl); setTimeout(() => fl.remove(), 600); }
                 if (meta.claw) clawMarks();
                 if (meta.sfx) sfx(meta.sfx);
+                if (meta.pop) [].concat(meta.pop).forEach(popAt);
                 // the one on the phone talks in the bubble
                 const onCall = callC && who && D.castOf(m, who) === callC;
                 call?.classList.toggle("talk", !!onCall);
                 if (onCall) setFigure(callFig, callC, { ...(callC.look || {}), hold: "phone", pose: "wave", expr: D.lineMood(text), ...meta, upper: true, act: "", size: Math.round(H * 0.42) });
-                for (const [r, o] of Object.entries(meta.set || {})) { const k = idxOf(r); if (k >= 0) { base[k] = { ...base[k], ...o }; if (o.nude !== undefined || o.outfit !== undefined) base[k].nude = !!(o.nude ?? base[k].nude); if (o.held !== undefined) putHeld(k, o.held); } }
+                for (const [r, o] of Object.entries(meta.set || {})) { const k = idxOf(r); if (k >= 0) { base[k] = { ...base[k], ...o }; if (o.nude !== undefined || o.outfit !== undefined) base[k].nude = (o.nude ?? base[k].nude) || false; if (o.held !== undefined) putHeld(k, o.held); } }
                 // to: the actor this line is aimed at — a slap / kiss / push leans that way
                 const ti = meta.to ? idxOf(meta.to) : -1;
                 actors.forEach((a, i) => { a.classList.toggle("talk", i === ci); a.style.setProperty("--dir", i === ci && ti >= 0 ? Math.sign(ti - ci) || 1 : i < (people.length - 1) / 2 ? 1 : -1); });
                 // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they are
-                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, ...look } = meta;
+                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, pop: _p, ...look } = meta;
                 people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
                 // anon: the name tag under the actor is hidden (the monster nobody knows yet)
                 actors.forEach((a, i) => { a.classList.toggle("gone", !!base[i].gone); a.classList.toggle("hid", !!base[i].hid); a.classList.toggle("anon", !!base[i].anon); });

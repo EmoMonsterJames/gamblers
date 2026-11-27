@@ -159,6 +159,7 @@ export function swimTorso(female, spec, skinFill, skin, line, fur = null, tat = 
         if (b === "muscle") s += ln("M102 128Q114 148 127 141M129 141Q142 148 154 128M128 146V170M118 152h20M119 160h18M120 167h16M100 150q4 6 8 8M156 150q-4 6 -8 8") + nip;
         if (b === "belly") s += ln("M106 140Q117 145 126 140M130 140Q139 145 150 140") + nip + `<path d="M104 152Q128 186 152 152" fill="none" stroke="${isHex(skin) ? shade(skin, 0.25) : "#fff"}" stroke-width="3" opacity=".7"/>` + navel(170);
         if (b === "fat") s += ln("M101 138Q114 152 126 143M130 143Q142 152 155 138M98 164Q128 182 158 164") + nip + navel(172);
+        if (pat === "nude") return s;   // 🎬 full nudity (films): no trunks
         // 🩳 swim trunks peeking out at the bottom of the picture
         const w = { slim: 24, normal: 31, muscle: 30, belly: 33, fat: 40 }[b] || 31, y0 = { belly: 174, fat: 176 }[b] || 171;
         const tr = `M${128 - w} ${y0}Q128 ${y0 + 5} ${128 + w} ${y0}L${128 + w + 3} 196H${128 - w - 3}Z`;
@@ -225,4 +226,28 @@ export function woolEdge(shape, skinPaint, line, w = 3.5, gap = 7) {
     return sh(`fill="${skinPaint}" stroke="${line}" stroke-width="${w + 7}" stroke-dasharray="0 ${gap}" stroke-linecap="round"`) +
         sh(`fill="${skinPaint}" stroke="${skinPaint}" stroke-width="${w + 3.6}" stroke-dasharray="0 ${gap}" stroke-linecap="round"`) +
         sh(`fill="url(#fzp)" opacity=".7"`);
+}
+
+// 🎬 full nudity (VHS films only, grown-ups): drawn cute, not real —
+//   a man: a little elephant face (two flappy ears, dot eyes, a curled trunk) with a tuft of hair on top
+//   a woman: a small upside-down triangle covered in dots
+//   x, y: the top centre (the crotch) · skin / line: skin paint + outline · hair: the tuft / triangle colour
+export function nudeBits(male, x, y, skin, line, hair = "#3a2a24") {
+    const f = n => +n.toFixed(1);
+    if (!male) {
+        const dc = lum(hair) > 0.5 ? shade(hair, -0.5) : "#fde68a";   // dots that show on light or dark hair
+        const dots = [[-5, 2], [0, 2], [5, 2], [-2.5, 6], [2.5, 6], [0, 10], [-7.5, -1.5], [7.5, -1.5]]
+            .map(([dx, dy]) => `<circle cx="${f(x + dx)}" cy="${f(y + dy + 1.5)}" r="1.15" fill="${dc}"/>`).join("");
+        return `<path d="M${x - 10} ${y}L${x + 10} ${y}L${x} ${y + 14}Z" fill="${hair}" stroke="${line}" stroke-width="1.6" stroke-linejoin="round"/>${dots}`;
+    }
+    const ear = isHex(skin) ? shade(skin, -0.12) : skin, eye = "#1c1a1e";
+    return `<g stroke="${line}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">` +
+        // the tuft of hair on top
+        `<path d="M${x - 6} ${y + 1}l-2 -5M${x - 2} ${y}l-1 -6M${x + 2} ${y}l1 -6M${x + 6} ${y + 1}l2 -5" stroke="${hair}" stroke-width="2"/>` +
+        // ears · head · trunk (curling up at the tip)
+        `<ellipse cx="${x - 7.5}" cy="${y + 7}" rx="5" ry="6.5" fill="${ear}"/><ellipse cx="${x + 7.5}" cy="${y + 7}" rx="5" ry="6.5" fill="${ear}"/>` +
+        `<path d="M${x - 2.6} ${y + 10}Q${x - 3.4} ${y + 21} ${x + 1.5} ${y + 22.5}Q${x + 6} ${y + 22} ${x + 5} ${y + 18.5}" fill="none" stroke="${line}" stroke-width="6.4"/>` +
+        `<path d="M${x - 2.6} ${y + 10}Q${x - 3.4} ${y + 21} ${x + 1.5} ${y + 22.5}Q${x + 6} ${y + 22} ${x + 5} ${y + 18.5}" fill="none" stroke="${skin}" stroke-width="3.6"/>` +
+        `<circle cx="${x}" cy="${y + 6}" r="6.5" fill="${skin}"/></g>` +
+        `<circle cx="${x - 2.6}" cy="${y + 5}" r="1.1" fill="${eye}"/><circle cx="${x + 2.6}" cy="${y + 5}" r="1.1" fill="${eye}"/>`;
 }

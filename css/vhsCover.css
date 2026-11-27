@@ -723,3 +723,85 @@
 .vf-title.t-img { padding: 0 4px; }
 .vf-title.t-img img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; mix-blend-mode: lighten; }
 .vf-title.t-img small { color: #fecaca; margin-top: -2px; }
+
+/* ================= 늑대인간 (Moonchild 3: Werewolf): the jungle title, jungle sets, the ritual, pops, the covers ================= */
+/* 🌴 title "jungle": a plane crosses over the jungle canopy · a window: Jimmy looks down · the English title · the Korean title art spins in */
+.vp-title.s-jungle { overflow: hidden; background: linear-gradient(180deg, #7dd3fc 0 38%, #bbf7d0 38% 42%, #166534 42%); }
+.vp-canopy { position: absolute; inset: 34% -10% 0; z-index: 0; animation: vpCanopy 12s linear forwards;
+    background: radial-gradient(circle at 10% 20%, #15803d 0 9%, transparent 10%) 0 0 / 90px 60px, radial-gradient(circle at 60% 50%, #16a34a 0 11%, transparent 12%) 0 0 / 110px 70px,
+        radial-gradient(circle at 30% 80%, #14532d 0 10%, transparent 11%) 0 0 / 80px 56px, linear-gradient(180deg, #166534, #052e16); }
+@keyframes vpCanopy { to { transform: translateX(-8%) scale(1.06); } }
+.vp-plane { position: absolute; z-index: 1; top: 14%; left: -15%; font-style: normal; font-size: clamp(40px, 9vw, 84px); rotate: 40deg; filter: drop-shadow(0 18px 8px #0005); animation: vpPlane 3.4s ease-in-out forwards; }
+@keyframes vpPlane { to { left: 110%; top: 6%; } }
+.vp-porthole { position: absolute; z-index: 3; left: 50%; top: 50%; height: 82%; aspect-ratio: .82; translate: -50% -50%; border-radius: 46%; overflow: hidden; opacity: 0;
+    border: 14px solid #e5e7eb; box-shadow: inset 0 0 0 4px #9ca3af, 0 0 0 4px #6b7280, 0 10px 30px #0008;
+    background: linear-gradient(180deg, #bae6fd 0 30%, #22c55e 30%); animation: vpPort 4.6s ease 3s forwards; }
+.vp-porthole-in { position: absolute; inset: 0; display: grid; place-items: end center; }
+.vp-porthole-in .vfig { transform: translateY(8%) rotate(-6deg); }
+@keyframes vpPort { 0% { opacity: 0; transform: scale(.8); } 14% { opacity: 1; transform: none; } 82% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+.vp-title.s-jungle .vp-en { position: relative; z-index: 2; color: #fef9c3; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .06em;
+    text-shadow: 0 0 12px #14532d, 3px 3px 0 #052e16, 0 0 30px #000; animation: vpBurnIn 1.4s ease 7.4s both; transition: transform .6s; }
+.vp-title.s-jungle .vp-ko { position: absolute; z-index: 4; left: 50%; top: 46%; translate: -50% -50%; transform: rotate(-540deg) scale(.1); transition: opacity .3s, transform 1.4s cubic-bezier(.2, .8, .3, 1.15); }
+.vp-title.s-jungle .vp-ko.show { opacity: 1; transform: none; }
+.vp-title.s-jungle.ko-in .vp-en { transform: translateY(260%) scale(.8); }
+.vp-title.s-jungle .vp-ko.img img { mix-blend-mode: normal; aspect-ratio: auto; object-fit: contain; filter: drop-shadow(0 4px 6px #000a); }
+/* the cast cards over the jungle */
+.vp-cast.on-jungle { background: radial-gradient(circle at 12% 18%, #15803d 0 8%, transparent 9%) 0 0 / 120px 90px, radial-gradient(circle at 70% 60%, #166534 0 10%, transparent 11%) 0 0 / 140px 100px, linear-gradient(180deg, #14532d, #052e16); }
+.vp-cast.on-jungle .vp-cast-card small { color: #bbf7d0; } .vp-cast.on-jungle .vp-cast-card i { background: #15803d; }
+
+/* sets: 정글 · 정글의 밤 · Nuka 부족 마을 · 부족의 집 */
+.bg-jungle { background:
+    radial-gradient(ellipse 14% 60% at 0% 40%, #14532d 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 12% 56% at 100% 44%, #14532d 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at 30% 30%, #22c55e 0 9%, transparent 10%) 0 0 / 120px 80px,
+    radial-gradient(circle at 70% 70%, #15803d 0 10%, transparent 11%) 0 0 / 150px 90px,
+    linear-gradient(180deg, #166534 0 62%, #65a30d 62% 66%, #4d7c0f 66% 84%, #3f6212 84%); }
+.bg-junglenight { background:
+    radial-gradient(ellipse 30% 26% at 50% 86%, #f9731644, transparent 70%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 14% 60% at 0% 40%, #022c22 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 12% 56% at 100% 44%, #022c22 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at 30% 30%, #064e3b 0 9%, transparent 10%) 0 0 / 120px 80px,
+    linear-gradient(180deg, #0b1026 0 40%, #052e16 40% 66%, #1a2e12 66%); }
+.bg-village { background:
+    linear-gradient(135deg, transparent 49%, #78350f 50%) 8% 40% / 9% 12% no-repeat, linear-gradient(225deg, transparent 49%, #78350f 50%) 17% 40% / 9% 12% no-repeat,
+    linear-gradient(180deg, #a16207 0 100%) 10% 62% / 14% 14% no-repeat,
+    linear-gradient(135deg, transparent 49%, #78350f 50%) 76% 38% / 9% 12% no-repeat, linear-gradient(225deg, transparent 49%, #78350f 50%) 85% 38% / 9% 12% no-repeat,
+    linear-gradient(180deg, #a16207 0 100%) 82% 60% / 14% 14% no-repeat,
+    radial-gradient(circle at 30% 30%, #15803d 0 9%, transparent 10%) 0 0 / 120px 70px repeat-x, radial-gradient(circle at 60% 60%, #14532d 0 10%, transparent 11%) 30px 40px / 140px 80px repeat-x,
+    linear-gradient(180deg, #166534 0 52%, #a16207 52% 56%, #ca8a04 56% 80%, #a16207 80%); }
+.bg-hut { background:
+    repeating-linear-gradient(90deg, #451a03 0 10px, #78350f 10px 12px, #57250b 12px 26px) 0 0 / 100% 70% no-repeat,
+    linear-gradient(180deg, #451a03 0 70%, #713f12 70% 72%, #3f2a1d 72%); }
+/* ⛺ two tents by the fire · 🔥 the ritual: a ring of fires round a pig's head */
+.vp-tent { position: absolute; bottom: 10%; width: 16%; aspect-ratio: 1.4; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(90deg, #ea580c 0 50%, #c2410c 50%); opacity: .85; }
+.vp-tent::after { content: ""; position: absolute; left: 44%; bottom: 0; width: 12%; height: 60%; background: #1c1917; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.vp-tent.a { left: 3%; } .vp-tent.b { right: 3%; }
+.vp-fx.ritual .vp-fire { bottom: 8%; width: 4%; }
+.vp-fx.ritual .vp-fire.r1 { left: 40%; } .vp-fx.ritual .vp-fire.r2 { left: 46%; bottom: 13%; } .vp-fx.ritual .vp-fire.r3 { left: 54%; bottom: 13%; } .vp-fx.ritual .vp-fire.r4 { left: 60%; }
+.vp-pig { position: absolute; left: 50%; bottom: 10%; translate: -50% 0; font-style: normal; font-size: clamp(22px, 4vw, 40px); filter: sepia(1) saturate(2.4) hue-rotate(-18deg) brightness(.8) drop-shadow(0 0 8px #f97316); }
+/* pop: a snake rising behind someone · an arrow flying in · an arrow stuck */
+.vp-pop { position: absolute; z-index: 3; left: -30%; bottom: 4%; font-style: normal; font-size: clamp(30px, 6vw, 64px); animation: vpPopUp .5s cubic-bezier(.3, 1.6, .5, 1) both; pointer-events: none; }
+.vp-pop.snake { animation: vpPopUp .5s cubic-bezier(.3, 1.6, .5, 1) both, vpSnake .5s ease-in-out .5s infinite alternate; }
+@keyframes vpPopUp { from { transform: translateY(60%) scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes vpSnake { to { transform: rotate(10deg) translateY(-6%); } }
+.vp-pop.fly { left: auto; right: -260%; bottom: 60%; animation: vpArrow .7s ease-in forwards; }
+@keyframes vpArrow { from { transform: translateX(0) scaleX(-1); } to { transform: translateX(-260%) scaleX(-1); } }
+.vp-pop.stuck { left: 30%; bottom: 62%; font-size: clamp(22px, 4vw, 40px); transform: rotate(-30deg); animation: none; }
+/* 🧎 kneeling */
+.vp-actor .vfig.act-kneel .vfig-in { transform: translateY(14%) scaleY(.82); transform-origin: 50% 100%; transition: transform .35s; }
+
+/* 중간표지: the tall title art (letters on clear ground) shows whole */
+.vs-title.t-img.contain img { object-fit: contain; filter: drop-shadow(0 2px 3px #000c); }
+/* 앞표지 "wolfglare": the red-eyed werewolf in the moonlit forest · two tilted stills · the title art (clear ground) */
+.vhs-front.l-wolfglare { background: linear-gradient(180deg, #04030c, #0a1a0f) !important; }
+.vhs-front.l-wolfglare .vf-art { background: none; margin: 0; border-radius: 0; }
+.va-glare .va-tilt { position: absolute; bottom: -2%; z-index: 2; width: 31%; border: 2px solid #f5f5f4; box-shadow: 0 3px 8px #000c; background: #000; }
+.va-glare .va-tilt .vstill { width: 100%; border: 0; border-radius: 0; }
+.va-glare .va-tilt.l { left: 3%; transform: rotate(-9deg); } .va-glare .va-tilt.r { right: 3%; transform: rotate(8deg); }
+.vf-title.t-img.plain img { mix-blend-mode: normal; object-fit: contain; filter: drop-shadow(0 2px 3px #000c); }
+.vhs-front.l-wolfglare .vf-title small { color: #fecaca; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .12em; }
+/* 뒷표지 "art": only the moon and the claw's shadow · the promo line · the date · the logo */
+.vhs-back.l-art { grid-template-rows: 1fr auto auto auto; background: linear-gradient(180deg, #04030c, #0a1a0f) !important; }
+.vb-art { min-height: 0; display: block; } .vb-art svg { width: 100%; height: 100%; display: block; }
+.vb-promo { margin: 0; text-align: center; font: 900 12px 'Noto Sans KR', sans-serif; color: #fecaca; text-shadow: 0 0 8px #dc2626, 1px 1px 0 #000; letter-spacing: .04em; }
+.vhs-back.l-art .vb-info { justify-content: center; }

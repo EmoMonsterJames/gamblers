@@ -74,9 +74,9 @@ export function spine(m, { onclick = null, small = false } = {}) {
     if ((SP.main || S.main) === "en") {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
         title = h("div.vs-title.t-en", vEn(m.en, enFs), subMode === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
-    } else if (SP.img) title = h("div.vs-title.t-img", h("img", { src: SP.img, alt: m.ko, draggable: "false", style: { maxHeight: room + "px" } }));   // the movie's own title art
+    } else if (SP.img) title = h("div.vs-title.t-img" + (SP.contain ? ".contain" : ""), h("img", { src: SP.img, alt: m.ko, draggable: "false", style: { maxHeight: room + "px" } }));   // the movie's own title art
     else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
-    const sub = subMode === "en" ? h("div.vs-sub.vs-en", m.en)
+    const sub = subMode === "en" ? h("div.vs-sub.vs-en", SP.enText || m.en)   // enText: a shorter English title on the spine
         : subMode === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
     const stillSpec = m.cover?.spine?.still || coverStills(m, 1)[0] || (leads(m)[0] ? { bg: "street", who: [spec(leads(m)[0])] } : null);
     return h("button.vhs-spine.vt-" + b.id + (small ? ".small" : "") + (m.bw ? ".bw" : "") + ".f-" + (m.cover?.spine?.font || "bold") + ".st-" + S.still,
@@ -132,6 +132,9 @@ const FRONT = {
     moon: () => { const a = h("i.va-moonart"); a.innerHTML = MOON_EYE; return h("div.vf-art.va-moon", a); },
     // 문차일드2: a forest under the full moon — a huge wolf's hand with long claws bursts out through the middle of the cover
     clawmoon: () => { const a = h("i.va-moonart"); a.innerHTML = CLAW_MOON; return h("div.vf-art.va-moon.va-clawmoon", a); },
+    // 늑대인간 (Moonchild 3): the forest under the full moon, a red-eyed werewolf glaring out of the middle · two small stills tilted on both sides (FR.stills)
+    wolfglare: (m, FR) => { const a = h("i.va-moonart"); a.innerHTML = WOLF_GLARE;
+        return h("div.vf-art.va-moon.va-glare", a, ...(FR.stills || []).slice(0, 2).map((s, i) => h("div.va-tilt" + (i ? ".r" : ".l"), still(m, s, { hgt: 46 })))); },
     // 헛간: night, the barn's doors ajar on the dark · the leads in front, candles lit, trembling
     barn: (m, FR) => {
         const barn = h("i.va-barnhouse"); barn.innerHTML = BARN;
@@ -197,6 +200,48 @@ const CLAW_MOON = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid slic
     `<g fill="url(#cmC)" stroke="#1c0f06" stroke-width="1.4" stroke-linejoin="round">` +
     `<path d="M75 81L57 62L69 86Z"/><path d="M98 61L88 36L90 63Z"/><path d="M122 56L119 29L114 56Z"/><path d="M144 63L148 36L136 61Z"/><path d="M168 108L190 92L164 100Z"/></g>` +
     `<g fill="#b91c1c"><path d="M57 62l6 4l-3 3Z"/><path d="M88 36l3 7l-3 1Z"/><path d="M119 29l1.5 8l-3 -.5Z"/><path d="M148 36l-.8 8l-3 -1Z"/><path d="M190 92l-5 6l-2 -3Z"/><circle cx="62" cy="72" r="1.4"/><circle cx="146" cy="50" r="1.4"/></g></svg>`;
+// the full moon behind a dark pine forest · a werewolf's head right in the middle, glaring with glowing red eyes
+const PINES = (fill) => `<g fill="${fill}">` + [[6, 190, 30, 70], [28, 190, 24, 96], [196, 190, 30, 66], [218, 190, 26, 92], [52, 190, 18, 120], [176, 190, 18, 118]].map(([x, y, w, t]) =>
+    `<path d="M${x} ${t}L${x + w / 2} ${y}H${x - w / 2}Z"/><path d="M${x} ${t + 18}L${x + w * 0.7} ${y - 20}H${x - w * 0.7}Z"/>`).join("") + `</g>`;
+const WOLF_GLARE = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">` +
+    `<defs><radialGradient id="wgM" cx="42%" cy="40%" r="60%"><stop offset="0" stop-color="#fffbeb"/><stop offset=".7" stop-color="#fde68a"/><stop offset="1" stop-color="#d97706"/></radialGradient>` +
+    `<radialGradient id="wgH" cx="50%" cy="50%" r="50%"><stop offset=".5" stop-color="#fde68a" stop-opacity=".4"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>` +
+    `<radialGradient id="wgE" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fecaca"/><stop offset=".35" stop-color="#ef4444"/><stop offset="1" stop-color="#7f1d1d"/></radialGradient>` +
+    `<radialGradient id="wgG" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ef4444" stop-opacity=".75"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></radialGradient></defs>` +
+    `<rect width="230" height="190" fill="#04030c"/>` + [[16, 18], [58, 10], [204, 16], [30, 56], [216, 64], [148, 8], [92, 20], [186, 40]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#fff" opacity=".8"/>`).join("") +
+    `<circle cx="115" cy="66" r="78" fill="url(#wgH)"/><circle cx="115" cy="66" r="56" fill="url(#wgM)"/>` +
+    `<g fill="#d9770633"><circle cx="92" cy="46" r="7"/><circle cx="140" cy="40" r="5"/></g>` + PINES("#020617") +
+    `<path d="M0 190V170Q60 160 115 166T230 162V190Z" fill="#000"/>` +
+    // the werewolf's head: ears · shaggy cheeks · a heavy brow · glowing red eyes · the muzzle, bared fangs
+    `<g stroke="#0b0603" stroke-width="2.6" stroke-linejoin="round">` +
+    `<path d="M76 84L64 26L106 62Z" fill="#2b1a0e"/><path d="M154 84L166 26L124 62Z" fill="#2b1a0e"/>` +
+    `<path d="M78 74L70 40L96 62ZM152 74L160 40L134 62Z" fill="#7f1d1d" stroke="none"/>` +
+    `<path d="M115 52Q154 52 164 92L178 100L166 108L174 122L158 124L156 140L140 148Q128 176 115 178Q102 176 90 148L74 140L72 124L56 122L64 108L52 100L66 92Q76 52 115 52Z" fill="#3b2414"/>` +
+    `<path d="M115 56Q128 70 122 92L115 100L108 92Q102 70 115 56Z" fill="#4a2c17" stroke="none"/>` +
+    `<path d="M96 132Q115 120 134 132L132 160Q115 176 98 160Z" fill="#6b4226"/></g>` +
+    `<path d="M78 98L108 108M152 98L122 108" stroke="#000" stroke-width="5" stroke-linecap="round"/>` +
+    `<circle cx="96" cy="112" r="16" fill="url(#wgG)"/><circle cx="134" cy="112" r="16" fill="url(#wgG)"/>` +
+    `<path d="M84 112Q96 102 108 112Q96 120 84 112Z" fill="url(#wgE)" stroke="#450a0a" stroke-width="1.4"/><path d="M122 112Q134 102 146 112Q134 120 122 112Z" fill="url(#wgE)" stroke="#450a0a" stroke-width="1.4"/>` +
+    `<ellipse cx="96" cy="112" rx="1.6" ry="5" fill="#000"/><ellipse cx="134" cy="112" rx="1.6" ry="5" fill="#000"/>` +
+    `<ellipse cx="115" cy="133" rx="9" ry="6" fill="#0b0603"/><circle cx="112" cy="131" r="1.6" fill="#fff" opacity=".6"/>` +
+    `<path d="M100 150Q115 160 130 150" fill="#450a0a" stroke="#0b0603" stroke-width="2"/>` +
+    `<path d="M103 150l3 10l3 -9M121 151l3 9l3 -10" fill="#fafaf9" stroke="#1c0f06" stroke-width="1"/>` +
+    `<path d="M106 160l0 5M124 160l0 6" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+// 뒷표지 art: a big full moon · a long-clawed wolf's hand cast over it like a black shadow
+const CLAW_SHADOW = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">` +
+    `<defs><radialGradient id="csM" cx="42%" cy="40%" r="62%"><stop offset="0" stop-color="#fffbeb"/><stop offset=".65" stop-color="#fde68a"/><stop offset="1" stop-color="#d97706"/></radialGradient>` +
+    `<radialGradient id="csH" cx="50%" cy="50%" r="50%"><stop offset=".55" stop-color="#fde68a" stop-opacity=".35"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient></defs>` +
+    `<circle cx="115" cy="95" r="94" fill="url(#csH)"/><circle cx="115" cy="95" r="78" fill="url(#csM)"/>` +
+    `<g fill="#d9770630"><circle cx="86" cy="64" r="10"/><circle cx="150" cy="120" r="14"/><circle cx="150" cy="58" r="6"/><circle cx="84" cy="128" r="6"/></g>` +
+    `<g fill="#0a0503" opacity=".93">` +
+    // the wrist rising from below · the palm · five long fingers ending in long hooked claws
+    `<path d="M92 190L96 150Q90 136 98 128L132 128Q142 138 136 152L140 190Z"/>` +
+    `<ellipse cx="116" cy="124" rx="30" ry="24"/>` +
+    `<g stroke="#0a0503" stroke-width="12" stroke-linecap="round" fill="none"><path d="M92 118L66 86"/><path d="M104 104L94 60"/><path d="M117 100L118 52"/><path d="M130 104L142 60"/><path d="M142 126L170 110"/></g>` +
+    `<path d="M68 90Q50 72 40 50Q58 66 72 82Z"/><path d="M96 64Q88 38 92 14Q100 38 100 62Z"/><path d="M120 56Q122 30 132 8Q130 34 124 56Z"/><path d="M144 64Q154 40 170 22Q160 46 148 66Z"/><path d="M168 106Q186 92 206 90Q188 102 172 114Z"/>` +
+    `<path d="M70 116l-8 -2l7 -4ZM160 140l8 2l-7 4ZM98 150l-6 4l2 -7Z"/></g>` +
+    `<g fill="#7f1d1d"><circle cx="40" cy="50" r="1.6"/><circle cx="92" cy="14" r="1.6"/><circle cx="132" cy="8" r="1.6"/></g></svg>`;
+const BACK_ART = { clawshadow: CLAW_SHADOW };
 const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><path d="M10 55Q-6 40 6 30L34 44Q20 55 34 66L6 80Q-6 70 10 55Z" fill="#f97316"/><path d="M0 55Q14 46 30 50V60Q14 64 0 55Z" fill="#fde047"/>` +
     `<path d="M30 34H150Q204 34 216 55Q204 76 150 76H30Z" fill="#f8fafc" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
     `<path d="M150 34Q204 34 216 55Q204 76 150 76Q162 55 150 34Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
@@ -209,7 +254,7 @@ export function front(m) {
         h("div.vf-head", brandLogo(b, 28), FR.noCast ? null : h("small", `주연: ${leads(m).length > 4 ? `${castLine(leads(m).slice(0, 3), true)} 외 ${leads(m).length - 3}명` : castLine(leads(m), true) || "-"}`)),
         FRONT[layout](m, FR),
         // FR.titleImg: the Korean title is the movie's own title art (big), the English title small under it
-        FR.titleImg ? h("div.vf-title.t-img", h("img", { src: FR.titleImg, alt: m.ko, draggable: "false" }), h("small", m.en)) : h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b",m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
+        FR.titleImg ? h("div.vf-title.t-img" + (FR.plainImg ? ".plain" : ""), h("img", { src: FR.titleImg, alt: m.ko, draggable: "false" }), h("small", FR.enText || m.en)) : h("div.vf-title.f-" + (m.cover?.spine?.font || "bold"), h("b",m.cover?.spine?.font === "cloud" ? Array.from(m.ko).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch)) : m.ko), h("small", m.en)),
         m.tagline ? h("div.vf-tag", `"${m.tagline}"`) : null,
         ratingBand(m));
 }
@@ -233,6 +278,14 @@ export function back(m) {
     const date = String(m.date || "").replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, mo, d) => `${+y}년 ${+mo}월 ${+d}일`);
     // BK.leads: only these roles are named as 주연 · BK.minimal: just 줄거리 · 주연 · 제작년월일 (+ the logo)
     const L0 = BK.leads ? BK.leads.map(r => D.castOf(m, r)).filter(Boolean) : leads(m);
+    // BK.art: only a picture · the promo line under it · 제작년월일 · the logo (no plot, no cast)
+    if (BACK_ART[BK.art]) {
+        const a = h("i.vb-art"); a.innerHTML = BACK_ART[BK.art];
+        return h("div.vhs-back.vt-" + b.id + ".l-art" + (m.bw ? ".bw" : ""), { style: { "--fb": m.cover?.front?.bg || b.color, "--bc": b.color, "--bi": b.ink } },
+            a, BK.promo ? h("p.vb-promo", BK.promo) : null,
+            h("dl.vb-info", h("dt", "제작년월일"), h("dd", date)),
+            h("div.vb-foot", brandLogo(b, 26), h("b", b.name), ratingBand(m)));
+    }
     return h("div.vhs-back.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": m.cover?.front?.bg || b.color, "--bc": b.color, "--bi": b.ink } },
         L.length ? BACK[layout](m, L) : null,
         h("div.vb-text",
