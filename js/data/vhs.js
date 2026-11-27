@@ -14,9 +14,10 @@ export const AGE_ORDER = ["Baby", "Young Adult", "Adult", "Middle-Aged", "Senior
 export const RATINGS = [
     { id: "white", name: "흰띠", color: "#f8fafc", ink: "#111", age: 0 },
     { id: "green", name: "초록띠", color: "#22c55e", ink: "#fff", age: 0 },
+    { id: "yellow", name: "노랑띠", color: "#facc15", ink: "#111", age: 1 },
     { id: "bam", name: "밤띠", color: "#7c4a1e", ink: "#fff", age: 1 },
     { id: "red", name: "빨간띠", color: "#dc2626", ink: "#fff", age: 1 },
-    { id: "water", name: "물띠", color: "#0ea5e9", ink: "#fff", age: 1 },
+    { id: "water", name: "물띠", color: "#0ea5e9", ink: "#fff", age: 2 },
     { id: "fire", name: "불띠", color: "#f97316", ink: "#fff", age: 2 },
     { id: "flower", name: "꽃띠", color: "#ec4899", ink: "#fff", age: 2 },
     { id: "emo", name: "이모띠", color: "#7c3aed", ink: "#fff", age: 3 },
@@ -930,14 +931,14 @@ const moonchild2 = () => {
             // 제목: blood runs down a black screen over the English title · a wolf's claw tears it and the Korean title comes in (출연 배우는 보여주지 않음)
             { k: "title", sec: 7, style: "blood", koImg: "images/movies/moonchild2_title.webp", koAt: 3600, koSfx: "slash", koClaw: true, music: "fullmoon" },
             // Scene 1 · Tom의 꿈속 — the old footage: his father Denis turns into a wolf (늑대인간의 밤)
-            { k: "scene", n: 1, place: "Tom의 꿈속", music: "heartbeat", sec: 7, bg: "woods", fx: "moon", footage: true, who: [DENIS],
+            { k: "scene", n: 1, place: "Tom의 꿈속", music: "heartbeat", sec: 10, bg: "woods", fx: "moon", footage: true, who: [DENIS],
                 cast: { [DENIS]: { expr: "sweat", act: "shake" } },
                 lines: [
                     ["", "꿈속… 보름달이 뜬 숲속에 아버지 Denis가 서 있다."],
                     [DENIS, "크으으… 아아아악!!!", { expr: "beast", pose: "both", act: "wolfing", wolf: "half", sfx: "howl", flash: "red", set: { [DENIS]: { expr: "beast", wolf: "half", pose: "both", act: "wolfing" } } }],
                     ["", "Denis의 몸이 점점 늑대로 변해간다…", { sfx: "growl", set: { [DENIS]: { wolf: "full", act: "" } } }]] },
             // Scene 1 · 하우스 — Tom wakes up screaming
-            { k: "scene", n: 1, place: "하우스 · 침실", sec: 8, bg: "bedroom", dark: true, who: [TOM, ERICA],
+            { k: "scene", n: 1, place: "하우스 · 침실", sec: 11, bg: "bedroom", dark: true, who: [TOM, ERICA],
                 cast: { [TOM]: { expr: "sleepy" }, [ERICA]: { expr: "sleepy" } },
                 lines: [
                     [TOM, "으아아아악!!!", { expr: "scared", pose: "both", act: "shake", sfx: "scream", flash: true, music: "stop", set: { [ERICA]: { expr: "shock" } } }],
@@ -945,7 +946,7 @@ const moonchild2 = () => {
                     [TOM, "(식은땀을 닦으며) 괜찮아… 나 때문에 신경 쓰지 마.", { expr: "sweat", pose: "shrug" }],
                     [TOM, "당신은 아기 생각만 해. 태교에 집중해야지.", { expr: "happy", pose: "wave", to: ERICA, set: { [ERICA]: { expr: "shy" } } }]] },
             // Scene 2 · 탐정사무소 — Phil tells the new detective about the werewolf he shot
-            { k: "scene", n: 2, place: "탐정사무소", music: "mystery", sec: 10, bg: "agency", who: [SAGE, PHIL],
+            { k: "scene", n: 2, place: "탐정사무소", music: "mystery", sec: 14, bg: "agency", who: [SAGE, PHIL],
                 cast: { [PHIL]: { expr: "cool", pose: "hips" }, [SAGE]: { expr: "happy" } },
                 lines: [
                     [PHIL, "Sage, 신입이니 들려주지. 몇 년 전 사람이 늑대로 변하는 사건이 있었어.", { expr: "cool", pose: "hips" }],
@@ -955,7 +956,7 @@ const moonchild2 = () => {
                     [SAGE, "헉…! 이 시대에 어떻게 늑대인간 같은 괴물이 존재할 수 있죠?!", { expr: "shock", act: "shake" }],
                     [PHIL, "…믿든 말든, 자네 마음이지.", { expr: "blank", pose: "shrug" }]] },
             // Scene 3 · 숲속 — the bikers' party · the strip show
-            { k: "scene", n: 3, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 16, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: PARTY, props: ["🍺", "🏍️", "🍺"],
+            { k: "scene", n: 3, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 22, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: PARTY, props: ["🍺", "🏍️", "🍺"],
                 cast: { [B3]: { expr: "excited", act: "dance" }, [TO]: { expr: "evil", hold: "radio" }, [LING]: { expr: "smug", outfit: "clothes" }, [SALLY]: { expr: "happy" }, [MIKE]: { expr: "excited", act: "hop" }, [BC3]: { expr: "happy", act: "dance" } },
                 lines: [
                     ["", "어두운 밤, 숲속에 요란한 락음악이 울려 퍼지고… 바이커들이 술판을 벌이고 있다."],
@@ -969,7 +970,7 @@ const moonchild2 = () => {
                     [SALLY, "만지지 마! 싫다고!!", { expr: "angry", act: "stomp", to: TO }],
                     ["", "기분이 상한 Sally가 자리를 박차고 숲속으로 사라진다.", { set: { [SALLY]: { gone: true } } }]] },
             // Scene 4 · 숲속 — Sally alone · the howl · the claws
-            { k: "scene", n: 4, place: "숲속", music: "stop", sec: 12, bg: "woods", dark: true, fx: "shadow", who: [SALLY, TOM],
+            { k: "scene", n: 4, place: "숲속", music: "stop", sec: 17, bg: "woods", dark: true, fx: "shadow", who: [SALLY, TOM],
                 cast: { [SALLY]: { expr: "sad" }, [TOM]: WOLF },
                 lines: [
                     [SALLY, "(옷을 갈아입으며) 흑… 다들 날 뭘로 보는 거야…", { expr: "cry", act: "shake" }],
@@ -980,14 +981,14 @@ const moonchild2 = () => {
                     ["", "피를 흘리며 도망치던 Sally는 나뭇가지에 발이 걸려 넘어지고…", { sfx: "growl", set: { [SALLY]: { act: "fall", expr: "dizzy" }, [TOM]: { hid: false } } }],
                     ["", "뒤따라온 늑대인간이 그녀를 덮친다.", { flash: "red", claw: true, sfx: "scream", music: "stop", set: { [TOM]: { act: "jump" }, [SALLY]: { act: "dead" } } }]] },
             // Scene 5 · 숲속 — Mike goes to look for Sally
-            { k: "scene", n: 5, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 7, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: [B3, TO, LING, MIKE, BC3], props: ["🍺", "🏍️", "🍺"],
+            { k: "scene", n: 5, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 10, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: [B3, TO, LING, MIKE, BC3], props: ["🍺", "🏍️", "🍺"],
                 cast: { [B3]: { expr: "excited", act: "dance" }, [TO]: { expr: "happy", hold: "radio" }, [LING]: { expr: "smug", outfit: "bikini" }, [MIKE]: { expr: "sweat" }, [BC3]: { expr: "happy", act: "dance" } },
                 lines: [
                     [MIKE, "Sally 이 녀석, 왜 이렇게 안 와? 내가 찾아보고 올게.", { expr: "sweat", pose: "shrug" }],
                     [LING, "아마 어디서 혼자 Skinny Dipping 하고 있을걸~ 호숫가에 가봐.", { expr: "smug", pose: "point", to: MIKE }],
                     [MIKE, "오케이~ 호숫가로 가볼게!", { expr: "happy", pose: "wave", act: "run", set: { [MIKE]: { gone: true } } }]] },
             // Scene 6 · 숲속 호숫가 — Mike
-            { k: "scene", n: 6, place: "숲속 호숫가", music: "heartbeat", sec: 8, bg: "lake", fx: "moon", who: [MIKE, TOM],
+            { k: "scene", n: 6, place: "숲속 호숫가", music: "heartbeat", sec: 11, bg: "lake", fx: "moon", who: [MIKE, TOM],
                 cast: { [MIKE]: { expr: "sweat" }, [TOM]: WOLF },
                 lines: [
                     ["", "호숫가 물결 위로 보름달이 비친다…"],
@@ -996,7 +997,7 @@ const moonchild2 = () => {
                     [MIKE, "누, 누구야…?! 으아아악!!", { expr: "scared", act: "shake", sfx: "scream", flash: "red", claw: true, music: "stop", set: { [TOM]: { hid: false, act: "jump" } } }],
                     ["", "Mike 역시 늑대인간에게 공격당해 목숨을 잃는다.", { set: { [MIKE]: { act: "dead", expr: "dizzy" } } }]] },
             // Scene 7 · 숲속 — T.O turns the radio off · Ling Ling and T.O go to the lake
-            { k: "scene", n: 7, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 8, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: [B3, TO, LING, BC3], props: ["🍺", "🏍️", "🍺"],
+            { k: "scene", n: 7, place: "숲속 · 바이커들의 파티", music: MC2_THEME, sec: 11, bg: "camp", fx: "camp", amb: ["crickets", "chatter"], who: [B3, TO, LING, BC3], props: ["🍺", "🏍️", "🍺"],
                 cast: { [B3]: { expr: "happy", act: "dance" }, [TO]: { expr: "annoyed", hold: "radio" }, [LING]: { expr: "smug", outfit: "bikini" }, [BC3]: { expr: "happy", act: "dance" } },
                 lines: [
                     [TO, "(라디오를 끄며) 에잇, 둘 다 왜 아직도 안 와? PARTY POOPERS 같으니라고!", { expr: "annoyed", hold: "radio", music: "stop", amb: "crickets", set: { [B3]: { act: "" }, [BC3]: { act: "" } } }],
@@ -1004,7 +1005,7 @@ const moonchild2 = () => {
                     [TO, "좋지~ 난 훔쳐보는 걸 좋아하거든! 가자!", { expr: "evil", pose: "wave" }],
                     [B3, "너무 재밌게 놀다 오지는 마라~!", { expr: "tongue", pose: "wave", set: { [BC3]: { expr: "tongue", act: "laugh" } } }]] },
             // Scene 8 · 숲속 호숫가 — T.O in the water · Ling Ling teases · the wolf comes up with T.O's body
-            { k: "scene", n: 8, place: "숲속 호숫가", music: "heartbeat", sec: 15, bg: "lake", fx: "moon", who: [LING, TO, TOM],
+            { k: "scene", n: 8, place: "숲속 호숫가", music: "heartbeat", sec: 21, bg: "lake", fx: "moon", who: [LING, TO, TOM],
                 cast: { [LING]: { expr: "sweat", outfit: "clothes" }, [TO]: { expr: "blank" }, [TOM]: WOLF },
                 lines: [
                     [LING, "Mike~! Sally~! …아무 대답이 없네.", { expr: "sweat", pose: "both" }],
@@ -1017,7 +1018,7 @@ const moonchild2 = () => {
                     ["", "물속에서 T.O의 시체를 문 거대한 늑대인간이 튀어나온다!!", { sfx: "growl", flash: "red", music: "chase", set: { [TOM]: { hid: false, act: "jump", held: { r: TO, expr: "dizzy", nude: true } } } }],
                     [LING, "꺄아아아악!!!", { expr: "scared", act: "run", sfx: "scream", set: { [LING]: { gone: true } } }]] },
             // Scene 9 · 숲속 — the party place, wrecked · Ling Ling
-            { k: "scene", n: 9, place: "숲속 · 파티 장소", music: "stop", sec: 10, bg: "camp", dark: true, who: [B3, LING, BC3, TOM], props: ["🍺", "🏍️", "📻"],
+            { k: "scene", n: 9, place: "숲속 · 파티 장소", music: "stop", sec: 14, bg: "camp", dark: true, who: [B3, LING, BC3, TOM], props: ["🍺", "🏍️", "📻"],
                 cast: { [B3]: { expr: "dizzy", act: "dead" }, [BC3]: { expr: "dizzy", act: "dead" }, [LING]: { expr: "scared", outfit: "bikini", act: "run" }, [TOM]: WOLF },
                 lines: [
                     ["", "음악은 꺼져 있고… 파티 장소는 아수라장이 되어 있다.", { sfx: "sting" }],
@@ -1026,7 +1027,7 @@ const moonchild2 = () => {
                     ["", "그때— 위에서 늑대인간이 뛰어내리며 그녀를 덮친다!", { flash: "red", claw: true, sfx: "growl", set: { [TOM]: { hid: false, act: "jump" } } }],
                     ["", "Ling Ling마저… 그렇게 숨을 거둔다.", { sfx: "slash", light: "black", set: { [LING]: { act: "dead", expr: "dizzy" } } }]] },
             // Scene 10 · 하우스 — Kiki calls · Tom snaps · the bloody clothes
-            { k: "scene", n: 10, place: "하우스", music: "mystery", sec: 12, bg: "house", who: [TOM, ERICA], call: KIKI,
+            { k: "scene", n: 10, place: "하우스", music: "mystery", sec: 17, bg: "house", who: [TOM, ERICA], call: KIKI,
                 cast: { [TOM]: { expr: "happy", hold: "phone" }, [ERICA]: { expr: "happy" } },
                 lines: [
                     ["", "다음 날, Tom에게 멀리 이사 간 여동생 Kiki의 전화가 걸려온다.", { sfx: "ring" }],
@@ -1038,33 +1039,33 @@ const moonchild2 = () => {
                     [ERICA, "…빨래나 할게.", { expr: "sad", set: { [TOM]: { gone: true } } }],
                     ["", "Tom의 옷을 빨래통에 넣으려던 Erica… 피 묻은 옷을 발견한다.", { sfx: "sting", flash: "red", set: { [ERICA]: { expr: "shock", act: "shake" } } }]] },
             // Scene 11 · 탐정사무소 — Denis's file · Tom and Kiki
-            { k: "scene", n: 11, place: "탐정사무소", music: "mystery", sec: 7, bg: "agency", who: [PHIL, SAGE],
+            { k: "scene", n: 11, place: "탐정사무소", music: "mystery", sec: 10, bg: "agency", who: [PHIL, SAGE],
                 cast: { [PHIL]: { expr: "blank", hold: "paper" }, [SAGE]: { expr: "blank" } },
                 lines: [
                     [PHIL, "바이커 살인사건… 내가 겪은 그 사건이랑 너무 비슷해.", { expr: "blank", hold: "paper" }],
                     [PHIL, "Denis의 기록을 보니… 자식이 둘 있군. Tom과 Kiki.", { expr: "cool", hold: "book" }],
                     [PHIL, "Sage, 이 둘에게 연락 좀 해봐.", { pose: "point", to: SAGE }],
                     [SAGE, "(전화를 건다) …Tom은 안 받네요.", { expr: "sweat", hold: "phone", sfx: "ring" }]] },
-            { k: "scene", n: 11, place: "탐정사무소", sec: 7, bg: "agency", who: [PHIL, SAGE], call: KIKI,
+            { k: "scene", n: 11, place: "탐정사무소", sec: 10, bg: "agency", who: [PHIL, SAGE], call: KIKI,
                 cast: { [PHIL]: { expr: "blank" }, [SAGE]: { expr: "happy", hold: "phone" } },
                 lines: [
                     [SAGE, "Kiki 씨죠? 오빠 Tom 씨에 대해 여쭤볼 게 있어서요.", { hold: "phone" }],
                     [KIKI, "요즘 오빠가 좀 이상해요… 주소 알려드릴게요. 꼭 가봐 주세요.", { expr: "sad" }],
                     [SAGE, "선배님, Tom의 집 주소를 알아냈어요!", { expr: "excited", hold: "phone", to: PHIL }]] },
             // Scene 12 · 하우스 — late at night · Erica's story · Tom turns · Phil shoots
-            { k: "scene", n: 12, place: "하우스 · 늦은 밤", music: "tense", sec: 7, bg: "house", dark: true, fx: "moon", who: [PHIL, SAGE, TOM, ERICA],
+            { k: "scene", n: 12, place: "하우스 · 늦은 밤", music: "tense", sec: 10, bg: "house", dark: true, fx: "moon", who: [PHIL, SAGE, TOM, ERICA],
                 cast: { [PHIL]: { expr: "cool" }, [SAGE]: { expr: "blank" }, [TOM]: { expr: "roll" }, [ERICA]: { expr: "sad" } },
                 lines: [
                     [PHIL, "Tom, 숲속 살인사건에 대해 아는 게 있나?", { expr: "cool", pose: "point", to: TOM }],
                     [TOM, "전 아무것도 몰라요. 그날 밤엔 집에 있었다고요.", { expr: "roll", pose: "shrug" }],
                     [ERICA, "탐정님… 잠깐 조용한 곳에서 얘기 좀 할 수 있을까요?", { expr: "sad", to: PHIL }]] },
-            { k: "scene", n: 12, place: "하우스 · 부엌", sec: 7, bg: "house", dark: true, who: [ERICA, PHIL],
+            { k: "scene", n: 12, place: "하우스 · 부엌", sec: 10, bg: "house", dark: true, who: [ERICA, PHIL],
                 cast: { [ERICA]: { expr: "sad" }, [PHIL]: { expr: "blank" } },
                 lines: [
                     [ERICA, "사실… 남편 빨래에서 피 묻은 옷을 발견했어요.", { expr: "cry", act: "shake" }],
                     [PHIL, "역시… 이번 사건은 Tom과 관련이 있어.", { expr: "angry", pose: "hips" }],
                     ["", "그때— 거실에서 Sage의 비명이 들려온다!", { sfx: "scream", flash: "red", set: { [ERICA]: { expr: "scared" }, [PHIL]: { expr: "shock" } } }]] },
-            { k: "scene", n: 12, place: "하우스 · 거실", music: "fullmoon", sec: 11, bg: "house", dark: true, fx: "moon", who: [ERICA, PHIL, SAGE, TOM],
+            { k: "scene", n: 12, place: "하우스 · 거실", music: "fullmoon", sec: 15, bg: "house", dark: true, fx: "moon", who: [ERICA, PHIL, SAGE, TOM],
                 cast: { [ERICA]: { expr: "scared" }, [PHIL]: { expr: "shock", hold: "gun", pose: "point" }, [SAGE]: { expr: "dizzy", act: "fall" }, [TOM]: { expr: "beast", wolf: "half", pose: "both", act: "wolfing" } },
                 lines: [
                     ["", "늑대인간으로 변해가는 Tom… 그 옆에 Sage가 신음하며 죽어가고 있다.", { sfx: "growl" }],
@@ -1074,7 +1075,7 @@ const moonchild2 = () => {
                     ["", "탕!! 탕!!", { sfx: "shot", flash: true, music: "stop", set: { [TOM]: { act: "dead" } } }],
                     ["", "이 모든 걸 지켜본 Erica는 정신을 잃고 쓰러진다.", { light: "black", set: { [ERICA]: { act: "fall", expr: "dizzy" } } }]] },
             // Scene 13 · 병원 — Erica wakes · the baby · Tom and Sage are dead
-            { k: "scene", n: 13, place: "병원 · 병실", music: "lullaby", sec: 11, bg: "hospital", fx: "wake", who: [NURSE, ERICA, VINCENT, PHIL],
+            { k: "scene", n: 13, place: "병원 · 병실", music: "lullaby", sec: 15, bg: "hospital", fx: "wake", who: [NURSE, ERICA, VINCENT, PHIL],
                 cast: { [NURSE]: { expr: "happy" }, [ERICA]: { expr: "sleepy" }, [VINCENT]: { expr: "blank" }, [PHIL]: { expr: "blank" } },
                 lines: [
                     [NURSE, "Erica 씨, 정신이 드세요?", { to: ERICA }],
@@ -1085,7 +1086,7 @@ const moonchild2 = () => {
                     [PHIL, "……안타깝게도 Tom과 Sage는… 세상을 떠났습니다.", { expr: "sad", set: { [ERICA]: { expr: "cry" } } }],
                     [VINCENT, "산모분께 따로 드릴 말씀이 있어서요. 잠시 자리 좀 비켜주시겠어요?", { expr: "blank", set: { [NURSE]: { gone: true }, [PHIL]: { gone: true } } }]] },
             // Dr. Vincent: the baby's heart · the unknown DNA
-            { k: "scene", n: 13, place: "병원 · 병실", music: "mystery", sec: 9, bg: "hospital", who: [ERICA, VINCENT], held: { [ERICA]: { r: BABY, expr: "sleepy", baby: true } },
+            { k: "scene", n: 13, place: "병원 · 병실", music: "mystery", sec: 13, bg: "hospital", who: [ERICA, VINCENT], held: { [ERICA]: { r: BABY, expr: "sleepy", baby: true } },
                 cast: { [ERICA]: { expr: "sad" }, [VINCENT]: { expr: "blank" } },
                 lines: [
                     [VINCENT, "아기는 정상적으로 태어났지만… 다른 아기들과 달리 굉장히 혈기왕성하고 심장박동이 매우 빠릅니다.", { expr: "sweat", amb: ["room", "heartbeat"] }],
@@ -1093,8 +1094,8 @@ const moonchild2 = () => {
                     [VINCENT, "정말… 흥미롭군요.", { expr: "evil" }],
                     ["", "Erica는 품에 안긴 아기를 가만히 바라본다…", { set: { [ERICA]: { expr: "sad" } } }]] },
             // 클로즈업 — the baby's eyes turn red
-            { k: "scene", n: 13, place: "병원 · 병실", music: "fullmoon", sec: 5, bg: "hospital", close: true, who: [BABY],
-                cast: { [BABY]: { expr: "sleepy" } },
+            { k: "scene", n: 13, place: "병원 · 병실", music: "fullmoon", sec: 7, bg: "hospital", close: true, who: [BABY],
+                cast: { [BABY]: { expr: "sleepy", swaddle: true } },
                 lines: [
                     ["", "……"],
                     ["", "아기의 눈동자가 살짝… 빨갛게 변한다.", { sfx: "growl", flash: "red", set: { [BABY]: { expr: "redeye" } } }]] },

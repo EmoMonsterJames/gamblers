@@ -714,7 +714,7 @@
 .vp-actor .vfig.act-swim .vfig-in { clip-path: inset(0 0 46% 0); transform: translateY(40%); animation: vfBob 1.4s ease-in-out infinite alternate; }
 @keyframes vfBob { from { translate: 0 0; } to { translate: 0 4%; } }
 /* 👶 a baby cradled in the arms */
-.vp-held.baby { right: 8%; top: 30%; animation: none; transform: rotate(-10deg); filter: drop-shadow(0 2px 3px #0006); }
+.vp-held.baby { right: 4%; top: 28%; animation: none; transform: rotate(-10deg); filter: drop-shadow(0 2px 3px #0006); }
 
 /* 중간표지: the Korean title art down the spine */
 .vs-title.t-img img { display: block; width: 100%; height: 100%; object-fit: cover; }

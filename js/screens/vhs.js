@@ -182,7 +182,7 @@ export const dbCard = m => h("div.vhs-db-card",
         h("dt", "제작국가"), h("dd", m.nation),
         h("dt", "비디오브랜드"), h("dd", brandOf(m).name),
         h("dt", "등급"), h("dd", D.ratingText(m.rating)),
-        h("dt", "출연 배우"), h("dd", h("ul", m.cast.map(c => h("li", `${V.PART_KO[c.part]} · ${c.ko} — ${c.role}${c.nude ? " (Nudity)" : c.sexy ? " (Sexy)" : ""}`)))),
+        h("dt", "출연 배우"), h("dd", h("ul", m.cast.map(c => h("li", h("b.mdb-part-tag.p-" + c.part, V.PART_KO[c.part]), ` · ${c.ko} — ${c.role}${c.nude ? " (Nudity)" : c.sexy ? " (Sexy)" : ""}`)))),
         h("dt", "Body Count"), h("dd", (d => d.length ? `💀 총 ${d.length}명 — ${d.map(c => `${c.ko} (${c.role})`).join(", ")}` : "0명")(D.bodyCountOf(m))),
         h("dt", "줄거리"), h("dd", m.plot)));
 
@@ -485,7 +485,7 @@ export function playMovie(m) {
             const putHeld = (k, o) => {
                 actors[k].querySelector(".vp-held")?.remove();
                 const hc = o ? D.castOf(m, o.r) : null;
-                if (hc) actors[k].append(h("div.vp-held" + (o.baby ? ".baby" : ""), figure(hc, { ...(hc.look || {}), expr: o.expr || "dizzy", nude: !!o.nude, size: Math.round(size * (o.baby ? 0.85 : 0.62)), upper: true })));
+                if (hc) actors[k].append(h("div.vp-held" + (o.baby ? ".baby" : ""), figure(hc, { ...(hc.look || {}), expr: o.expr || "dizzy", nude: !!o.nude, swaddle: !!o.baby, size: Math.round(size * (o.baby ? 0.62 : 0.62)), upper: !o.baby })));
             };
             for (const [r, o] of Object.entries(sc.held || {})) {
                 const k = people.findIndex(c => c.role === r || c.short === r);

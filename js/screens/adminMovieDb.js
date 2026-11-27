@@ -85,7 +85,7 @@ export function adminMovieDbPage() {
             h("dt", "영화사"), h("dd", facetLinks("brand", m)),
             h("dt", "등급"), h("dd", facetLinks("rating", m)),
             h("dt", "출연 배우"), h("dd", h("ul", [...m.cast].sort((a, b) => PART_ORDER.indexOf(a.part) - PART_ORDER.indexOf(b.part)).map(c =>
-                h("li", `${PART_KO[c.part] || c.part} · `, c.pid != null ? link(actorName(c), { k: "actor", pid: c.pid }) : actorName(c), ` — ${c.role}`, ...tags(c))))),
+                h("li", h("b.mdb-part-tag.p-" + c.part, PART_KO[c.part] || c.part), " · ", c.pid != null ? link(actorName(c), { k: "actor", pid: c.pid }) : actorName(c), ` — ${c.role}`, ...tags(c))))),
             h("dt", "Body Count"), h("dd", bodyCount(m)),
             h("dt", "줄거리"), h("dd", m.plot),
             h("dt", "Creator"), h("dd", D.creatorOf(m)),
@@ -134,7 +134,7 @@ export function adminMovieDbPage() {
                     (films.some(f => f.c.nude || f.c.sexy) ? ` · 🔞/💋 ${films.filter(f => f.c.nude || f.c.sexy).length}편` : "")))),
             PART_ORDER.map(part => {
                 const fs = films.filter(f => f.c.part === part);
-                return fs.length ? h("div.mdb-part", h("h4", `${PART_KO[part]} (${fs.length})`),
+                return fs.length ? h("div.mdb-part", h("h4", h("span.mdb-part-tag.p-" + part, PART_KO[part]), ` (${fs.length})`),
                     h("table.mdb-films", h("tbody", fs.map(({ m, c }) => h("tr",
                         h("td.muted", dateKo(m.date)),
                         h("td", link(m.ko, { k: "movie", id: m.id }), h("small.muted", ` ${m.en}`)),

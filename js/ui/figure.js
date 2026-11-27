@@ -138,6 +138,8 @@ async function drawnFull(url, o, female) {
         `<path d="M101 184L103 232H123L127 190Z" fill="#374151" ${O}/><path d="M155 184L153 232H133L129 190Z" fill="#374151" ${O}/>` +
         `<ellipse cx="110" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/><ellipse cx="146" cy="236" rx="15" ry="7.5" fill="#1f2937" ${O}/>`;
     const skin = /^#[0-9a-f]{3,8}$/i.test(A.H?.skin || "") ? A.H.skin : "#f6d2a8";
+    // a picture already drawn head to feet ("full body" in its comment: 글로리아배추 · 아기수박 · 흑땅콩): shown whole, no extra legs
+    if (/full body/i.test(A.txt)) return toDataUri(`<svg xmlns="${SVGNS}" viewBox="0 0 256 256" width="256" height="256">${body}</svg>`);
     const wear = o.nude ? "nude" : o.outfit === "clothes" ? "" : o.outfit || "";            // nude · bikini · dress ("clothes" = as drawn)
     const bare = wear === "nude" || wear === "bikini";
     if (A.shirt && wear) return wardrobe(A, o, female, body, skin, wear, bare, O);
@@ -255,6 +257,9 @@ export function setFigure(el, c, o = {}) {
     // 🐺 werewolf (films): "half" — wolf ears, fur, claws over the player · "full" — a wolf stands where the player was
     el.querySelector(".vfig-wolf")?.remove();
     if (o.wolf) { const w = h("i.vfig-wolf"); w.innerHTML = o.wolf === "full" ? WOLF_FULL : wolfHalf(o.wolf, o.pose); el.querySelector(".vfig-in").append(w); }
+    // 👶 swaddled (films): a baby wrapped in a blanket, only the face peeping out (a generated picture: the face sits at about 128,114)
+    el.querySelector(".vfig-swaddle")?.remove();
+    if (o.swaddle) { const w = h("i.vfig-wolf.vfig-swaddle"); w.innerHTML = SWADDLE; el.querySelector(".vfig-in").append(w); }
 }
 // 🐺 overlays in the figure's 256×256 frame · "half": ears + fur + claws · "claws": only long claws growing out of the hands
 function wolfHalf(kind, pose) {
@@ -264,6 +269,12 @@ function wolfHalf(kind, pose) {
         `<g fill="#4a2c17" opacity=".9">${[-1, 1].map(k => `<path d="M${128 + k * 46} 150l${k * 14} -6l${-k * 4} 12l${k * 12} -2l${-k * 6} 12l${k * 10} 0l${-k * 10} 10Z"/>`).join("")}</g>`;
     return `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">${ears}<g fill="#f5f5f4" stroke="#1c0f06" stroke-width="1.6" stroke-linejoin="round">${claws}</g></svg>`;
 }
+const SWADDLE = `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">` +
+    `<path fill-rule="evenodd" d="M128 64C172 64 190 100 184 142L190 238Q128 258 66 238L72 142C66 100 84 64 128 64ZM128 88C110 88 101 102 101 116C101 132 112 143 128 143C144 143 155 132 155 116C155 102 146 88 128 88Z" fill="#bfdbfe" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>` +
+    `<path d="M101 116C96 96 112 84 128 84C144 84 160 96 155 116" fill="none" stroke="#93c5fd" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="M74 168Q128 150 184 176M72 204Q128 182 188 210" fill="none" stroke="#93c5fd" stroke-width="5" stroke-linecap="round"/>` +
+    `<path d="M150 160Q170 170 186 196" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
+    `<g fill="#fff" opacity=".85"><circle cx="96" cy="190" r="3"/><circle cx="120" cy="222" r="3"/><circle cx="160" cy="226" r="3"/><circle cx="150" cy="186" r="3"/><circle cx="104" cy="160" r="3"/></g></svg>`;
 const WOLF_FULL = `<svg viewBox="0 0 256 256" xmlns="${SVGNS}"><g stroke="#0b0603" stroke-width="4" stroke-linejoin="round">` +
     `<path d="M92 250L98 186Q70 168 76 124Q84 92 104 82L96 40L118 70Q128 64 140 70L160 38L156 82Q180 94 182 130Q186 170 158 186L164 250H140L134 198H122L116 250Z" fill="#3b2414"/>` +
     `<path d="M104 82Q128 124 154 82Q150 112 128 118Q106 112 104 82Z" fill="#6b4226"/>` +

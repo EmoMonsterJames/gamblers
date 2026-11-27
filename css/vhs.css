@@ -123,6 +123,11 @@
 .mdb-tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 800; background: #ffffff1a; }
 .mdb-tag.nude { background: #be123c; color: #fff; }
 .mdb-tag.sexy { background: #db2777; color: #fff; }
+/* 출연 배우: 주연 · 조연 · 엑스트라 each in its own colour */
+.mdb-part-tag { font-weight: 900; }
+.mdb-part-tag.p-lead { color: #facc15; }
+.mdb-part-tag.p-support { color: #38bdf8; }
+.mdb-part-tag.p-extra { color: #a3e635; }
 .mdb-facets { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
 .mdb-facet { padding: 8px 12px; border-radius: 10px; background: #ffffff0b; border: 1px solid #ffffff1f; }
 .mdb-val { color: #fde68a; }
