@@ -10,7 +10,8 @@ import { jobList, saveJobs } from "../data/jobs.js";
 import {
     buildAvatar, toDataUri, parseGen, DEFAULTS, HUMAN_TYPES, SKIN_COLORS, HAIR_COLORS, SEASONS,
     HAIR_STYLES, HATS, GLASSES, SUNGLASSES, MAKEUPS, ACCS, outfitNames, NO_IMAGE_URI, isNoImage,
-    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES, BEARDS, MUSTACHES, SMILE_HAIRS, EXPRESSIONS, SWIM_RACES, SWIM_SEASON
+    EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS, FUR_RACES, BEARDS, MUSTACHES, SMILE_HAIRS, EXPRESSIONS, SWIM_SEASON,
+    swimOk, EAR_RACES, PINS, PIN_POS, TATTOOS, TAT_AREAS
 } from "../ui/avatarGen.js";
 import { RACE_CATEGORIES, RACE_CAT, subsOf, categoryOf, drawRace, addCustomSub } from "../data/races.js";
 import { EAR_DEFAULT, BUGS } from "../ui/avatarRaces.js";
@@ -31,6 +32,9 @@ const CHOICES = {
     ethnicity: ["Human", "Rabbit", "Bunny", "Bear", "Ant", "Smile", "Cloud", "Kalisto", "Devil", "Angel", "Ghost", "Invisible", "Jiangshi", "Donglee", "Triangle", "Square", "Rectangle", "Trapezoid"]
 };
 const isBaby = a => String(a || "").trim().toLowerCase() === "baby";
+// 👙 swimwear set by the profile: male / trans + Trans-Curious or Gay → women's swimwear · female + those → men's ("" = the picture's own gender)
+const crossPref = p => /^(trans?-?curious|gay)$/.test(String(p || "").trim().toLowerCase().replace(/\s+/g, ""));
+const swimAsOf = v => !crossPref(v.preference) ? "" : v.gender === "female" ? "male" : v.gender === "male" || v.gender === "trans" ? "female" : "";
 const CUSTOM_OK = ["school", "ethnicity"]; // "직접 입력…" allowed
 function choices(k, current) {
     const used = Store.allPlayers.map(p => p[k]).filter(Boolean);
@@ -92,7 +96,7 @@ function editPlayer(p, onSaved) {
     // image generator: on for new players, off for existing ones until asked for
     const saved = parseGen(v.profile_image);
     const dr = drawRace(v.ethnicity);
-    const gen = generatorPanel({ ...(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: dr.race, sub: dr.sub || "", raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) }), baby: isBaby(v.age_group) },
+    const gen = generatorPanel({ ...(saved || { ...DEFAULTS, gender: v.gender === "female" ? "female" : "male", race: dr.race, sub: dr.sub || "", raceText: v.ethnicity || "", seed: 1 + Math.floor(Math.random() * 1e6) }), baby: isBaby(v.age_group), swimAs: swimAsOf(v) },
         isNew || !!saved, src => setImage(src), () => (c => !v.ethnicity || c.toLowerCase() === String(v.ethnicity).toLowerCase() ? c : `${c} › ${v.ethnicity}`)(categoryOf(v.ethnicity)));
 
     let raceCat = categoryOf(v.ethnicity);
@@ -167,6 +171,7 @@ function editPlayer(p, onSaved) {
     // profile → generator: gender and race follow the profile dropdowns
     function sync(k) {
         if (k === "gender" && (v.gender === "male" || v.gender === "female")) gen.set({ gender: v.gender });
+        if (k === "gender" || k === "preference") gen.set({ swimAs: swimAsOf(v) }); // 👙 swimwear set follows gender + preference
         if (k === "ethnicity") { const d = drawRace(v.ethnicity); gen.set({ race: d.race, sub: d.sub || "", raceText: v.ethnicity || "" }); }
         if (k === "age_group") gen.set({ baby: isBaby(v.age_group) }); // 👶 Baby → the picture is drawn smaller
         if (k === "country") drawRes();
@@ -251,9 +256,14 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
         el.classList.toggle("off", !on);
         const g = o.gender === "female" ? "female" : "male";
         const human = o.race === "human", black = human && o.human === "black";
-        // 👙 swimwear / lingerie: Human Form · Main/Other Animal · Kalisto · Dungi only, never a baby
-        const swimOk = SWIM_RACES.includes(o.race) && !o.baby;
-        if (o.season === "swim" && !swimOk) o.season = "summer";
+        // 👙 swimwear / lingerie: every race but Smile · Ghost · Shape · Other Shape · Fruit · Veggie, never a baby
+        const swimCan = swimOk(o.race) && !o.baby;
+        if (o.season === "swim" && !swimCan) o.season = "summer";
+        // the swimwear list follows the profile (gender + Trans-Curious / Gay preference), else the picture's gender
+        const sg = o.swimAs === "female" || o.swimAs === "male" ? o.swimAs : g;
+        // 📌 hair pins: women — and men / trans whose preference is Trans-Curious or Gay
+        const pinCan = g === "female" || o.swimAs === "female";
+        if (!pinCan) o.pin = -1;
         // keep indexes inside their lists when the gender changes
         for (const [k, n] of [["hairStyle", 15], ["wig", 15], ["hat", 20], ["acc", 20], ["outfit", 20]]) if (o[k] >= n) o[k] = n - 1;
         if (o.race === "noimage") { // ❓ Others: no drawing until the picture is ordered
@@ -270,7 +280,8 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
             o.race === "goblin" ? [L("머리뿔 1개 (12종)", sel("gobHorn", GOB_HORNS, { num: true })), L("이빨 (12종)", sel("gobTeeth", GOB_TEETH, { num: true }))] : null,
             EAR_DEFAULT[o.race] != null ? [L("귀 형태 (15종)", sel("earShape", EAR_SHAPES, { none: "종족 기본", num: true })), L("귀 크기", sel("earSize", EAR_SIZES, { num: true })), L("귀 안쪽 문양 (14종)", sel("earIn", EAR_INNERS, { num: true }))] : null,
             o.race === "ant" || o.race === "bug" ? [L("더듬이 (15종)", sel("antStyle", ANT_STYLES, { none: "종족 기본", num: true }))] : null,
-            bfly ? [L("날개 문양 (14종)", sel("wingPat", WING_PATS, { num: true }))] : null
+            bfly ? [L("날개 문양 (14종)", sel("wingPat", WING_PATS, { num: true }))] : null,
+            EAR_RACES.includes(o.race) ? [L("귀", chk("noEars", "👂 귀 없음 (귀를 아예 그리지 않음)"))] : null
         ].filter(Boolean).flat();
         body.replaceChildren(
             h("div.gen-sec", h("h5", "기본"),
@@ -293,11 +304,7 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
             human
                 ? h("div.gen-sec", h("h5", "머리"),
                     L("머리색", swatches("hair", HAIR_COLORS), ".wide"),
-                    h("div.gen-grid", L(`머리 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("hairStyle", HAIR_STYLES[g], { num: true }))),
-                    g === "male" ? h("div.gen-grid",
-                        L(`🧔 턱수염 (${BEARDS.length}종)`, sel("beard", BEARDS, { none: "없음", num: true })),
-                        L(`👨 콧수염 (${MUSTACHES.length}종)`, sel("mustache", MUSTACHES, { none: "없음", num: true }))) : null,
-                    g === "male" && (o.beard >= 0 || o.mustache >= 0) ? L("수염 색 (기본 = 머리색)", swatches("beardColor", [["auto", "머리색"], ...HAIR_COLORS.filter(c => c[0].startsWith("#"))]), ".wide") : null)
+                    h("div.gen-grid", L(`머리 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("hairStyle", HAIR_STYLES[g], { num: true }))))
                 : h("div.gen-sec", h("h5", "가발"),
                     h("div.gen-grid", L(`가발 스타일 (${g === "female" ? "여" : "남"} 15종)`, sel("wig", HAIR_STYLES[g], { none: "가발 없음", num: true }))),
                     o.wig >= 0 ? L("가발색", swatches("wigColor", HAIR_COLORS), ".wide") : null),
@@ -306,14 +313,25 @@ function generatorPanel(initial, startOn, onImage, raceLabel = () => "") {
                     L(`😀 표정 (${EXPRESSIONS.length}종)`, sel("expr", EXPRESSIONS, { none: "랜덤 (다시 생성마다 바뀜)", num: true })),
                     L("안경 (20종)", sel("glasses", GLASSES, { none: "없음", num: true })),
                     L("선글래스 (20종)", sel("sun", SUNGLASSES, { none: "없음", num: true })),
-                    L("화장 (15종)", sel("makeup", MAKEUPS, { none: "없음", num: true }))),
+                    L(`화장 (${MAKEUPS.length}종)`, sel("makeup", MAKEUPS, { none: "없음", num: true })),
+                    // 🧔 beard / mustache: every race, any gender
+                    L(`🧔 턱수염 (${BEARDS.length}종)`, sel("beard", BEARDS, { none: "없음", num: true })),
+                    L(`👨 콧수염 (${MUSTACHES.length}종)`, sel("mustache", MUSTACHES, { none: "없음", num: true }))),
+                o.beard >= 0 || o.mustache >= 0 ? L(`수염 색 (기본 = ${human ? "머리색" : "가발색 · 가발 없으면 검정"})`, swatches("beardColor", [["auto", "기본"], ...HAIR_COLORS.filter(c => c[0].startsWith("#"))]), ".wide") : null,
                 h("div.row.wrap", chk("mouthLines", "몽이주름 ( - )"), chk("eyeWrinkle", "눈 주름"), chk("leprosy", "나병"))),
             h("div.gen-sec", h("h5", "착용"),
                 h("div.gen-grid",
                     L(`모자 (${g === "female" ? "여" : "남"} 20종)`, sel("hat", HATS[g], { none: "없음", num: true })),
                     L(g === "female" ? "악세사리 세트 (귀걸이·목걸이·팔찌 20종)" : "악세사리 세트 (시계·남성 목걸이 20종)", sel("acc", ACCS[g], { none: "없음", num: true })),
-                    L("옷 — 계절", sel("season", swimOk ? [...SEASONS, SWIM_SEASON] : SEASONS)),
-                    L(o.season === "swim" ? (g === "female" ? "👙 수영복 · 란제리 (20종)" : "🩳 몸매 + 수영 팬츠 (20종)") : "옷 — 상의/하의 세트 (20종)", sel("outfit", outfitNames(g, o.season), { num: true })))));
+                    L("옷 — 계절", sel("season", swimCan ? [...SEASONS, SWIM_SEASON] : SEASONS)),
+                    L(o.season === "swim" ? (sg === "female" ? "👙 수영복 · 란제리 (20종)" : "🩳 몸매 + 수영 팬츠 (20종)") + (sg !== g ? " · 성향 반영" : "") : "옷 — 상의/하의 세트 (20종)", sel("outfit", outfitNames(o.season === "swim" ? sg : g, o.season), { num: true })),
+                    // 📌 hair pin (20) + left / middle / right
+                    pinCan ? L(`📌 핀 (${PINS.length}종)`, sel("pin", PINS, { none: "없음", num: true })) : null,
+                    pinCan && o.pin >= 0 ? L("핀 위치", sel("pinPos", PIN_POS)) : null,
+                    // 🖋️ tattoo (20) + body area
+                    L(`🖋️ 타투 (${TATTOOS.length}종)`, sel("tattoo", TATTOOS, { none: "없음", num: true })),
+                    o.tattoo >= 0 ? L("타투 부위", sel("tatArea", TAT_AREAS)) : null),
+                o.tattoo >= 0 && (o.tatArea === "upper" || o.tatArea === "full") && o.season !== "swim" ? h("small.muted", "※ 상반신 타투는 옷에 가려져 목 부분만 보입니다 (수영복을 입으면 어깨·가슴까지 보임)") : null));
     }
     draw();
     view.innerHTML = buildAvatar(o);

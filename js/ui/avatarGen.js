@@ -12,8 +12,10 @@
 // 0,0) so hair / wigs / hats / glasses fit every body.
 // =====================================================================
 import * as AR from "./avatarRaces.js";
-import { exprParts, SWIM_RACES, swimNames, swimSpec, swimArm, swimTorso, furDefs, furWrap, woolEdge } from "./avatarExtra.js";
-export { EXPRESSIONS, SWIM_RACES, SWIM_SEASON } from "./avatarExtra.js";
+import { exprParts, swimNames, swimSpec, swimArm, swimTorso, furDefs, furWrap, woolEdge } from "./avatarExtra.js";
+import { pinSvg, tatAt } from "./avatarWear.js";
+export { EXPRESSIONS, SWIM_SEASON } from "./avatarExtra.js";
+export { PINS, PIN_POS, TATTOOS, TAT_AREAS } from "./avatarWear.js";
 export { EAR_SHAPES, EAR_SIZES, EAR_INNERS, JS_EARS, JS_FANGS, HALOS, ANGEL_WINGS, DEVIL_HORNS, DEVIL_TAILS, GOB_HORNS, GOB_TEETH, ANT_STYLES, WING_PATS } from "./avatarRaces.js";
 const OUT = "#3a2a24";
 const f1 = n => +(+n).toFixed(1);
@@ -52,7 +54,12 @@ export const RACES = [
 ];
 const RACE = Object.fromEntries(RACES.map(r => [r[0], { id: r[0], ko: r[1], kind: r[2], skin: r[3] }]));
 const ETH = { dungi: "dungi", "덩이": "dungi", rabbit: "rabbit", bunny: "bunny", bear: "bear", teddy: "teddy", rat: "rat", cat: "cat", goblin: "goblin", human: "human", ant: "ant", smile: "smile", cloud: "cloud", kalisto: "kalisto", devil: "devil", angel: "angel", ghost: "ghost", invisible: "invisible", jiangshi: "jiangshi", donglee: "donglee", triangle: "triangle", square: "square", rectangle: "rectangle", trapezoid: "trapezoid", trepezoid: "trapezoid", rhombus: "rhombus", diamond: "rhombus" };
-export const raceFromEthnicity = e => ETH[String(e || "").trim().toLowerCase()] || "other";
+// 👙 swimwear / lingerie: every race with a humanoid body — i.e. all but Smile · Ghost · Shape · Other Shape · Fruit · Veggie
+// (those are drawn as "shape" bodies) — never a baby
+export const swimOk = id => RACE[id]?.kind === "h" && id !== "noimage";
+// 👂 races whose ears can be taken off (귀 없음)
+export const EAR_RACES = ["rabbit", "bunny", "bear", "teddy", "rat", "cat", "dungi", "kalisto", "human", "other", "devil", "angel", "jiangshi", "goblin", "dog", "hippo", "tiger", "horse", "pig", "panda", "kangaroo", "fox"];
+export const raceFromEthnicity =e => ETH[String(e || "").trim().toLowerCase()] || "other";
 
 export const HUMAN_TYPES = [["asian", "동양인"], ["western", "서양인"], ["black", "흑인 (피부색 자동)"]];
 export const SKIN_COLORS = [["auto", "인종 기본"], ["#fde0cf", "밝은 살구"], ["#f6d3b0", "살구"], ["#e0ac69", "구릿빛"], ["#a86b3c", "갈색"], ["#5b3a26", "흑갈색"], ["#2b1b14", "검정"], ["#ffffff", "하양"], ["#ffc2d4", "분홍"], ["#e2463f", "빨강"], ["#ff9f43", "주황"], ["#ffd83b", "노랑"], ["#a8e070", "연두"], ["#5cc469", "초록"], ["#7ad7ff", "하늘"], ["#5f8bff", "파랑"], ["#b388ff", "보라"], ["#9aa3ad", "회색"], ["rainbow", "레인보우"]];
@@ -198,7 +205,11 @@ export const DEFAULTS = {
     // 😀 expression (20 · ui/avatarExtra.js EXPRESSIONS, −1 = random by seed) · 👙 season "swim" = swimwear / lingerie
     expr: -1,
     // 🏋️ 체형 (body type): "" 일반 · skinny 스키니 · chubby · fat 과체중 · muscle 근육질
-    bt: ""
+    bt: "",
+    // 👙 swimwear gender set by the profile (male / trans + Trans-Curious or Gay → women's · female + those → men's), "" = the picture's gender
+    swimAs: "",
+    // 👂 no ears at all (like 외계덩이) · 📌 hair pin (20, −1 none) + where on the head · 🖋️ tattoo (20, −1 none) + body area
+    noEars: false, pin: -1, pinPos: "center", tattoo: -1, tatArea: "face"
 };
 // 🚫 No Image: a plain placeholder (still carries its options so the generator can reopen it)
 export function noImageSvg(meta = "") {
@@ -491,12 +502,16 @@ export function buildAvatar(opts = {}) {
     const dark = !rainbow && lum(skin) < 0.36;
     const ink = dark ? "#fbefe6" : "#2a1a1e";
     const line = dark ? shade(skin, 0.45) : OUT; // outline that stays visible on dark skin
+    // 🖋️ tattoo: one design (20) on one area — "full" = face + neck/upper body + both arms
+    const tatI = o.tattoo >= 0 ? o.tattoo | 0 : -1, tatInk = dark ? "#efe6ff" : "#1f3350";
+    const tatOn = a => tatI >= 0 && (o.tatArea === a || (o.tatArea === "full" && a !== "eye"));
     const vary = { bg: Math.floor(R() * 8), eye: Math.floor(R() * 4), mood: Math.floor(R() * 4), pose: Math.floor(R() * 3), blush: R() < 0.55, eyeCol: ["#3a2a1e", "#3f7df0", "#3fae5a", "#6b4a2f", "#7a5af0"][Math.floor(R() * 5)], tilt: R() };
-    // 👙 swimwear / lingerie: Human Form · Main/Other Animal · Kalisto · Dungi only, never a baby (others get a summer outfit)
+    // 👙 swimwear / lingerie: every humanoid race, never a baby (shape races get a summer outfit)
     // 🎬 topless (VHS films only — a grown-up woman's figure): the regular bottoms stay, the top is bare skin
     const topless = !!o.topless && humanoid && female && !o.baby;
+    const swimG = o.swimAs === "female" || o.swimAs === "male" ? o.swimAs : female ? "female" : "male";
     const swim = topless ? ["", "topless", "#000", "#000", o.jiggle ? "jiggle" : ""]
-        : o.season === "swim" && humanoid && SWIM_RACES.includes(race.id) && !o.baby ? swimSpec(female ? "female" : "male", o.outfit) : null;
+        : o.season === "swim" && swimOk(race.id) && !o.baby ? swimSpec(swimG, o.outfit) : null;
     const fit = topless ? { ...outfit("female", o.season === "swim" ? "summer" : o.season, o.outfit), top: { ko: "", sl: 0 } }
         : swim ? { top: { ko: "", sl: 0 }, tc: swim[2], bot: BOT.none, bc: swim[2] } : outfit(female ? "female" : "male", o.season === "swim" ? "summer" : o.season, o.outfit);
     const season = o.season === "swim" ? "summer" : o.season;
@@ -558,11 +573,13 @@ export function buildAvatar(opts = {}) {
     // 🐰 main animals: ear shape (15) · size (4) · inner pattern (14) — rabbit / bunny / bear keep their old ears until one is changed
     const legacyEar = ["rabbit", "bunny", "bear", "dungi"].includes(race.id) && !(o.earShape >= 0) && (o.earSize ?? 1) === 1 && !(o.earIn > 0);
     if (AR.EAR_DEFAULT[race.id] != null && !legacyEar) headExtraBack = AR.animalEars(o.earShape >= 0 ? o.earShape : AR.EAR_DEFAULT[race.id], o.earSize ?? 1, o.earIn | 0, skinL, line, sw, rainbow ? "#ffffff" : skin);
+    // 👂 귀 없음: the head is drawn without any ears (horns / halos in front stay)
+    if (o.noEars && EAR_RACES.includes(race.id)) headExtraBack = "";
     // 🐾 other animals: ears / mane / fins behind the head + muzzle / beak / markings on the face
     let animalFace = "";
     if (["dog", "bird", "hippo", "lion", "tiger", "horse", "pig", "dolphin", "panda", "kangaroo", "fox", "snake", "giraffe", "animal", "teddy", "rat", "cat"].includes(race.id)) {
         const [b, f] = AR.animalHead(race.id, rainbow ? "#c9a27a" : skin, skinL, line, sw, rainbow);
-        headExtraBack += b; animalFace = f;
+        headExtraBack += o.noEars && EAR_RACES.includes(race.id) ? "" : b; animalFace = f;
     }
     // 🐛 bugs: antennae by preset (or the chosen style) · 🌸 flowers: petals around the face
     if (bugP) { const as = o.antStyle >= 0 ? o.antStyle : bugP.ant; headExtraBack = as >= 0 ? AR.antennae(as, bugP.antCol || line, skinL, sw) : ""; }
@@ -633,6 +650,11 @@ export function buildAvatar(opts = {}) {
         const slc = T.slc ? "#f7f7f5" : tc;
         const sleeve = (d) => T.sl ? `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(T.puff ? 22 : 19) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 19 : 45} 400"/><path d="${d}" fill="none" stroke="${slc}" stroke-width="${(T.puff ? 17 : 14) + Math.max(0, armW - 10)}" stroke-dasharray="${T.sl === 1 ? 18 : 44} 400"/>` : "";
         if (race.id !== "bird") out.push(sleeve(dL) + sleeve(dR));
+        // 🖋️ arm tattoo: on the forearm, just past the sleeve (left arm · both arms for 전신)
+        if (tatOn("arm") && race.id !== "bird") {
+            const cover = swim || !T.sl ? 0 : T.sl === 1 ? 19 : 45;
+            out.push((o.tatArea === "full" ? [dL, dR] : [dL]).map(d => { const [x, y, a] = armSpot(d, cover); return tatAt(tatI, tatInk, x, y, 0.42, a); }).join(""));
+        }
         // neck + torso (🦒 giraffe: a long spotted neck)
         if (race.id === "giraffe") out.push(blob(`<rect x="117" y="${headY + 22}" width="22" height="${122 - headY - 22}" rx="6" FILL/>`) + [[123, headY + 34], [133, headY + 46], [122, headY + 56]].map(([x, y]) => `<path d="M${x} ${y}m-4 0l4 -4l4 4l-4 4Z" fill="#c07a2a"/>`).join(""));
         else out.push(blob(`<rect x="120" y="102" width="16" height="20" rx="5" FILL/>`));
@@ -653,7 +675,7 @@ export function buildAvatar(opts = {}) {
         if (T.btn) deco += Array.from({ length: T.len === "coat" ? 4 : 3 }, (_, i) => `<circle cx="${T.open ? 146 : 128}" cy="${136 + i * 14}" r="2.3" fill="${lum(tc) > 0.6 ? "#6b4a2f" : "#f7f7f5"}"/>`).join("");
         if (T.pocket) deco += `<path d="M112 152H144L140 167H116Z" fill="none" stroke="${tcd}" stroke-width="2.4" stroke-linejoin="round"/>`;
         if (T.belt) deco += `<path d="M92 164H164" stroke="${tcd}" stroke-width="7"/><rect x="123" y="159" width="10" height="10" rx="2" fill="none" stroke="#e8b923" stroke-width="2.4"/>`;
-        if (swim) out.push(swimTorso(female, swim, skinG, skin, line, fur)); // 👙 bare skin + swimsuit / lingerie / trunks
+        if (swim) out.push(swimTorso(topless || swimG === "female", swim, skinG, skin, line, fur)); // 👙 bare skin + swimsuit / lingerie / trunks
         else out.push(`<clipPath id="tc"><path d="${tors}"/></clipPath><path d="${tors}" fill="${tc}" ${S()}/><g clip-path="url(#tc)">${deco}</g><path d="${tors}" fill="none" ${S()}/>`);
         // neck line
         const nk = T.open ? "" : T.neck;
@@ -664,6 +686,11 @@ export function buildAvatar(opts = {}) {
         if (nk === "hood") out.push(`<path d="M114 117Q128 130 142 117" fill="none" stroke="${tcd}" stroke-width="3.4"/><path d="M122 124V142M134 124V142" stroke="#f7f7f5" stroke-width="2.2" stroke-linecap="round"/>`);
         if (nk === "round") out.push(`<circle cx="119" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><circle cx="137" cy="120" r="7.5" fill="#ffffff" ${S(2.4)}/><path d="M128 124L120 132H136Z" fill="${shade(tc, -0.25)}" ${S(2)}/>`);
         if (T.sl === 0 && !swim) out.push(`<path d="M104 121L109 132M152 121L147 132" stroke="${tcd}" stroke-width="2"/>`);
+        // 🖋️ neck + upper body tattoo: a small one on the side of the neck (not under a turtleneck / hood) + the shoulder when the torso is bare
+        if (tatOn("upper")) {
+            if (swim || !["turtle", "hood"].includes(nk)) out.push(tatAt(tatI, tatInk, 134, 112, 0.26));
+            if (swim) out.push(tatAt(tatI, tatInk, 112, 124, 0.5, -12));
+        }
         // hands
         if (race.id === "bird") wrist = [66, 184];
         else out.push(blob(`<circle cx="${handL[0]}" cy="${handL[1]}" r="7.5" FILL/>`) + blob(`<circle cx="${handR[0]}" cy="${handR[1]}" r="7.5" FILL/>`) + holdProp(o.hold, handR));
@@ -739,6 +766,9 @@ export function buildAvatar(opts = {}) {
         }
         if (prodP) out.push(AR.produceTop(prodP.top, body, S)); // 🍃 stem · leaves · crown · mushroom cap
         out.push(`<circle cx="${hL[0]}" cy="${hL[1]}" r="8.5" fill="${skinG}" ${S(3)}/><circle cx="${hR[0]}" cy="${hR[1]}" r="8.5" fill="${skinG}" ${S(3)}/>` + holdProp(o.hold, hR));
+        // 🖋️ shape bodies: arm tattoo on the arm · upper-body tattoo on the body under the face
+        if (tatOn("arm")) out.push((o.tatArea === "full" ? [dL, dR] : [dL]).map(d => { const [x, y, a] = armSpot(d, T.sl === 1 ? 17 : T.sl ? 36 : 0); return tatAt(tatI, tatInk, x, y, 0.4, a); }).join(""));
+        if (tatOn("upper")) out.push(grp(ff, tatAt(tatI, tatInk, 22, 34, 0.55)));
         wrist = [hL[0] - 1, hL[1] - 11];
     }
 
@@ -814,10 +844,10 @@ export function buildAvatar(opts = {}) {
     if (blushSpec) feat.push([-1, 1].map(s => `<ellipse cx="${s * 23}" cy="${11 + blushSpec[2]}" rx="${mk?.big ? 9.5 : 7}" ry="${mk?.big ? 6 : 4.2}" fill="${blushSpec[0]}" opacity="${blushSpec[1]}"/>`).join(""));
     if (mk?.glow) feat.push(`<ellipse cx="0" cy="-20" rx="12" ry="4" fill="#fff" opacity=".4"/><ellipse cx="-22" cy="4" rx="5" ry="2.4" fill="#fff" opacity=".45"/><ellipse cx="22" cy="4" rx="5" ry="2.4" fill="#fff" opacity=".45"/>`);
     if (mk?.freckles) feat.push([[-24, 8], [-19, 11], [-15, 7], [-21, 5], [24, 8], [19, 11], [15, 7], [21, 5], [-3, 9], [3, 9]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#a86b3c" opacity=".8"/>`).join(""));
-    // 🧔 human men: the beard sits under the mouth (the mouth is drawn on top of it)
-    const manFace = human && !female;
-    const beardCol = isHex(o.beardColor) ? o.beardColor : isHex(o.hair) ? o.hair : "#1c1a1e";
-    if (manFace && o.beard >= 0) feat.push(beardSvg(o.beard | 0, beardCol));
+    // 🧔 beard / mustache: every race, any gender — the beard sits under the mouth (the mouth is drawn on top of it)
+    const hairBase = human ? o.hair : o.wig >= 0 ? o.wigColor : "";
+    const beardCol = isHex(o.beardColor) ? o.beardColor : isHex(hairBase) ? hairBase : "#1c1a1e";
+    if (o.beard >= 0) feat.push(beardSvg(o.beard | 0, beardCol));
     // eyes (🪰 compound eyes replace them · 🟡 Pacman has one · 🐼 panda / 🕷️ spider eyes stay readable)
     const compound = bugP?.eyes === "compound";
     if (race.id === "panda") eyeStyle = 2;
@@ -860,8 +890,11 @@ export function buildAvatar(opts = {}) {
     } else if (mk?.lip) feat.push(`<path d="M-5 ${my}Q0 ${my + 3} 5 ${my}" fill="none" stroke="${mk.lip}" stroke-width="3.4" stroke-linecap="round" opacity=".85"/>`);
     if (race.id === "jiangshi") feat.push(AR.fangs(o.jsFang | 0, my));
     if (race.id === "goblin") feat.push(AR.gobTeeth(o.gobTeeth | 0, my));
-    if (manFace && o.mustache >= 0) feat.push(mustacheSvg(o.mustache | 0, beardCol));
+    if (o.mustache >= 0) feat.push(mustacheSvg(o.mustache | 0, beardCol));
     if (XP?.extra) feat.push(XP.extra); // 💧 tears · sweat · 💢 · zz · ✨ …
+    // 🖋️ face tattoos: beside the left eye on the temple / cheek · a small one under the right eye
+    if (tatOn("face")) feat.push(tatAt(tatI, tatInk, -27, 9, 0.5, -10));
+    if (tatOn("eye")) feat.push(tatAt(tatI, tatInk, 17, 11, 0.34));
     if (o.leprosy) feat.push(spots(R, [[-20, -18, 8], [14, -24, 7], [24, 2, 7], [-26, 6, 6], [-8, 24, 6], [12, 22, 7], [2, -6, 5], [-30, -6, 4], [30, -14, 4]], K));
     face.push(`<g${fo}>${feat.join("")}</g>`);
     // 🏋️ body type on the face: puffy cheeks + double chin (chubby / fat) · hollow cheeks (skinny) · square jaw (muscle)
@@ -898,7 +931,7 @@ export function buildAvatar(opts = {}) {
     if (o.sun >= 0 && SUN_SPECS[o.sun]) gear.push(both ? `<g transform="translate(0 -24)">${eyewear(SUN_SPECS[o.sun], true)}</g>` : eyewear(SUN_SPECS[o.sun], true));
     out.push(grp(ff, gear.join("")));
     K = 1 / hf[2];
-    out.push(grp(hf, ht.front + headExtraFront));
+    out.push(grp(hf, ht.front + headExtraFront + (o.pin >= 0 ? pinSvg(o.pin | 0, o.pinPos) : ""))); // 📌 hair pin on top of the hair / hat
     // 🎀 Ms. Pacman: a big bow on the head and a beauty mark
     if (body?.pac && female) out.push(`<g transform="translate(118 50) scale(1.3)"><path d="M0 0L-24 -14L-24 14Z M0 0L24 -14L24 14Z" fill="#ff4f7a" ${S(3)}/><circle r="6" fill="#cc3f61" ${S(3)}/></g><circle cx="148" cy="138" r="3" fill="#2a1a1e"/>`);
     K = 1;
@@ -909,6 +942,21 @@ export function buildAvatar(opts = {}) {
     out.push("</g>");
     const meta = `<desc>gen:${esc(JSON.stringify(o))}</desc>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">${meta}${out.join("")}</svg>`;
+}
+// 🖋️ a spot on an arm path ("Mx y Qcx cy x y"): past the first `cover` px (the sleeve), toward the hand → [x, y, angle]
+function armSpot(d, cover = 0) {
+    const n = (String(d).match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+    const [x0, y0, cx, cy, x1, y1] = n.length >= 6 ? n : [n[0], n[1], n[0], n[1], n[2] ?? n[0], n[3] ?? n[1]];
+    const P = t => [(1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * x1, (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * cy + t * t * y1];
+    const pts = Array.from({ length: 41 }, (_, i) => P(i / 40));
+    const acc = [0];
+    for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const L = acc[acc.length - 1], want = Math.min(L - 7, Math.max(L * 0.6, cover + 6));
+    const i = Math.max(1, acc.findIndex(v => v >= want));
+    const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
+    let a = Math.atan2(by - ay, bx - ax) * 180 / Math.PI - 90; // the design stands along the arm
+    if (a < -90) a += 180; else if (a > 90) a -= 180;
+    return [bx, by, a];
 }
 function rbStops() { return ["#ff7b7b", "#ffc56b", "#fff07a", "#8ef08e", "#7ac8ff", "#c49bff"].map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join(""); }
 // ---- extras drawn in picture space (256×256), around a humanoid picture

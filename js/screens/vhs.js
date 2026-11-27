@@ -13,6 +13,7 @@ import { emoFight } from "./emoCorners.js";
 
 import { spine, front, back, vhsBox, brandLogo } from "./vhsCover.js";
 import { figure, setFigure } from "../ui/figure.js";
+import { voicesReady, voiceOf, dub, dubPause, dubStop, ambience, ambFor } from "./vhsAudio.js";
 export { spine, front, back, vhsBox, brandLogo };
 
 const pimg = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
@@ -224,7 +225,7 @@ export function cinemaView(pid, { turn = null, onChange = () => { } } = {}) {
 
 // ---------------------------------------------------------------- 🎵 little sound engine: background music + mumbled lines
 let ac = null;
-const actx = () => { try { ac ||= new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } };
+const actx = () => { try { ac ||= new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended" && !filmPaused) ac.resume(); return ac; } catch { return null; } };
 function tone(f, dur, { type = "square", vol = 0.04, at = 0, glide = 0 } = {}) {
     if (Sound.muted) return;
     const a = actx(); if (!a) return;
@@ -328,6 +329,9 @@ const filmAudios = new Set();
 function setFilmPaused(on) {
     filmPaused = on;
     for (const a of filmAudios) { if (on) a.pause(); else a.play().catch(() => { }); }
+    // the film's own synth sounds + ambience stand still · the dubbed voice pauses mid-line
+    try { if (ac) on ? ac.suspend() : ac.resume(); } catch { }
+    dubPause(on);
 }
 function music(style) {
     const S = STYLES[style] || STYLES.comic;
@@ -367,6 +371,12 @@ export function playMovie(m) {
         const screen = h("div.vhs-screen" + (m.bw ? ".bw" : ""));
         const bar = h("div.vhs-progress", h("i"));
         let skip = false, paused = false, stopMusic = () => { };
+        // 🎬 the film has the room: every game sound (BGM · weather · map loops · music corner) pauses until it ends
+        Sound.hold(true);
+        // 🌧️ scene ambience · 🗣️ the voices load in the background (dubbing starts as soon as they are there)
+        const amb = ambience(actx);
+        const setAmb = kinds => amb.set(Sound.muted ? [] : kinds);
+        voicesReady();
         // ⏸ Pause: the film (scenes · lines · music · animations) stops where it is — the play time was already stopped for the film
         const pauseBtn = h("button.btn.ghost.small.vp-pause-btn", { onclick: () => setPause(!paused) }, "⏸ 일시정지");
         const pauseMark = h("div.vp-paused", h("b", "⏸ PAUSE"), h("small", "▶ 재생을 누르면 이어서 봅니다"));
@@ -377,7 +387,7 @@ export function playMovie(m) {
             pauseBtn.textContent = on ? "▶ 재생" : "⏸ 일시정지";
             if (on) screen.append(pauseMark); else pauseMark.remove();
         }
-        const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
+        const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); dubStop(); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
         // 💀 Body Count roll after The End (a few seconds more)
         const deaths = D.bodyCountInfo(m);
         const bcSec = deaths.length ? 4 + deaths.length * 2 : 0;
@@ -389,6 +399,7 @@ export function playMovie(m) {
             try {
                 for (const part of m.script || []) {
                     if (skip) break;
+                    if (part.k !== "scene") setAmb([]); // titles · cast · The End: just the music
                     if (part.k === "brand") {
                         put(screen, h("div.vp-brand", brandLogo(b, 120), h("b", b.name), h("small", "presents")));
                         tone(NOTE(12), 0.4, { type: "sine", vol: 0.06 }); tone(NOTE(19), 0.6, { type: "sine", vol: 0.05, at: 0.35 });
@@ -434,7 +445,7 @@ export function playMovie(m) {
                     sfx("sting");
                     await wait(bcSec);
                 }
-            } finally { stopMusic(); setFilmPaused(false); pm.close(); resolve(); }
+            } finally { stopMusic(); amb.stop(); dubStop(); setFilmPaused(false); Sound.hold(false); pm.close(); resolve(); }
         })();
         async function scene(sc) {
             const people = (sc.who || []).map(r => roleCast(m, r)).filter(Boolean);
@@ -470,6 +481,8 @@ export function playMovie(m) {
             const idxOf = r => people.findIndex(c => c.role === r || c.short === r || c.role.startsWith(r + ","));
             // a scene's music: a file, a synth style or "stop" (nothing = the music keeps going)
             if (sc.music) { stopMusic(); stopMusic = startMusic(sc.music, m); }
+            // 🌧️ the scene's background sounds (rain · wind · birds · traffic · audience …) — scene.amb names them, else the set decides
+            setAmb(ambFor(sc));
             const rain = (n, emo) => h("div.vp-fx", ...Array.from({ length: n }, (_, i) => h("i", { style: { "--x": (i * 6.7 % 100) + "%", "--d": (i % 6) * 0.35 + "s" } }, Array.isArray(emo) ? emo[i % emo.length] : emo)));
             const FX = {
                 money: () => rain(16, "💸"), sparkle: () => rain(16, "✨"), music: () => rain(16, "🎵"), hearts: () => rain(14, ["💗", "💕", "💓"]),
@@ -501,6 +514,7 @@ export function playMovie(m) {
                 // 💡 the lights · 🎵 music change at this line · set: how other actors look from now on ({ role: { expr, act, outfit … } })
                 if (meta.light) { sceneEl.classList.toggle("dark", meta.light === "off"); sceneEl.classList.toggle("black", meta.light === "black"); }
                 if (meta.music) { stopMusic(); stopMusic = startMusic(meta.music, m); }
+                if (meta.amb !== undefined) setAmb(ambFor({ amb: meta.amb })); // 🌧️ the weather / noise changes at this line
                 // ⚡ a flash of light · a sound effect (scream, sting, phone ring, applause, ghost laugh …)
                 if (meta.flash) { const fl = h("i.vp-flash" + (meta.flash === "red" ? ".red" : "")); sceneEl.append(fl); setTimeout(() => fl.remove(), 600); }
                 if (meta.claw) clawMarks();
@@ -514,12 +528,21 @@ export function playMovie(m) {
                 const ti = meta.to ? idxOf(meta.to) : -1;
                 actors.forEach((a, i) => { a.classList.toggle("talk", i === ci); a.style.setProperty("--dir", i === ci && ti >= 0 ? Math.sign(ti - ci) || 1 : i < (people.length - 1) / 2 ? 1 : -1); });
                 // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they are
-                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, ...look } = meta;
+                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, ...look } = meta;
                 people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
                 actors.forEach((a, i) => { a.classList.toggle("gone", !!base[i].gone); a.classList.toggle("hid", !!base[i].hid); });
                 put(sub, who ? h("b", `${who}: `) : null, who ? text : h("i.vp-narr", text));
-                if (who && !/^[♪…!?.\s]+$/.test(text)) mumble(text, (ci < 0 ? people.length : ci) + 3);
+                // 🗣️ dubbing: only spoken lines (no narration · songs · stage directions), in a voice that fits the actor
+                //    (no voice in this browser → the old 웅얼웅얼 blips)
+                const said = who && !Sound.muted ? dub(text, voiceOf(D.castOf(m, who), who)) : null;
+                if (said === false && !/^[♪…!?.\s]+$/.test(text)) mumble(text, (ci < 0 ? people.length : ci) + 3);
                 await wait(per);
+                // a long line: the subtitle stays until the voice has finished it
+                if (said) {
+                    let fin = false; said.done.then(() => { fin = true; });
+                    for (let t = 0; !fin && !skip && t < 150; t++) { await sleep(100); while (paused && !skip) await sleep(100); }
+                    if (!fin) said.cancel();
+                }
             }
         }
     });

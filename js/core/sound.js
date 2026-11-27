@@ -1,7 +1,10 @@
 // Tiny WebAudio synth — no sound files needed.
 let ctx = null, muted = false;
 try { muted = localStorage.getItem("gamblers.muted") === "1"; } catch { }
-function ac() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; }
+// 🎬 held: a film is playing — every game sound (BGM · map loop · weather · mosquito · SFX · music files) is paused until it ends
+let held = false;
+const media = new Set(), heldMedia = new Set();
+function ac() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended" && !held) ctx.resume(); return ctx; }
 
 // ---------------------------------------------------------------- volume buses
 // loudest → quietest: 🎰 game SFX (a slot / casino screen with its palette) → 🔔 other SFX → 🌦️ weather / map ambience
@@ -16,7 +19,7 @@ function bus(a, cat = palette ? "game" : "sfx") {
 }
 
 function tone(freq, dur = 0.1, type = "square", vol = 0.06, when = 0, slide = 0) {
-    if (muted) return;
+    if (muted || held) return;
     try {
         const a = ac(), t = a.currentTime + when;
         const o = a.createOscillator(), g = a.createGain();
@@ -27,7 +30,7 @@ function tone(freq, dur = 0.1, type = "square", vol = 0.06, when = 0, slide = 0)
     } catch { }
 }
 function noise(dur = 0.2, vol = 0.08, when = 0) {
-    if (muted) return;
+    if (muted || held) return;
     try {
         const a = ac(), t = a.currentTime + when;
         const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0);
@@ -523,7 +526,7 @@ function weatherSet(id) {
         s.start();
         const w = wx = { id, s, g, l };
         if (d.thunder || d.ticks) w.timer = setInterval(() => {
-            if (wx !== w || muted) return;
+            if (wx !== w || muted || held) return;
             const e = bus(a, "env"), t = a.currentTime;
             if (d.thunder && Math.random() < 0.08) { // a distant rumble now and then
                 const o = a.createBufferSource(), lp = a.createBiquadFilter(), tg = a.createGain();
@@ -545,6 +548,19 @@ export const Sound = {
     buzz: buzzSet,
     weather: weatherSet,
     get weatherPlaying() { return wx?.id || null; },
+    // 🎬 a film starts (true) / ends (false): the whole game sound engine pauses, and music files that were playing pause too
+    hold(on) {
+        held = !!on;
+        try { if (ctx) on ? ctx.suspend() : ctx.resume(); } catch { }
+        for (const el of media) {
+            if (on) { if (!el.paused) { el.pause(); heldMedia.add(el); } }
+            else if (heldMedia.has(el)) el.play().catch(() => { });
+        }
+        if (!on) heldMedia.clear();
+    },
+    get held() { return held; },
+    // an <audio> playing outside the engine (the music corner) — paused while a film plays
+    media(el, on = true) { if (!el) return el; if (!on) { media.delete(el); heldMedia.delete(el); return el; } media.add(el); el.addEventListener("ended", () => media.delete(el), { once: true }); if (held) el.pause(); return el; },
     get muted() { return muted; },
     toggle() {
         muted = !muted; try { localStorage.setItem("gamblers.muted", muted ? "1" : "0"); } catch { }

@@ -52,7 +52,7 @@ export async function musicCorner(pid, turn) {
         const url = "audio/music/" + encodeURIComponent(tr.file);
         let src = url;
         try { const r = await fetch(url); if (r.ok) src = URL.createObjectURL(await r.blob()); } catch { }
-        audio = new Audio(src);
+        audio = Sound.media(new Audio(src)); // 🎬 paused while a film plays
         audio.muted = Sound.muted;
         audio.volume = 0.2; // a quarter of the old 0.8 — quiet background listening
         await new Promise(res => { audio.addEventListener("loadedmetadata", res, { once: true }); audio.addEventListener("error", res, { once: true }); setTimeout(res, 4000); });
@@ -64,7 +64,7 @@ export async function musicCorner(pid, turn) {
             if (audio.currentTime < 1 && at > 2) audio.currentTime = at; // retry once if the seek didn't stick
         }
         audio.play().catch(() => { });
-        audio.addEventListener("pause", () => { if (src.startsWith("blob:")) URL.revokeObjectURL(src); }, { once: true });
+        audio.addEventListener("pause", function done() { if (Sound.held) return; audio.removeEventListener("pause", done); if (src.startsWith("blob:")) URL.revokeObjectURL(src); }); // (a film pausing it is not the end)
     } else {
         synth = ["lounge_jazz", "synthwave", "monkey_funk", "tropical_steel", "bigband_swing"][Math.floor(Math.random() * 5)];
         Sound.bgm(synth, 0.125); // a quarter of the normal BGM level
