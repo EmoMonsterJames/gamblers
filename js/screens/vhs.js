@@ -13,7 +13,7 @@ import { emoFight } from "./emoCorners.js";
 
 import { spine, front, back, vhsBox, brandLogo } from "./vhsCover.js";
 import { figure, setFigure } from "../ui/figure.js";
-import { voicesReady, voiceOf, dub, dubPause, dubStop, ambience, ambFor } from "./vhsAudio.js";
+import { ambience, ambFor } from "./vhsAudio.js";
 export { spine, front, back, vhsBox, brandLogo };
 
 const pimg = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
@@ -329,9 +329,8 @@ const filmAudios = new Set();
 function setFilmPaused(on) {
     filmPaused = on;
     for (const a of filmAudios) { if (on) a.pause(); else a.play().catch(() => { }); }
-    // the film's own synth sounds + ambience stand still · the dubbed voice pauses mid-line
+    // the film's own synth sounds + ambience stand still
     try { if (ac) on ? ac.suspend() : ac.resume(); } catch { }
-    dubPause(on);
 }
 function music(style) {
     const S = STYLES[style] || STYLES.comic;
@@ -373,10 +372,9 @@ export function playMovie(m) {
         let skip = false, paused = false, stopMusic = () => { };
         // 🎬 the film has the room: every game sound (BGM · weather · map loops · music corner) pauses until it ends
         Sound.hold(true);
-        // 🌧️ scene ambience · 🗣️ the voices load in the background (dubbing starts as soon as they are there)
+        // 🌧️ scene ambience
         const amb = ambience(actx);
         const setAmb = kinds => amb.set(Sound.muted ? [] : kinds);
-        voicesReady();
         // ⏸ Pause: the film (scenes · lines · music · animations) stops where it is — the play time was already stopped for the film
         const pauseBtn = h("button.btn.ghost.small.vp-pause-btn", { onclick: () => setPause(!paused) }, "⏸ 일시정지");
         const pauseMark = h("div.vp-paused", h("b", "⏸ PAUSE"), h("small", "▶ 재생을 누르면 이어서 봅니다"));
@@ -387,7 +385,7 @@ export function playMovie(m) {
             pauseBtn.textContent = on ? "▶ 재생" : "⏸ 일시정지";
             if (on) screen.append(pauseMark); else pauseMark.remove();
         }
-        const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); dubStop(); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
+        const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
         // 💀 Body Count roll after The End (a few seconds more)
         const deaths = D.bodyCountInfo(m);
         const bcSec = deaths.length ? 4 + deaths.length * 2 : 0;
@@ -445,7 +443,7 @@ export function playMovie(m) {
                     sfx("sting");
                     await wait(bcSec);
                 }
-            } finally { stopMusic(); amb.stop(); dubStop(); setFilmPaused(false); Sound.hold(false); pm.close(); resolve(); }
+            } finally { stopMusic(); amb.stop(); setFilmPaused(false); Sound.hold(false); pm.close(); resolve(); }
         })();
         async function scene(sc) {
             const people = (sc.who || []).map(r => roleCast(m, r)).filter(Boolean);
@@ -532,17 +530,8 @@ export function playMovie(m) {
                 people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
                 actors.forEach((a, i) => { a.classList.toggle("gone", !!base[i].gone); a.classList.toggle("hid", !!base[i].hid); });
                 put(sub, who ? h("b", `${who}: `) : null, who ? text : h("i.vp-narr", text));
-                // 🗣️ dubbing: only spoken lines (no narration · songs · stage directions), in a voice that fits the actor
-                //    (no voice in this browser → the old 웅얼웅얼 blips)
-                const said = who && !Sound.muted ? dub(text, voiceOf(D.castOf(m, who), who)) : null;
-                if (said === false && !/^[♪…!?.\s]+$/.test(text)) mumble(text, (ci < 0 ? people.length : ci) + 3);
+                if (who && !/^[♪…!?.\s]+$/.test(text)) mumble(text, (ci < 0 ? people.length : ci) + 3);
                 await wait(per);
-                // a long line: the subtitle stays until the voice has finished it
-                if (said) {
-                    let fin = false; said.done.then(() => { fin = true; });
-                    for (let t = 0; !fin && !skip && t < 150; t++) { await sleep(100); while (paused && !skip) await sleep(100); }
-                    if (!fin) said.cancel();
-                }
             }
         }
     });
