@@ -395,7 +395,7 @@ export const Store = {
         const rowOf = r => Object.fromEntries(cols.map(c => [c, c === "handler" ? null : r[c] ?? (c === "is_active" ? true : null)]));
         if (this.cloud && isNew) {
             if (!this.user) { toast("관리자 로그인이 필요합니다", "warn"); return false; }
-            await this.refreshPlayers(); // other admins' new players first (so the list and the next id are current)
+            await this.refreshPlayers({ newOnly: true }); // other admins' new players first (so the list and the next id are current)
             let lastErr = null;
             for (let tries = 0; tries < 8; tries++) {
                 const { data: top, error: e1 } = await sb.from("players").select("id").order("id", { ascending: false }).limit(1);
@@ -453,8 +453,22 @@ export const Store = {
         return true;
     },
     // 🔄 reload the player list from the server (players added / edited by another admin show up)
-    async refreshPlayers() {
+    //   newOnly: only players this browser doesn't have yet (ids + names first, then the full rows of the new ones) —
+    //   the whole table is ~6 MB of pictures, so adding a player no longer downloads everything (twice)
+    async refreshPlayers({ newOnly = false } = {}) {
         if (!this.cloud || !sb) return false;
+        if (newOnly && this.allPlayers?.length) try {
+            const { data: ids, error: e1 } = await sb.from("players").select("id");
+            if (e1) throw e1;
+            const have = new Set(this.allPlayers.map(p => p.id));
+            const miss = (ids || []).map(r => r.id).filter(id => !have.has(id));
+            if (!miss.length) return true;
+            const { data, error } = await sb.from("players").select("*").in("id", miss);
+            if (error) throw error;
+            this.setPlayers([...this.allPlayers, ...(data || [])]);
+            for (const p of data || []) this.decor[p.id] ||= { frame: p.frame, effect: p.profile_effect, ownedFrames: p.owned_frames || [], ownedEffects: p.owned_effects || [] };
+            return true;
+        } catch (e) { console.warn(e); return false; }
         try {
             const { data, error } = await sb.from("players").select("*");
             if (error) throw error;

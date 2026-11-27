@@ -395,18 +395,56 @@ export function playMovie(m) {
         const bcSec = deaths.length ? 4 + deaths.length * 2 : 0;
         const total = D.scriptSeconds(m) + bcSec;
         let elapsed = 0;
-        const wait = async sec => { for (let t = 0; t < sec * 10 && !skip; t++) { await sleep(100); while (paused && !skip) await sleep(100); elapsed += 0.1; bar.firstChild.style.width = Math.min(100, elapsed / total * 100) + "%"; } };
+        // ⏩ the play bar can be clicked / dragged: jump = the second to go to (the running part stops, the film goes on from there)
+        let jump = null;
+        const parts = [...(m.script || []), ...(deaths.length ? [{ k: "bodycount", sec: bcSec }] : [])];
+        const starts = parts.reduce((a, p, i) => (a.push(i ? a[i - 1] + (parts[i - 1].sec || 0) : 0), a), []);
+        const clock = h("small.vp-clock");
+        pauseBtn.parentNode.prepend(clock);
+        const fmtT = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+        const showBar = () => { bar.firstChild.style.width = Math.min(100, elapsed / total * 100) + "%"; clock.textContent = `${fmtT(elapsed)} / ${fmtT(total)}`; };
+        const seekAt = e => { const r = bar.getBoundingClientRect(); const t = Math.max(0, Math.min(total - 0.1, (e.clientX - r.left) / r.width * total)); elapsed = t; showBar(); return t; };
+        bar.classList.add("seek");
+        bar.title = "눌러서 / 끌어서 원하는 곳으로 이동";
+        bar.addEventListener("pointerdown", e => {
+            bar.setPointerCapture(e.pointerId); seekAt(e); bar.classList.add("drag");
+            const mv = ev => seekAt(ev);
+            const up = ev => { bar.removeEventListener("pointermove", mv); bar.removeEventListener("pointerup", up); bar.classList.remove("drag"); jump = seekAt(ev); };
+            bar.addEventListener("pointermove", mv); bar.addEventListener("pointerup", up);
+        });
+        const wait = async sec => { for (let t = 0; t < sec * 10 && !skip && jump === null; t++) { await sleep(100); while (paused && !skip && jump === null) await sleep(100); if (jump !== null || bar.classList.contains("drag")) continue; elapsed += 0.1; showBar(); } };
+        // 🎵 what's playing — after a jump, the music the film would have at that point is put back on
+        let curMusic;
+        const playM = want => { curMusic = want; stopMusic(); stopMusic = startMusic(want, m); };
+        const partMusic = p => p.k === "title" ? (p.music || m.music) : p.music;
+        const musicUpTo = pi => { let w; for (let i = 0; i < pi; i++) { const p = parts[i]; if (partMusic(p)) w = partMusic(p); for (const l of p.lines || []) if (l[2]?.music) w = l[2].music; } return w; };
         const b = brandOf(m);
         (async () => {
             try {
-                for (const part of m.script || []) {
-                    if (skip) break;
+                let pi = 0, from = 0;
+                while (pi < parts.length && !skip) {
+                    const part = parts[pi];
+                    elapsed = starts[pi] + from; showBar();
+                    await playPart(part, from);
+                    if (jump !== null && !skip) {
+                        const t = jump; jump = null;
+                        pi = Math.max(0, starts.findLastIndex(s => s <= t)); from = t - starts[pi];
+                        const want = musicUpTo(pi);
+                        if (want !== curMusic) { if (want && want !== "stop") playM(want); else { curMusic = want; stopMusic(); } }
+                        continue;
+                    }
+                    pi++; from = 0;
+                }
+            } finally { stopMusic(); amb.stop(); setFilmPaused(false); Sound.hold(false); pm.close(); resolve(); }
+        })();
+        async function playPart(part, from) {
+                {
                     if (part.k !== "scene") setAmb([]); // titles · cast · The End: just the music
                     if (part.k === "brand") {
                         put(screen, h("div.vp-brand", brandLogo(b, 120), h("b", b.name), h("small", "presents")));
                         tone(NOTE(12), 0.4, { type: "sine", vol: 0.06 }); tone(NOTE(19), 0.6, { type: "sine", vol: 0.05, at: 0.35 });
                     } else if (part.k === "title") {
-                        stopMusic(); stopMusic = startMusic(part.music, m);
+                        playM(part.music || m.music);
                         // koImg: the Korean title is a picture (the movie's own title art)
                         const ko = h("div.vp-ko.f-" + (part.font || part.style || "bold") + (part.koImg ? ".img" : ""), part.koImg ? h("img", { src: part.koImg, alt: m.ko, draggable: "false" }) : m.ko);
                         // 🚀 "rockets": rockets fly over a pink screen, lip prints are stamped on it, then the Korean title comes in
@@ -438,30 +476,27 @@ export function playMovie(m) {
                         put(screen, box);
                         const each = part.sec / Math.max(1, list.length);
                         const big = Math.round(Math.min(220, screen.clientHeight * 0.52));
-                        for (const c of list) { if (skip) break; put(box, h("div.vp-cast-card", figure(c, { ...(c.look || {}), expr: "happy", pose: "wave", size: big }), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
-                        continue;
+                        for (const c of list.slice(Math.floor(from / each))) { if (skip || jump !== null) break; put(box, h("div.vp-cast-card", figure(c, { ...(c.look || {}), expr: "happy", pose: "wave", size: big }), h("b", c.ko), h("small", `as ${c.role}`), h("i", V.PART_KO[c.part]))); Sound.click(); await wait(each); }
+                        return;
                     } else if (part.k === "scene") {
-                        await scene(part);
-                        continue;
+                        await scene(part, from);
+                        return;
                     } else if (part.k === "end") {
-                        if (part.music) { stopMusic(); stopMusic = startMusic(part.music, m); }
+                        if (part.music) playM(part.music);
                         put(screen, h("div.vp-end", h("b", part.text || "The End"), part.credits ? h("div.vp-credits", m.cast.map(c => h("div", `${c.role} ····· ${c.ko}`)), h("div", brandOf(m).name)) : null));
                         tone(NOTE(12), 0.5, { type: "sine", vol: 0.05 }); tone(NOTE(7), 0.5, { type: "sine", vol: 0.05, at: 0.4 }); tone(NOTE(0), 0.9, { type: "sine", vol: 0.05, at: 0.8 });
-                    }
-                    await wait(part.sec);
-                }
-                // 💀 after The End and the credits: the Body Count, in the order they died
-                if (!skip && deaths.length) {
-                    put(screen, h("div.vp-end.vp-bodycount", h("b", "💀 Body Count"), h("div.vp-bc-total", `Body Count: 총 ${deaths.length}명`),
+                    } else if (part.k === "bodycount") {
+                        // 💀 after The End and the credits: the Body Count, in the order they died
+                        put(screen, h("div.vp-end.vp-bodycount", h("b", "💀 Body Count"), h("div.vp-bc-total", `Body Count: 총 ${deaths.length}명`),
                         h("div.vp-bc-list", deaths.map((d, i) => h("div.vp-bc-row", { style: { "--d": (0.6 + i * 0.9) + "s" } },
                             d.scene ? h("span.vp-bc-scene", `'${d.scene}', `) : null, h("b", d.c.role), ` (${d.c.ko}) `, h("span.vp-bc-dots", "......."),
                             h("span", d.how || "사망."), d.off ? h("i.vp-bc-off", " (Off Screen)") : null)))));
-                    sfx("sting");
-                    await wait(bcSec);
+                        sfx("sting");
+                    }
+                    await wait(part.sec - from);
                 }
-            } finally { stopMusic(); amb.stop(); setFilmPaused(false); Sound.hold(false); pm.close(); resolve(); }
-        })();
-        async function scene(sc) {
+        }
+        async function scene(sc, from = 0) {
             const people = (sc.who || []).map(r => roleCast(m, r)).filter(Boolean);
             const nude = new Set(sc.nude || []), fullNude = new Set(sc.fullNude || []);   // fullNude: nothing on at all
             // how each actor starts the scene (scene.cast) · topless when the scene says so (a dancer's chest bounces)
@@ -500,7 +535,7 @@ export function playMovie(m) {
             const sub = h("div.vp-sub");
             const idxOf = r => people.findIndex(c => c.role === r || c.short === r || c.role.startsWith(r + ","));
             // a scene's music: a file, a synth style or "stop" (nothing = the music keeps going)
-            if (sc.music) { stopMusic(); stopMusic = startMusic(sc.music, m); }
+            if (sc.music) playM(sc.music);
             // 🌧️ the scene's background sounds (rain · wind · birds · traffic · audience …) — scene.amb names them, else the set decides
             setAmb(ambFor(sc));
             const rain = (n, emo) => h("div.vp-fx", ...Array.from({ length: n }, (_, i) => h("i", { style: { "--x": (i * 6.7 % 100) + "%", "--d": (i % 6) * 0.35 + "s" } }, Array.isArray(emo) ? emo[i % emo.length] : emo)));
@@ -538,14 +573,26 @@ export function playMovie(m) {
             sceneEl.append(h("div.vp-place", h("b", `Scene ${no}`), sc.place || BG_KO[sc.bg || "street"] || ""));
             put(screen, sceneEl);
             const lines = sc.lines || [];
-            const per = sc.sec / Math.max(1, lines.length);
-            if (!lines.length) return wait(sc.sec);
-            for (const [who, text, meta = {}] of lines) {
-                if (skip) return;
+            if (!lines.length) return wait(sc.sec - from);
+            // how long each line stays: meta.sec when the line asks for it, the rest of the scene shared by the others
+            const fixed = lines.reduce((a, l) => a + (l[2]?.sec || 0), 0), free = lines.filter(l => !l[2]?.sec).length;
+            const durs = lines.map(l => l[2]?.sec || Math.max(0.5, (sc.sec - fixed) / Math.max(1, free)));
+            // ⏩ started part-way (the play bar was moved): the lines before are only applied (looks · lights · music), not shown
+            let li = 0, acc = 0;
+            while (li < lines.length - 1 && acc + durs[li] <= from) { acc += durs[li]; li++; }
+            for (const [, , meta = {}] of lines.slice(0, li)) {
+                if (meta.light) { sceneEl.classList.toggle("dark", meta.light === "off"); sceneEl.classList.toggle("black", meta.light === "black"); }
+                if (meta.music) playM(meta.music);
+                for (const [r, o] of Object.entries(meta.set || {})) { const k = idxOf(r); if (k >= 0) { base[k] = { ...base[k], ...o }; if (o.nude !== undefined || o.outfit !== undefined) base[k].nude = (o.nude ?? base[k].nude) || false; if (o.held !== undefined) putHeld(k, o.held); } }
+                if (meta.pop && [].concat(meta.pop).some(p => p.stay)) [].concat(meta.pop).filter(p => p.stay).forEach(popAt);
+            }
+            for (const [who, text, meta = {}] of lines.slice(li)) {
+                if (skip || jump !== null) return;
+                const per = durs[li++];
                 const ci = idxOf(who);
                 // 💡 the lights · 🎵 music change at this line · set: how other actors look from now on ({ role: { expr, act, outfit … } })
                 if (meta.light) { sceneEl.classList.toggle("dark", meta.light === "off"); sceneEl.classList.toggle("black", meta.light === "black"); }
-                if (meta.music) { stopMusic(); stopMusic = startMusic(meta.music, m); }
+                if (meta.music) playM(meta.music);
                 if (meta.amb !== undefined) setAmb(ambFor({ amb: meta.amb })); // 🌧️ the weather / noise changes at this line
                 // ⚡ a flash of light · a sound effect (scream, sting, phone ring, applause, ghost laugh …)
                 if (meta.flash) { const fl = h("i.vp-flash" + (meta.flash === "red" ? ".red" : "")); sceneEl.append(fl); setTimeout(() => fl.remove(), 600); }
@@ -561,7 +608,7 @@ export function playMovie(m) {
                 const ti = meta.to ? idxOf(meta.to) : -1;
                 actors.forEach((a, i) => { a.classList.toggle("talk", i === ci); a.style.setProperty("--dir", i === ci && ti >= 0 ? Math.sign(ti - ci) || 1 : i < (people.length - 1) / 2 ? 1 : -1); });
                 // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they are
-                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, pop: _p, ...look } = meta;
+                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, pop: _p, sec: _sec, ...look } = meta;
                 people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
                 // anon: the name tag under the actor is hidden (the monster nobody knows yet)
                 actors.forEach((a, i) => { a.classList.toggle("gone", !!base[i].gone); a.classList.toggle("hid", !!base[i].hid); a.classList.toggle("anon", !!base[i].anon); });

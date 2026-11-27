@@ -729,7 +729,7 @@ const moonchild = () => {
     return {
         id: "m_moonchild", builtin: true,
         en: "Moonchild", ko: "늑대인간의 밤",
-        brand: "ppori", nation: "Emo World", date: "14-02-07", creator: "James", stock: { maps: 100, shops: 180 },
+        brand: "ppori", nation: "Emo World", date: "14-02-07", creator: "James", stock: { maps: 78, shops: 80 },
         // 💀 Body Count (in the order they die): Mina (Scene 1) · The Priest · Denis (Scene 6)
         bodyCount: [
             { r: MINA, scene: "Scene 1 · 숲속", how: "밤의 숲속을 산책하다 정체모를 무언가의 길다란 손톱에 얼굴을 할퀴어 희생됨." },
@@ -883,7 +883,7 @@ const moonchild2 = () => {
     return {
         id: "m_moonchild2", builtin: true,
         en: "Moonchild 2: Blood Vengeance", ko: "문차일드2",
-        brand: "ppori", nation: "Emo World", date: "30-10-16", creator: "James", stock: { maps: 30, shops: 60 },
+        brand: "ppori", nation: "Emo World", date: "30-10-16", creator: "James", stock: { maps: 25, shops: 25 },
         // 💀 Body Count (in the order they die)
         bodyCount: [
             { r: SALLY, scene: "Scene 4 · 숲속", how: "늑대인간에게 얼굴을 할퀴인 채 도망치다 나뭇가지에 걸려 넘어져 공격당함." },
@@ -1117,7 +1117,7 @@ const moonchild3 = () => {
     return {
         id: "m_moonchild3", builtin: true,
         en: "Moonchild 3: Werewolf", ko: "늑대인간",
-        brand: "moviescreen", nation: "Emo World", date: "68-10-07", creator: "James", stock: { maps: 40, shops: 80 },
+        brand: "moviescreen", nation: "Emo World", date: "68-10-07", creator: "James", stock: { maps: 34, shops: 40 },
         // 💀 Body Count (in the order they die)
         bodyCount: [
             { r: KUMI, scene: "Scene 7 · 부족의 집", how: "인기척에 밖으로 나갔다가 늑대인간이 된 Jimmy에게 습격당함." },
@@ -1177,11 +1177,11 @@ const moonchild3 = () => {
                     [JORDAN, "뭐?! 완전 흥미롭잖아! 공짜 정글 여행이라고? 당장 수락해!!", { expr: "excited" }],
                     [JORDAN, "Missy랑 Kumi도 데려가자. 이건 무조건 가야 돼!", { expr: "happy" }],
                     [JIMMY, "…에라 모르겠다!", { expr: "excited", hold: "phone", pose: "both" }]] },
-            { k: "scene", n: 1, place: "하우스", sec: 8, bg: "house", who: [JIMMY], call: DNA,
+            { k: "scene", n: 1, place: "하우스", sec: 11, bg: "house", who: [JIMMY], call: DNA,
                 cast: { [JIMMY]: { expr: "cool", hold: "phone" } },
                 lines: [
                     [JIMMY, "갈게요. 정글 탐험, 하겠습니다.", { hold: "phone", expr: "cool" }],
-                    [DNA, "현명한 선택입니다. …곧 뵙죠.", { expr: "evil" }]] },
+                    [DNA, "현명한 선택입니다. 같이 출발을 도울 고고학자와 조종사를 나중에 연결시켜주겠습니다.", { expr: "smug" }]] },
             // 제목 (the theme song starts): a plane flies over the jungle · Jimmy looks down from its window · the English title over the jungle, then the Korean title art spins in
             { k: "title", sec: 13, style: "jungle", peek: JIMMY, koImg: "images/movies/moonchild3_title.png", koAt: 9600, koSfx: "sting", music: MC3_THEME },
             // 출연 (the music goes on): the four leads over the jungle
@@ -1296,37 +1296,78 @@ const moonchild3 = () => {
                     ["", "아우우우— 바로 뒤에서 들리는 울음소리.", { sfx: "howl", set: { [KUMI]: { expr: "scared" } } }],
                     ["", "늑대인간이 된 Jimmy가 Kumi를 덮친다!", { flash: "red", claw: true, sfx: "growl", music: "chase", set: { [JIMMY]: { hid: false, act: "jump" } } }],
                     [KUMI, "꺄아아아악!!!", { expr: "scared", act: "shake", sfx: "scream", set: { [KUMI]: { act: "dead", expr: "dizzy" }, [JIMMY]: { act: "" } } }]] },
-            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", music: "tense", sec: 50, bg: "village", dark: true, fx: "moon", who: [ARCH, JORDAN, MISSY, KUMI, JIMMY, NUKA, BIZO], fullNude: [BIZO],
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", music: "tense", sec: 14, bg: "village", dark: true, fx: "moon", who: [ARCH, JORDAN, MISSY, KUMI, JIMMY, NUKA, BIZO], fullNude: [BIZO],
                 cast: { [ARCH]: { expr: "shock" }, [JORDAN]: { expr: "shock" }, [MISSY]: { expr: "shock" }, [KUMI]: { expr: "dizzy", act: "dead" }, [JIMMY]: { ...WOLF }, [NUKA]: { expr: "redeye", pose: "both" }, [BIZO]: { expr: "evil", pose: "both" } },
                 lines: [
                     ["", "비명 소리에 뛰쳐나온 고고학자, Jordan, Missy…", { sfx: "sting" }],
                     ["", "Bizo와 족장, 그리고 늑대인간 Jimmy가 의식을 치르며 Kumi의 피를 마시고 있다!", { flash: "red", sfx: "growl" }],
                     [MISSY, "꺄아악!! Kumi!!!", { expr: "scared", act: "shake", sfx: "scream" }],
-                    [ARCH, "으, 으아아…!", { expr: "scared", act: "run" }],
-                    ["", "Bizo가 부족의 화살을 꺼내 도망치는 고고학자를 쏜다—", { set: { [BIZO]: { hold: "bow", pose: "point", expr: "evil" } }, pop: { e: "🏹", at: ARCH, fly: true } }],
-                    ["", "화살이 고고학자의 머리에 꽂힌다.", { sfx: "slash", flash: "red", set: { [ARCH]: { act: "dead", expr: "dizzy" } } }],
+                    [ARCH, "으, 으아아…!", { expr: "scared", act: "run", set: { [ARCH]: { gone: true } } }]] },
+            // 클로즈업 — the Archaeologist runs off on his own · Bizo's arrow
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 11, bg: "village", dark: true, close: true, who: [ARCH],
+                cast: { [ARCH]: { expr: "scared" } },
+                lines: [
+                    ["", "혼자 살겠다고 몰래 도망치려는 고고학자…", { set: { [ARCH]: { act: "run", expr: "sweat" } } }],
+                    [ARCH, "(헐떡이며) 난… 난 여기서 죽을 수 없어…!", { expr: "scared" }],
+                    ["", "휙— 어둠 속에서 Bizo의 화살이 날아온다!", { pop: { e: "🏹", at: ARCH, fly: true }, set: { [ARCH]: { act: "", expr: "shock" } } }],
+                    ["", "화살이 고고학자의 머리에 꽂힌다.", { sfx: "slash", flash: "red", light: "black", pop: { e: "🏹", at: ARCH, stay: true, cls: "stuck" }, set: { [ARCH]: { expr: "dizzy", act: "fall" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 14, bg: "village", dark: true, fx: "moon", who: [JORDAN, MISSY, KUMI, JIMMY, NUKA, BIZO], fullNude: [BIZO],
+                cast: { [JORDAN]: { expr: "scared" }, [MISSY]: { expr: "scared" }, [KUMI]: { expr: "dizzy", act: "dead" }, [JIMMY]: { ...WOLF }, [NUKA]: { expr: "redeye", pose: "both" }, [BIZO]: { expr: "evil", hold: "bow", pose: "point" } },
+                lines: [
                     [BIZO, "울프 마라! 쿠루 바!!", { expr: "evil", hold: "bow", pose: "point", to: JORDAN }],
                     [JORDAN, "Jimmy!! 제발 정신 차려! 우리 좀 도와줘!!", { expr: "cry", pose: "both", to: JIMMY }],
                     ["", "혼란스러워하는 늑대인간 Jimmy…", { set: { [JIMMY]: { act: "shake" } } }],
-                    ["", "붉은 눈이… 노랗게 변한다.", { sfx: "sting", set: { [JIMMY]: { eyes: "yellow", act: "" } } }],
-                    ["", "Bizo가 다시 화살을 꺼내는 순간— 늑대인간 Jimmy가 그를 덮친다!", { flash: "red", claw: true, sfx: "growl", set: { [JIMMY]: { act: "jump" }, [BIZO]: { act: "dead", expr: "dizzy", hold: "" } } }],
-                    [NUKA, "우리는 너처럼 강해지기 위해 늑대인간의 피를 원한다!", { expr: "angry", hold: "knife", pose: "point", to: JIMMY }],
-                    ["", "족장이 칼로 늑대인간 Jimmy를 찌른다!", { flash: "red", sfx: "slash", set: { [JIMMY]: { act: "dead" }, [NUKA]: { hold: "knife" } } }],
-                    ["", "흘러나온 Jimmy의 피를 마신 족장이 Jordan과 Missy를 바라본다.", { set: { [NUKA]: { expr: "redeye", hold: "knife", pose: "both" } } }],
+                    ["", "붉은 눈이… 노랗게 변한다.", { sfx: "sting", set: { [JIMMY]: { eyes: "yellow", act: "" } } }]] },
+            // 클로즈업 — Bizo, torn down by the werewolf
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 9, bg: "village", dark: true, close: true, who: [BIZO], fullNude: [BIZO],
+                cast: { [BIZO]: { expr: "evil", hold: "bow", pose: "point" } },
+                lines: [
+                    ["", "Bizo가 다시 화살을 꺼내는 순간—", { sfx: "sting" }],
+                    ["", "늑대인간 Jimmy가 그를 덮친다!", { flash: "red", claw: true, sfx: "growl", set: { [BIZO]: { expr: "scared", act: "shake", hold: "", pose: "both" } } }],
+                    [BIZO, "크아아아악!!", { expr: "scared", sfx: "scream", flash: "red", claw: true, light: "black", set: { [BIZO]: { expr: "dizzy", act: "fall", hold: "" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 6, bg: "village", dark: true, fx: "moon", who: [JORDAN, MISSY, KUMI, BIZO, JIMMY, NUKA], fullNude: [BIZO],
+                cast: { [JORDAN]: { expr: "shock" }, [MISSY]: { expr: "shock" }, [KUMI]: { expr: "dizzy", act: "dead" }, [BIZO]: { expr: "dizzy", act: "dead" }, [JIMMY]: { ...WOLF, eyes: "yellow" }, [NUKA]: { expr: "angry", hold: "knife", pose: "point" } },
+                lines: [
+                    [NUKA, "우리는 너처럼 강해지기 위해 늑대인간의 피를 원한다!", { expr: "angry", hold: "knife", pose: "point", to: JIMMY }]] },
+            // 클로즈업 — the Chief's knife · the werewolf falls
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 5, bg: "village", dark: true, close: true, who: [NUKA],
+                cast: { [NUKA]: { expr: "angry", hold: "knife", pose: "point" } },
+                lines: [
+                    ["", "족장이 칼로 늑대인간 Jimmy를 찌른다!", { flash: "red", sfx: "slash", set: { [NUKA]: { expr: "evil", hold: "knife", pose: "both" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 8, bg: "village", dark: true, close: true, who: [JIMMY],
+                cast: { [JIMMY]: { ...WOLF, eyes: "yellow" } },
+                lines: [
+                    [JIMMY, "크르릉… 아우우…", { sfx: "howl", act: "shake" }],
+                    ["", "칼에 찔린 늑대인간 Jimmy가 숨을 거둔다.", { flash: "red", light: "black", set: { [JIMMY]: { act: "fall" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 12, bg: "village", dark: true, fx: "moon", who: [JORDAN, MISSY, KUMI, BIZO, JIMMY, NUKA], fullNude: [BIZO],
+                cast: { [JORDAN]: { expr: "scared" }, [MISSY]: { expr: "scared" }, [KUMI]: { expr: "dizzy", act: "dead" }, [BIZO]: { expr: "dizzy", act: "dead" }, [JIMMY]: { ...WOLF, eyes: "yellow", act: "dead" }, [NUKA]: { expr: "redeye", hold: "knife", pose: "both" } },
+                lines: [
+                    ["", "흘러나온 Jimmy의 피를 마신 족장이 Jordan과 Missy를 바라본다.", { sfx: "growl" }],
                     [NUKA, "이제는 내가 가장 강력한 부족이다!!!", { expr: "beast", hold: "knife", pose: "both", act: "wolfing", sfx: "howl", flash: "red" }],
-                    ["", "족장이 칼을 들고 Missy에게 달려든다—", { set: { [NUKA]: { act: "sneak", expr: "beast", hold: "knife" }, [MISSY]: { expr: "scared", act: "shake" } } }],
-                    ["", "Jordan이 떨어진 Bizo의 화살을 주워 Nuka의 눈에 내리꽂는다!", { flash: "red", sfx: "slash", pop: { e: "🏹", at: NUKA, stay: true, cls: "stuck" }, set: { [JORDAN]: { act: "push", expr: "angry" } } }],
-                    ["", "Chief Nuka가 쓰러진다.", { music: "stop", set: { [NUKA]: { act: "dead", expr: "dizzy", hold: "" }, [JORDAN]: { act: "" } } }],
-                    [MISSY, "흐흑… 흐아앙…", { expr: "cry", act: "shake", set: { [JORDAN]: { expr: "cry" } } }],
+                    ["", "족장이 칼을 들고 Missy에게 달려든다—", { set: { [NUKA]: { act: "sneak", expr: "beast", hold: "knife" }, [MISSY]: { expr: "scared", act: "shake" } } }]] },
+            // 클로즈업 — Jordan drives Bizo's arrow into the Chief's eye
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 5, bg: "village", dark: true, close: true, who: [JORDAN],
+                cast: { [JORDAN]: { expr: "angry", pose: "both" } },
+                lines: [
+                    ["", "Jordan이 떨어진 Bizo의 화살을 주워 든다—", { sfx: "sting", pop: { e: "🏹", at: JORDAN, stay: true, cls: "grab" }, set: { [JORDAN]: { act: "push" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 8, bg: "village", dark: true, close: true, who: [NUKA],
+                cast: { [NUKA]: { expr: "beast", hold: "knife", pose: "both" } },
+                lines: [
+                    ["", "…그리고 Nuka의 눈에 내리꽂는다!", { flash: "red", sfx: "slash", pop: { e: "🏹", at: NUKA, stay: true, cls: "stuck" }, set: { [NUKA]: { expr: "dizzy", act: "shake", hold: "" } } }],
+                    [NUKA, "크억…!!", { expr: "dizzy", music: "stop", light: "black", set: { [NUKA]: { act: "fall" } } }]] },
+            { k: "scene", n: 7, place: "Nuka 부족 마을 · 피의 의식", sec: 9, bg: "village", dark: true, fx: "moon", who: [JORDAN, MISSY, KUMI, BIZO, JIMMY, NUKA], fullNude: [BIZO],
+                cast: { [JORDAN]: { expr: "cry" }, [MISSY]: { expr: "cry" }, [KUMI]: { expr: "dizzy", act: "dead" }, [BIZO]: { expr: "dizzy", act: "dead" }, [JIMMY]: { ...WOLF, eyes: "yellow", act: "dead" }, [NUKA]: { expr: "dizzy", act: "dead" } },
+                lines: [
+                    [MISSY, "흐흑… 흐아앙…", { expr: "cry", act: "shake" }],
                     ["", "Jordan과 Missy는 오열하며 부족의 집을 탈출한다.", { set: { [JORDAN]: { gone: true, act: "run" }, [MISSY]: { gone: true, act: "run" } } }]] },
-            // Scene 8 · 정글 — the pilot · the Archaeologist's phone · the castle
-            { k: "scene", n: 8, place: "정글 · 출발지", music: "mystery", sec: 22, bg: "jungle", who: [PILOT, JORDAN, MISSY], props: ["✈️", "🌴"],
+            // Scene 8 · 정글 — the pilot · the Archaeologist's phone · the castle (quick: the pilot asks, Jordan answers, the phone rings)
+            { k: "scene", n: 8, place: "정글 · 출발지", music: "mystery", sec: 8, bg: "jungle", who: [PILOT, JORDAN, MISSY], props: ["✈️", "🌴"],
                 cast: { [PILOT]: { expr: "shock" }, [JORDAN]: { expr: "cry" }, [MISSY]: { expr: "cry" } },
                 lines: [
-                    [PILOT, "무슨 일이에요?! 다른 분들은요?", { expr: "shock", pose: "shrug" }],
-                    [JORDAN, "끔찍했어요… 제발 빨리 여기서 떠나요!", { expr: "cry", pose: "both" }],
-                    ["", "그때, Jordan의 가방 속 고고학자의 휴대폰이 울린다.", { sfx: "ring", set: { [JORDAN]: { hold: "phone", expr: "sweat" }, [PILOT]: { expr: "blank" } } }]] },
-            { k: "scene", n: 8, place: "정글 · 출발지", sec: 24, bg: "jungle", who: [PILOT, JORDAN, MISSY], call: DNA, props: ["✈️", "🌴"],
+                    [PILOT, "무슨 일이에요?! 다른 분들은요?", { expr: "shock", pose: "shrug", sec: 2.6 }],
+                    [JORDAN, "끔찍했어요… 제발 빨리 여기서 떠나요!", { expr: "cry", pose: "both", sec: 2.8 }],
+                    ["", "그때, Jordan의 가방 속 고고학자의 휴대폰이 울린다.", { sfx: "ring", sec: 2.6, set: { [JORDAN]: { hold: "phone", expr: "sweat" }, [PILOT]: { expr: "blank" } } }]] },
+            { k: "scene", n: 8, place: "정글 · 출발지", sec: 21, bg: "jungle", who: [PILOT, JORDAN, MISSY], call: DNA, props: ["✈️", "🌴"],
                 cast: { [PILOT]: { expr: "blank" }, [JORDAN]: { expr: "sweat", hold: "phone" }, [MISSY]: { expr: "sad" } },
                 lines: [
                     [DNA, "아, 고고학자님? 깜빡하고 말씀 못 드린 게 있어서요.", { expr: "happy" }],

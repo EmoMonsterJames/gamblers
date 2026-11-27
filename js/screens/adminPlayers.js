@@ -202,7 +202,7 @@ function editPlayer(p, onSaved) {
         saving = true; saveBtn.disabled = true;
         try {
             // other admins may have added players while this form was open → check against the latest list
-            if (Store.cloud) { await Store.refreshPlayers(); dupHint(); }
+            if (Store.cloud) { await Store.refreshPlayers({ newOnly: true }); dupHint(); }
             const list = dupes();
             if (list.length && !(await confirmBox(`⚠️ 이름이 같은 플레이어가 이미 있습니다:\n${list.map(dupText).join("\n")}\n\n그래도 ${isNew ? "등록" : "저장"}할까요?`, isNew ? "그래도 등록" : "그래도 저장", "취소"))) return;
             await addCustomSub(raceCat, v.ethnicity); // a typed-in subcategory is offered next time
