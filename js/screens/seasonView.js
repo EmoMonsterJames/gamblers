@@ -1017,7 +1017,7 @@ function locationStage(s) {
         const it = ITEM_BY_ID[itemId], to = LOC_BY_ID[it?.loc];
         if (!to || moving || to.id === loc.id) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
-        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
+        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : loc.sub === "elevator" ? "🛗 엘리베이터에서는 2층과 옥상에서만 맵권을 사용할 수 있습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
         if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (RV.revivalPassBlock(itemId)) return toast(RV.revivalPassBlock(itemId), "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
@@ -1036,7 +1036,7 @@ function locationStage(s) {
     async function moveRandom() {
         if (moving) return;
         if (t.remaining <= 0) return toast("시간이 종료되었습니다", "warn");
-        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
+        if (G.passLockedAt(loc.id)) return toast(loc.region === "airport" || loc.sub === "airport" ? "✈️ 공항 지역에서는 맵권을 사용할 수 없습니다" : loc.sub === "elevator" ? "🛗 엘리베이터에서는 2층과 옥상에서만 맵권을 사용할 수 있습니다" : "🚫 지금 있는 맵에서는 맵권을 쓸 수 없습니다", "warn", 3500);
         if (G.deadPassBlocked(itemId)) return toast(G.DEAD_PASS_TEXT, "warn", 3500);
         if (root.querySelector(".game-screen .busy, .game-screen.busy")) return toast("스핀이 끝난 뒤에 이동하세요", "warn");
         if (!(await confirmBox(`🗺️ 랜덤 맵권을 사용해 입장 가능한 모든 지역의 맵 중 한 곳으로 지금 이동할까요?\n남은 시간 ${fmtTime(t.remaining)}은 그대로 이어집니다.\n${RANDOM_MAP_ASK.split("\n").slice(1).join("\n")}`, "이동하기", "취소"))) return;

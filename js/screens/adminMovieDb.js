@@ -39,7 +39,19 @@ export function adminMovieDbPage() {
     const facetLinks = (kind, m) => { const [, vals, txt] = FACETS[kind]; return vals(m).map((v, i) => [i ? " · " : null, link(txt(v), { k: kind, v })]); };
 
     // 🔑 영화확인: the video covers and the film open only after the movie's Creator Code is typed in
-    const opened = new Set();  // creators whose code was entered while this page is open
+    //   the login lasts for this browser tab's session (sessionStorage) · 'James Creator 코드 로그아웃' ends it, so another code can be typed
+    const SESSION_KEY = "gamblers.creatorSession";
+    const loadOpened = () => { try { return new Set(JSON.parse(sessionStorage.getItem(SESSION_KEY) || "[]")); } catch { return new Set(); } };
+    const saveOpened = () => { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify([...opened])); } catch { } };
+    const opened = loadOpened();  // creators whose code was entered in this session
+    const sessionBar = h("div.mdb-session");
+    function drawSession() {
+        put(sessionBar, opened.size ? [h("small.muted", "🔓 로그인된 Creator: "), [...opened].map(who => h("button.btn.ghost.small.mdb-logout", { onclick: () => {
+            opened.delete(who); saveOpened(); drawSession();
+            toast(`🔒 ${who} Creator 코드에서 로그아웃했습니다 — 다른 Creator 코드를 입력할 수 있습니다`, "ok", 3500);
+        } }, `🔒 ${who} Creator 코드 로그아웃`))] : null);
+    }
+    drawSession();
     function checkMovie(m) {
         const who = D.creatorOf(m), code = D.CREATOR_CODES[who];
         const show = () => {
@@ -53,7 +65,7 @@ export function adminMovieDbPage() {
         setTimeout(() => inp.focus(), 50);
         function ok() {
             if (inp.value.trim() !== code) { toast("Creator Code가 맞지 않습니다", "warn"); inp.select(); return; }
-            opened.add(who); pm.close(); show();
+            opened.add(who); saveOpened(); drawSession(); pm.close(); show();
         }
     }
     const placed = m => { const c = stockPlan().count[m.id]; return c ? `${c.maps}개 맵 · ${c.shops}곳${c.shops < m.stock.shops ? ` (목표 ${m.stock.maps}개 맵 · ${m.stock.shops}곳 — 비치 가능한 가게가 ${c.room}곳뿐)` : ""}` : "모든 맞는 가게 (무작위)"; };
@@ -78,6 +90,7 @@ export function adminMovieDbPage() {
             h("dt", "줄거리"), h("dd", m.plot),
             h("dt", "Creator"), h("dd", D.creatorOf(m)),
             h("dt", "관람 보상"), h("dd", `${viewerPay(m).toLocaleString()}G`),
+            h("dt", "가격"), h("dd", `표지 꺼내기 ${D.coverFeeOf(m).toLocaleString()}G · 구입 ${D.buyPriceOf(m).toLocaleString()}G`),
             h("dt", "비디오 가게 비치"), h("dd", placed(m))));
 
     const row = m => h("div.mdb-row", link(m.ko, { k: "movie", id: m.id }), h("small.muted", ` ${m.en}`), h("span.mdb-meta", `${dateKo(m.date)} · ${brandName(m.brand)} · ${stars(m.stars)}`));
@@ -142,5 +155,6 @@ export function adminMovieDbPage() {
         h("h2.page-title", "🎞️ 영화DB"),
         h("p.muted.small", "영화를 검색합니다 (검색어를 입력해야 결과가 나옵니다). 영화사 · 제작국가 · 장르 · 등급 · 희귀도 · 작품성 · 출연 배우를 누르면 모아진 정보를 볼 수 있습니다."),
         h("p", h("a.btn.ghost.small", { href: "#/admin" }, "← 관리자 페이지")),
+        sessionBar,
         body);
 }

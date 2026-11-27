@@ -11,16 +11,18 @@ import { exprParts } from "./avatarExtra.js";
 // expression name → ui/avatarExtra.js EXPRESSIONS index
 export const EXPR = {
     happy: 0, smug: 1, sad: 2, angry: 3, shock: 4, wink: 5, love: 6, sleepy: 7, cry: 8, tongue: 9,
-    blank: 10, evil: 11, sweat: 12, excited: 13, shy: 14, annoyed: 15, roll: 16, scared: 17, cool: 18, dizzy: 19
+    blank: 10, evil: 11, sweat: 12, excited: 13, shy: 14, annoyed: 15, roll: 16, scared: 17, cool: 18, dizzy: 19,
+    beast: 20, redeye: 21   // 🎬 films only (늑대인간의 밤)
 };
 export const EXPR_KO = {
     happy: "😊 웃음", smug: "😏 도도", sad: "😢 슬픔", angry: "😠 화남", shock: "😲 놀람", wink: "😉 윙크", love: "😍 반함", sleepy: "😴 졸림", cry: "😭 통곡", tongue: "😛 메롱",
-    blank: "😐 무표정", evil: "😈 음흉", sweat: "😅 당황", excited: "😆 신남", shy: "😳 부끄", annoyed: "😤 못마땅", roll: "🙄 어이없음", scared: "😨 겁먹음", cool: "😎 썩소", dizzy: "😵 어질"
+    blank: "😐 무표정", evil: "😈 음흉", sweat: "😅 당황", excited: "😆 신남", shy: "😳 부끄", annoyed: "😤 못마땅", roll: "🙄 어이없음", scared: "😨 겁먹음", cool: "😎 썩소", dizzy: "😵 어질",
+    beast: "🐺 야수 (붉은 눈 · 송곳니)", redeye: "🔴 붉은 눈"
 };
 export const POSE_KO = { down: "기본", wave: "한 손 들기", both: "두 손 들기", point: "가리키기", hips: "허리에 손", shrug: "으쓱" };
-export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미", candle: "🕯️ 촛불" };
-const MARK = { angry: "💢", annoyed: "💢", sweat: "💦", scared: "💦", shock: "❗", love: "💕", sad: "💧", cry: "💧", excited: "✨", happy: "♪", evil: "ㅋ", cool: "✨", dizzy: "💫", sleepy: "💤", shy: "💗", roll: "…", smug: "♪", wink: "♪", tongue: "♪" };
-const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹", candle: "🕯️" };
+export const HOLD_KO = { gun: "🔫 총", money: "💵 돈뭉치", phone: "📱 휴대폰", sock: "🧦 양말", bag: "💼 돈가방", mic: "🎤 마이크", bikini: "👙 비키니", book: "📚 책", radio: "📻 라디오", rose: "🌹 장미", candle: "🕯️ 촛불", cross: "✝️ 십자가", paper: "📰 신문" };
+const MARK = { beast: "🐺", redeye: "🔴", angry: "💢", annoyed: "💢", sweat: "💦", scared: "💦", shock: "❗", love: "💕", sad: "💧", cry: "💧", excited: "✨", happy: "♪", evil: "ㅋ", cool: "✨", dizzy: "💫", sleepy: "💤", shy: "💗", roll: "…", smug: "♪", wink: "♪", tongue: "♪" };
+const HOLD_EMOJI = { gun: "🔫", money: "💵", phone: "📱", sock: "🧦", bag: "💼", mic: "🎤", bikini: "👙", book: "📚", radio: "📻", rose: "🌹", candle: "🕯️", cross: "✝️", paper: "📰" };
 
 const cache = new Map();
 const imgOf = pid => (pid != null ? Store.player(pid)?.profile_image : "") || "";
@@ -242,8 +244,27 @@ export function setFigure(el, c, o = {}) {
             if (!arms && o.hold && HOLD_EMOJI[o.hold]) el.append(h("i.vfig-hold.h-" + o.hold, HOLD_EMOJI[o.hold]));
         });
     }
-    el.className = "vfig" + (o.upper ? " upper" : "") + (o.act ? " act-" + o.act : "");
+    el.className = "vfig" + (o.upper ? " upper" : "") + (o.act ? " act-" + o.act : "") + (o.wolf ? " wolf wolf-" + o.wolf : "");
     // 🔲 covers: a mosaic over a bare chest
     el.querySelector(".vfig-mosaic")?.remove();
     if (o.mosaic && (o.nude || o.outfit === "nude")) el.append(h("i.vfig-mosaic"));
+    // 🐺 werewolf (films): "half" — wolf ears, fur, claws over the player · "full" — a wolf stands where the player was
+    el.querySelector(".vfig-wolf")?.remove();
+    if (o.wolf) { const w = h("i.vfig-wolf"); w.innerHTML = o.wolf === "full" ? WOLF_FULL : wolfHalf(o.wolf, o.pose); el.querySelector(".vfig-in").append(w); }
 }
+// 🐺 overlays in the figure's 256×256 frame · "half": ears + fur + claws · "claws": only long claws growing out of the hands
+function wolfHalf(kind, pose) {
+    const hands = DRAWN_ARMS[pose] || DRAWN_ARMS.down;
+    const claws = hands.map(([x, y], i) => { const k = i ? 1 : -1; return [0, 1, 2].map(j => `<path d="M${x + (j - 1) * 5} ${y + 4}Q${x + (j - 1) * 7 + k * 3} ${y + 16} ${x + (j - 1) * 9 + k * 6} ${y + 24}L${x + (j - 1) * 5 + 2} ${y + 6}Z"/>`).join(""); }).join("");
+    const ears = kind === "claws" ? "" : `<g fill="#4a2c17" stroke="#1c0f06" stroke-width="4" stroke-linejoin="round"><path d="M72 46L66 -4L104 26Z"/><path d="M184 46L190 -4L152 26Z"/></g><path d="M76 34L72 8L94 26ZM180 34L184 8L162 26Z" fill="#f9a8d4" opacity=".7"/>` +
+        `<g fill="#4a2c17" opacity=".9">${[-1, 1].map(k => `<path d="M${128 + k * 46} 150l${k * 14} -6l${-k * 4} 12l${k * 12} -2l${-k * 6} 12l${k * 10} 0l${-k * 10} 10Z"/>`).join("")}</g>`;
+    return `<svg viewBox="0 0 256 256" xmlns="${SVGNS}">${ears}<g fill="#f5f5f4" stroke="#1c0f06" stroke-width="1.6" stroke-linejoin="round">${claws}</g></svg>`;
+}
+const WOLF_FULL = `<svg viewBox="0 0 256 256" xmlns="${SVGNS}"><g stroke="#0b0603" stroke-width="4" stroke-linejoin="round">` +
+    `<path d="M92 250L98 186Q70 168 76 124Q84 92 104 82L96 40L118 70Q128 64 140 70L160 38L156 82Q180 94 182 130Q186 170 158 186L164 250H140L134 198H122L116 250Z" fill="#3b2414"/>` +
+    `<path d="M104 82Q128 124 154 82Q150 112 128 118Q106 112 104 82Z" fill="#6b4226"/>` +
+    `<path d="M112 100Q128 92 144 100L140 120Q128 128 116 120Z" fill="#6b4226"/>` +
+    `<path d="M76 130Q56 160 62 196L72 192Q70 166 86 146ZM180 130Q200 160 194 196L184 192Q186 166 170 146Z" fill="#3b2414"/></g>` +
+    `<path d="M60 196l-4 12M66 198l0 12M72 196l4 11M196 196l4 12M190 198l0 12M184 196l-4 11" stroke="#f5f5f4" stroke-width="3" stroke-linecap="round"/>` +
+    `<ellipse cx="116" cy="92" rx="6" ry="4" fill="#ef4444"/><ellipse cx="140" cy="92" rx="6" ry="4" fill="#ef4444"/><circle cx="116" cy="92" r="1.8" fill="#111"/><circle cx="140" cy="92" r="1.8" fill="#111"/>` +
+    `<path d="M120 122l3 8l3 -7M130 122l3 8l3 -7" fill="#fff" stroke="#111" stroke-width="1"/><ellipse cx="128" cy="112" rx="6" ry="4" fill="#111"/></svg>`;

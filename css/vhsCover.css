@@ -523,3 +523,123 @@
 .va-barn .va-row.main { position: relative; z-index: 2; gap: 4px; margin-bottom: -4px; }
 .va-barn .va-row .vfig + .vfig { margin-left: -6px; }
 .va-glow { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: radial-gradient(ellipse 60% 40% at 50% 62%, #fde68a44, transparent 70%); mix-blend-mode: screen; }
+
+/* ================= 늑대인간의 밤 (Moonchild): sets, the moon title, claw marks, the werewolf, close-ups ================= */
+/* sets: 밤의 숲속 · 하우스 · 학교 · 역사 교실 · 성당 · 장례식장 · 장례식장 밖 */
+.bg-woods { background:
+    radial-gradient(ellipse 9% 40% at 8% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 7% 46% at 30% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 8% 42% at 72% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 10% 48% at 94% 100%, #020617 96%, transparent) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, #0b1026 0 62%, #14290f 62% 84%, #0a1607 84%); }
+.bg-house { background:
+    linear-gradient(90deg, transparent 0 64%, #78350f 64% 65%, #bae6fd 65% 83%, #78350f 83% 84%, transparent 84%) 0 16% / 100% 34% no-repeat,
+    linear-gradient(180deg, transparent 0 52%, #92400e 52% 54%, transparent 54%) 8% 0 / 28% 100% no-repeat,
+    linear-gradient(180deg, #fef3c7 0 68%, #a16207 68% 70%, #78350f 70%); }
+.bg-school { background:
+    linear-gradient(90deg, #1e3a8a 0 3px, transparent 3px) 4% 18% / 12% 40% repeat-x,
+    linear-gradient(180deg, #fde68a 0 6%, transparent 6%) 0 16% / 100% 46% no-repeat,
+    linear-gradient(180deg, #e2e8f0 0 66%, #94a3b8 66% 68%, #cbd5e1 68%); }
+.bg-classroom { background:
+    linear-gradient(180deg, #14532d 0 100%) 50% 14% / 56% 34% no-repeat,
+    linear-gradient(180deg, #78350f 0 100%) 50% 13% / 58% 36% no-repeat,
+    linear-gradient(180deg, #fefce8 0 70%, #a16207 70% 72%, #b45309 72%); }
+.bg-church { background:
+    radial-gradient(ellipse 8% 18% at 50% 24%, #fde047 0 40%, #7c3aed 42% 60%, #1e3a8a 62% 96%, transparent) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #44403c 0 8px, transparent 8px 22%),
+    linear-gradient(180deg, #292524 0 70%, #57534e 70% 72%, #3f3f46 72%); }
+.bg-funeral { background:
+    radial-gradient(ellipse 14% 30% at 18% 60%, #f5f5f4 40%, transparent 42%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(ellipse 14% 30% at 82% 60%, #f5f5f4 40%, transparent 42%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, #111 0 100%) 50% 30% / 20% 12% no-repeat,
+    linear-gradient(180deg, #e7e5e4 0 72%, #44403c 72%); }
+.bg-funeralout { background:
+    linear-gradient(180deg, #1c1917 0 100%) 6% 28% / 30% 56% no-repeat,
+    linear-gradient(180deg, #fde68a55 0 100%) 12% 44% / 6% 18% no-repeat,
+    linear-gradient(180deg, #020617 0 66%, #1c1917 66% 84%, #0c0a09 84%); }
+
+/* 🌕 title "moon": looking up through the trees at a huge full moon — the titles glow in its light */
+.vp-title.s-moon { background: radial-gradient(circle at 50% 38%, #1e1b4b, #020617 70%); overflow: hidden; }
+.vp-moon { position: absolute; left: 50%; top: 36%; width: min(46vh, 340px); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); z-index: 0;
+    background: radial-gradient(circle at 36% 34%, #d9770622 0 9%, transparent 10%), radial-gradient(circle at 62% 64%, #d9770622 0 12%, transparent 13%), radial-gradient(circle at 44% 42%, #fffbeb, #fde68a 66%, #f59e0b);
+    box-shadow: 0 0 60px 18px #fde68a66, 0 0 140px 40px #fde68a22; animation: vpMoonUp 3.2s ease-out forwards; }
+@keyframes vpMoonUp { from { transform: translate(-50%, -20%) scale(.6); opacity: .2; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+.vp-trees { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse 12% 70% at 0% 100%, #000 96%, transparent), radial-gradient(ellipse 10% 60% at 14% 100%, #000 96%, transparent),
+        radial-gradient(ellipse 12% 72% at 100% 100%, #000 96%, transparent), radial-gradient(ellipse 10% 56% at 86% 100%, #000 96%, transparent),
+        linear-gradient(0deg, #000 0 8%, transparent 8%); }
+.vp-clouds { position: absolute; left: -30%; top: 22%; width: 60%; height: 16%; z-index: 1; border-radius: 50%; background: radial-gradient(ellipse, #0f172acc, transparent 70%); animation: vpCloud 9s linear infinite; }
+@keyframes vpCloud { to { transform: translateX(240%); } }
+.vp-title.s-moon .vp-en { position: relative; z-index: 2; color: #fef3c7; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .08em; text-shadow: 0 0 16px #fde047, 0 0 36px #b45309, 3px 3px 0 #000; animation: vpBurnIn 2s ease forwards; }
+.vp-title.s-moon .vp-ko { position: relative; z-index: 2; color: #fecaca; text-shadow: 0 0 18px #dc2626, 3px 3px 0 #000; transform: translateY(26px) scale(1.2); filter: blur(6px); transition: opacity 1.4s, transform 1.4s, filter 1.4s; }
+.vp-title.s-moon .vp-ko.show { opacity: 1; transform: none; filter: none; animation: vpHowlShake .12s linear 6 alternate; }
+@keyframes vpHowlShake { from { translate: -2px 0; } to { translate: 2px 0; } }
+
+/* 🌕 a big moon over a set · 👤 a shadow slides by · 🩸 claw marks · a red flash */
+.vp-fx.moon, .vp-fx.shadow { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.vp-bigmoon { position: absolute; right: 7%; top: 6%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fffbeb, #fde68a 62%, #f59e0b); box-shadow: 0 0 40px 10px #fde68a55; }
+.vp-bigmoon.small { width: 12%; right: 10%; top: 8%; }
+.vp-mist-band { position: absolute; left: 0; right: 0; top: 30%; height: 10%; background: linear-gradient(90deg, transparent, #0f172a99, transparent); animation: vpCloud 12s linear infinite; }
+.vp-shadow { position: absolute; bottom: 12%; left: -30%; width: 26%; height: 70%; border-radius: 45% 45% 10% 10%; background: radial-gradient(ellipse at 50% 30%, #000d, #0009 60%, transparent 72%); filter: blur(3px); animation: vpShadow 5s ease-in-out 1s infinite; }
+@keyframes vpShadow { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 60% { opacity: 1; } 100% { transform: translateX(560%); opacity: 0; } }
+.vp-claw { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.vp-claw i { position: absolute; top: 8%; left: calc(30% + var(--k, 0) * 9%); width: 2.4%; height: 0; border-radius: 40%; background: linear-gradient(180deg, #7f1d1d, #dc2626, #7f1d1d); box-shadow: 0 0 8px #000; transform: rotate(24deg); animation: vpClaw .35s ease-out forwards, vpFlash 1.8s ease-in .6s forwards; }
+.vp-claw i:nth-child(2) { --k: 1; animation-delay: .05s, .6s; } .vp-claw i:nth-child(3) { --k: 2; animation-delay: .1s, .6s; } .vp-claw i:nth-child(4) { --k: 3; animation-delay: .15s, .6s; }
+@keyframes vpClaw { to { height: 76%; } }
+.vp-flash.red { background: #b91c1c; }
+
+/* 🐺 the werewolf: fur-brown and dark · ears and claws drawn over (ui/figure.js) · "full": a wolf stands where the player was */
+.vfig-in { position: relative; }
+.vfig-wolf { position: absolute; inset: 0; pointer-events: none; font-style: normal; }
+.vfig-wolf svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.vfig.wolf-half img { filter: sepia(.65) saturate(1.5) hue-rotate(-12deg) brightness(.78) contrast(1.15) drop-shadow(0 0 3px #3b2414); }
+.vfig.wolf-full img { opacity: 0; }
+.vfig.wolf-full .vfig-wolf { filter: drop-shadow(0 3px 4px #000a); }
+.vp-actor .vfig.act-wolfing .vfig-in { animation: vfWolfing .5s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes vfWolfing { 0% { transform: scale(1) rotate(-3deg); filter: brightness(1); } 50% { transform: scale(1.12, 1.06) rotate(2deg); filter: brightness(.7) drop-shadow(0 0 10px #dc2626); } 100% { transform: scale(1.06) rotate(-1deg); } }
+
+/* 🔍 close-up: one face and chest fills the screen */
+.vp-scene.close .vp-actors { bottom: 0; }
+.vp-scene.close .vfig.upper { height: calc(var(--fs) * .58); }
+.vp-scene.close .vp-sub { background: #000a; border-radius: 8px; padding: 4px 8px; }
+.vp-scene.close .vp-actor small { display: none; }
+
+/* ⏸ paused film: every animation holds still · a PAUSE sign */
+.vhs-screen.paused *, .vhs-screen.paused *::before, .vhs-screen.paused *::after { animation-play-state: paused !important; }
+.vp-paused { position: absolute; inset: 0; z-index: 9; display: grid; place-content: center; justify-items: center; gap: 6px; background: #0008; pointer-events: none; }
+.vp-paused b { font: 900 clamp(28px, 6vw, 56px) 'Lilita One', sans-serif; color: #fff; letter-spacing: .1em; text-shadow: 0 0 12px #000; }
+.vp-paused small { color: #e5e7eb; font-weight: 700; }
+
+/* 💀 the Body Count roll after The End */
+.vp-bodycount { padding: 4% 6%; }
+.vp-bodycount > b { color: #ef4444; font-size: clamp(26px, 5vw, 48px) !important; animation: vpBurnIn 1.2s ease forwards !important; }
+.vp-bc-total { font: 900 clamp(15px, 2.4vw, 22px) 'Noto Sans KR', sans-serif; color: #fecaca; }
+.vp-bc-list { display: grid; gap: 6px; text-align: left; max-width: 92%; }
+.vp-bc-row { font-size: clamp(11px, 1.7vw, 15px); color: #e5e7eb; opacity: 0; animation: vpBcIn .6s ease var(--d) forwards; }
+.vp-bc-row b { color: #fde047; }
+.vp-bc-scene { color: #fca5a5; font-weight: 700; }
+.vp-bc-dots { color: #71717a; letter-spacing: .1em; }
+.vp-bc-off { color: #a1a1aa; font-style: normal; }
+@keyframes vpBcIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* 🎬 the pay list: the extra pay for Nudity · Sexy · Body Count */
+.vhs-pay-bonus { display: block; font-style: normal; font-size: 11px; color: #fca5a5; }
+
+/* 앞표지 "moon": a red eye glares through a huge full moon · a wolf's silhouette below */
+.va-moon { position: relative; background: #05030f; }
+/* the whole front is the dark night (over the brand's own colours) · the title in blood red */
+.vhs-front.l-moon { background: linear-gradient(180deg, #05030f, #1a0505) !important; }
+.vhs-front.l-moon .vf-head small { color: #e5e7eb; }
+.vhs-front.l-moon .vf-title b { color: #fecaca !important; -webkit-text-stroke: 1px #7f1d1d !important; text-shadow: 0 0 10px #dc2626, 2px 2px 0 #000 !important; }
+.vhs-front.l-moon .vf-title small { color: #fde68a; }
+.vhs-front.l-moon .vf-tag { color: #fecaca; background: #450a0acc; }
+.va-moonart { position: absolute; inset: 0; } .va-moonart svg { width: 100%; height: 100%; display: block; }
+/* 뒷표지 "side3": 3 stills down the left side, the text on the right */
+.vhs-back.l-side3 { grid-template-columns: 84px 1fr; grid-template-rows: 1fr auto; }
+.vhs-back.l-side3 .vstill-row { align-items: end; }
+.vhs-back.l-side3 .vstill-row .vfig + .vfig { margin-left: calc(var(--fs) * -.12); }
+.vhs-back.l-side3 .vb-stills.g-side { grid-row: 1; grid-template-columns: 1fr; align-content: start; }
+.vhs-back.l-side3 .vb-text { grid-row: 1; }
+.vhs-back.l-side3 .vb-foot { grid-column: 1 / -1; }
+/* 중간표지: the English title big · the Korean title small beside it */
+.vs-title.t-en .vs-ko.sub { align-self: flex-end; margin-bottom: 4px; }

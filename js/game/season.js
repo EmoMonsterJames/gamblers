@@ -25,8 +25,10 @@ export const startHooks = [], enterChecks = [];
 export const passChecks = [], passUseHooks = [];
 const passWhy = (pid, loc) => { for (const f of passChecks) { try { const w = f(pid, loc); if (w) return w; } catch (e) { console.error(e); } } return null; };
 const passUsed = (pid, loc) => runHooks(passUseHooks, pid, loc);
-// 🚫 map passes are never used FROM these maps: ✈️ the whole Airport (gates + the plane) · a map marked noPass · 🛗 the Elevator is open to them
-export const passLockedAt = locId => { const l = LOC_BY_ID[locId]; if (!l) return false; if (l.region === "airport" || l.sub === "airport") return true; if (l.elevator || l.sub === "elevator") return false; return !!l.noPass; };
+// 🚫 map passes are never used FROM these maps: ✈️ the whole Airport (gates + the plane) · a map marked noPass
+//   · 🛗 the Elevator: only on 2층 and 옥상 (ELEV_PASS_FLOORS) — every other floor is locked
+export const ELEV_PASS_FLOORS = ["elev_2", "elev_roof"];
+export const passLockedAt = locId => { const l = LOC_BY_ID[locId]; if (!l) return false; if (l.region === "airport" || l.sub === "airport") return true; if (l.sub === "elevator") return !ELEV_PASS_FLOORS.includes(l.id); if (l.elevator) return false; return !!l.noPass; };
 const runHooks = (list, ...a) => { for (const f of list) try { f(...a); } catch (e) { console.error(e); } };
 // 📣 game events other rules listen to (game/employ.js in-company missions): "capture" · "spell" · "help" · "turnEnd"
 export const eventHooks = [];

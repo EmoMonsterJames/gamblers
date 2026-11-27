@@ -108,14 +108,39 @@ export const shopDoor = k => k.gear ? `${{ wings: "🪽 날개", oxygen: "🤿 �
     : k.resident ? `${k.nation} 시민권자 · 귀화자 · 영주권자는 바로 입장, 아니면 ${Math.round(k.chance * 100)}% 확률`
     : k.chance ? `랜덤 입장 (승인 확률 ${Math.round(k.chance * 100)}%)` : "자유 입장";
 
-// price by rarity (G)
-export const PRICE_BY_STAR = [0, 5000, 10000, 20000, 50000, 100000, 200000, 400000];
+// ---------------------------------------------------------------- 💰 prices (동행 Video Shop)
+//   one 0~1 score decides both prices — the more, the dearer:
+//     희귀도 ★1 → ★7 (40%) · 작품성 ★7 → ★1 (30%) · 장르 (15%): 뮤지컬·드라마·가족 < 판타지·SF·액션·어드벤처·스릴러·로맨스 < 코미디·공포·성인
+//     · 등급 (15%): 흰띠 → HYHG띠
+//   비디오 표지 꺼내기 500 ~ 10,000G · 비디오 구입 10,000 ~ 100,000G
+//   (the dearest: ★7 rarity · ★1 quality · 코미디/공포/성인 · HYHG띠)
+export const GENRE_TIER = { 뮤지컬: 0, 드라마: 0, 가족: 0, 판타지: 1, SF: 1, 액션: 1, 어드벤처: 1, 스릴러: 1, 로맨스: 1, 코미디: 2, 공포: 2, 성인: 2 };
+export const COVER_FEE = [500, 10000];
+export const BUY_PRICE = [10000, 100000];
+const clamp7 = n => Math.min(7, Math.max(1, +n || 1));
+export function priceScore(m) {
+    const rare = (clamp7(m.stars) - 1) / 6;
+    const bad = (7 - clamp7(m.quality || 7)) / 6;
+    const genre = Math.max(0, ...(m.genres || []).map(g => GENRE_TIER[g] ?? 1)) / 2;
+    const ri = RATINGS.findIndex(r => r.id === m.rating);
+    const rating = Math.max(0, ri) / (RATINGS.length - 1);
+    return rare * 0.4 + bad * 0.3 + genre * 0.15 + rating * 0.15;
+}
+const scaled = ([a, b], s, step) => Math.round((a + s * (b - a)) / step) * step;
+export const coverFeeOf = m => scaled(COVER_FEE, priceScore(m), 100);
+export const buyPriceOf = m => scaled(BUY_PRICE, priceScore(m), 1000);
 
 // 🔑 영화DB: a movie's covers and film open only with its creator's code (null = no code set yet → stays locked)
 export const CREATOR_CODES = { James: "2026", Dylan: null };
 export const creatorOf = m => m.creator || "James";
 // 💀 Body Count: the cast members who die in the film (on screen or found dead off-screen) — ghosts, monsters and spirits are not counted
-export const bodyCountOf = m => (m.bodyCount || []).map(r => m.cast.find(c => c.role === r || c.short === r)).filter(Boolean);
+//   an entry is a role name, or { r: role, scene: "Scene 6 · 헛간", how: "how they died", off: true (Off Screen) } — listed in the order they die
+const bcRole = e => typeof e === "string" ? e : e?.r;
+export const bodyCountInfo = m => (m.bodyCount || []).map(e => {
+    const c = m.cast.find(x => x.role === bcRole(e) || x.short === bcRole(e));
+    return c ? { c, scene: e?.scene || "", how: e?.how || "", off: !!e?.off } : null;
+}).filter(Boolean);
+export const bodyCountOf = m => bodyCountInfo(m).map(x => x.c);
 
 // ---------------------------------------------------------------- seeded random
 export function seeded(str) {
@@ -158,10 +183,10 @@ export const BRAND_STYLE = {
 export const brandStyle = id => BRAND_STYLE[id] || BRAND_STYLE.hyhg;
 export const FRONT_LAYOUTS = [["", "영화사 기본"], ["lineup", "배우들 일렬"], ["hero", "주연 크게 + 조연"], ["duo", "주연 둘 마주보기"], ["still", "스틸컷 한 장"], ["spotlight", "스포트라이트"],
     ["stage", "무대 위"], ["pyramid", "피라미드"], ["frame", "액자"], ["panels", "만화 칸"], ["split", "대각선 분할"], ["money-burst", "돈뭉치 위 주연 + 뚫고 나온 배우들"], ["rocket", "날아온 로켓 위 주연 + 지켜보는 배우들"],
-    ["concert", "공연장 무대 위 주연 전원"], ["barn", "촛불 들고 헛간 앞에 선 주연"]];
+    ["concert", "공연장 무대 위 주연 전원"], ["barn", "촛불 들고 헛간 앞에 선 주연"], ["moon", "보름달을 뚫고 째려보는 빨간 눈 + 늑대 실루엣"]];
 export const BACK_LAYOUTS = [["", "영화사 기본"], ["stills4", "스틸컷 4장"], ["stills3", "스틸컷 3장"], ["stills2", "스틸컷 2장"], ["still1", "스틸컷 1장 크게"], ["strip3", "가로 띠 3장"],
-    ["filmstrip", "필름 스트립"], ["polaroid", "폴라로이드"], ["text", "글 위주 (스틸컷 없음)"]];
-export const STILL_N = { stills4: 4, stills3: 3, stills2: 2, still1: 1, strip3: 3, filmstrip: 3, polaroid: 2, text: 0 };
+    ["filmstrip", "필름 스트립"], ["polaroid", "폴라로이드"], ["side3", "왼쪽 세로 스틸컷 3장"], ["text", "글 위주 (스틸컷 없음)"]];
+export const STILL_N = { stills4: 4, stills3: 3, stills2: 2, still1: 1, strip3: 3, filmstrip: 3, polaroid: 2, side3: 3, text: 0 };
 
 // ---------------------------------------------------------------- 😀 a line's mood (when the script doesn't say)
 export function lineMood(text) {
@@ -578,7 +603,7 @@ const emptyDen = () => {
         en: "Empty Den", ko: "헛간",
         brand: "bw", nation: "Dung Town", date: "0-08-11", creator: "James", stock: { maps: 110, shops: 200 },
         // 💀 Body Count: Old Woman is found dead in the barn (Mom is a ghost → not counted)
-        bodyCount: [OLD],
+        bodyCount: [{ r: OLD, scene: "Scene 6 · 헛간", how: "헛간에서 죽은 채로 발견됨.", off: true }],
         genres: ["공포"], rating: "red", stars: 1, quality: 7, lgbtq: false,
         cast: [
             { ko: "친공미", pid: P("친공미"), role: EMILY, part: "lead" },
@@ -693,6 +718,155 @@ const emptyDen = () => {
         ]
     };
 };
+// ---------------------------------------------------------------- ⭐ built-in movie: 늑대인간의 밤 (Moonchild · the admin's own idea · 뽀리)
+//   new here: title style "moon" (+ koSfx: a wolf's howl when the Korean title comes in) · fx moon / shadow · line meta claw (claw marks)
+//   · flash "red" · wolf "half" / "full" / "claws" (ui/figure.js) · expr beast / redeye · act wolfing · close (a close-up scene)
+const moonchild = () => {
+    const P = n => findPid(n);
+    const DENIS = "Denis", LYNN = "Lynn", TOM = "Tom", KIKI = "Kiki", PRIEST = "The Priest", VINCENT = "Vincent", PHIL = "Detective Phil",
+        MINA = "Mina", TEACHER = "History Teacher", STUDENT = "Student";
+    return {
+        id: "m_moonchild", builtin: true,
+        en: "Moonchild", ko: "늑대인간의 밤",
+        brand: "ppori", nation: "Emo World", date: "14-02-07", creator: "James", stock: { maps: 100, shops: 180 },
+        // 💀 Body Count (in the order they die): Mina (Scene 1) · The Priest · Denis (Scene 6)
+        bodyCount: [
+            { r: MINA, scene: "Scene 1 · 숲속", how: "밤의 숲속을 산책하다 정체모를 무언가의 길다란 손톱에 얼굴을 할퀴어 희생됨." },
+            { r: PRIEST, scene: "Scene 6 · 성당", how: "늑대로 변한 Denis에게 목을 물어뜯겨 살해됨." },
+            { r: DENIS, scene: "Scene 6 · 성당", how: "늑대인간으로 변한 채 탐정 Phil의 권총에 맞아 사망." }
+        ],
+        genres: ["공포"], rating: "bam", stars: 2, quality: 4, lgbtq: false,
+        cast: [
+            { ko: "남자이모", pid: P("남자이모"), role: DENIS, part: "lead" },
+            { ko: "이모", pid: P("이모"), role: LYNN, part: "lead" },
+            { ko: "파댕이", pid: P("파댕이"), role: TOM, part: "lead" },
+            { ko: "노랑토끼", pid: P("노랑토끼"), role: KIKI, part: "lead" },
+            { ko: "흰머리구름", pid: P("흰머리구름"), role: PRIEST, short: "Priest", part: "lead" },
+            { ko: "칼리스토52호", pid: P("칼리스토52호"), role: VINCENT, part: "lead" },
+            { ko: "하이스트이모부", pid: P("하이스트이모부"), role: PHIL, short: "Phil", part: "lead" },
+            { ko: "꽃나리", pid: P("꽃나리"), role: MINA, part: "support" },
+            { ko: "헤일리톰슨", pid: P("헤일리톰슨"), role: TEACHER, part: "support" },
+            { ko: "그개미", pid: P("그개미"), role: STUDENT, part: "extra" }
+        ],
+        plot: "Denis는 아내 Lynn과 두 자녀 Tom, Kiki와 함께 화목한 가정을 꾸리고 있다. 어느날 Kiki의 학교 친구가 실종되는 사건이 발생하고, 탐정 Phil은 해당 사건에 관심을 갖고 조사를 시작한다. 한편, Denis는 보름달이 뜨는 밤만 되면 식은땀을 흘리고 피를 갈구하기 시작하는데…",
+        tagline: "경고: 당신의 빨라지는 심장박동을 책임질 수 없습니다!",
+        music: "fullmoon",
+        cover: {
+            // 중간표지: logo · the English title big · the Korean title small and sideways beside it · a small still
+            spine: { main: "en", sub: "ko", still: { bg: "woods", who: [{ r: DENIS, expr: "beast", pose: "both", wolf: "half" }] } },
+            // 앞표지: a dark night, a huge full moon — a red eye glares through it · a wolf's silhouette below
+            front: { layout: "moon", bg: "#05030f" },
+            // 뒷표지: 3 stills down the left · 줄거리 · 주연 (이모 · 남자이모 only) · 제작년월일 · logo
+            back: { layout: "side3", leads: [LYNN, DENIS], minimal: true, stills: [
+                { bg: "woods", cap: "누구 있어요…?", who: [{ r: MINA, expr: "scared", pose: "shrug" }] },
+                { bg: "church", cap: "이 사탄아!!", who: [{ r: PRIEST, expr: "angry", pose: "point", hold: "cross" }, { r: DENIS, expr: "beast", pose: "both", wolf: "half" }] },
+                { bg: "funeral", cap: "아빠…", who: [{ r: KIKI, expr: "cry" }, { r: LYNN, expr: "cry" }, { r: TOM, expr: "redeye" }] }
+            ] }
+        },
+        script: [
+            { k: "brand", sec: 3 },
+            // Scene 1 · 숲속 — a shadow behind Mina … the claws
+            { k: "scene", n: 1, place: "숲속", music: "heartbeat", sec: 12, bg: "woods", dark: true, fx: "shadow", who: [MINA],
+                cast: { [MINA]: { expr: "blank", act: "sneak" } },
+                lines: [
+                    ["", "고요한 밤의 숲속… Mina가 홀로 산책을 하고 있다."],
+                    [MINA, "으… 오늘따라 왜 이렇게 쌀쌀하지…", { expr: "sweat", pose: "shrug", act: "shake" }],
+                    ["", "Mina의 뒤로 어떤 그림자가 스윽— 드리운다…", { sfx: "growl" }],
+                    [MINA, "…누구 있어요? (뒤를 돌아본다) …아무것도 없네.", { expr: "scared", act: "shake" }],
+                    [MINA, "꺄아아아악!!!", { expr: "scared", pose: "both", act: "fall", sfx: "scream", claw: true, flash: "red", music: "stop" }],
+                    ["", "정체모를 무언가의 길다란 손톱이 Mina의 얼굴을 할퀴고… Mina는 그렇게 희생당하고 만다.", { sfx: "slash", light: "black", set: { [MINA]: { expr: "dizzy", act: "dead" } } }]] },
+            // 제목: looking up at the full moon from the forest · the Korean title comes in with a wolf's howl (출연 배우는 보여주지 않음)
+            { k: "title", sec: 7, style: "moon", koAt: 3000, koSfx: "howl", music: "fullmoon" },
+            // Scene 2 · 하우스 — a busy morning
+            { k: "scene", n: 2, place: "하우스", music: "morning", sec: 9, bg: "house", who: [TOM, KIKI, LYNN, DENIS],
+                cast: { [LYNN]: { expr: "annoyed", pose: "hips" }, [DENIS]: { expr: "sweat" }, [TOM]: { expr: "happy" }, [KIKI]: { expr: "happy" } },
+                lines: [
+                    [LYNN, "Tom! Kiki! 빨리 준비해, 학교 늦겠어!", { expr: "annoyed", pose: "hips", act: "stomp" }],
+                    [DENIS, "(넥타이를 매며) 여보, 나도 늦었어! 오늘 회의가 있거든~", { expr: "sweat", pose: "shrug" }],
+                    [TOM, "엄마, 저희 먼저 갈게요! (빵을 입에 문 채)", { expr: "excited", pose: "wave", act: "run" }],
+                    [LYNN, "거기 서! 아침을 그렇게 대충 먹고 나가면 어떡하니!!", { expr: "angry", pose: "point", act: "stomp", to: TOM, set: { [TOM]: { expr: "sweat", act: "" }, [KIKI]: { expr: "sweat" } } }]] },
+            { k: "scene", n: 2, place: "하우스", sec: 9, bg: "house", fx: "hearts", who: [TOM, KIKI, LYNN, DENIS],
+                cast: { [LYNN]: { expr: "annoyed", pose: "hips" }, [TOM]: { expr: "sweat" }, [KIKI]: { expr: "sweat" } },
+                lines: [
+                    [DENIS, "여보~ 애들한테 너무 뭐라고 하지 마. 다 컸잖아~", { expr: "happy", pose: "wave", to: LYNN }],
+                    [DENIS, "(쪽♥) 다녀올게!", { expr: "love", act: "kiss", to: LYNN, set: { [LYNN]: { expr: "shy", act: "kiss" } } }],
+                    ["", "Denis는 Lynn에게 모닝키스를 하고 회사로 출근한다.", { set: { [DENIS]: { gone: true }, [LYNN]: { expr: "happy", act: "" } } }],
+                    [TOM, "Kiki, 가자! 오빠 따라와~", { expr: "happy", pose: "wave", act: "run", to: KIKI, set: { [KIKI]: { expr: "happy", act: "run" } } }]] },
+            // Scene 3 · 학교 — the school paper: Mina is dead
+            { k: "scene", n: 3, place: "학교", music: "mystery", sec: 10, bg: "school", who: [STUDENT, TOM, KIKI],
+                cast: { [STUDENT]: { expr: "sad", hold: "paper" } },
+                lines: [
+                    [STUDENT, "Tom, 학교 신문 받아. …아직도 믿기지 않아.", { expr: "sad", hold: "paper", to: TOM }],
+                    [STUDENT, "우리 학교 Mina가… 숲속에서 죽은 채로 발견됐대.", { expr: "sad", hold: "paper", set: { [TOM]: { expr: "shock" }, [KIKI]: { expr: "shock" } } }],
+                    [KIKI, "Mina…? 가끔 역사 수업을 같이 들었던 반 친구야… 너무 안타까워…", { expr: "cry", set: { [STUDENT]: { hold: "" } } }],
+                    [TOM, "(신문을 읽으며) 물어뜯기고… 할퀴어 죽었다고…? 대체 무슨…", { expr: "shock", hold: "paper", set: { [KIKI]: { expr: "sad" } } }]] },
+            // Scene 4 · 역사수업교실 — the legend of the monster families
+            { k: "scene", n: 4, place: "역사수업교실", music: "mystery", sec: 12, bg: "classroom", who: [KIKI, TEACHER, TOM],
+                cast: { [TEACHER]: { expr: "sad", hold: "book" }, [KIKI]: { expr: "sad" }, [TOM]: { expr: "blank" } },
+                lines: [
+                    [TEACHER, "먼저… 세상을 떠난 Mina에게 모두 조의를 표합시다.", { expr: "sad", hold: "book" }],
+                    [TEACHER, "고대에는 사람이 괴물의 모습으로 변해 사람들을 잡아먹었다는 전설이 있지요.", { expr: "blank", pose: "point" }],
+                    [TOM, "에이~ 선생님, 그런 말도 안 되는 소리가 어딨어요! 다 허풍이죠~", { expr: "roll", pose: "shrug" }],
+                    [TEACHER, "고대 서적의 기록에 따르면… 대대로 그 피가 내려오는 괴물 가족들이 있었단다.", { expr: "evil", hold: "book", to: TOM }],
+                    [TEACHER, "아마… 호랑이나 늑대 같은 동물의 모습을 하고 있겠지.", { expr: "evil", pose: "point", sfx: "growl", music: "tense", set: { [TOM]: { expr: "scared" }, [KIKI]: { expr: "scared", act: "shake" } } }]] },
+            // Scene 5 · 하우스 — the full moon · Denis runs out
+            { k: "scene", n: 5, place: "하우스 · 보름달 뜬 밤", music: "fullmoon", sec: 9, bg: "house", dark: true, fx: "moon", who: [LYNN, DENIS],
+                cast: { [DENIS]: { expr: "sweat", act: "shake" }, [LYNN]: { expr: "blank" } },
+                lines: [
+                    ["", "집 밖에 밝은 보름달이 떠오른 밤…"],
+                    [DENIS, "하아… 하아… (식은땀을 뻘뻘 흘리며 어쩔 줄 몰라한다)", { expr: "sweat", pose: "shrug", act: "shake" }],
+                    [LYNN, "여보, 괜찮아? 얼굴이 너무 창백해…", { expr: "scared", pose: "both", to: DENIS }],
+                    [DENIS, "괜찮아… 잠깐… 밖에 좀 나가 있을게…", { expr: "sweat", act: "run", set: { [LYNN]: { expr: "sad" } } }]] },
+            // 숲속 — the change · Detective Phil sees it
+            { k: "scene", n: 5, place: "숲속", sec: 10, bg: "woods", fx: "moon", who: [DENIS, PHIL],
+                cast: { [DENIS]: { expr: "sweat", act: "shake" }, [PHIL]: { hid: true, expr: "blank" } },
+                lines: [
+                    [DENIS, "크으으… 아아아악!!! (몸을 주체하지 못한 채 울부짖는다)", { expr: "beast", pose: "both", act: "wolfing", wolf: "half", sfx: "howl", flash: "red", set: { [DENIS]: { expr: "beast", wolf: "half", pose: "both", act: "wolfing" } } }],
+                    ["", "Denis가 황급히 숲속으로 도망간다… 마침 그곳에서 사건을 조사하던 탐정 Phil.", { set: { [PHIL]: { hid: false, expr: "cool", pose: "hips" } } }],
+                    [PHIL, "이 근처에서 수상한 소리가…", { expr: "blank", pose: "point", to: DENIS }],
+                    [PHIL, "…!!! 사, 사람이… 늑대로 변하고 있어…!", { expr: "shock", pose: "shrug", act: "shake", sfx: "sting", flash: true }]] },
+            // Scene 6 · 성당 — Denis asks for help · the Priest calls him Satan
+            { k: "scene", n: 6, place: "성당", music: "organ", sec: 10, bg: "church", who: [DENIS, PRIEST],
+                cast: { [DENIS]: { expr: "cry", pose: "both", wolf: "half" }, [PRIEST]: { expr: "blank", pose: "both" } },
+                lines: [
+                    ["", "고요한 성당… 신부가 홀로 기도를 올리고 있다.", { sfx: "bell" }],
+                    [DENIS, "신부님… 제발 저 좀 도와주세요… 제 몸이… 이상해요…", { expr: "cry", pose: "both", wolf: "half", act: "shake" }],
+                    [PRIEST, "네 몸에는… 대대로 내려온 늑대인간 후손의 피가 흐르는구나!", { expr: "shock", pose: "point", hold: "cross", to: DENIS }],
+                    [PRIEST, "이 사탄아!! 주님의 이름으로 물러가라!!", { expr: "angry", pose: "point", hold: "cross", act: "stomp", to: DENIS, music: "tense" }]] },
+            // the wolf · the Priest dies · Phil shoots
+            { k: "scene", n: 6, place: "성당", sec: 12, bg: "church", dark: true, who: [DENIS, PRIEST, PHIL],
+                cast: { [DENIS]: { expr: "beast", pose: "both", wolf: "half" }, [PRIEST]: { expr: "angry", pose: "point", hold: "cross" }, [PHIL]: { hid: true } },
+                lines: [
+                    [DENIS, "크아아앙!!!", { expr: "beast", act: "jump", sfx: "growl", flash: "red", to: PRIEST, set: { [DENIS]: { wolf: "full", expr: "beast" } } }],
+                    ["", "늑대로 변한 Denis가 신부의 목을 물어뜯는다…!", { sfx: "scream", claw: true, set: { [PRIEST]: { expr: "dizzy", act: "dead", hold: "", pose: "down" } } }],
+                    [PHIL, "멈춰!!", { expr: "angry", pose: "point", hold: "gun", set: { [PHIL]: { hid: false, hold: "gun", pose: "point" } } }],
+                    ["", "탕!! 탕!!", { sfx: "shot", flash: true, music: "stop", set: { [DENIS]: { wolf: "full", act: "dead" } } }],
+                    [PHIL, "…끝났다. 이 처참한 살육도.", { expr: "sad", hold: "gun", pose: "down" }]] },
+            // Scene 7 · Denis의 장례식
+            { k: "scene", n: 7, place: "Denis의 장례식", music: "funeral", sec: 11, bg: "funeral", who: [TOM, LYNN, KIKI, PHIL], photo: { r: DENIS, expr: "happy" },
+                cast: { [LYNN]: { expr: "cry" }, [KIKI]: { expr: "cry" }, [TOM]: { expr: "sad" }, [PHIL]: { expr: "blank" } },
+                lines: [
+                    [LYNN, "여보… 흐흑… 이렇게 가버리면 어떡해…", { expr: "cry", act: "shake" }],
+                    [KIKI, "아빠… 흐흑…", { expr: "cry", act: "shake" }],
+                    [TOM, "탐정님… 대체 무슨 일이 있었던 거예요? 아빠가 왜…!", { expr: "cry", pose: "point", to: PHIL }],
+                    [PHIL, "……미안하구나. 지금은 아무 말도 해줄 수 없단다.", { expr: "sad" }],
+                    ["", "탐정은 대답을 회피한 채, 터벅터벅 장례식장 밖으로 나간다…", { set: { [PHIL]: { gone: true } } }]] },
+            // 장례식장 밖 — already dark, a full moon
+            { k: "scene", n: 7, place: "장례식장 밖", music: "fullmoon", sec: 6, bg: "funeralout", fx: "moon", who: [PHIL],
+                cast: { [PHIL]: { expr: "blank" } },
+                lines: [
+                    ["", "어느새 날은 어둡고… 하늘엔 보름달이 떠 있다."],
+                    [PHIL, "(보름달을 올려다보며) …보름달이로군.", { expr: "blank" }]] },
+            // 클로즈업 — Tom's eyes turn red, his nails grow long
+            { k: "scene", n: 7, place: "Denis의 장례식", sec: 8, bg: "funeral", close: true, who: [TOM],
+                cast: { [TOM]: { expr: "sad", pose: "both" } },
+                lines: [
+                    ["", "그 시각, 장례식장 안…"],
+                    ["", "…Tom의 눈동자가 붉게 변하고, 손톱이 길게 자라난다.", { sfx: "growl", flash: "red", set: { [TOM]: { expr: "redeye", wolf: "claws", pose: "both" } } }]] },
+            { k: "end", sec: 6, text: "The End", credits: true, music: "fullmoon" }
+        ]
+    };
+};
 export const scriptSeconds = m => (m.script || []).reduce((a, p) => a + (p.sec || 0), 0);
 
 // ---------------------------------------------------------------- the catalog: only movies the admin ordered (built-in + made in the admin generator)
@@ -705,7 +879,7 @@ export function allMovies() {
     return cache;
 }
 export const movieById = id => allMovies().find(m => m.id === id) || null;
-export const builtinMovies = () => [fortuneSwindlers(), helloBaby(), hurryKidMe(), emptyDen()];
+export const builtinMovies = () => [fortuneSwindlers(), helloBaby(), hurryKidMe(), emptyDen(), moonchild()];
 export const castOf = (m, role) => m.cast.find(c => c.role === role || c.short === role) || null;
 export const titleText = m => `${m.ko}${m.en ? ` (${m.en})` : ""}`;
 // does a movie fit a shop kind?

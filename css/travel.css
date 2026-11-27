@@ -421,3 +421,5 @@
 .sm-lcard.l-dessert { background: linear-gradient(160deg, #db2777, #3b0a24); }
 .sm-plane-svc .sm-lcard.l-spa { background: linear-gradient(160deg, #7c3aed, #1e0b3d); }
 .sm-plane-svc .sm-gatehead { background: linear-gradient(90deg, #0c4a6e, #1e1b4b); }
+/* 🎟️ elevator: 맵권 사용 가능 (2층 · 옥상 only) — a small tag */
+.sm-ev-pass { display: inline-block !important; margin-top: 2px; padding: 1px 6px; border-radius: 999px; font-size: 10px !important; font-weight: 800; opacity: 1 !important; color: #713f12; background: #fde68a; border: 1px solid #ca8a04; }

@@ -1,12 +1,14 @@
 // =====================================================================
-// ⬆️⬇️ Admin pages: floating "맨 위로 / 맨 아래로" buttons (web + mobile).
+// ⬆️⬇️ floating "맨 위로 / 맨 아래로" buttons (web + mobile).
 // They scroll whatever is on top: the open popup (player editor, item
-// manager …) if there is one, otherwise the page. Shown only on admin
-// pages (#/admin…) and only when there is something to scroll.
+// manager …) if there is one, otherwise the page. Shown on admin pages
+// (#/admin…) and the long website pages — 플레이어 · 슬롯도감 · 시즌 요약 ·
+// 연습실 — and only when there is something to scroll.
 // =====================================================================
 import { h } from "../core/util.js";
 
-const isAdmin = () => String(document.body.dataset.page || "").startsWith("admin");
+const FAB_PAGES = new Set(["players", "slotdex", "summary", "practice"]);
+const isAdmin = () => { const p = String(document.body.dataset.page || ""); return p.startsWith("admin") || FAB_PAGES.has(p); };
 // the scroll target: the last open modal (scrollable), else the window
 function target() {
     const boxes = [...document.querySelectorAll(".modal-back .modal")];

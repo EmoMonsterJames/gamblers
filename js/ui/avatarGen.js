@@ -379,6 +379,9 @@ export function holdProp(kind, [x, y]) {
     if (kind === "rose") return `<g transform="translate(${x} ${y})"><path d="M0 0L-4 18" stroke="#15803d" stroke-width="2.4"/><circle cx="0" cy="-4" r="6" fill="#e11d48" stroke="#881337" stroke-width="1.6"/></g>`;
     if (kind === "candle") return `<g transform="translate(${x} ${y})"><circle cx="0" cy="-30" r="16" fill="#fde68a" opacity=".35"/><path d="M-9 6H9" stroke="#78716c" stroke-width="4" stroke-linecap="round"/><rect x="-5" y="-16" width="10" height="22" rx="2" fill="#fafaf9" stroke="#57534e" stroke-width="1.8"/><path d="M0 -16V-20" stroke="#292524" stroke-width="1.6"/><path d="M0 -34Q6 -26 3 -21Q0 -18 -3 -21Q-6 -26 0 -34Z" fill="#fb923c" stroke="#c2410c" stroke-width="1.2"/><path d="M0 -29Q2 -24 0 -21Q-2 -24 0 -29Z" fill="#fef08a"/></g>`;
     if (kind === "mic") return `<g transform="translate(${x} ${y})"><rect x="-2.5" y="-4" width="5" height="16" rx="2" fill="#333"/><circle cx="0" cy="-8" r="6" fill="#bbb" stroke="#333" stroke-width="1.6"/></g>`;
+    // ✝️ a wooden crucifix held up · 📰 a folded newspaper
+    if (kind === "cross") return `<g transform="translate(${x} ${y - 8})"><circle cx="0" cy="-10" r="18" fill="#fef9c3" opacity=".35"/><path d="M-3 -28H3V-18H12V-12H3V12H-3V-12H-12V-18H-3Z" fill="#a16207" stroke="#422006" stroke-width="2" stroke-linejoin="round"/></g>`;
+    if (kind === "paper") return `<g transform="translate(${x} ${y}) rotate(-8)"><rect x="-15" y="-14" width="30" height="24" rx="1.5" fill="#f5f5f4" stroke="#44403c" stroke-width="2"/><path d="M-11 -9H11" stroke="#111" stroke-width="3"/><path d="M-11 -3H-1M-11 1H-1M-11 5H-1" stroke="#78716c" stroke-width="1.4"/><rect x="2" y="-4" width="9" height="10" fill="#a8a29e"/></g>`;
     return "";
 }
 // skY / hip: where a skirt starts on the body and the body's half width there · waist: share of the body height the bottoms cover

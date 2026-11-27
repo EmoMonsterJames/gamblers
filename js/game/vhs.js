@@ -8,7 +8,7 @@ import { Store } from "../core/store.js";
 import { S, log, name } from "./season.js";
 import { LOC_BY_ID, LOCATIONS } from "../data/catalog.js";
 import { belongsTo } from "./nation.js";
-import { SHOP_KINDS, SHOP_BY_ID, PRICE_BY_STAR, RATING_BY_ID, ageIndex, seeded, allMovies, fitsShop, titleText } from "../data/vhs.js";
+import { SHOP_KINDS, SHOP_BY_ID, RATING_BY_ID, ageIndex, seeded, allMovies, fitsShop, titleText, buyPriceOf, coverFeeOf, bodyCountOf } from "../data/vhs.js";
 
 const ps_ = pid => S()?.ps?.[pid];
 const round = () => S()?.round || 0;
@@ -21,6 +21,8 @@ export function viewerPay(m) {
     return Math.round((VIEWER_PAY[0] + s * (VIEWER_PAY[1] - VIEWER_PAY[0])) / 1000) * 1000;
 }
 export const ACTOR_PAY = { lead: [1000, 10000], support: [500, 5000], extra: [100, 500] };
+// 🔞 💋 💀 extra pay for what the role asked of the actor (added on top of the part's pay)
+export const ROLE_BONUS = { nude: 5000, sexy: 3000, body: 2000 };
 export const PART_KO = { lead: "주연", support: "조연", extra: "엑스트라" };
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
@@ -146,9 +148,23 @@ export function usePass(pid, m, where = "shop") {
 }
 
 // ---------------------------------------------------------------- 🛒 buy → VHS Collection
-export const priceOf = m => PRICE_BY_STAR[m.stars] || 5000;
+export const priceOf = m => buyPriceOf(m);
+export const coverFee = m => coverFeeOf(m);
 export const collection = pid => (Store.vhs?.own?.[pid] || []);
 export const owns = (pid, id) => collection(pid).some(x => x.id === id);
+// 📼 pulling a video's cover off the shelf costs a fee (once a visit per video · free for a video the player already owns)
+export const coverPaid = (pid, m) => owns(pid, m.id) || (visitOf(pid)?.pulled || []).includes(m.id);
+export function payCover(pid, m) {
+    const v = visitOf(pid), ps = ps_(pid), fee = coverFee(m);
+    if (!v || v.status !== "in") return { ok: false, why: "비디오 가게 안에서만 꺼낼 수 있습니다" };
+    if (coverPaid(pid, m)) return { ok: true, fee: 0 };
+    if ((ps.money || 0) < fee) return { ok: false, why: `골드가 부족합니다 (표지 꺼내기 ${fee.toLocaleString()}G)` };
+    ps.money -= fee;
+    (v.pulled ||= []).push(m.id);
+    log(`📼 ${name(pid)} 비디오 표지 꺼내기: ${titleText(m)} (${fee.toLocaleString()}G)`);
+    Store.saveSeason(true);
+    return { ok: true, fee };
+}
 export function buy(pid, m) {
     const v = visitOf(pid), ps = ps_(pid), price = priceOf(m);
     if (!v || v.status !== "in") return { ok: false, why: "비디오 가게 안에서만 살 수 있습니다" };
@@ -176,9 +192,14 @@ export function cinemaPay(pid, m) {
     ps.money += viewer;
     const roster = new Set((S()?.roster || []).map(Number));
     let toWallet = false;
+    const dead = new Set(bodyCountOf(m));
     const actors = m.cast.map(c => {
         const [a, b] = ACTOR_PAY[c.part] || ACTOR_PAY.extra;
-        const pay = Math.round(rint(a, b) / 100) * 100;
+        // 🔞 Nudity · 💋 Sexy · 💀 Body Count roles get extra pay
+        const bonus = { nude: c.nude ? ROLE_BONUS.nude : 0, sexy: c.sexy ? ROLE_BONUS.sexy : 0, body: dead.has(c) ? ROLE_BONUS.body : 0 };
+        const base = Math.round(rint(a, b) / 100) * 100;
+        const pay = base + bonus.nude + bonus.sexy + bonus.body;
+        c = { ...c, base, bonus };
         const aps = c.pid != null && roster.has(+c.pid) ? ps_(c.pid) : null;
         if (aps) { aps.money += pay; return { ...c, pay, here: true }; }
         // 👛 not in this season → kept in the player's wallet, added when they join a season

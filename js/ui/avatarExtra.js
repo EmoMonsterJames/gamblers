@@ -22,6 +22,9 @@ export const EXPRESSIONS = [
     "😐 시크한 무표정", "😈 음흉한 미소", "😅 당황한 표정 (식은땀)", "😆 신난 표정 (><)", "😳 부끄러운 표정",
     "😤 짜증난 표정", "🙄 어이없는 표정", "😨 겁먹은 표정", "😎 자신만만 썩소", "😵 어질어질"
 ];
+// 🎬 film-only eyes / mouth (exprParts 20 · 21)
+const RED_EYE = (x, s) => `<ellipse cx="${x}" cy="-2" rx="9" ry="8" fill="#ef4444" opacity=".35"/><path d="M${x - 7} ${-2 + s * 0}Q${x} -10 ${x + 7} -2Q${x} 5 ${x - 7} -2Z" fill="#fde047" stroke="#7f1d1d" stroke-width="1.6"/><ellipse cx="${x}" cy="-2" rx="4.4" ry="4.4" fill="#dc2626"/><ellipse cx="${x}" cy="-2" rx="1.2" ry="3.6" fill="#111"/>`;
+const FANGS = (my, ink) => `<path d="M-11 ${my - 3}Q0 ${my + 10} 11 ${my - 3}Q0 ${my + 1} -11 ${my - 3}Z" fill="#7f1d1d" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/><path d="M-7 ${my - 1.5}L-5 ${my + 5}L-3 ${my - 0.5}ZM7 ${my - 1.5}L5 ${my + 5}L3 ${my - 0.5}Z" fill="#fff" stroke="${ink}" stroke-width="1"/>`;
 // → { eyes: (x, s) => svg | null (null = the race's normal eye), brows: (x, s) => svg | null, mouth: svg | null, extra: svg }
 // ctx: { ink, dark, skin (lid colour), my (mouth y), female, eyeXs }
 export function exprParts(i, ctx) {
@@ -95,6 +98,9 @@ export function exprParts(i, ctx) {
         case 17: return { eyes: E.tiny, brows: brow(-21, -14), mouth: M.zigzag, extra: X.fear + X.sweat };
         case 18: return { eyes: null, brows: browOne(-1, brow(-21, -19, 2), brow(-13, -15)), mouth: M.smirk, extra: X.sparkle };
         case 19: return { eyes: E.spiral, brows: brow(-17, -15), mouth: M.wobble, extra: X.stars };
+        // 🎬 films only (not in the editor list): 🐺 beast — glowing red eyes, angry brows, fangs · 🔴 redeye — glowing red eyes, a still face
+        case 20: return { eyes: RED_EYE, brows: brow(-8, -20), mouth: FANGS(my, ink), extra: "" };
+        case 21: return { eyes: RED_EYE, brows: brow(-13, -16), mouth: M.flat, extra: "" };
     }
     return null;
 }

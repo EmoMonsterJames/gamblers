@@ -28,9 +28,11 @@ const ratingBand = m => { const r = rateOf(m); return h("div.vc-band", { style: 
 
 // ---------------------------------------------------------------- 🎞️ a still: a scene with full-body players
 //   s: { bg, props, cap, who: [{ r, expr, pose, hold }] } · o: { hgt (px), cap: show the caption }
-export function still(m, s, { hgt = 60, cap = false, cls = "" } = {}) {
+export function still(m, s, { hgt = 60, cap = false, cls = "", narrow = false } = {}) {
     const who = (s?.who || []).map(norm).map(w => ({ w, c: D.castOf(m, w.r) })).filter(x => x.c).slice(0, 4);
-    const size = Math.round(hgt * (who.length > 3 ? 0.62 : who.length > 2 ? 0.86 : 0.94));
+    // narrow: a thin still (the side column) — the figures shrink so everyone still fits across
+    const k = narrow ? (who.length > 2 ? 0.5 : who.length > 1 ? 0.72 : 1) : 1;
+    const size = Math.round(hgt * k * (who.length > 3 ? 0.62 : who.length > 2 ? 0.86 : 0.94));
     return h("div.vstill.bg-" + (s?.bg || "street") + (cls ? "." + cls : "") + (who.length > 3 ? ".n4" : ""), { style: { height: hgt + "px" } },
         (s?.props || []).length ? h("span.vstill-prop", s.props[0]) : null,
         s?.fx === "steam" ? h("div.vstill-steam", Array.from({ length: 5 }, (_, i) => h("i", { style: { "--x": (8 + i * 21) + "%" } }))) : null,
@@ -68,9 +70,10 @@ export function spine(m, { onclick = null, small = false } = {}) {
     const vKo = (t, fs, cls = "") => h("span.vs-v.vs-ko" + cls, { style: { fontSize: fs + "px" } }, SP.font === "cloud" && !cls ? cloudy(t) : t);
     const vEn = (t, fs, cls = "") => h("span.vs-v.vs-en-big" + cls, { style: { fontSize: fs + "px" } }, t);
     let title;
-    if (S.main === "en") {
+    // a movie can ask for its own spine: main "en" (the English title big) with sub "ko" (the Korean title small, sideways beside it)
+    if ((SP.main || S.main) === "en") {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
-        title = h("div.vs-title.t-en", vEn(m.en, enFs), S.sub === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
+        title = h("div.vs-title.t-en", vEn(m.en, enFs), subMode === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
     } else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
     const sub = subMode === "en" ? h("div.vs-sub.vs-en", m.en)
         : subMode === "row" ? h("div.vs-sub.vs-row", { style: { fontSize: fit(ems(m.ko), small ? 40 : 64, 5, 11) + "px" } }, m.ko) : null;
@@ -124,6 +127,8 @@ const FRONT = {
             h("div.va-row.front", L.slice(cut).map(s => F(m, s, 62))),
             h("i.va-crowd"));
     },
+    // 늑대인간의 밤: a dark night, a huge full moon — a red eye glares through it · a wolf's silhouette below
+    moon: () => { const a = h("i.va-moonart"); a.innerHTML = MOON_EYE; return h("div.vf-art.va-moon", a); },
     // 헛간: night, the barn's doors ajar on the dark · the leads in front, candles lit, trembling
     barn: (m, FR) => {
         const barn = h("i.va-barnhouse"); barn.innerHTML = BARN;
@@ -142,6 +147,23 @@ const BARN = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMax slice" xm
     `<path d="M78 94H104V160H78Z" fill="#52525b" stroke="#111" stroke-width="2.5" transform="skewY(-6) translate(0 9)"/><path d="M80 104L102 150M102 104L80 150" stroke="#27272a" stroke-width="3" transform="skewY(-6) translate(0 9)"/>` +
     `<path d="M140 94H152V160H140Z" fill="#52525b" stroke="#111" stroke-width="2.5"/>` +
     `<path d="M20 160L26 126M14 136H34M180 160L186 132M174 142H196" stroke="#18181b" stroke-width="3"/></svg>`;
+const MOON_EYE = `<svg viewBox="0 0 230 190" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">` +
+    `<defs><radialGradient id="mnG" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#fffbeb"/><stop offset=".7" stop-color="#fde68a"/><stop offset="1" stop-color="#d97706"/></radialGradient>` +
+    `<radialGradient id="mnH" cx="50%" cy="50%" r="50%"><stop offset=".55" stop-color="#fde68a" stop-opacity=".45"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient>` +
+    `<radialGradient id="eyG" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fca5a5"/><stop offset=".45" stop-color="#dc2626"/><stop offset="1" stop-color="#450a0a"/></radialGradient></defs>` +
+    `<rect width="230" height="190" fill="#05030f"/>` + [[18, 20], [60, 12], [200, 18], [34, 60], [214, 70], [150, 10], [96, 26], [180, 44]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#fff" opacity=".8"/>`).join("") +
+    `<circle cx="115" cy="78" r="86" fill="url(#mnH)"/><circle cx="115" cy="78" r="64" fill="url(#mnG)"/>` +
+    `<g fill="#d9770633"><circle cx="88" cy="60" r="9"/><circle cx="140" cy="104" r="12"/><circle cx="146" cy="52" r="6"/><circle cx="92" cy="110" r="5"/></g>` +
+    // the eye tearing through the moon
+    `<path d="M48 80Q115 26 182 80Q115 128 48 80Z" fill="#0a0000" stroke="#7f1d1d" stroke-width="3"/>` +
+    `<path d="M58 80Q115 40 172 80Q115 118 58 80Z" fill="#fef3c7"/><circle cx="115" cy="80" r="27" fill="url(#eyG)" stroke="#450a0a" stroke-width="2"/>` +
+    `<ellipse cx="115" cy="80" rx="5" ry="22" fill="#0a0000"/><circle cx="106" cy="70" r="4" fill="#fff" opacity=".85"/>` +
+    `<path d="M58 80Q115 40 172 80" fill="none" stroke="#450a0a" stroke-width="4"/>` +
+    `<g stroke="#7f1d1d" stroke-width="2" opacity=".8"><path d="M64 70L52 58M82 58L76 44M150 58L158 44M168 70L182 58"/></g>` +
+    // a wolf's silhouette on the rocks, howling
+    `<path d="M0 190V170Q40 160 70 166Q100 156 130 164Q170 154 230 166V190Z" fill="#000"/>` +
+    `<path d="M86 166L92 148Q86 140 90 130L84 124L90 122L98 128Q104 122 110 120L106 104L114 112L118 100L120 114Q130 118 134 130Q150 136 156 150L162 166L150 166L146 156L140 166L128 166L124 156L104 158L100 166Z" fill="#000"/>` +
+    `<path d="M106 104L102 92L112 100Z" fill="#000"/></svg>`;
 const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><path d="M10 55Q-6 40 6 30L34 44Q20 55 34 66L6 80Q-6 70 10 55Z" fill="#f97316"/><path d="M0 55Q14 46 30 50V60Q14 64 0 55Z" fill="#fde047"/>` +
     `<path d="M30 34H150Q204 34 216 55Q204 76 150 76H30Z" fill="#f8fafc" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
     `<path d="M150 34Q204 34 216 55Q204 76 150 76Q162 55 150 34Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
@@ -166,23 +188,27 @@ const BACK = {
     strip3: (m, L) => h("div.vb-stills.g-strip", L.map(s => still(m, s, { hgt: 66 }))),
     filmstrip: (m, L) => h("div.vb-film", L.map(s => still(m, s, { hgt: 62 }))),
     polaroid: (m, L) => h("div.vb-polas", L.map((s, i) => h("div.vb-pola" + (i ? ".r" : ""), still(m, s, { hgt: 70 }), h("small", s.cap || "")))),
+    // 3 stills stacked down the left side (the text runs down the right)
+    side3: (m, L) => h("div.vb-stills.g-side", L.map(s => still(m, s, { hgt: 76, narrow: true }))),
     text: () => null
 };
 export function back(m) {
     const b = brandOf(m), S = D.brandStyle(b.id), BK = m.cover?.back || {}, layout = BACK[BK.layout] ? BK.layout : S.back;
     const L = coverStills(m, D.STILL_N[layout] ?? 4);
     const date = String(m.date || "").replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, mo, d) => `${+y}년 ${+mo}월 ${+d}일`);
+    // BK.leads: only these roles are named as 주연 · BK.minimal: just 줄거리 · 주연 · 제작년월일 (+ the logo)
+    const L0 = BK.leads ? BK.leads.map(r => D.castOf(m, r)).filter(Boolean) : leads(m);
     return h("div.vhs-back.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": m.cover?.front?.bg || b.color, "--bc": b.color, "--bi": b.ink } },
         L.length ? BACK[layout](m, L) : null,
         h("div.vb-text",
             h("p.vb-plot", m.plot),
             h("dl.vb-info",
                 // short: names only (a big cast that plays themselves)
-                h("dt", "주연"), h("dd", castLine(leads(m), BK.short) || "-"),
-                sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m), BK.short))] : null,
-                h("dt", "제작"), h("dd", `${m.nation} · ${date}`),
-                h("dt", "장르"), h("dd", m.genres.join(" · ")),
-                h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`))),
+                h("dt", "주연"), h("dd", castLine(L0, BK.short) || "-"),
+                !BK.minimal && sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m), BK.short))] : null,
+                h("dt", BK.minimal ? "제작년월일" : "제작"), h("dd", BK.minimal ? date : `${m.nation} · ${date}`),
+                BK.minimal ? null : [h("dt", "장르"), h("dd", m.genres.join(" · ")),
+                    h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`)])),
         h("div.vb-foot", brandLogo(b, 26), h("b", b.name), ratingBand(m)));
 }
 // 뒷표지 | 중간표지 | 앞표지

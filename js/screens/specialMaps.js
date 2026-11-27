@@ -442,13 +442,15 @@ const FLOOR_GUIDE = {
 const floorShort = f => (LOC_BY_ID[f]?.name || "").replace("엘리베이터 ", "").replace(TR.floorLabel(f), "").replace(/[()]/g, "").trim();
 const floorNo = f => f === "elev_roof" ? "R" : String(LOC_BY_ID[f]?.floor || "?");
 const floorWho = f => TR.elevOccupants().filter(p => (ps_(p)?.elev?.floor || "elev_1") === f);
+// 🎟️ map passes work only on 2층 · 옥상 (game/season.js ELEV_PASS_FLOORS) — a small tag on those floors
+const passTag = f => G.ELEV_PASS_FLOORS.includes(f) ? h("small.sm-ev-pass", "🎟️ 맵권 사용 가능") : null;
 const npcNames = f => (LOC_BY_ID[f]?.npc === "always" ? LOC_BY_ID[f].npcList || [] : []).map(id => NPCS.find(n => n.id === id)).filter(Boolean);
 // 🛗 층별 안내: one tile per floor (corners · cautions · who is trapped there — click a picture for the profile)
 function floorGuide(pid, here) {
     return h("div.sm-ev-guide", [...TR.FLOORS].map(f => {
         const g = FLOOR_GUIDE[f] || { corners: [] }, npcs = npcNames(f), who = floorWho(f);
         return h("div.sm-ev-tile" + (f === here ? ".here" : "") + (g.exit ? ".exit" : "") + (LOC_BY_ID[f]?.flooded ? ".flood" : ""),
-            h("div.sm-ev-tile-h", h("b.sm-ev-no", floorNo(f)), h("div", h("b", TR.floorLabel(f)), h("small", floorShort(f) || " ")), h("span.sm-ev-scene", g.scene || "🛗")),
+            h("div.sm-ev-tile-h", h("b.sm-ev-no", floorNo(f)), h("div", h("b", TR.floorLabel(f)), h("small", floorShort(f) || " "), passTag(f)), h("span.sm-ev-scene", g.scene || "🛗")),
             g.corners.length ? h("ul.sm-ev-corners", g.corners.map(x => h("li", x))) : h("p.muted", "특별한 코너 없음"),
             (g.warn?.length || npcs.length) ? h("ul.sm-ev-warn", (g.warn || []).map(x => h("li", "⚠️ ", x)), npcs.length ? h("li", "👹 NPC 항상 출몰: ", npcs.map(n => `${n.emoji} ${n.name}`).join(" · ")) : null) : null,
             h("div.sm-ev-tile-who", who.length ? who.map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), picBtn(p, 30), h("small", p === pid ? "나" : nm(p)))) : h("small.muted", "갇힌 사람 없음")));
@@ -470,7 +472,7 @@ function panelView(c) {
     const passes = TR.FLOOR_PASSES.filter(f => ps.items[f.id] > 0);
     const lamps = Object.fromEntries(TR.FLOORS.map(f => [f, h("span.sm-ev-lamp" + (f === loc.id ? ".on" : "") + (f === "elev_7" ? ".exit" : ""), floorNo(f))]));
     const viewOf = f => h("div.sm-ev-view" + (LOC_BY_ID[f]?.flooded ? ".flood" : "") + (f === "elev_7" ? ".exit" : ""),
-        h("span.sm-ev-view-ico", FLOOR_GUIDE[f]?.scene || "🛗"), h("b", TR.floorLabel(f)), h("small", floorShort(f)),
+        h("span.sm-ev-view-ico", FLOOR_GUIDE[f]?.scene || "🛗"), h("b", TR.floorLabel(f)), h("small", floorShort(f)), passTag(f),
         h("div.sm-ev-view-who", floorWho(f).map(p => h("span.sm-fw" + (p === pid ? ".me" : ""), picBtn(p, 34)))));
     let view = viewOf(loc.id);
     const doors = h("div.sm-ev-doors", h("div.sm-ev-door.l"), h("div.sm-ev-door.r"));
