@@ -840,3 +840,192 @@
 .vb-art { min-height: 0; display: block; } .vb-art svg { width: 100%; height: 100%; display: block; }
 .vb-promo { margin: 0; text-align: center; font: 900 12px 'Noto Sans KR', sans-serif; color: #fecaca; text-shadow: 0 0 8px #dc2626, 1px 1px 0 #000; letter-spacing: .04em; }
 .vhs-back.l-art .vb-info { justify-content: center; }
+
+/* ================= 📷 picture covers (말하는 초콜릿 · 저주받은고성) ================= */
+/* cover.whole: the whole box is one picture — each side shows its part */
+.vhs-spine.photo { padding: 0; position: relative !important; background-color: #7f1d1d; }
+.vhs-front.photo, .vhs-back.photo { padding: 0; display: block; position: relative; overflow: hidden; }
+.vc-fix { position: absolute; display: block; pointer-events: none; font-style: normal; }
+.vc-fix svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.vhs-spine.photo .vs-patch { position: absolute; display: block; }
+/* 중간표지 glyphs: the title-art letters stacked down the spine · moonHand: the werewolf's hand against a full moon */
+.vs-title.t-glyphs { display: flex; flex-direction: column; align-items: center; gap: 0; flex: none; }
+.vs-glyph { display: block; flex: none; max-width: 66px; filter: drop-shadow(0 2px 2px #000c); -webkit-mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 82%, transparent 100%); mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 82%, transparent 100%); }
+.vs-moonhand { position: relative; width: 100%; flex: 1 1 auto; min-height: 66px; margin-top: auto; overflow: hidden; border-radius: 3px; background: radial-gradient(ellipse at 50% 30%, #1e3a8a, #020617 75%); }
+.vs-moon { position: absolute; left: 50%; top: 10%; width: 62%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fefce8, #e7e5e4 55%, #a8a29e); box-shadow: 0 0 16px #fef9c3aa; }
+.vs-hand { position: absolute; left: -4%; right: -4%; bottom: -6%; height: 84%; display: block;
+    -webkit-mask-image: radial-gradient(ellipse 70% 62% at 46% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 70% 62% at 46% 50%, #000 55%, transparent 100%); }
+/* 앞표지 "pic": the picture on top, the title letters under it, the rating band */
+.vhs-front.l-pic { grid-template-rows: 1fr auto auto; background: var(--fb); }
+.vf-pic { min-height: 0; }
+.vf-pic-title { width: 100%; margin-top: -14%; position: relative; -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%); mask-image: linear-gradient(180deg, transparent, #000 22%); }
+/* 뒷표지 "pic": the picture · the plot · 제작년월일 · the logo */
+.vhs-back.l-pic { grid-template-rows: auto 1fr auto auto; background: linear-gradient(180deg, #05060d, #0b1026); }
+.vb-pic { width: 100%; border-radius: 3px; box-shadow: 0 2px 6px #000a; }
+.vhs-back.l-pic .vb-plot { align-self: center; }
+
+/* ================= 🏰 저주받은고성 (Moonchild 4: Castle Freak): sets · title · TV · WIN cards · effects ================= */
+/* sets: TV 쇼 · 만남의 장소 · 버스 안 · 밤길 · 고성 앞 · 만찬장 · 고성 방 · 샤워실 · 고성 꼭대기 */
+.bg-tvshow { background:
+    radial-gradient(ellipse at 50% 0, #fde04755, transparent 55%) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #1e3a8a 0 8%, #312e81 8% 16%) 0 0 / 100% 70% no-repeat,
+    linear-gradient(180deg, transparent 0 70%, #facc15 70% 72%, #0f172a 72%); }
+.bg-busstop { background:
+    linear-gradient(90deg, transparent 0 8%, #475569 8% 9%, transparent 9%) 0 0 / 100% 76% no-repeat,
+    linear-gradient(180deg, #2563eb 0 6%, transparent 6%) 4% 22% / 12% 12% no-repeat,
+    linear-gradient(180deg, #7dd3fc 0 50%, #94a3b8 50% 76%, #475569 76%); }
+.bg-bus { background:
+    linear-gradient(90deg, transparent 0 6%, #bae6fd 6% 24%, transparent 24% 30%, #bae6fd 30% 48%, transparent 48% 54%, #bae6fd 54% 72%, transparent 72% 78%, #bae6fd 78% 96%, transparent 96%) 0 16% / 100% 30% no-repeat,
+    linear-gradient(180deg, #fbbf24 0 8%, #e5e7eb 8% 62%, #9ca3af 62% 64%, #4b5563 64%); }
+.bg-road { background: radial-gradient(circle at 80% 18%, #fef9c3 0 12px, transparent 14px), linear-gradient(180deg, #020617 0 50%, #111827 50%); }
+.bg-castleout { background:
+    radial-gradient(circle at 78% 16%, #fefce8 0 22px, #fde68a55 26px, transparent 60px),
+    linear-gradient(180deg, transparent 0 18%, #111827 18%) 34% 0 / 8% 70% no-repeat,
+    linear-gradient(180deg, transparent 0 12%, #111827 12%) 58% 0 / 9% 70% no-repeat,
+    linear-gradient(180deg, transparent 0 30%, #1f2937 30%) 40% 0 / 22% 70% no-repeat,
+    linear-gradient(180deg, #0b1026 0 70%, #1c1917 70%); }
+.bg-dining { background:
+    radial-gradient(ellipse at 50% 0, #fbbf2466, transparent 50%) 0 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, transparent 0 66%, #7c2d12 66% 70%, transparent 70%) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, #44403c 0 2px, #57534e 2px 60px) 0 0 / 100% 66% no-repeat,
+    linear-gradient(180deg, #57534e 0 66%, #7f1d1d 66%); }
+.bg-castleroom { background:
+    linear-gradient(0deg, #00000044 1px, transparent 1px) 0 0 / 46px 24px,
+    linear-gradient(90deg, #00000044 1px, transparent 1px) 0 0 / 46px 48px,
+    linear-gradient(180deg, #44403c 0 72%, #292524 72%); }
+.bg-bath { background:
+    linear-gradient(90deg, #ffffff22 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(180deg, #ffffff22 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(180deg, #57534e 0 76%, #3f3f46 76%); }
+.bg-castletop { background:
+    linear-gradient(90deg, #1c1917 0 10%, transparent 10% 20%, #1c1917 20% 30%, transparent 30% 40%, #1c1917 40% 50%, transparent 50% 60%, #1c1917 60% 70%, transparent 70% 80%, #1c1917 80% 90%, transparent 90%) 0 62% / 100% 8% no-repeat,
+    radial-gradient(circle at 22% 20%, #fefce8 0 20px, #fde68a44 24px, transparent 56px),
+    linear-gradient(180deg, #020617 0 66%, #292524 66%); }
+
+/* ⛈️ title "storm": a night sky · the moon rises behind the castle · lightning · the English title, then the Korean title art */
+.vp-title.s-storm { background: #000; overflow: hidden; }
+.vp-sky { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse at 50% 30%, #1e1b4b, #020617 70%); }
+.vp-moonrise { position: absolute; left: 50%; top: 30%; width: min(40vh, 300px); aspect-ratio: 1; border-radius: 50%; z-index: 0; translate: -50% -50%;
+    background: radial-gradient(circle at 38% 36%, #a8a29e33 0 9%, transparent 10%), radial-gradient(circle at 60% 62%, #a8a29e33 0 12%, transparent 13%), radial-gradient(circle at 42% 40%, #fefce8, #e7e5e4 62%, #a8a29e);
+    box-shadow: 0 0 60px 18px #fef9c355; animation: vpStormMoon 6s ease-out forwards; }
+@keyframes vpStormMoon { from { transform: translateY(70%) scale(.7); opacity: .1; } to { transform: none; opacity: 1; } }
+.vp-castle-sil { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1;
+    background:
+        linear-gradient(#000, #000) 30% 30% / 7% 70% no-repeat, linear-gradient(#000, #000) 63% 14% / 8% 86% no-repeat,
+        linear-gradient(#000, #000) 42% 44% / 20% 56% no-repeat,
+        radial-gradient(circle at 46% 58%, #fde047 0 3px, transparent 4px), radial-gradient(circle at 66% 40%, #fde047 0 3px, transparent 4px),
+        radial-gradient(ellipse 80% 40% at 50% 100%, #000 96%, transparent); }
+.vp-bolt { position: absolute; top: 0; z-index: 1; width: 40px; height: 46%; background: linear-gradient(180deg, #fff, #c7d2fe); filter: drop-shadow(0 0 6px #a5b4fc); opacity: 0;
+    clip-path: polygon(40% 0, 100% 0, 60% 40%, 100% 40%, 0 100%, 40% 52%, 0 52%); }
+.vp-bolt.a { left: 16%; animation: vpBolt 3.4s linear .5s infinite; } .vp-bolt.b { right: 18%; animation: vpBolt 3.9s linear 2.6s infinite; }
+@keyframes vpBolt { 0%, 6%, 100% { opacity: 0; } 1%, 4% { opacity: 1; } 2% { opacity: .2; } }
+.vp-lightning { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: #e0e7ff; opacity: 0; animation: vpLightning 3.4s linear .5s infinite; }
+@keyframes vpLightning { 0%, 7%, 100% { opacity: 0; } 1% { opacity: .7; } 2% { opacity: .1; } 3% { opacity: .5; } }
+.vp-title.s-storm .vp-en { position: relative; z-index: 2; color: #e5e7eb; font-family: 'Creepster', 'Lilita One', serif; letter-spacing: .06em; text-shadow: 0 0 14px #6366f1, 3px 3px 0 #000; animation: vpBurnIn 2s ease forwards; transition: opacity 1.6s, filter 1.6s; }
+.vp-title.s-storm.ko-in .vp-en { opacity: 0; filter: blur(6px); }
+.vp-title.s-storm .vp-ko { position: absolute; z-index: 2; left: 50%; top: 52%; translate: -50% -50%; transform: none; filter: blur(10px); transition: opacity 3.2s ease, filter 3.2s ease; }
+.vp-title.s-storm .vp-ko.show { opacity: 1; filter: none; transform: none; }
+.vp-ko.pic .vp-ko-pic { display: block; width: min(80vw, 620px); mix-blend-mode: lighten;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 84%, transparent); -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 84%, transparent); mask-composite: intersect; }
+
+/* 📺 the TV programme: a set frame · scanlines · the show's logo · LIVE · "tv-off": the picture collapses to a line */
+.vp-scene.tv::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; box-shadow: inset 0 0 0 10px #111, inset 0 0 60px #000c;
+    background: repeating-linear-gradient(180deg, #ffffff08 0 2px, transparent 2px 4px); }
+.vp-tv { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.vp-tv-logo { position: absolute; right: 3%; top: 4%; padding: 4px 10px; border-radius: 6px; background: linear-gradient(180deg, #fde047, #f59e0b); color: #7c2d12; font: 900 clamp(12px, 2vw, 20px) 'Lilita One', 'Black Han Sans', sans-serif; box-shadow: 0 3px 0 #92400e; }
+.vp-tv-live { position: absolute; right: 3%; top: calc(4% + clamp(30px, 4.6vw, 44px)); font: 900 clamp(10px, 1.5vw, 14px) sans-serif; font-style: normal; color: #fff; background: #dc2626; padding: 2px 6px; border-radius: 4px; animation: vpBlink 1s steps(2) infinite; }
+@keyframes vpBlink { 50% { opacity: .3; } }
+.vp-scene.tv-off { animation: vpTvOff .7s ease-in forwards; }
+@keyframes vpTvOff { 0% { transform: none; filter: brightness(1); } 60% { transform: scaleY(.01); filter: brightness(3); } 100% { transform: scale(0, .01); filter: brightness(4); } }
+
+/* 🏆 WIN: the contestant's profile card, stamped */
+.vp-win-wrap { position: absolute; left: 4%; top: 12%; z-index: 4; pointer-events: none; }
+.vp-win { position: relative; display: grid; justify-items: center; gap: 2px; width: clamp(110px, 17vw, 180px); padding: 8px 8px 10px; border-radius: 10px; background: linear-gradient(180deg, #fff, #fef3c7); box-shadow: 0 0 0 3px #f59e0b, 0 8px 18px #000a; animation: vpWinIn .45s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes vpWinIn { from { transform: scale(.2) rotate(-20deg); opacity: 0; } to { transform: rotate(-3deg); opacity: 1; } }
+.vp-win-pic { width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #e5e7eb; display: grid; place-items: center; font-size: 40px; }
+.vp-win-pic img { width: 100%; height: 100%; object-fit: cover; }
+.vp-win b { font: 900 clamp(14px, 2.2vw, 22px) 'Lilita One', sans-serif; color: #1e3a8a; }
+.vp-win small { font: 700 clamp(10px, 1.3vw, 13px) 'Noto Sans KR', sans-serif; color: #475569; }
+.vp-win-stamp { position: absolute; right: -14%; top: 30%; padding: 2px 10px; border: 4px solid #dc2626; border-radius: 8px; color: #dc2626; background: #fff9; font: 900 clamp(18px, 3vw, 32px) 'Lilita One', sans-serif; font-style: normal; transform: rotate(-18deg); animation: vpStamp .35s ease-in .25s both; }
+@keyframes vpStamp { from { transform: rotate(-18deg) scale(3); opacity: 0; } to { transform: rotate(-18deg) scale(1); opacity: 1; } }
+
+/* 🚌 the bus · driving off (from behind) · pulling up */
+.vp-fx.busfx, .vp-fx.busarrive, .vp-fx.busaway, .vp-fx.carfx, .vp-fx.storm, .vp-fx.gallery { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.vp-bus { position: absolute; right: 2%; bottom: 18%; width: 34%; aspect-ratio: 2.4; border-radius: 14px 18px 6px 6px;
+    background:
+        radial-gradient(circle, #111 0 46%, #9ca3af 50% 60%, #111 64%) 14% 100% / 20% 46% no-repeat, radial-gradient(circle, #111 0 46%, #9ca3af 50% 60%, #111 64%) 84% 100% / 20% 46% no-repeat,
+        linear-gradient(90deg, transparent 0 6%, #bae6fd 6% 26%, transparent 26% 30%, #bae6fd 30% 50%, transparent 50% 54%, #bae6fd 54% 74%, transparent 74% 80%, #bae6fd 80% 96%, transparent 96%) 0 18% / 100% 36% no-repeat,
+        linear-gradient(180deg, #facc15 0 70%, #ca8a04 70%); }
+.vp-fx.busarrive .vp-bus { left: 2%; right: auto; animation: vpBusIn 1.6s ease-out both; }
+@keyframes vpBusIn { from { transform: translateX(-120%); } to { transform: none; } }
+.vp-road { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: linear-gradient(90deg, transparent 49%, #fde047 49% 51%, transparent 51%) 0 0 / 100% 30px, linear-gradient(180deg, #1f2937, #374151);
+    clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); }
+.vp-busback { position: absolute; left: 50%; bottom: 6%; width: 30%; aspect-ratio: 1.2; translate: -50% 0; border-radius: 12px 12px 4px 4px; transform-origin: 50% 0;
+    background: linear-gradient(180deg, #ca8a04 0 10%, #1e293b 10% 46%, #facc15 46%); animation: vpBusAway 6s ease-in forwards; }
+.vp-busback b { position: absolute; bottom: 14%; width: 12%; aspect-ratio: 1; border-radius: 50%; background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+.vp-busback b:first-child { left: 8%; } .vp-busback b:last-child { right: 8%; }
+@keyframes vpBusAway { to { bottom: 50%; transform: scale(.08); } }
+/* 🏎️ the sports car rushes in */
+.vp-car { position: absolute; left: 4%; bottom: 14%; width: 28%; aspect-ratio: 3.2; border-radius: 40% 60% 8px 8px / 70% 90% 8px 8px; opacity: 0; transform: translateX(-140%);
+    background:
+        radial-gradient(circle, #111 0 44%, #d4d4d8 48% 58%, #111 62%) 14% 100% / 22% 62% no-repeat, radial-gradient(circle, #111 0 44%, #d4d4d8 48% 58%, #111 62%) 84% 100% / 22% 62% no-repeat,
+        linear-gradient(180deg, transparent 0 8%, #93c5fd 8% 34%, transparent 34%) 36% 0 / 34% 100% no-repeat,
+        linear-gradient(180deg, #ef4444, #991b1b); transition: transform 1.2s cubic-bezier(.2, .8, .3, 1), opacity .2s; }
+.vp-scene.car-in .vp-car { opacity: 1; transform: none; }
+/* ⛈️ lightning over a set */
+.vp-fx.storm .vp-lightning { z-index: 0; animation-duration: 4.2s; }
+/* 🕯️ torches on the castle walls */
+.vp-torch { position: absolute; top: 24%; width: 3%; aspect-ratio: .4; background: linear-gradient(180deg, transparent 0 40%, #78350f 40%); }
+.vp-torch::before { content: ""; position: absolute; left: -40%; right: -40%; top: 0; height: 46%; border-radius: 50% 50% 40% 40%; background: radial-gradient(circle at 50% 70%, #fef08a, #f97316 60%, transparent 70%); box-shadow: 0 0 30px 14px #f9731655; animation: vpTorch .3s ease-in-out infinite alternate; }
+.vp-torch.a { left: 8%; } .vp-torch.b { right: 8%; }
+@keyframes vpTorch { to { transform: scale(.88, 1.08); opacity: .85; } }
+
+/* 🚿 the shower curtain · a shadow on it (a man · a wolf) · thrown open · torn */
+.vp-fx.curtain { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.vp-curtain { position: absolute; right: 4%; top: 6%; bottom: 10%; width: 34%; border-top: 6px solid #a1a1aa; overflow: hidden; transform-origin: 100% 0;
+    background: repeating-linear-gradient(90deg, #f5f5f4ee 0 18px, #d6d3d1ee 18px 30px); transition: transform .5s ease; }
+.vp-cshadow { position: absolute; left: 20%; bottom: 0; width: 60%; height: 80%; opacity: 0; transition: opacity .6s; filter: blur(4px); }
+.vp-scene.sh-man .vp-cshadow { opacity: .75; background: radial-gradient(circle at 50% 14%, #000 0 14%, transparent 15%), radial-gradient(ellipse 34% 60% at 50% 70%, #000 96%, transparent); }
+.vp-scene.sh-wolf .vp-cshadow { opacity: .85; background:
+    radial-gradient(ellipse 10% 12% at 36% 4%, #000 96%, transparent), radial-gradient(ellipse 10% 12% at 64% 4%, #000 96%, transparent),
+    radial-gradient(ellipse 22% 14% at 50% 16%, #000 96%, transparent), radial-gradient(ellipse 14% 8% at 50% 24%, #000 96%, transparent),
+    radial-gradient(ellipse 44% 60% at 50% 72%, #000 96%, transparent); }
+.vp-scene.open .vp-curtain { transform: scaleX(.18); }
+.vp-scene.torn .vp-curtain { -webkit-mask-image: linear-gradient(115deg, #000 0 30%, transparent 30% 34%, #000 34% 44%, transparent 44% 48%, #000 48% 58%, transparent 58% 62%, #000 62%); mask-image: linear-gradient(115deg, #000 0 30%, transparent 30% 34%, #000 34% 44%, transparent 44% 48%, #000 48% 58%, transparent 58% 62%, #000 62%); transform: skewX(-6deg) scaleX(.7); }
+
+/* 🚪 the door gap: a red eye · claws grip the door */
+.vp-fx.doorpeek { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: #000; }
+.vp-door { position: absolute; top: 0; bottom: 0; width: 47%; background: repeating-linear-gradient(90deg, #451a03 0 26px, #3a1602 26px 30px); box-shadow: inset 0 0 40px #000; }
+.vp-door.l { left: 0; } .vp-door.r { right: 0; }
+.vp-gap { position: absolute; left: 47%; width: 6%; top: 0; bottom: 0; background: #000; }
+.vp-reye { position: absolute; left: 50%; top: 34%; width: 70%; aspect-ratio: 2; translate: -50% 0; border-radius: 50%; background: radial-gradient(ellipse 18% 46% at 50% 50%, #000 90%, transparent), radial-gradient(circle, #fecaca, #dc2626 50%, #7f1d1d 80%, transparent 82%); box-shadow: 0 0 22px 6px #dc2626aa; animation: vpEye 2.4s ease-in-out infinite; }
+.vp-reye + .vp-reye { display: none; }
+@keyframes vpEye { 0%, 86%, 100% { transform: scaleY(1); } 92% { transform: scaleY(.1); } }
+.vp-claws { position: absolute; left: -70%; top: 46%; width: 240%; height: 26%; opacity: 0; transform: translateX(30%); transition: opacity .3s, transform .5s;
+    background:
+        radial-gradient(ellipse 8% 40% at 20% 80%, #e7e5e4 90%, transparent), radial-gradient(ellipse 8% 40% at 40% 80%, #e7e5e4 90%, transparent), radial-gradient(ellipse 8% 40% at 60% 80%, #e7e5e4 90%, transparent),
+        radial-gradient(ellipse 40% 50% at 40% 30%, #57381f 96%, transparent); }
+.vp-scene.claws .vp-claws { opacity: 1; transform: none; }
+
+/* 🎥 through the camera: viewfinder corners · REC · battery · blood on the lens */
+.vp-fx.lens { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.vp-vf { position: absolute; inset: 6%; background:
+    linear-gradient(#fff, #fff) 0 0 / 8% 3px no-repeat, linear-gradient(#fff, #fff) 0 0 / 3px 12% no-repeat,
+    linear-gradient(#fff, #fff) 100% 0 / 8% 3px no-repeat, linear-gradient(#fff, #fff) 100% 0 / 3px 12% no-repeat,
+    linear-gradient(#fff, #fff) 0 100% / 8% 3px no-repeat, linear-gradient(#fff, #fff) 0 100% / 3px 12% no-repeat,
+    linear-gradient(#fff, #fff) 100% 100% / 8% 3px no-repeat, linear-gradient(#fff, #fff) 100% 100% / 3px 12% no-repeat,
+    radial-gradient(circle, transparent 0 10px, #fff8 11px 12px, transparent 13px) 50% 50% / 30px 30px no-repeat; }
+.vp-rec { position: absolute; left: 9%; top: 9%; color: #ef4444; font: 900 clamp(12px, 2vw, 18px) monospace; animation: vpBlink 1s steps(2) infinite; }
+.vp-batt { position: absolute; right: 9%; top: 9%; color: #fff; font: 700 clamp(10px, 1.6vw, 15px) monospace; }
+.vp-blood-lens { position: absolute; inset: 0; opacity: 0; transition: opacity .25s;
+    background: radial-gradient(circle at 30% 30%, #b91c1cdd 0 9%, transparent 16%), radial-gradient(circle at 62% 46%, #991b1bdd 0 13%, transparent 21%), radial-gradient(circle at 44% 72%, #dc2626cc 0 7%, transparent 13%),
+        linear-gradient(170deg, transparent 0 40%, #7f1d1d99 40% 43%, transparent 43%), radial-gradient(circle, transparent 50%, #450a0aaa); }
+.vp-scene.bloody .vp-blood-lens { opacity: 1; }
+
+/* pop: a cigarette's smoke · the treasure box (bloody) */
+.vp-pop.smoke { left: 62%; bottom: 58%; font-size: clamp(18px, 3vw, 30px); }
+.vp-pop.smoke::after { content: "💨"; position: absolute; left: 60%; bottom: 80%; font-size: .8em; animation: vpSmoke 2.4s ease-out infinite; }
+@keyframes vpSmoke { from { transform: none; opacity: .9; } to { transform: translate(40%, -160%) scale(1.6); opacity: 0; } }
+.vp-pop.box { left: 60%; bottom: 30%; font-size: clamp(26px, 4.6vw, 48px); filter: drop-shadow(0 0 10px #fde047); }
+.vp-pop.box.bloody { left: 80%; bottom: 2%; filter: sepia(1) saturate(4) hue-rotate(-40deg) brightness(.7) drop-shadow(0 0 6px #dc2626); }

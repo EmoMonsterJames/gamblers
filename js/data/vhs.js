@@ -335,6 +335,18 @@ const helloBaby = () => {
         tagline: "",
         music: "smooth",
         cover: {
+            // 📷 the admin's own cover picture (뒷표지 | 중간표지 | 앞표지) — the drawn cover below is kept only as a fallback
+            //   the ★ printed at the foot of the spine is painted over with a plain piece of the spine
+            whole: { src: "images/movies/hello_baby_cover.webp", back: [0, 0, 0.434, 1], spine: [0.434, 0, 0.577, 1], front: [0.577, 0, 1, 1],
+                patch: [{ at: [0.1, 0.918, 0.9, 0.968], from: [0.45, 0.755, 0.56, 0.79] }],
+                // 🩹 the printed mistakes: the label over the photo (gone) · 매력철철이모부 · 네미시스토끼
+                size: [1687, 932],
+                fix: [
+                    { at: [0.246, 0.023, 0.413, 0.079], from: [0.081, 0.023, 0.246, 0.079] },
+                    { at: [0.083, 0.49, 0.415, 0.528], from: [0.14, 0.664, 0.41, 0.7], text: "헬로토끼 (Vicky), 매력철철이모부 (Tim)", fs: 27, x: 4, tw: 473 },
+                    { at: [0.083, 0.536, 0.415, 0.574], from: [0.14, 0.71, 0.41, 0.746], text: "박세미 (Jane), 네미시스토끼 (Angela), 케인이", fs: 27, x: 4, tw: 547 },
+                    { at: [0.762, 0.038, 0.99, 0.088], from: [0.65, 0.038, 0.75, 0.088], text: "주연: 헬로토끼, 매력철철이모부", fs: 30, x: 10, tw: 363 }
+                ] },
             // 중간표지: logo · 구름 글씨 Korean title · the English title small — nothing else
             spine: { font: "cloud", still: false, band: false },
             // 앞표지: Vicky rides a big rocket into the campus, lovely · small in the campus: Tim (hearts in his eyes) · Jane (angry)
@@ -1380,6 +1392,365 @@ const moonchild3 = () => {
         ]
     };
 };
+// ---------------------------------------------------------------- ⭐ built-in movie: 저주받은고성 (Moonchild 4: Castle Freak · the admin's own idea · 拙作 ENT)
+//   music: audio/movies/moonchild4_theme.mp3 (the TV ad) · moonchild4_car.mp3 (Revi's sports car) · moonchild4_sexy.mp3 (Chi Chi's dance)
+//   covers: images/movies/moonchild4_front.webp (the werewolf · the castle · the title letters) · moonchild4_back.webp (the claw on her leg) — cut with CSS crops
+//   new here: title style "storm" (+ koPic) · scene tv / cls · line win (a WIN card) / add / drop (set looks) · sets tvshow / busstop / bus / road / castleout / dining / castleroom / bath / castletop
+//   · fx bus / busaway / busarrive / sportscar / storm / curtain / doorpeek / lens / gallery · sfx thunder / musicbox / engine / tvoff / horn · music "castle"
+const MC4_THEME = "audio/movies/moonchild4_theme.mp3", MC4_CAR = "audio/movies/moonchild4_car.mp3", MC4_SEXY = "audio/movies/moonchild4_sexy.mp3";
+const MC4_FRONT = "images/movies/moonchild4_front.webp", MC4_BACK = "images/movies/moonchild4_back.webp";
+const MC4_TITLE = [0.02, 0.625, 0.975, 0.985];
+// the six title letters (저 · 주 · 받 · 은 · 고 · 성) in the front picture
+const MC4_GLYPHS = [[0.035, 0.63, 0.168, 0.95], [0.152, 0.63, 0.368, 0.95], [0.354, 0.63, 0.522, 0.95], [0.505, 0.63, 0.652, 0.95], [0.638, 0.63, 0.806, 0.95], [0.792, 0.63, 0.962, 0.95]];
+const moonchild4 = () => {
+    const P = n => findPid(n);
+    const LINDA = "Linda", CAMDEN = "Camden", REVI = "Revi", CHICHI = "Chi Chi", JACOB = "Jacob", BONNIE = "Bonnie", CAM = "Cameraman",
+        BUTLER = "Butler", MANDEL = "Mandel", YOLANDA = "Yolanda", AMY = "Amy", BOSS = "Linda's Boss", DRIVER = "Bus Driver";
+    // the werewolf (nobody knows yet it's Revi: no name tag)
+    const WOLF = { wolf: "full", expr: "beast", pose: "both", anon: true };
+    const DEAD = { expr: "dizzy", act: "dead" };
+    return {
+        id: "m_moonchild4", builtin: true,
+        en: "Moonchild 4: Castle Freak", ko: "저주받은고성",
+        brand: "jolja", nation: "Emo World", date: "579-02-27", creator: "James", stock: { maps: 5, shops: 5 },
+        // 💀 Body Count (in the order they die)
+        bodyCount: [
+            { r: AMY, scene: "Scene 5 · 숲속", how: "혼자 숲길을 걷다 갑자기 나타난 늑대인간의 습격을 받고 사망." },
+            { r: YOLANDA, scene: "Scene 7 · 고성 2층", how: "샤워 중 커튼을 찢고 들어온 늑대인간에게 살해됨." },
+            { r: MANDEL, scene: "Scene 9 · 고성 4층", how: "오르골 상자를 들고 달아났다가 피투성이로 발견됨.", off: true },
+            { r: BONNIE, scene: "Scene 9 · 고성 4층", how: "Mandel의 시체를 보고 도망치려다 뒤에서 늑대인간에게 붙잡혀 사망." },
+            { r: CHICHI, scene: "Scene 11 · 고성 3층", how: "카메라 앞에서 춤을 추다 늑대인간에게 살해됨." },
+            { r: CAM, scene: "Scene 11 · 고성 3층", how: "정신을 차린 순간 늑대인간의 손톱에 할퀴어 사망." },
+            { r: BUTLER, scene: "Scene 12 · 고성 1층", how: "거대한 늑대 같은 괴물에게 공격당해 1층에서 죽은 채 발견됨.", off: true },
+            { r: JACOB, scene: "Scene 13 · 고성 5층", how: "늑대인간으로 변한 Revi에게 할퀴어 사망." },
+            { r: REVI, scene: "Scene 13 · 고성 5층", how: "Camden이 등에 꽂은 식칼에 찔려 최후를 맞이함." }
+        ],
+        genres: ["공포"], rating: "flower", stars: 7, quality: 1, lgbtq: false,
+        cast: [
+            { ko: "꽃방귀토끼", pid: P("꽃방귀토끼"), role: LINDA, part: "lead", nude: true },
+            { ko: "소동물이모부", pid: P("소동물이모부"), role: CAMDEN, part: "lead", sexy: true },
+            { ko: "여자투명인간", pid: P("여자투명인간"), role: "Revi, the MC", short: REVI, part: "lead" },
+            { ko: "아름드리토끼", pid: P("아름드리토끼"), role: CHICHI, part: "lead", nude: true },
+            { ko: "꽁지비", pid: P("꽁지비"), role: JACOB, part: "lead" },
+            { ko: "찌덩", pid: P("찌덩"), role: BONNIE, part: "lead" },
+            { ko: "나쁜스마일", pid: P("나쁜스마일"), role: CAM, part: "lead" },
+            { ko: "뚜벅뚜벅곰", pid: P("뚜벅뚜벅곰"), role: BUTLER, part: "support" },
+            { ko: "모스", pid: P("모스"), role: MANDEL, part: "support" },
+            { ko: "완전에로년덩이", pid: P("완전에로년덩이"), role: YOLANDA, part: "support", nude: true },
+            { ko: "지니고스트", pid: P("지니고스트"), role: AMY, part: "support" },
+            { ko: "마종비", pid: P("마종비"), role: BOSS, part: "support" },
+            { ko: "큰정사각형", pid: P("큰정사각형"), role: DRIVER, part: "support" }
+        ],
+        plot: "TV 리얼리티 쇼를 위해 비밀스러운 고성에 초대된 8명의 남녀들에게 무시무시한 일들이 벌어진다.",
+        music: "castle",
+        cover: {
+            // 중간표지: logo · the title letters (cut out of the front picture) stacked tall · under them the werewolf's hand against the full moon (no English title, no still)
+            spine: { glyphs: { src: MC4_FRONT, size: [1152, 864], boxes: MC4_GLYPHS }, moonHand: { src: MC4_BACK, box: [0.17, 0.27, 0.47, 0.71] }, bg: "linear-gradient(180deg, #05060d, #0b1026 60%, #1e1b4b)" },
+            // 앞표지: the admin's picture (the werewolf · the castle under the moon · the title letters) — no logo, no cast, no slogan
+            front: { pic: { src: MC4_FRONT, size: [1152, 864], art: [0.06, 0, 0.94, 0.7], title: MC4_TITLE }, bg: "#05060d" },
+            // 뒷표지: the admin's picture (the claw round her leg) · the plot · 제작년월일 · the logo
+            back: { pic: { src: MC4_BACK, size: [1536, 1024], box: [0.02, 0.02, 0.98, 0.98] } }
+        },
+        script: [
+            { k: "brand", sec: 3 },
+            // 제목: a night of thunder and lightning · the full moon rises · the English title, then (as it fades) the Korean title art slowly appears
+            { k: "title", sec: 14, style: "storm", koPic: { src: MC4_FRONT, box: MC4_TITLE, size: [1152, 864] }, koAt: 8200, koSfx: "thunder", music: "castle" },
+            // Scene 1 · TV 쇼 광고 — Revi, the new MC · the eight names (a WIN card each)
+            { k: "scene", n: 1, place: "TV 쇼 광고 · Treasure Hunt", music: MC4_THEME, sec: 44, bg: "tvshow", tv: "💎 Treasure Hunt", fx: "spot", who: [REVI],
+                cast: { [REVI]: { expr: "excited", hold: "mic", pose: "wave" } },
+                lines: [
+                    [REVI, "안녕하세요~! 'Treasure Hunt'의 신입 MC, Revi입니다!", { hold: "mic", pose: "wave", expr: "excited", sec: 4 }],
+                    [REVI, "이번 쇼의 기획은 바로 제가 맡았어요. 무대는… 무려 멋진 고성이랍니다!", { hold: "mic", pose: "both", sec: 4.5 }],
+                    [REVI, "자, 드디어! 지원자들 중에 합격한 대망의 참가자들을 발표합니다!", { hold: "mic", expr: "excited", sec: 4 }],
+                    [REVI, "첫 번째 참가자… Jacob!", { hold: "mic", pose: "point", win: JACOB, sfx: "clap", sec: 3.2 }],
+                    [REVI, "Chi Chi!", { hold: "mic", pose: "point", win: CHICHI, sfx: "clap", sec: 3 }],
+                    [REVI, "Mandel!", { hold: "mic", pose: "point", win: MANDEL, sfx: "clap", sec: 3 }],
+                    [REVI, "Amy!", { hold: "mic", pose: "point", win: AMY, sfx: "clap", sec: 3 }],
+                    [REVI, "Bonnie!", { hold: "mic", pose: "point", win: BONNIE, sfx: "clap", sec: 3 }],
+                    [REVI, "Camden!", { hold: "mic", pose: "point", win: CAMDEN, sfx: "clap", sec: 3 }],
+                    [REVI, "Yolanda!", { hold: "mic", pose: "point", win: YOLANDA, sfx: "clap", sec: 3 }],
+                    [REVI, "그리고… 마지막 참가자는……", { hold: "mic", expr: "smug", win: "", sec: 3 }],
+                    [REVI, "Linda!!!", { hold: "mic", pose: "both", expr: "excited", win: LINDA, sfx: "clap", flash: "white", sec: 3.8 }],
+                    ["", "치직— TV가 꺼진다.", { add: "tv-off", sfx: "tvoff", music: "stop", sec: 2.5 }]] },
+            // Scene 2 · 사무실 — Linda screams · the boss · all her leave
+            { k: "scene", n: 2, place: "사무실", music: "stop", sec: 24, bg: "office", who: [LINDA, BOSS], props: ["📺", "🗂️"],
+                cast: { [LINDA]: { expr: "shock" }, [BOSS]: { expr: "blank" } },
+                lines: [
+                    [LINDA, "꺄아아아아악!!!", { expr: "excited", act: "shake", sfx: "scream", pose: "both" }],
+                    [BOSS, "무, 무슨 일이야?! 깜짝 놀랐잖아!", { expr: "shock", pose: "shrug" }],
+                    [LINDA, "사장님! 'Treasure Hunt' 쇼 아시죠? 제가 거기 지원했는데… 합격했어요!! 저 가요!!", { expr: "excited", act: "hop", pose: "both", to: BOSS }],
+                    [BOSS, "쓸데없는 소리 말고, 빨리 돌아가서 일이나 해!", { expr: "angry", pose: "point", to: LINDA }],
+                    [LINDA, "남은 휴가 몽땅 신청할게요! 제발 승인해 주세요~ 네? 네?", { expr: "love", pose: "both", to: BOSS }],
+                    [BOSS, "(못마땅하게) …으휴.", { expr: "annoyed", pose: "hips" }]] },
+            // Scene 3 · 만남의 장소 — Camden smoking · the cameraman · live
+            { k: "scene", n: 3, place: "만남의 장소", sec: 22, bg: "busstop", fx: "bus", who: [CAMDEN, LINDA, CAM],
+                cast: { [CAMDEN]: { expr: "cool" }, [LINDA]: { expr: "happy" }, [CAM]: { expr: "happy" } },
+                lines: [
+                    ["", "만남의 장소에 Linda가 도착한다. 버스 옆에서 Camden이 담배를 피우고 있다.", { pop: { e: "🚬", at: CAMDEN, stay: true, cls: "smoke" } }],
+                    [CAMDEN, "안녕하세요~", { expr: "cool", pose: "wave", to: LINDA }],
+                    ["", "Linda도 눈웃음을 친다.", { set: { [LINDA]: { expr: "wink" } } }],
+                    ["", "버스에 오르려는 Linda를 Cameraman이 따라온다.", { set: { [CAM]: { act: "sneak" } } }],
+                    [LINDA, "잠깐, 지금 이 모든 게… 생방송으로 나가는 거예요?", { expr: "shock", to: CAM, set: { [CAM]: { act: "" } } }],
+                    [CAM, "네, 그렇습니다. 최대한 자연스럽게 행동해 주세요.", { expr: "happy", pose: "point" }]] },
+            // Scene 3 · 버스 안 — the VIP seat · Yolanda · Chi Chi late
+            { k: "scene", n: 3, place: "버스 안", sec: 50, bg: "bus", who: [DRIVER, AMY, MANDEL, JACOB, BONNIE, LINDA, CAMDEN, YOLANDA, CHICHI, CAM],
+                cast: { [DRIVER]: { expr: "happy" }, [AMY]: { expr: "blank" }, [MANDEL]: { expr: "blank" }, [JACOB]: { expr: "happy" }, [BONNIE]: { expr: "smug" }, [LINDA]: { expr: "happy" },
+                    [CAMDEN]: { expr: "cool" }, [YOLANDA]: { gone: true }, [CHICHI]: { gone: true }, [CAM]: { expr: "happy" } },
+                lines: [
+                    [DRIVER, "어서 오세요~ 아무 데나 앉으세요.", { expr: "happy", pose: "wave" }],
+                    ["", "버스 안에는 이미 Amy, Mandel, Jacob, Bonnie가 타 있다."],
+                    ["", "Linda가 Bonnie 옆에 앉으려는데—", { set: { [LINDA]: { act: "sneak" } } }],
+                    [BONNIE, "어머, 여긴 안 돼요. 저 같은 VIP를 위해 예약된 자리거든요.", { expr: "smug", pose: "hips", to: LINDA, set: { [LINDA]: { act: "" } } }],
+                    [LINDA, "…네? (어이없음)", { expr: "roll", pose: "shrug" }],
+                    [CAMDEN, "그럼 저랑 같이 앉을래요?", { expr: "cool", pose: "wave", to: LINDA }],
+                    [LINDA, "아… 미안해요. 괜찮아요.", { expr: "shy" }],
+                    ["", "이윽고, 화장을 고치며 호들갑스럽게 Yolanda가 올라탄다.", { set: { [YOLANDA]: { gone: false, expr: "excited", act: "hop" } } }],
+                    [YOLANDA, "이번 시즌 쇼맨스 주인공은 저예요..!", { expr: "wink", pose: "wave", to: CAMDEN, set: { [YOLANDA]: { act: "" } } }],
+                    ["", "마지막으로 Chi Chi가 헐레벌떡 뛰어 들어온다.", { set: { [CHICHI]: { gone: false, act: "run", expr: "sweat" } } }],
+                    [CHICHI, "늦어서 미안해요~!", { expr: "sweat", pose: "both", set: { [CHICHI]: { act: "" } } }],
+                    [DRIVER, "인원이 다 왔으니, 출발하겠습니다!", { expr: "happy", sfx: "horn" }],
+                    [BONNIE, "근데 MC는 같이 안 타요?", { expr: "blank", to: CAM }],
+                    [CAM, "MC님은 따로 도착하실 거예요.", { expr: "happy" }]] },
+            // Scene 3 · the bus drives off (from behind)
+            { k: "scene", n: 3, place: "고성으로 가는 길", sec: 6, bg: "road", fx: "busaway", who: [],
+                lines: [["", "버스가 고성을 향해 떠난다…", { sfx: "engine" }]] },
+            // Scene 4 · 고성 앞 — the castle · Bonnie moans · Chi Chi
+            { k: "scene", n: 4, place: "고성 앞", music: "mystery", sec: 17, bg: "castleout", fx: "busarrive", who: [LINDA, CAMDEN, BONNIE, CHICHI, JACOB, MANDEL, AMY, YOLANDA, CAM],
+                cast: { [LINDA]: { expr: "shock" }, [CAMDEN]: { expr: "blank" }, [BONNIE]: { expr: "annoyed" }, [CHICHI]: { expr: "happy" }, [JACOB]: { expr: "excited" }, [MANDEL]: { expr: "blank" }, [AMY]: { expr: "sweat" }, [YOLANDA]: { expr: "happy" }, [CAM]: { expr: "happy" } },
+                lines: [
+                    ["", "버스가 고성에 도착하고, 참가자들이 차례대로 내린다.", { sfx: "horn" }],
+                    [BONNIE, "으… 이 낡아빠진 성 좀 봐. 퀴퀴한 냄새가 날 것 같아.", { expr: "annoyed", pose: "hips" }],
+                    [CHICHI, "안녕! 난 Chi Chi야. 이번 시즌에 우리 같이 잘 협력해 보자!", { expr: "happy", pose: "wave", to: LINDA }],
+                    ["", "Linda는 멋쩍은 웃음을 짓는다.", { set: { [LINDA]: { expr: "sweat" } } }]] },
+            // Scene 4 · the sports car · Revi · the rules · Amy quits
+            { k: "scene", n: 4, place: "고성 앞", sec: 48, bg: "castleout", fx: "sportscar", who: [REVI, LINDA, CAMDEN, BONNIE, CHICHI, JACOB, MANDEL, AMY, YOLANDA, CAM],
+                cast: { [REVI]: { gone: true, expr: "cool", hold: "mic" }, [LINDA]: { expr: "blank" }, [CAMDEN]: { expr: "blank" }, [BONNIE]: { expr: "blank" }, [CHICHI]: { expr: "blank" }, [JACOB]: { expr: "blank" }, [MANDEL]: { expr: "blank" }, [AMY]: { expr: "blank" }, [YOLANDA]: { expr: "blank" }, [CAM]: { expr: "happy" } },
+                lines: [
+                    ["", "그때— 요란한 락음악과 함께 멋진 스포츠카가 도착한다!", { music: MC4_CAR, add: "car-in", sfx: "engine", set: { [JACOB]: { expr: "shock" }, [YOLANDA]: { expr: "love" }, [BONNIE]: { expr: "shock" } }, sec: 4.5 }],
+                    ["", "차에서 내리는 MC Revi.", { set: { [REVI]: { gone: false, act: "hop" } }, sec: 3.5 }],
+                    [REVI, "(음악을 끄며) 어때, 나 예쁘게 나와? 카메라 돌려!", { music: "stop", expr: "smug", pose: "point", to: CAM, set: { [REVI]: { act: "" } } }],
+                    [REVI, "여러분, 'Treasure Hunt'에 오신 걸 환영합니다! 8명이 다 모였으니, 고성에 들어가는 순간 바로 쇼가 시작돼요.", { hold: "mic", expr: "excited", pose: "wave" }],
+                    [REVI, "그리고 고성에 들어간 뒤 밖으로 나오면, 자진해서 상금을 포기한 걸로 간주합니다. 이의 없는 분 있나요?", { hold: "mic", expr: "cool" }],
+                    [AMY, "저… 사실 깜빡하고 놓고 온 약이 있어서요. 시내에 가서 사 왔다가 돌아와도 될까요?", { expr: "sweat", pose: "shrug", to: REVI }],
+                    [REVI, "그건 안 돼요. 지금 바로 그만두든지, 쇼를 하든지. 아프면 아픈 채로 있으시든가요~", { hold: "mic", expr: "smug", pose: "hips", to: AMY }],
+                    [AMY, "TV에서는 안 그렇게 봤는데… MC 성격 진짜 뭐 같네. 그냥 포기하고 돌아갈게요.", { expr: "annoyed", pose: "shrug" }],
+                    [REVI, "Whatever…", { expr: "roll", hold: "mic", set: { [AMY]: { gone: true } } }],
+                    [REVI, "방금 보셨죠? 한 명이 자진 포기했으니, 7명의 참가자들과 쇼를 진행하겠습니다! 모두 고성으로 들어오세요!", { hold: "mic", expr: "excited", pose: "both" }],
+                    [BONNIE, "One down, 6 more to go~♪", { expr: "evil", pose: "hips" }]] },
+            // Scene 5 · 숲속 — the bus driver drops Amy off
+            { k: "scene", n: 5, place: "숲속 · 보름달 뜬 밤", music: "fullmoon", sec: 13, bg: "woods", dark: true, fx: "moon", who: [DRIVER, AMY],
+                cast: { [DRIVER]: { expr: "happy" }, [AMY]: { expr: "sweat" } },
+                lines: [
+                    ["", "보름달이 뜬 으스스한 밤. 버스 드라이버가 Amy를 숲길 앞에 내려 준다.", { sfx: "howl" }],
+                    [DRIVER, "이 숲길을 따라 쭉 걸어가면, 시내로 향하는 표지판이 보일 거예요.", { expr: "happy", pose: "point" }],
+                    [DRIVER, "그럼 조심히 가세요~", { pose: "wave", sfx: "engine", set: { [DRIVER]: { gone: true } } }]] },
+            { k: "scene", n: 5, place: "숲속 · 보름달 뜬 밤", sec: 19, bg: "woods", dark: true, fx: "shadow", who: [AMY, REVI],
+                cast: { [AMY]: { expr: "scared", act: "shake" }, [REVI]: { ...WOLF, hid: true } },
+                lines: [
+                    ["", "혼자 남은 Amy가 덜덜 떨며 숲속을 걷는다…", { amb: ["wind", "crickets"] }],
+                    [AMY, "으… 추워. 무서워…", { expr: "scared", act: "shake" }],
+                    ["", "휙— 무언가가 스쳐 지나간다.", { sfx: "sting", set: { [AMY]: { expr: "shock", act: "" } } }],
+                    [AMY, "누, 누구야…?", { expr: "scared", act: "who" }],
+                    ["", "갑자기 나타난 늑대인간이 Amy를 덮친다!", { flash: "red", claw: true, sfx: "growl", music: "chase", set: { [REVI]: { hid: false, act: "jump" } } }],
+                    [AMY, "꺄아아아악!!!", { expr: "scared", sfx: "scream", light: "black", music: "stop", set: { [AMY]: DEAD, [REVI]: { act: "" } } }]] },
+            // Scene 6 · 고성 1층 — the dinner · the butler · the treasure
+            { k: "scene", n: 6, place: "고성 1층 · 만찬장", music: "mystery", sec: 40, bg: "dining", fx: "gallery", who: [REVI, BUTLER, LINDA, CAMDEN, CHICHI, BONNIE, JACOB, MANDEL, YOLANDA],
+                cast: { [REVI]: { expr: "happy", hold: "mic" }, [BUTLER]: { expr: "blank" }, [LINDA]: { expr: "happy" }, [CAMDEN]: { expr: "cool" }, [CHICHI]: { expr: "excited" }, [BONNIE]: { expr: "blank" }, [JACOB]: { expr: "happy" }, [MANDEL]: { expr: "blank" }, [YOLANDA]: { expr: "happy" } },
+                lines: [
+                    [REVI, "자, 식사를 마음껏 즐기세요!", { hold: "mic", pose: "both", expr: "excited" }],
+                    [REVI, "이쪽은 이 성의 집사님이에요. 집사님, 이분들께 음식을 계속 대접해 주세요.", { hold: "mic", pose: "point", to: BUTLER }],
+                    [BUTLER, "…알겠습니다.", { expr: "blank" }],
+                    [REVI, "지금부터 1층부터 5층까지, 이 고성 안 어딘가에 숨겨진 'Treasure' 박스를 찾으세요. 찾는 사람에게 상금 백만 골드!", { hold: "mic", expr: "excited", sfx: "clap" }],
+                    [BONNIE, "밥 먹는 시간도 아까워! 난 먼저 간다!", { expr: "angry", act: "stomp" }],
+                    ["", "Bonnie는 자리를 박차고 바로 2층으로 올라간다.", { set: { [BONNIE]: { gone: true, act: "run" } } }],
+                    [LINDA, "어… 어떡하지?", { expr: "sweat", pose: "shrug" }],
+                    [CAMDEN, "천천히 해도 돼요. 우선 먹고 가요.", { expr: "cool", to: LINDA }],
+                    [CHICHI, "나도 배고파~ 다들 먹고 해요!", { expr: "happy", pose: "both" }],
+                    [YOLANDA, "난 샤워가 필요해. 먼저 실례~", { expr: "smug", pose: "wave", set: { [YOLANDA]: { gone: true } } }],
+                    [JACOB, "게임은 이제 시작이라고!", { expr: "excited", pose: "point" }],
+                    ["", "Jacob과 Mandel도 자리를 뜬다.", { set: { [JACOB]: { gone: true }, [MANDEL]: { gone: true } } }]] },
+            { k: "scene", n: 6, place: "고성 1층 · 만찬장", sec: 22, bg: "dining", fx: "gallery", who: [REVI, BUTLER, LINDA, CAMDEN, CHICHI],
+                cast: { [REVI]: { expr: "blank" }, [BUTLER]: { expr: "blank" }, [LINDA]: { expr: "happy" }, [CAMDEN]: { expr: "cool" }, [CHICHI]: { expr: "happy" } },
+                lines: [
+                    [LINDA, "Camden은 왜 이 쇼에 지원했어요?", { expr: "happy", to: CAMDEN }],
+                    [CAMDEN, "예전부터 저희 가족이 이 고성과 연루되었다는 이야기를 들었거든요.", { expr: "blank" }],
+                    [CAMDEN, "마침 이 쇼의 촬영 장소가 이 고성이라길래, 지원했죠.", { expr: "cool", pose: "shrug" }],
+                    [CHICHI, "흥미롭네! 가족들이 이 고성에 살았던 거야?", { expr: "excited", to: CAMDEN }],
+                    [CAMDEN, "자세한 건… 저도 몰라요.", { expr: "blank", set: { [REVI]: { expr: "evil" } } }]] },
+            // Scene 7 · 고성 2층 — Yolanda undresses · the shower
+            { k: "scene", n: 7, place: "고성 2층 · 샤워실", music: "stop", sec: 14, bg: "bath", who: [YOLANDA],
+                cast: { [YOLANDA]: { expr: "sleepy" } },
+                lines: [
+                    ["", "피곤함을 달래며, Yolanda가 옷을 위에서부터 하나씩 천천히 벗는다…", { set: { [YOLANDA]: { act: "wiggle" } } }],
+                    ["", "비키니가 드러나고…", { set: { [YOLANDA]: { outfit: "bikini", expr: "smug" } } }],
+                    ["", "…이윽고 상반신이 차례로 드러난다.", { set: { [YOLANDA]: { nude: true, act: "", expr: "happy" } } }]] },
+            { k: "scene", n: 7, place: "고성 2층 · 샤워실", sec: 26, bg: "bath", fx: "curtain", who: [YOLANDA, JACOB], nude: [YOLANDA],
+                cast: { [YOLANDA]: { expr: "happy" }, [JACOB]: { gone: true, expr: "shock" } },
+                lines: [
+                    ["", "샤워실에서 몸을 적시며 흥얼흥얼 몸을 헹구는 Yolanda.", { amb: ["water"] }],
+                    [YOLANDA, "♪ 음~ 흠흠~ 라라라~", { expr: "happy", act: "wiggle" }],
+                    ["", "샤워 커튼 너머로… 누군가 지켜보는 그림자가 비친다.", { add: "sh-man", sfx: "sting", set: { [YOLANDA]: { expr: "blank" } } }],
+                    [YOLANDA, "…누구야?!", { expr: "shock" }],
+                    ["", "Yolanda가 커튼을 확 젖히자— 놀란 Jacob이 고꾸라진다!", { add: "open", drop: "sh-man", set: { [JACOB]: { gone: false, act: "fall" } } }],
+                    [YOLANDA, "꺄악! 이 변태야!! 당장 나가!!", { expr: "angry", pose: "point", act: "stomp", to: JACOB }],
+                    ["", "Yolanda가 Jacob을 내쫓는다.", { drop: "open", set: { [JACOB]: { gone: true, act: "run" } } }]] },
+            // 클로즈업 — a red eye and claws in the door gap
+            { k: "scene", n: 7, place: "고성 2층 · 샤워실 문틈", sec: 9, bg: "castleroom", dark: true, close: true, fx: "doorpeek", who: [],
+                lines: [
+                    ["", "문틈 사이로… 붉은 눈이 번뜩인다.", { sfx: "growl" }],
+                    ["", "날카로운 손톱과 털북숭이 손가락이 문을 붙잡는다.", { add: "claws", sfx: "sting" }]] },
+            { k: "scene", n: 7, place: "고성 2층 · 샤워실", sec: 22, bg: "bath", fx: "curtain", who: [YOLANDA, REVI], nude: [YOLANDA],
+                cast: { [YOLANDA]: { expr: "happy" }, [REVI]: { ...WOLF, gone: true } },
+                lines: [
+                    ["", "그것도 모르고, Yolanda는 여전히 샤워를 계속한다.", { amb: ["water"], set: { [YOLANDA]: { act: "wiggle" } } }],
+                    ["", "다시, 커튼에 그림자가 비친다… 늑대의 그림자.", { add: "sh-wolf", sfx: "growl", set: { [YOLANDA]: { act: "" } } }],
+                    [YOLANDA, "Jacob! 장난치지 말고 제발 꺼져! MC한테 다 말할 거야!", { expr: "annoyed", pose: "point" }],
+                    ["", "찌이익— 날카로운 손톱이 커튼을 찢는다!", { add: "torn", drop: "sh-wolf", claw: true, sfx: "slash", set: { [REVI]: { gone: false, act: "jump" }, [YOLANDA]: { expr: "scared" } } }],
+                    ["", "늑대인간이 샤워 중인 Yolanda를 덮친다!", { flash: "red", sfx: "growl", music: "chase" }],
+                    [YOLANDA, "꺄아아아아악!!!", { expr: "scared", sfx: "scream", light: "black", music: "stop", set: { [YOLANDA]: DEAD, [REVI]: { act: "" } } }]] },
+            // Scene 8 · 고성 1층 — the scream nobody minds · Revi's champagne · Jacob turned down
+            { k: "scene", n: 8, place: "고성 1층 · 만찬장", music: "mystery", sec: 36, bg: "dining", fx: "gallery", who: [REVI, BUTLER, CHICHI, CAMDEN, LINDA, CAM, JACOB],
+                cast: { [REVI]: { expr: "happy" }, [BUTLER]: { expr: "blank" }, [CHICHI]: { expr: "blank" }, [CAMDEN]: { expr: "cool" }, [LINDA]: { expr: "happy" }, [CAM]: { expr: "happy" }, [JACOB]: { gone: true } },
+                lines: [
+                    [CHICHI, "방금… 무슨 비명 소리 같은 거 안 들렸어?", { expr: "sweat", act: "who" }],
+                    [CAMDEN, "누가 뭘 찾은 거 아닐까요? 이제 식사는 그만하고, 우리 셋이 같이 보물상자를 찾으러 가요.", { expr: "cool", pose: "both" }],
+                    [LINDA, "저도 배불러요. 갈 준비 됐어요!", { expr: "excited", pose: "wave" }],
+                    [CAMDEN, "3층으로 가 보죠.", { pose: "point", set: { [CAMDEN]: { gone: true }, [LINDA]: { gone: true }, [CHICHI]: { gone: true } } }],
+                    [REVI, "카메라맨, 빨리 윗층으로 올라가서 아무나 촬영해 줘요.", { expr: "cool", pose: "point", to: CAM }],
+                    [REVI, "집사님, 샴페인 한 잔만 더 가져다주세요~", { expr: "happy", pose: "wave", to: BUTLER, set: { [CAM]: { gone: true }, [BUTLER]: { act: "sneak" } } }],
+                    ["", "마침 2층에서 Jacob이 내려온다.", { set: { [JACOB]: { gone: false, expr: "sweat" }, [BUTLER]: { act: "" } } }],
+                    [JACOB, "별 소득이 없네… 어? MC님, 술 드시고 계셨어요? 저도 조인해도 될까요?", { expr: "love", to: REVI }],
+                    [REVI, "미안. 난 그렇게 쉽게 유혹당하는 스타일이 아니라서.", { expr: "smug", pose: "hips", to: JACOB }]] },
+            // Scene 9 · 고성 4층 — Bonnie alone · the music box · Mandel's treasure
+            { k: "scene", n: 9, place: "고성 4층", music: "musicbox", sec: 13, bg: "castleroom", fx: "gallery", who: [BONNIE],
+                cast: { [BONNIE]: { expr: "annoyed" } },
+                lines: [
+                    [BONNIE, "대체 보물상자는 어디 있는 거야? 짜증 나 죽겠네…", { expr: "annoyed", act: "stomp" }],
+                    ["", "그때, 어디선가 오르골 소리가 들린다…", { sfx: "musicbox", set: { [BONNIE]: { act: "", expr: "blank" } } }],
+                    ["", "소리를 따라 방에 들어가자—", { set: { [BONNIE]: { act: "sneak" } } }]] },
+            { k: "scene", n: 9, place: "고성 4층 · 오르골 방", sec: 22, bg: "castleroom", fx: "gallery", who: [MANDEL, BONNIE],
+                cast: { [MANDEL]: { expr: "excited" }, [BONNIE]: { expr: "shock" } },
+                lines: [
+                    [MANDEL, "이… 이게 그 상자 같아! 믿을 수가 없어!", { expr: "excited", pose: "both", pop: { e: "🎁", at: MANDEL, stay: true, cls: "box" } }],
+                    ["", "Bonnie가 재빨리 오르골 상자를 빼앗으려 한다!", { set: { [BONNIE]: { act: "push", expr: "angry" } } }],
+                    [MANDEL, "이 망할 년!", { expr: "angry", act: "push", to: BONNIE }],
+                    ["", "Mandel은 상자를 꽉 잡고 그녀를 밀친 뒤 뛰쳐나간다.", { set: { [MANDEL]: { gone: true, act: "run" }, [BONNIE]: { act: "fall", expr: "dizzy" } } }],
+                    [BONNIE, "너 같은 찌질이한테 우승 상금을 줄 순 없어!", { expr: "angry", pose: "point", act: "run", set: { [BONNIE]: { act: "" } } }]] },
+            { k: "scene", n: 9, place: "고성 4층", music: "stop", sec: 17, bg: "castleroom", dark: true, fx: "gallery", who: [BONNIE],
+                cast: { [BONNIE]: { expr: "sweat", act: "sneak" } },
+                lines: [
+                    [BONNIE, "Mandel~? 어디 있어~?", { expr: "sweat", act: "who" }],
+                    [BONNIE, "우리 둘이서… 뭔가 화끈하고 재밌는 거 하지 않을래~?", { expr: "wink", pose: "hips" }],
+                    ["", "다시 오르골 소리가 들린다.", { sfx: "musicbox" }],
+                    ["", "기쁨에 들뜬 Bonnie가 소리 나는 쪽으로 다가가는데—", { set: { [BONNIE]: { expr: "excited", act: "sneak" } } }]] },
+            { k: "scene", n: 9, place: "고성 4층", sec: 18, bg: "castleroom", dark: true, fx: "gallery", who: [MANDEL, BONNIE, REVI],
+                cast: { [MANDEL]: DEAD, [BONNIE]: { expr: "excited" }, [REVI]: { ...WOLF, gone: true } },
+                lines: [
+                    ["", "피 묻은 오르골 상자… 그리고 그 옆에 죽은 채 쓰러져 있는 Mandel!", { flash: "red", sfx: ["sting", "musicbox"], pop: { e: "🎁", at: MANDEL, stay: true, cls: "box bloody" }, set: { [BONNIE]: { expr: "shock" } } }],
+                    [BONNIE, "히익…!!", { expr: "scared", act: "shake" }],
+                    ["", "도망치려는 Bonnie를— 뒤에서 늑대인간이 붙잡는다!", { claw: true, sfx: "growl", music: "chase", set: { [REVI]: { gone: false, act: "jump" }, [BONNIE]: { act: "run" } } }],
+                    [BONNIE, "놔! 놔!! 꺄아아악!!!", { expr: "scared", sfx: "scream", flash: "red", light: "black", music: "stop", set: { [BONNIE]: DEAD, [REVI]: { act: "" } } }]] },
+            // Scene 10 · 고성 3층 — Chi Chi leaves them alone · the confession · the kiss
+            { k: "scene", n: 10, place: "고성 3층", music: "romance", sec: 24, bg: "castleroom", fx: "candle", who: [CAMDEN, LINDA, CHICHI],
+                cast: { [CAMDEN]: { expr: "cool" }, [LINDA]: { expr: "happy" }, [CHICHI]: { expr: "smug" } },
+                lines: [
+                    ["", "3층. Camden과 Linda, Chi Chi가 어느 방에 들어선다."],
+                    [CHICHI, "어머~ 핑크빛 기운이 느껴지는데? 난 따로 찾아볼게~", { expr: "wink", pose: "wave", set: { [CHICHI]: { gone: true } } }],
+                    [CAMDEN, "Linda… 사실, 처음 보자마자 반했어요.", { expr: "love", to: LINDA }],
+                    [LINDA, "네…? 가, 갑자기 그게 무슨…", { expr: "shy", pose: "shrug" }],
+                    ["", "Camden이 Linda에게 입을 맞춘다.", { pop: { e: "💗", at: LINDA }, set: { [CAMDEN]: { act: "kiss", expr: "love" }, [LINDA]: { act: "kiss", expr: "love" } } }],
+                    [LINDA, "…우리, 같이 잘 해봐요.", { expr: "love", set: { [CAMDEN]: { act: "" }, [LINDA]: { act: "" } } }]] },
+            // Scene 11 · 고성 3층 — the cameraman's offer · the dance through the lens · the blood on the lens
+            { k: "scene", n: 11, place: "고성 3층 · 다른 방", music: "stop", sec: 26, bg: "castleroom", fx: "gallery", who: [CHICHI, CAM],
+                cast: { [CHICHI]: { expr: "blank" }, [CAM]: { expr: "smug" } },
+                lines: [
+                    ["", "보물상자를 찾던 Chi Chi가 우연히 카메라맨과 마주친다."],
+                    [CAM, "Chi Chi 씨, 제가 당신을 스타로 만들어 드릴게요.", { expr: "smug", pose: "point", to: CHICHI }],
+                    [CAM, "사실 돈을 찾는 것보다 더 중요한 건, 지금 당신이 TV에 나오고 있다는 거예요. 인기를 얻을 기회라고요!", { expr: "excited", pose: "both" }],
+                    [CHICHI, "어떻게 하면 인기를 얻을 수 있는데요?", { expr: "blank", to: CAM }],
+                    [CAM, "알잖아요~ 요즘은 섹시 댄스가 먹힌다니까요.", { expr: "evil", pose: "shrug" }],
+                    [CHICHI, "으음… 별로 내키진 않는데…", { expr: "sweat" }]] },
+            { k: "scene", n: 11, place: "카메라 렌즈 속", music: MC4_SEXY, sec: 30, bg: "castleroom", fx: "lens", who: [CHICHI],
+                cast: { [CHICHI]: { expr: "shy", act: "wiggle" } },
+                lines: [
+                    ["", "섹시한 음악이 흐르고… Chi Chi가 천천히 리듬을 타며 춤을 춘다.", { set: { [CHICHI]: { act: "dance", expr: "wink" } } }],
+                    ["", "상의를 벗어 던지는 Chi Chi.", { set: { [CHICHI]: { nude: true, act: "dance", expr: "love" } } }],
+                    [CAM, "(헉헉) 좋아요, 아주 좋아…!", { sfx: "laugh" }],
+                    ["", "렌즈 속에서, 상반신을 드러낸 채 춤을 추는 Chi Chi…", { set: { [CHICHI]: { act: "dance", expr: "smug" } } }],
+                    [CHICHI, "꺄아아아아악!!!", { expr: "scared", music: "stop", sfx: ["scream", "slash"], flash: "red", claw: true, add: "bloody", set: { [CHICHI]: { act: "fall" } } }],
+                    ["", "렌즈가 피로 물든다…", { sfx: "growl" }]] },
+            { k: "scene", n: 11, place: "고성 3층 · 다른 방", sec: 13, bg: "castleroom", dark: true, fx: "gallery", who: [CHICHI, CAM, REVI], nude: [CHICHI],
+                cast: { [CHICHI]: DEAD, [CAM]: { expr: "dizzy" }, [REVI]: { ...WOLF } },
+                lines: [
+                    ["", "정신을 차린 카메라맨… Chi Chi는 이미 죽어 있다.", { set: { [CAM]: { expr: "shock" } } }],
+                    [CAM, "히, 히이익…!", { expr: "scared", act: "shake" }],
+                    ["", "늑대인간이 카메라맨마저 할퀴어 죽여 버린다!", { flash: "red", claw: true, sfx: ["growl", "scream"], light: "black", set: { [CAM]: DEAD, [REVI]: { act: "jump" } } }]] },
+            // Scene 12 · 고성 3층 → 1층 — the lovers stop · the bodies · the butler · Jacob hiding
+            { k: "scene", n: 12, place: "고성 3층", sec: 14, bg: "castleroom", fx: "candle", who: [LINDA, CAMDEN], nude: [LINDA],
+                cast: { [LINDA]: { expr: "love" }, [CAMDEN]: { expr: "love" } },
+                lines: [
+                    ["", "비명 소리에 놀란 Linda와 Camden이 사랑을 나누다 멈춘다.", { sfx: "sting", set: { [LINDA]: { expr: "shock" }, [CAMDEN]: { expr: "shock" } } }],
+                    [LINDA, "방금 무슨 소리지…? 나가 봐야겠어요.", { expr: "sweat" }],
+                    ["", "Linda가 옷을 다시 주워 입고, Camden도 뒤따라 나온다.", { set: { [LINDA]: { nude: false, outfit: "clothes", expr: "scared" } } }]] },
+            { k: "scene", n: 12, place: "고성 3층 · 다른 방", sec: 10, bg: "castleroom", dark: true, fx: "gallery", who: [LINDA, CAMDEN, CHICHI, CAM], nude: [CHICHI],
+                cast: { [LINDA]: { expr: "blank" }, [CAMDEN]: { expr: "blank" }, [CHICHI]: DEAD, [CAM]: DEAD },
+                lines: [
+                    ["", "다른 방을 둘러보던 두 사람… 쓰러져 있는 Chi Chi와 카메라맨!", { flash: "red", sfx: "sting", set: { [LINDA]: { expr: "shock" }, [CAMDEN]: { expr: "shock" } } }],
+                    [LINDA, "꺄아악!!", { expr: "scared", sfx: "scream", act: "shake" }],
+                    [CAMDEN, "빨리 내려가요!", { expr: "scared", set: { [LINDA]: { gone: true, act: "run" }, [CAMDEN]: { gone: true, act: "run" } } }]] },
+            { k: "scene", n: 12, place: "고성 1층 · 만찬장", music: "heartbeat", sec: 32, bg: "dining", dark: true, fx: "gallery", who: [LINDA, CAMDEN, BUTLER, JACOB],
+                cast: { [LINDA]: { expr: "scared" }, [CAMDEN]: { expr: "sweat" }, [BUTLER]: DEAD, [JACOB]: { hid: true, expr: "scared" } },
+                lines: [
+                    ["", "1층으로 내려온 두 사람은… 죽어 쓰러져 있는 집사를 발견한다.", { sfx: "sting" }],
+                    [LINDA, "지, 집사님…!", { expr: "scared", act: "shake" }],
+                    ["", "그때, 숨어 있던 Jacob이 벌벌 떨며 나타난다.", { set: { [JACOB]: { hid: false, act: "shake" }, [LINDA]: { act: "" } } }],
+                    [JACOB, "거, 거대한 늑대 같은 괴물이… 집사를 공격하는 걸 봤어…!", { expr: "scared", act: "shake", pose: "both" }],
+                    [CAMDEN, "다른 사람들은요? MC는 어디 있죠?", { expr: "angry", to: JACOB }],
+                    [JACOB, "모, 몰라… MC는 제일 꼭대기로 올라갔어.", { expr: "sweat", pose: "point" }],
+                    [JACOB, "나도 같이 갈래! 혹시 모르니까… 식칼이라도 챙겨야겠어.", { expr: "sweat", hold: "knife", set: { [JACOB]: { hold: "knife", act: "" } } }]] },
+            // Scene 13 · 고성 5층 — Revi turns · Jacob · the knife · "we were family" · the red eyes
+            { k: "scene", n: 13, place: "고성 꼭대기 · 5층", music: "stop", sec: 24, bg: "castletop", dark: true, fx: "storm", who: [LINDA, CAMDEN, JACOB, REVI],
+                cast: { [LINDA]: { expr: "scared" }, [CAMDEN]: { expr: "angry" }, [JACOB]: { expr: "scared", hold: "knife" }, [REVI]: { gone: true, expr: "evil" } },
+                lines: [
+                    [CAMDEN, "Bonnie! Mandel! Revi!!", { expr: "angry", pose: "both" }],
+                    [LINDA, "아무도… 없어요…?", { expr: "scared", act: "who" }],
+                    ["", "그때— 늑대로 변해 가는 Revi가 모습을 드러낸다!", { sfx: ["thunder", "howl"], flash: "white", set: { [REVI]: { gone: false, act: "wolfing", expr: "beast", wolf: "half", pose: "both" } } }],
+                    [LINDA, "꺄아악!! MC가…!!", { expr: "scared", sfx: "scream", act: "shake" }],
+                    ["", "늑대인간이 된 Revi가 먼저 Jacob을 할퀴어 죽여 버린다!", { flash: "red", claw: true, sfx: "growl", set: { [REVI]: { wolf: "full", act: "jump", expr: "beast" }, [JACOB]: { ...DEAD, hold: "" } } }]] },
+            // 클로즈업 — the knife on the floor · Camden picks it up
+            { k: "scene", n: 13, place: "고성 꼭대기 · 5층", sec: 7, bg: "castletop", dark: true, close: true, who: [CAMDEN],
+                cast: { [CAMDEN]: { expr: "blank" } },
+                lines: [
+                    ["", "Jacob이 죽으며 떨어뜨린 식칼… Camden이 이를 발견한다.", { sfx: "sting", pop: { e: "🔪", at: CAMDEN, stay: true, cls: "grab" }, set: { [CAMDEN]: { expr: "angry" } } }]] },
+            // 클로즈업 — the knife in the werewolf's back
+            { k: "scene", n: 13, place: "고성 꼭대기 · 5층", sec: 8, bg: "castletop", dark: true, close: true, who: [REVI],
+                cast: { [REVI]: { wolf: "full", expr: "beast", pose: "both" } },
+                lines: [
+                    ["", "뒤에서— Camden이 있는 힘껏 늑대인간 Revi의 등을 칼로 찌른다!", { flash: "red", sfx: "slash", pop: { e: "🔪", at: REVI, stay: true, cls: "stuck" } }],
+                    [REVI, "크아아아아…!!", { sfx: "howl", act: "shake" }]] },
+            { k: "scene", n: 13, place: "고성 꼭대기 · 5층", sec: 20, bg: "castletop", dark: true, fx: "storm", who: [LINDA, CAMDEN, JACOB, REVI],
+                cast: { [LINDA]: { expr: "scared" }, [CAMDEN]: { expr: "angry" }, [JACOB]: DEAD, [REVI]: { wolf: "half", expr: "dizzy", act: "fall" } },
+                lines: [
+                    ["", "울부짖으며 쓰러지는 Revi…", { sfx: "thunder" }],
+                    [REVI, "Camden… 우리는… 한 가족인 줄 알았는데…", { expr: "sad", set: { [CAMDEN]: { expr: "blank" } } }],
+                    ["", "Revi가 최후를 맞이한다.", { set: { [REVI]: { act: "dead", expr: "dizzy" } } }],
+                    [LINDA, "하, 한 가족…?", { expr: "shock", to: CAMDEN }],
+                    [CAMDEN, "…다 끝났어요. 빨리 여길 나가요!", { expr: "cool", pose: "point", to: LINDA }]] },
+            { k: "scene", n: 13, place: "고성 앞", sec: 8, bg: "castleout", dark: true, fx: "busarrive", who: [DRIVER, LINDA, CAMDEN],
+                cast: { [DRIVER]: { expr: "shock" }, [LINDA]: { expr: "cry" }, [CAMDEN]: { expr: "blank" } },
+                lines: [
+                    [DRIVER, "어서 타요! 빨리!", { expr: "shock", pose: "wave", sfx: "horn" }],
+                    ["", "버스 드라이버의 도움을 받아, 두 사람은 고성을 빠져나온다.", { sfx: "engine", set: { [LINDA]: { gone: true }, [DRIVER]: { gone: true } } }]] },
+            // 클로즈업 — Camden looks back at the castle · red eyes
+            { k: "scene", n: 13, place: "고성 앞", music: "fullmoon", sec: 9, bg: "castleout", dark: true, close: true, fx: "moon", who: [CAMDEN],
+                cast: { [CAMDEN]: { expr: "blank" } },
+                lines: [
+                    ["", "떠나기 전, 고성을 돌아보는 Camden…"],
+                    ["", "그의 눈이… 붉게 빛난다.", { sfx: "growl", flash: "red", set: { [CAMDEN]: { expr: "redeye" } } }]] },
+            { k: "end", sec: 6, text: "The End", credits: true, music: "castle" }
+        ]
+    };
+};
 export const scriptSeconds = m =>(m.script || []).reduce((a, p) => a + (p.sec || 0), 0);
 
 // ---------------------------------------------------------------- the catalog: only movies the admin ordered (built-in + made in the admin generator)
@@ -1392,7 +1763,7 @@ export function allMovies() {
     return cache;
 }
 export const movieById = id => allMovies().find(m => m.id === id) || null;
-export const builtinMovies = () => [fortuneSwindlers(), helloBaby(), hurryKidMe(), emptyDen(), moonchild(), moonchild2(), moonchild3()];
+export const builtinMovies = () => [fortuneSwindlers(), helloBaby(), hurryKidMe(), emptyDen(), moonchild(), moonchild2(), moonchild3(), moonchild4()];
 export const castOf = (m, role) => m.cast.find(c => c.role === role || c.short === role) || null;
 export const titleText = m => `${m.ko}${m.en ? ` (${m.en})` : ""}`;
 // does a movie fit a shop kind?

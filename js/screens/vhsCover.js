@@ -58,12 +58,13 @@ export function coverStills(m, n) {
 const ems = t => Array.from(String(t || "")).reduce((a, ch) => a + (ch === " " ? 0.45 : /[\x21-\x7e]/.test(ch) ? 0.62 : 1), 0) || 1;
 const fit = (len, room, lo, hi) => Math.max(lo, Math.min(hi, Math.floor(room / len)));
 export function spine(m, { onclick = null, small = false } = {}) {
+    if (m.cover?.whole) return wholeSpine(m, m.cover.whole, small, onclick);
     const b = brandOf(m), S = D.brandStyle(b.id), r = rateOf(m);
     const SP = m.cover?.spine || {};
     const showStill = !small && S.still !== "none" && SP.still !== false, showBand = S.band && SP.band !== false;
     // room for the big title (px along the spine)
     // sub: the movie can put the English title "side" (small, sideways beside the Korean title) instead of the brand's way
-    const subMode = SP.sub || S.sub;
+    const subMode = SP.glyphs ? null : SP.sub || S.sub;   // (the title art alone: no English title)
     const room = small ? 104 : 300 - 52 - (showBand ? 18 : 0) - (showStill ? 64 : 0) - 40 - (subMode === "en" || subMode === "row" ? 22 : 0) - 18;
     // 구름 글씨 (font "cloud"): every letter puffed up and tilted a little its own way, so the title floats and sways
     const cloudy = t => Array.from(t).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch));
@@ -71,9 +72,13 @@ export function spine(m, { onclick = null, small = false } = {}) {
     const vEn = (t, fs, cls = "") => h("span.vs-v.vs-en-big" + cls, { style: { fontSize: fs + "px" } }, t);
     let title;
     // a movie can ask for its own spine: main "en" (the English title big) with sub "ko" (the Korean title small, sideways beside it)
-    if ((SP.main || S.main) === "en") {
+    if ((SP.main || S.main) === "en" && !SP.glyphs) {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
         title = h("div.vs-title.t-en", vEn(m.en, enFs), subMode === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
+    } else if (SP.glyphs) {
+        // glyphs: the letters of the movie's own title art, cut out one by one and stacked down the spine
+        const G = SP.glyphs, room2 = room + (SP.moonHand && !small ? 0 : 40), each = Math.floor(room2 / G.boxes.length);
+        title = h("div.vs-title.t-glyphs", G.boxes.map(bx => cropEl("i.vs-glyph", G.src, bx, { height: each + "px", aspectRatio: ratio(G.size, bx) })));
     } else if (SP.img) title = h("div.vs-title.t-img" + (SP.contain ? ".contain" : ""), h("img", { src: SP.img, alt: m.ko, draggable: "false", style: { maxHeight: room + "px" } }));   // the movie's own title art
     else title = h("div.vs-title.t-ko", vKo(m.ko, fit(ems(m.ko), room, 9, small ? 16 : 24)), subMode === "side" && !small ? h("span.vs-v.vs-en-side", m.en) : null);
     const sub = subMode === "en" ? h("div.vs-sub.vs-en", SP.enText || m.en)   // enText: a shorter English title on the spine
@@ -85,8 +90,35 @@ export function spine(m, { onclick = null, small = false } = {}) {
         showBand ? h("div.vs-band", { style: { background: r.color, color: r.ink } }, small ? r.name.replace(/띠$/, "") : r.name) : null,
         // font "plain": the titles sit on a plain label (black, ordinary letters)
         SP.font === "plain" ? h("div.vs-label", title, sub) : [title, sub],
-        showStill && stillSpec ? h("div.vs-still", still(m, stillSpec, { hgt: 58 })) : null,
-        h("div.vs-foot", h("div.vs-vhs", "VHS"), h("div.vs-stars", "★".repeat(m.stars))));
+        // moonHand: instead of a still — the werewolf's hand (cut out of a cover picture) against a full moon
+        SP.moonHand ? (small ? null : h("div.vs-moonhand", h("i.vs-moon"), cropEl("i.vs-hand", SP.moonHand.src, SP.moonHand.box)))
+            : showStill && stillSpec ? h("div.vs-still", still(m, stillSpec, { hgt: 58 })) : null,
+        h("div.vs-foot", h("div.vs-vhs", "VHS")));   // (no ★ on the covers)
+}
+// ✂️ a part of a picture: box [x0, y0, x1, y1] (0~1 of the picture) drawn over the whole element (CSS background · no image files to cut)
+export const cropStyle = (src, [x0, y0, x1, y1]) => { const w = x1 - x0, hh = y1 - y0; return { backgroundImage: `url("${src}")`, backgroundSize: `${100 / w}% ${100 / hh}%`, backgroundPosition: `${w >= 1 ? 0 : x0 / (1 - w) * 100}% ${hh >= 1 ? 0 : y0 / (1 - hh) * 100}%`, backgroundRepeat: "no-repeat" }; };
+const cropEl = (tag, src, box, extra = {}) => h(tag, { style: { ...cropStyle(src, box), ...extra } });
+const ratio = (size, b) => `${((b[2] - b[0]) * size[0]).toFixed(1)} / ${((b[3] - b[1]) * size[1]).toFixed(1)}`;
+// 📷 cover.whole: the whole box is one picture (뒷표지 | 중간표지 | 앞표지 side by side) — each side shows its own part
+//   { src, back, spine, front: boxes · patch: [{ at: box on the spine, from: box of the picture }] — painted over (e.g. the ★ printed on it) }
+function wholeSpine(m, W, small, onclick) {
+    return h("button.vhs-spine.photo" + (small ? ".small" : ""), { style: cropStyle(W.src, W.spine), title: D.titleText(m), ...(onclick ? { onclick } : {}) },
+        (W.patch || []).map(p => cropEl("i.vs-patch", W.src, p.from, { left: (p.at[0] * 100) + "%", top: (p.at[1] * 100) + "%", width: ((p.at[2] - p.at[0]) * 100) + "%", height: ((p.at[3] - p.at[1]) * 100) + "%" })));
+}
+// 🩹 cover.whole.fix: [{ at, from, text?, fs?, color?, x?, font? }] — all boxes in picture coordinates (0~1 of the whole picture)
+//   paints a clean bit of the picture (from) over a printed mistake (at) · text: the corrected words written on it (fs: font size in picture px · x: left inset in px)
+//   the text is an SVG so it scales with the cover at any size
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function fixes(W, side) {
+    const [sx0, sy0, sx1, sy1] = side, sw = sx1 - sx0, sh = sy1 - sy0, [PW, PH] = W.size || [1000, 1000];
+    return (W.fix || []).filter(f => f.at[0] >= sx0 - 1e-6 && f.at[2] <= sx1 + 1e-6).map(f => {
+        const el = cropEl("i.vc-fix", W.src, f.from, { left: ((f.at[0] - sx0) / sw * 100) + "%", top: ((f.at[1] - sy0) / sh * 100) + "%", width: ((f.at[2] - f.at[0]) / sw * 100) + "%", height: ((f.at[3] - f.at[1]) / sh * 100) + "%" });
+        if (f.text) {
+            const w = (f.at[2] - f.at[0]) * PW, hh = (f.at[3] - f.at[1]) * PH, fs = f.fs || hh * 0.7;
+            el.innerHTML = `<svg viewBox="0 0 ${w.toFixed(1)} ${hh.toFixed(1)}" preserveAspectRatio="none"><text x="${f.x ?? 4}" y="${(hh / 2).toFixed(1)}" dominant-baseline="central" font-size="${fs}" fill="${f.color || "#f5ede4"}" font-family="${f.font || "'Noto Sans KR', sans-serif"}" font-weight="${f.weight || 500}"${f.tw ? ` textLength="${f.tw}" lengthAdjust="spacingAndGlyphs"` : ""}>${esc(f.text)}</text></svg>`;
+        }
+        return el;
+    });
 }
 
 // ---------------------------------------------------------------- 앞표지 layouts
@@ -248,7 +280,11 @@ const ROCKET = `<svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg"><p
     `<path d="M60 34L40 8H76L96 34ZM60 76L40 102H76L96 76Z" fill="#ec4899" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>` +
     `<circle cx="118" cy="55" r="11" fill="#7dd3fc" stroke="#1e1b4b" stroke-width="4"/><path d="M84 46h14M84 64h14" stroke="#ec4899" stroke-width="4" stroke-linecap="round"/></svg>`;
 export function front(m) {
+    if (m.cover?.whole) return h("div.vhs-front.photo", { style: cropStyle(m.cover.whole.src, m.cover.whole.front) }, fixes(m.cover.whole, m.cover.whole.front));
     const b = brandOf(m), S = D.brandStyle(b.id), FR = m.cover?.front || {}, layout = FRONT[FR.layout] ? FR.layout : S.front;
+    // FR.pic: the front is the movie's own picture — { src, size, art: the picture part, title: the title-letters part } (no logo · no cast)
+    if (FR.pic) { const P = FR.pic; return h("div.vhs-front.l-pic", { style: { "--fb": FR.bg || "#05060d" } },
+        cropEl("div.vf-pic", P.src, P.art), cropEl("div.vf-pic-title", P.src, P.title, { aspectRatio: ratio(P.size, P.title) }), ratingBand(m)); }
     return h("div.vhs-front.vt-" + b.id + ".l-" + layout + (m.bw ? ".bw" : ""), { style: { "--fb": FR.bg || b.color, "--bc": b.color, "--bi": b.ink } },
         // FR.noCast: no actor names on the front (just the logo)
         h("div.vf-head", brandLogo(b, 28), FR.noCast ? null : h("small", `주연: ${leads(m).length > 4 ? `${castLine(leads(m).slice(0, 3), true)} 외 ${leads(m).length - 3}명` : castLine(leads(m), true) || "-"}`)),
@@ -273,9 +309,15 @@ const BACK = {
     text: () => null
 };
 export function back(m) {
+    if (m.cover?.whole) return h("div.vhs-back.photo", { style: cropStyle(m.cover.whole.src, m.cover.whole.back) }, fixes(m.cover.whole, m.cover.whole.back));
     const b = brandOf(m), S = D.brandStyle(b.id), BK = m.cover?.back || {}, layout = BACK[BK.layout] ? BK.layout : S.back;
     const L = coverStills(m, D.STILL_N[layout] ?? 4);
     const date = String(m.date || "").replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, mo, d) => `${+y}년 ${+mo}월 ${+d}일`);
+    // BK.pic: the movie's own picture on top · the plot · 제작년월일 · the logo (no title, no cast)
+    if (BK.pic) return h("div.vhs-back.l-pic", { style: { "--fb": m.cover?.front?.bg || "#05060d", "--bc": b.color, "--bi": b.ink } },
+        cropEl("div.vb-pic", BK.pic.src, BK.pic.box, { aspectRatio: ratio(BK.pic.size, BK.pic.box) }),
+        h("p.vb-plot", m.plot), h("dl.vb-info", h("dt", "제작년월일"), h("dd", date)),
+        h("div.vb-foot", brandLogo(b, 26), h("b", b.name), ratingBand(m)));
     // BK.leads: only these roles are named as 주연 · BK.minimal: just 줄거리 · 주연 · 제작년월일 (+ the logo)
     const L0 = BK.leads ? BK.leads.map(r => D.castOf(m, r)).filter(Boolean) : leads(m);
     // BK.art: only a picture · the promo line under it · 제작년월일 · the logo (no plot, no cast)

@@ -11,7 +11,7 @@ import * as D from "../data/vhs.js";
 import { makeBattler } from "../emomon/game.js";
 import { emoFight } from "./emoCorners.js";
 
-import { spine, front, back, vhsBox, brandLogo } from "./vhsCover.js";
+import { spine, front, back, vhsBox, brandLogo, cropStyle } from "./vhsCover.js";
 import { figure, setFigure } from "../ui/figure.js";
 import { ambience, ambFor } from "./vhsAudio.js";
 export { spine, front, back, vhsBox, brandLogo };
@@ -246,7 +246,8 @@ export const BG_KO = { street: "거리", bank: "은행", hideout: "아지트", t
     practice: "연습실", hallway: "복도", seats: "객석", country: "시골길", darkroad: "어두운 시골길", barnout: "헛간 앞", barn: "헛간", police: "경찰조사실",
     woods: "밤의 숲속", house: "하우스", school: "학교", classroom: "교실", moonhouse: "보름달 뜬 집 밖", church: "성당", funeral: "장례식장", funeralout: "장례식장 밖",
     agency: "탐정사무소", bedroom: "침실", camp: "숲속 파티", lake: "숲속 호숫가", hospital: "병원",
-    jungle: "정글", junglenight: "정글 · 밤", village: "Nuka 부족 마을", hut: "부족의 집" };
+    jungle: "정글", junglenight: "정글 · 밤", village: "Nuka 부족 마을", hut: "부족의 집",
+    tvshow: "TV 쇼", busstop: "만남의 장소", bus: "버스 안", road: "밤길", castleout: "고성 앞", dining: "고성 1층 · 만찬장", castleroom: "고성", bath: "고성 · 샤워실", castletop: "고성 꼭대기" };
 const NOTE = n => 220 * Math.pow(2, n / 12);
 // 🥁 a short noise hit (snare / hi-hat) and a kick
 let noiseBuf = null;
@@ -305,7 +306,9 @@ const STYLES = {
     morning: { ko: "🌅 화목한 아침", bpm: 118, wave: "triangle", mel: [12, 16, 19, 16, 17, 21, 19, _, 14, 17, 21, 17, 16, _, 12, _], bass: [0, 5, 7, 0], drums: "k_h_k_h_" },
     organ: { ko: "⛪ 성당 오르간", bpm: 64, wave: "sine", mel: [12, _, 15, _, 19, _, 17, _, 15, _, 14, _, 12, _, _, _], bass: [0, 5, 3, 7], low: true },
     funeral: { ko: "⚱️ 장송곡", bpm: 54, wave: "sine", mel: [7, _, 7, 7, 10, _, 8, 8, 7, _, 7, 6, 7, _, _, _], bass: [0, 0, 5, 7], drums: "k_______", low: true },
-    fullmoon: { ko: "🌕 보름달의 공포", bpm: 84, wave: "triangle", mel: [12, _, 13, _, 12, _, 18, _, 17, _, 13, _, 12, _, 11, _], bass: [0, 1, 6, 1], drums: "k__kk___", low: true }
+    fullmoon: { ko: "🌕 보름달의 공포", bpm: 84, wave: "triangle", mel: [12, _, 13, _, 12, _, 18, _, 17, _, 13, _, 12, _, 11, _], bass: [0, 1, 6, 1], drums: "k__kk___", low: true },
+    // 저주받은고성: a slow, low castle organ in a minor key — the bells toll
+    castle: { ko: "🏰 저주받은 고성", bpm: 58, wave: "sine", mel: [12, _, 15, _, 19, _, 18, _, 15, _, 14, _, 11, _, _, _, 12, _, 15, _, 20, _, 19, _, 15, _, 13, _, 12, _, _, _], bass: [0, 0, 8, 7, 0, 0, 5, 7], drums: "k_______", low: true }
 };
 // 🔊 one-shot sound effects a line can ask for (meta.sfx)
 function sfx(kind) {
@@ -325,6 +328,12 @@ function sfx(kind) {
     // 🌊 something dragged under the water: a deep gulp + a spray of noise
     else if (kind === "splash") { tone(160, 0.5, { type: "sine", vol: 0.08, glide: -110 }); for (let i = 0; i < 8; i++) drum(i % 2 ? "h" : "s", i * 0.05 + Math.random() * 0.03); }
     else if (kind === "drum") { [0, 0.28, 0.56, 0.7, 0.98, 1.26, 1.4].forEach((t, i) => drum(i % 3 === 2 ? "s" : "k", t)); } // 🥁 tribal drums
+    // ⛈️ thunder: a crack, then a long low rumble · 🎶 a music box · 🏎️ an engine roar · 📺 a TV switching off · 📯 a bus horn
+    else if (kind === "thunder") { drum("s"); drum("k"); for (let i = 0; i < 14; i++) tone(48 + Math.random() * 30, 0.4, { type: "sawtooth", vol: 0.045 * (1 - i / 16), at: 0.05 + i * 0.12 }); }
+    else if (kind === "musicbox") { [24, 31, 30, 24, 27, 26, 23].forEach((n, i) => tone(NOTE(n), 0.7, { type: "sine", vol: 0.05, at: i * 0.32 })); }
+    else if (kind === "engine") { tone(60, 1.6, { type: "sawtooth", vol: 0.05, glide: 140 }); tone(90, 1.6, { type: "square", vol: 0.02, glide: 200 }); }
+    else if (kind === "tvoff") { tone(2400, 0.25, { type: "sine", vol: 0.04, glide: -2200 }); drum("h"); }
+    else if (kind === "horn") { tone(NOTE(-5), 0.5, { type: "square", vol: 0.04 }); tone(NOTE(-1), 0.5, { type: "square", vol: 0.03 }); }
     else if (kind === "bell") { [0, 1.4].forEach(t => { tone(NOTE(-5), 2.2, { type: "sine", vol: 0.06, at: t }); tone(NOTE(7), 1.6, { type: "sine", vol: 0.025, at: t }); }); }
 }
 export const MUSIC_STYLES = Object.entries(STYLES).map(([k, s]) => [k, s.ko]);
@@ -446,7 +455,9 @@ export function playMovie(m) {
                     } else if (part.k === "title") {
                         playM(part.music || m.music);
                         // koImg: the Korean title is a picture (the movie's own title art)
-                        const ko = h("div.vp-ko.f-" + (part.font || part.style || "bold") + (part.koImg ? ".img" : ""), part.koImg ? h("img", { src: part.koImg, alt: m.ko, draggable: "false" }) : m.ko);
+                        //   koPic: { src, box, size } — the title letters cut out of a bigger picture (the cover art)
+                        const ko = part.koPic ? h("div.vp-ko.pic.f-" + (part.style || "bold"), h("i.vp-ko-pic", { style: { ...cropStyle(part.koPic.src, part.koPic.box), aspectRatio: `${(part.koPic.box[2] - part.koPic.box[0]) * part.koPic.size[0]} / ${(part.koPic.box[3] - part.koPic.box[1]) * part.koPic.size[1]}` } }))
+                            : h("div.vp-ko.f-" + (part.font || part.style || "bold") + (part.koImg ? ".img" : ""), part.koImg ? h("img", { src: part.koImg, alt: m.ko, draggable: "false" }) : m.ko);
                         // 🚀 "rockets": rockets fly over a pink screen, lip prints are stamped on it, then the Korean title comes in
                         const deco = part.style === "rockets" ? [
                             ...Array.from({ length: 7 }, (_, i) => h("i.vp-rk", { style: { "--y": (8 + i * 13) + "%", "--d": (i * 0.55) + "s", "--t": (2.4 + (i % 3) * 0.7) + "s", "--s": (i % 2 ? 1 : -1) } }, "🚀")),
@@ -461,9 +472,13 @@ export function playMovie(m) {
                             : part.style === "blood" ? [h("div.vp-blood", Array.from({ length: 14 }, (_, i) => h("i", { style: { "--x": (i * 7.3 + 1) + "%", "--w": (8 + (i * 37) % 22) + "px", "--h": (30 + (i * 53) % 55) + "%", "--d": ((i * 0.37) % 1.6).toFixed(2) + "s" } })))]
                             // 🌴 "jungle": a plane flies over the jungle · through its window someone (part.peek) looks down · the English title, then the Korean title art spins in
                             : part.style === "jungle" ? [h("div.vp-canopy"), h("i.vp-plane", "✈️"),
-                                part.peek && roleCast(m, part.peek) ? h("div.vp-porthole", h("div.vp-porthole-in", figure(roleCast(m, part.peek), { ...(roleCast(m, part.peek).look || {}), expr: "blank", pose: "down", upper: true, size: 420 }))) : null] : [];
+                                part.peek && roleCast(m, part.peek) ? h("div.vp-porthole", h("div.vp-porthole-in", figure(roleCast(m, part.peek), { ...(roleCast(m, part.peek).look || {}), expr: "blank", pose: "down", upper: true, size: 420 }))) : null]
+                            // ⛈️ "storm": a night of thunder and lightning · the full moon rises behind a castle on a hill · the English title, then the Korean title art slowly appears
+                            : part.style === "storm" ? [h("i.vp-sky"), h("i.vp-moonrise"), h("i.vp-castle-sil"), h("i.vp-bolt.a"), h("i.vp-bolt.b"), h("i.vp-lightning")] : [];
                         const titleEl = h("div.vp-title.s-" + (part.style || "bold"), ...deco, h("div.vp-en", m.en), ko);
                         put(screen, titleEl);
+                        // the thunder claps with each lightning flash (only while the title is on screen)
+                        if (part.style === "storm") for (const t of [0.5, 3.2, 6.6, 10.4].filter(t => t >= from && t < part.sec)) setTimeout(() => { if (titleEl.isConnected && !filmPaused) sfx("thunder"); }, (t - from) * 1000);
                         // koClaw: a wolf's claw tears across the screen as the Korean title comes in
                         setTimeout(() => {
                             ko.classList.add("show"); titleEl.classList.add("ko-in"); if (part.koSfx) sfx(part.koSfx);
@@ -555,7 +570,17 @@ export function playMovie(m) {
                 camp: () => h("div.vp-fx.camp", h("i.vp-fire"), h("i.vp-bike.a"), h("i.vp-bike.b")), // 🔥 a campfire · motorbikes parked in the dark
                 bonfire: () => h("div.vp-fx.camp", h("i.vp-fire"), h("i.vp-tent.a"), h("i.vp-tent.b")),  // ⛺ a campfire between two tents
                 // 🐷 the tribe's ritual: a pig's head on a stake in the middle of a ring of fires
-                ritual: () => h("div.vp-fx.camp.ritual", h("i.vp-fire.r1"), h("i.vp-fire.r2"), h("i.vp-fire.r3"), h("i.vp-fire.r4"), h("i.vp-pig", "🐷"))
+                ritual: () => h("div.vp-fx.camp.ritual", h("i.vp-fire.r1"), h("i.vp-fire.r2"), h("i.vp-fire.r3"), h("i.vp-fire.r4"), h("i.vp-pig", "🐷")),
+                // ---- 저주받은고성
+                bus: () => h("div.vp-fx.busfx", h("i.vp-bus")),                                    // 🚌 the tour bus parked by the stop
+                busaway: () => h("div.vp-fx.busaway", h("i.vp-road"), h("i.vp-busback", h("b"), h("b"))),   // 🚌 the bus drives off — seen from behind, getting small
+                busarrive: () => h("div.vp-fx.busarrive", h("i.vp-bus")),                          // 🚌 the bus pulls up in front of the castle
+                sportscar: () => h("div.vp-fx.carfx", h("i.vp-car")),                              // 🏎️ (comes in when the scene adds "car-in")
+                storm: () => h("div.vp-fx.storm", h("i.vp-lightning")),                            // ⛈️ lightning flashes now and then
+                curtain: () => h("div.vp-fx.curtain", h("i.vp-curtain", h("i.vp-cshadow"))),       // 🚿 a shower curtain (a shadow on it: "sh-man" · "sh-wolf" · torn: "torn")
+                doorpeek: () => h("div.vp-fx.doorpeek", h("i.vp-door.l"), h("i.vp-door.r"), h("i.vp-gap", h("i.vp-reye"), h("i.vp-reye"), h("i.vp-claws"))),   // 🚪 a red eye and claws in the door gap
+                lens: () => h("div.vp-fx.lens", h("i.vp-vf"), h("b.vp-rec", "● REC"), h("small.vp-batt", "▮▮▮▯"), h("i.vp-blood-lens")),   // 🎥 through the camera
+                gallery: () => h("div.vp-fx.gallery", h("i.vp-torch.a"), h("i.vp-torch.b"))       // 🕯️ torches on the stone walls
             };
             // pop: { e: emoji, at: role, fly } — something turns up by an actor (a snake behind someone · an arrow flying in)
             const popAt = p => {
@@ -571,6 +596,18 @@ export function playMovie(m) {
             // 🎬 the scene number and place, at the top
             const no = sc.n ?? ((m.script || []).filter(p => p.k === "scene").indexOf(sc) + 1 || 1);
             sceneEl.append(h("div.vp-place", h("b", `Scene ${no}`), sc.place || BG_KO[sc.bg || "street"] || ""));
+            // 📺 tv: the scene is a TV programme (a set frame · the show's logo · LIVE) · cls: extra looks for the set from the start
+            if (sc.tv) { sceneEl.classList.add("tv"); sceneEl.append(h("div.vp-tv", h("b.vp-tv-logo", sc.tv), h("i.vp-tv-live", "● LIVE"))); }
+            for (const c of String(sc.cls || "").split(/\s+/).filter(Boolean)) sceneEl.classList.add(c);
+            // 🏆 win: a big profile card with "WIN" stamped on it (meta.win = a role · "" takes it away)
+            const winBox = h("div.vp-win-wrap");
+            sceneEl.append(winBox);
+            const showWin = r => {
+                const c = r ? D.castOf(m, r) : null;
+                put(winBox, c ? h("div.vp-win", h("div.vp-win-pic", pimg(c.pid) ? h("img", { src: pimg(c.pid), alt: c.ko, draggable: "false" }) : h("span", "👤")), h("b", c.short || c.role), h("small", c.ko), h("i.vp-win-stamp", "WIN")) : null);
+            };
+            // add / drop: change the set's looks at a line ("car-in" · "sh-wolf" · "torn" · "bloody" · "tv-off" …)
+            const restyle = meta => { for (const c of String(meta.add || "").split(/\s+/).filter(Boolean)) sceneEl.classList.add(c); for (const c of String(meta.drop || "").split(/\s+/).filter(Boolean)) sceneEl.classList.remove(c); };
             put(screen, sceneEl);
             const lines = sc.lines || [];
             if (!lines.length) return wait(sc.sec - from);
@@ -581,6 +618,7 @@ export function playMovie(m) {
             let li = 0, acc = 0;
             while (li < lines.length - 1 && acc + durs[li] <= from) { acc += durs[li]; li++; }
             for (const [, , meta = {}] of lines.slice(0, li)) {
+                restyle(meta); if (meta.win !== undefined) showWin(meta.win);
                 if (meta.light) { sceneEl.classList.toggle("dark", meta.light === "off"); sceneEl.classList.toggle("black", meta.light === "black"); }
                 if (meta.music) playM(meta.music);
                 for (const [r, o] of Object.entries(meta.set || {})) { const k = idxOf(r); if (k >= 0) { base[k] = { ...base[k], ...o }; if (o.nude !== undefined || o.outfit !== undefined) base[k].nude = (o.nude ?? base[k].nude) || false; if (o.held !== undefined) putHeld(k, o.held); } }
@@ -597,7 +635,9 @@ export function playMovie(m) {
                 // ⚡ a flash of light · a sound effect (scream, sting, phone ring, applause, ghost laugh …)
                 if (meta.flash) { const fl = h("i.vp-flash" + (meta.flash === "red" ? ".red" : "")); sceneEl.append(fl); setTimeout(() => fl.remove(), 600); }
                 if (meta.claw) clawMarks();
-                if (meta.sfx) sfx(meta.sfx);
+                restyle(meta);
+                if (meta.win !== undefined) { showWin(meta.win); if (meta.win) Sound.click(); }
+                if (meta.sfx) [].concat(meta.sfx).forEach(sfx);
                 if (meta.pop) [].concat(meta.pop).forEach(popAt);
                 // the one on the phone talks in the bubble
                 const onCall = callC && who && D.castOf(m, who) === callC;
@@ -608,7 +648,7 @@ export function playMovie(m) {
                 const ti = meta.to ? idxOf(meta.to) : -1;
                 actors.forEach((a, i) => { a.classList.toggle("talk", i === ci); a.style.setProperty("--dir", i === ci && ti >= 0 ? Math.sign(ti - ci) || 1 : i < (people.length - 1) / 2 ? 1 : -1); });
                 // the speaker: the line's face / hands / feet (or what the words suggest) · the others go back to how they are
-                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, pop: _p, sec: _sec, ...look } = meta;
+                const { light, music: _m, set, to, claw: _c, flash: _f, sfx: _s, amb: _a, pop: _p, sec: _sec, add: _ad, drop: _dr, win: _w, ...look } = meta;
                 people.forEach((_, i) => pose(i, i === ci ? { ...base[i], expr: D.lineMood(text), act: D.lineAct(text), ...look } : base[i]));
                 // anon: the name tag under the actor is hidden (the monster nobody knows yet)
                 actors.forEach((a, i) => { a.classList.toggle("gone", !!base[i].gone); a.classList.toggle("hid", !!base[i].hid); a.classList.toggle("anon", !!base[i].anon); });
