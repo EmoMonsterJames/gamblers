@@ -1456,7 +1456,7 @@ const moonchild4 = () => {
             // 제목: a night of thunder and lightning · the full moon rises · the English title, then (as it fades) the Korean title art slowly appears
             { k: "title", sec: 14, style: "storm", koPic: { src: MC4_FRONT, box: MC4_TITLE, size: [1152, 864] }, koAt: 8200, koSfx: "thunder", music: "castle" },
             // Scene 1 · TV 쇼 광고 — Revi, the new MC · the eight names (a WIN card each)
-            { k: "scene", n: 1, place: "TV 쇼 광고 · Treasure Hunt", music: MC4_THEME, sec: 44, bg: "tvshow", tv: "💎 Treasure Hunt", fx: "spot", who: [REVI],
+            { k: "scene", n: 1, place: "TV 쇼 광고 · Treasure Hunt", music: MC4_THEME, amb: [], sec: 44, bg: "tvshow", tv: "💎 Treasure Hunt", fx: "spot", who: [REVI],
                 cast: { [REVI]: { expr: "excited", hold: "mic", pose: "wave" } },
                 lines: [
                     [REVI, "안녕하세요~! 'Treasure Hunt'의 신입 MC, Revi입니다!", { hold: "mic", pose: "wave", expr: "excited", sec: 4 }],
