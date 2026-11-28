@@ -64,7 +64,8 @@ export function spine(m, { onclick = null, small = false } = {}) {
     const showStill = !small && S.still !== "none" && SP.still !== false, showBand = S.band && SP.band !== false;
     // room for the big title (px along the spine)
     // sub: the movie can put the English title "side" (small, sideways beside the Korean title) instead of the brand's way
-    const subMode = SP.glyphs ? null : SP.sub || S.sub;   // (the title art alone: no English title)
+    const artOnly = !!(SP.glyphs || SP.art);   // the title art alone on the spine: no English title
+    const subMode = artOnly ? null : SP.sub || S.sub;
     const room = small ? 104 : 300 - 52 - (showBand ? 18 : 0) - (showStill ? 64 : 0) - 40 - (subMode === "en" || subMode === "row" ? 22 : 0) - 18;
     // 구름 글씨 (font "cloud"): every letter puffed up and tilted a little its own way, so the title floats and sways
     const cloudy = t => Array.from(t).map((ch, i) => h("i.cl", { style: { "--r": [-9, 7, -4, 10, -7, 5][i % 6] + "deg", "--y": [0, -3, 2, -2, 3, -1][i % 6] + "px" } }, ch));
@@ -72,9 +73,13 @@ export function spine(m, { onclick = null, small = false } = {}) {
     const vEn = (t, fs, cls = "") => h("span.vs-v.vs-en-big" + cls, { style: { fontSize: fs + "px" } }, t);
     let title;
     // a movie can ask for its own spine: main "en" (the English title big) with sub "ko" (the Korean title small, sideways beside it)
-    if ((SP.main || S.main) === "en" && !SP.glyphs) {
+    if ((SP.main || S.main) === "en" && !artOnly) {
         const enFs = fit(ems(m.en), room, 8, small ? 16 : 22);
         title = h("div.vs-title.t-en", vEn(m.en, enFs), subMode === "ko" ? vKo(m.ko, fit(ems(m.ko), room * 0.8, 7, small ? 9 : 11), ".sub") : null);
+    } else if (SP.art) {
+        // art: the movie's own tall title art (letters already stacked top to bottom, clear ground) filling the spine
+        const room2 = room + (SP.moonHand && !small ? 0 : 40);
+        title = h("div.vs-title.t-art", h("img", { src: SP.art, alt: m.ko, draggable: "false", style: { maxHeight: room2 + "px" } }));
     } else if (SP.glyphs) {
         // glyphs: the letters of the movie's own title art, cut out one by one and stacked down the spine
         const G = SP.glyphs, room2 = room + (SP.moonHand && !small ? 0 : 40), each = Math.floor(room2 / G.boxes.length);

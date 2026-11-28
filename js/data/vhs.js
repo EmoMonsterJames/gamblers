@@ -1445,7 +1445,7 @@ const moonchild4 = () => {
         music: "castle",
         cover: {
             // 중간표지: logo · the title letters (cut out of the front picture) stacked tall · under them the werewolf's hand against the full moon (no English title, no still)
-            spine: { glyphs: { src: MC4_FRONT, size: [1152, 864], boxes: MC4_GLYPHS }, moonHand: { src: MC4_BACK, box: [0.17, 0.27, 0.47, 0.71] }, bg: "linear-gradient(180deg, #05060d, #0b1026 60%, #1e1b4b)" },
+            spine: { art: "images/movies/moonchild4_spine_title.png", moonHand: { src: MC4_BACK, box: [0.17, 0.27, 0.47, 0.71] }, bg: "linear-gradient(180deg, #05060d, #0b1026 60%, #1e1b4b)" },
             // 앞표지: the admin's picture (the werewolf · the castle under the moon · the title letters) — no logo, no cast, no slogan
             front: { pic: { src: MC4_FRONT, size: [1152, 864], art: [0.06, 0, 0.94, 0.7], title: MC4_TITLE }, bg: "#05060d" },
             // 뒷표지: the admin's picture (the claw round her leg) · the plot · 제작년월일 · the logo

@@ -849,6 +849,8 @@
 .vc-fix svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .vhs-spine.photo .vs-patch { position: absolute; display: block; }
 /* 중간표지 glyphs: the title-art letters stacked down the spine · moonHand: the werewolf's hand against a full moon */
+.vs-title.t-art { flex: none; display: flex; justify-content: center; }
+.vs-title.t-art img { display: block; width: auto; max-width: 66px; object-fit: contain; filter: drop-shadow(0 2px 2px #000c); }
 .vs-title.t-glyphs { display: flex; flex-direction: column; align-items: center; gap: 0; flex: none; }
 .vs-glyph { display: block; flex: none; max-width: 66px; filter: drop-shadow(0 2px 2px #000c); -webkit-mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 82%, transparent 100%); mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 82%, transparent 100%); }
 .vs-moonhand { position: relative; width: 100%; flex: 1 1 auto; min-height: 66px; margin-top: auto; overflow: hidden; border-radius: 3px; background: radial-gradient(ellipse at 50% 30%, #1e3a8a, #020617 75%); }
