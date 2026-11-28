@@ -239,7 +239,24 @@ function tone(f, dur, { type = "square", vol = 0.04, at = 0, glide = 0 } = {}) {
 export function mumble(text, seed = 0) {
     const n = Math.min(16, Math.max(3, Math.ceil(String(text).length / 2)));
     const base = 150 + (seed % 7) * 25;
-    for (let i = 0; i < n; i++) tone(base + Math.random() * 90, 0.08 + Math.random() * 0.05, { type: "triangle", vol: 0.06, at: i * 0.13, glide: (Math.random() - 0.5) * 80 });
+    for (let i = 0; i < n; i++) tone(base + Math.random() * 90, 0.08 + Math.random() * 0.05, { type: "triangle", vol: 0.085, at: i * 0.13, glide: (Math.random() - 0.5) * 80 });
+    duckMusic(n * 0.13 + 0.35);
+}
+// 🔉 a song file (audio/movies/…) is much louder than the mumbling: it dips while someone talks, then comes back up
+const MUSIC_VOL = 0.55, DUCK_VOL = 0.16;
+let ducked = false, duckTimer = null, duckFade = null;
+function fadeFilmMusic(to) {
+    clearInterval(duckFade);
+    duckFade = setInterval(() => {
+        let done = true;
+        for (const a of filmAudios) { const v = a.volume + Math.sign(to - a.volume) * 0.06; if (Math.abs(to - a.volume) <= 0.06) a.volume = to; else { a.volume = Math.max(0, Math.min(1, v)); done = false; } }
+        if (done) clearInterval(duckFade);
+    }, 30);
+}
+function duckMusic(sec) {
+    if (!ducked) { ducked = true; fadeFilmMusic(DUCK_VOL); }
+    clearTimeout(duckTimer);
+    duckTimer = setTimeout(() => { ducked = false; fadeFilmMusic(MUSIC_VOL); }, sec * 1000);
 }
 // scene sets → the place name shown at the top of a scene
 export const BG_KO = { street: "거리", bank: "은행", hideout: "아지트", taxi: "택시 안", home: "집", forest: "숲", space: "우주", castle: "성", beach: "해변", night: "밤거리", stage: "무대", office: "사무실", campus: "대학교", room: "방", shower: "샤워실", ballroom: "무도회장",
@@ -369,7 +386,7 @@ function music(style) {
 function musicFile(url, fallback) {
     if (Sound.muted) return () => { };
     const a = new Audio(url);
-    a.loop = true; a.volume = 0.55;
+    a.loop = true; a.volume = ducked ? DUCK_VOL : MUSIC_VOL;
     let stopSynth = null, alive = true;
     filmAudios.add(a);
     if (!filmPaused) a.play().catch(() => { if (alive) { filmAudios.delete(a); stopSynth = music(fallback); } });
