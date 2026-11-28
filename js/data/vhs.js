@@ -1428,7 +1428,7 @@ const moonchild4 = () => {
         genres: ["공포"], rating: "flower", stars: 7, quality: 1, lgbtq: false,
         cast: [
             { ko: "꽃방귀토끼", pid: P("꽃방귀토끼"), role: LINDA, part: "lead", nude: true },
-            { ko: "소동물이모부", pid: P("소동물이모부"), role: CAMDEN, part: "lead", sexy: true },
+            { ko: "소동물이모부", pid: P("소동물이모부"), role: CAMDEN, part: "lead" },
             { ko: "여자투명인간", pid: P("여자투명인간"), role: "Revi, the MC", short: REVI, part: "lead" },
             { ko: "아름드리토끼", pid: P("아름드리토끼"), role: CHICHI, part: "lead", nude: true },
             { ko: "꽁지비", pid: P("꽁지비"), role: JACOB, part: "lead" },
