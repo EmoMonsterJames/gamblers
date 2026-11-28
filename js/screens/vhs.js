@@ -182,6 +182,7 @@ export const dbCard = m => h("div.vhs-db-card",
         h("dt", "제작국가"), h("dd", m.nation),
         h("dt", "비디오브랜드"), h("dd", brandOf(m).name),
         h("dt", "등급"), h("dd", D.ratingText(m.rating)),
+        h("dt", "총 상영길이"), h("dd", `⏱️ ${D.filmLengthText(m)}`),
         h("dt", "출연 배우"), h("dd", h("ul", m.cast.map(c => h("li", h("b.mdb-part-tag.p-" + c.part, V.PART_KO[c.part]), ` · ${c.ko} — ${c.role}${c.nude ? " (Nudity)" : c.sexy ? " (Sexy)" : ""}`)))),
         h("dt", "Body Count"), h("dd", (d => d.length ? `💀 총 ${d.length}명 — ${d.map(c => `${c.ko} (${c.role})`).join(", ")}` : "0명")(D.bodyCountOf(m))),
         h("dt", "줄거리"), h("dd", m.plot)));
@@ -201,7 +202,7 @@ export function cinemaView(pid, { turn = null, onChange = () => { } } = {}) {
     };
     async function play(m) {
         if (!(await ageGate(pid, m, "view"))) return;
-        if (!(await confirmBox(`${m.ko}을(를) 재생할까요? (${Math.round(D.scriptSeconds(m) / 6) / 10}분 · 관람 보상 ${fmt(V.viewerPay(m))}G)\n이번 시즌 남은 상영 ${V.cinemaLeft(pid)}회 → ${V.cinemaLeft(pid) - 1}회`, "▶ 재생", "취소"))) return;
+        if (!(await confirmBox(`${m.ko}을(를) 재생할까요? (${D.filmLengthText(m)} · 관람 보상 ${fmt(V.viewerPay(m))}G)\n이번 시즌 남은 상영 ${V.cinemaLeft(pid)}회 → ${V.cinemaLeft(pid) - 1}회`, "▶ 재생", "취소"))) return;
         const r = V.cinemaPay(pid, m);
         if (!r.ok) return toast(r.why, "warn");
         const was = turn?.running;
@@ -403,7 +404,7 @@ export function playMovie(m) {
         const pm = modal(h("div.vhs-theater", screen, bar, h("div.row.center", pauseBtn, h("button.btn.ghost.small", { onclick: () => { skip = true; setPause(false); } }, "⏭ 끝까지 건너뛰기"))), { title: `🎬 ${D.titleText(m)}`, closable: false, wide: true, cls: "vhs-modal.theater" });
         // 💀 Body Count roll after The End (a few seconds more)
         const deaths = D.bodyCountInfo(m);
-        const bcSec = deaths.length ? 4 + deaths.length * 2 : 0;
+        const bcSec = D.bodyCountSeconds(m);
         const total = D.scriptSeconds(m) + bcSec;
         let elapsed = 0;
         // ⏩ the play bar can be clicked / dragged: jump = the second to go to (the running part stops, the film goes on from there)

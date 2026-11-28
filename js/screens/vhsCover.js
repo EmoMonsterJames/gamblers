@@ -343,7 +343,7 @@ export function back(m) {
                 !BK.minimal && sups(m).length ? [h("dt", "조연"), h("dd", castLine(sups(m), BK.short))] : null,
                 h("dt", BK.minimal ? "제작년월일" : "제작"), h("dd", BK.minimal ? date : `${m.nation} · ${date}`),
                 BK.minimal ? null : [h("dt", "장르"), h("dd", m.genres.join(" · ")),
-                    h("dt", "상영시간"), h("dd", `${Math.round(D.scriptSeconds(m) / 60 * 10) / 10}분`)])),
+                    h("dt", "상영시간"), h("dd", D.filmLengthText(m))])),
         h("div.vb-foot", brandLogo(b, 26), h("b", b.name), ratingBand(m)));
 }
 // 뒷표지 | 중간표지 | 앞표지

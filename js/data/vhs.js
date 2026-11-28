@@ -1752,6 +1752,10 @@ const moonchild4 = () => {
     };
 };
 export const scriptSeconds = m =>(m.script || []).reduce((a, p) => a + (p.sec || 0), 0);
+// 🎞️ the whole film as it plays: the script + the 💀 Body Count roll at the end (4s + 2s a death)
+export const bodyCountSeconds = m => (n => n ? 4 + n * 2 : 0)(bodyCountInfo(m).length);
+export const filmSeconds = m => scriptSeconds(m) + bodyCountSeconds(m);
+export const filmLengthText = m => (s => `${Math.floor(s / 60)}분 ${s % 60}초`)(Math.round(filmSeconds(m)));
 
 // ---------------------------------------------------------------- the catalog: only movies the admin ordered (built-in + made in the admin generator)
 let cache = null, cacheKey = "";

@@ -84,6 +84,7 @@ export function adminMovieDbPage() {
             h("dt", "제작국가"), h("dd", facetLinks("nation", m)),
             h("dt", "영화사"), h("dd", facetLinks("brand", m)),
             h("dt", "등급"), h("dd", facetLinks("rating", m)),
+            h("dt", "총 상영길이"), h("dd", `⏱️ ${D.filmLengthText(m)}`),
             h("dt", "출연 배우"), h("dd", h("ul", [...m.cast].sort((a, b) => PART_ORDER.indexOf(a.part) - PART_ORDER.indexOf(b.part)).map(c =>
                 h("li", h("b.mdb-part-tag.p-" + c.part, PART_KO[c.part] || c.part), " · ", c.pid != null ? link(actorName(c), { k: "actor", pid: c.pid }) : actorName(c), ` — ${c.role}`, ...tags(c))))),
             h("dt", "Body Count"), h("dd", bodyCount(m)),
